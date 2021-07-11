@@ -1,7 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
+import * as TLEX from "tlex";
 import { Note, Atom, Space, Syllable, Group } from "../models/index";
-import { Snippet, CmdParam } from "../notebook";
+import { Snippet, CmdParam } from "../models/notebook";
 import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
@@ -15,7 +16,9 @@ const ONE = TSU.Num.Fraction.ONE;
  */
 const [parser, itemGraph] = G.newParser(
   String.raw`
-    %define IdentChar     /[^\[\]={}()\\+\-,;: \t\f\r\n\v]/
+    %define IdentChar     /[^\[\]={}()+\-,;: \t\f\r\n\v\\]/
+
+    %token  BSLASH        "\\"
     %token  OPEN_SQ       "["
     %token  CLOSE_SQ      "]"
     %token  EQUALS        "="
@@ -23,61 +26,68 @@ const [parser, itemGraph] = G.newParser(
     %token  CLOSE_PAREN   ")"
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
-    %token  BSLASH        "\\"
     %token  SLASH         "/"
     %token  PLUS          "+"
     %token  MINUS         "-"
     %token  COMMA         ","
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
-    %token  NUMBER        /\\d+/
-    %token  STRING        /".*?(?<!\\\\)"/
-    %token  DOTS_IDENT    /\\.+{IdentChar}+/
-    %token  IDENT_DOTS    /{IdentChar}+\\.+/
+
+    %token  NUMBER        /\d+/                     { toNumber }
+    %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
+    %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
+    %token  DOTS_IDENT    /\.+{IdentChar}+/         { toOctavedNote   }
+    %token  IDENT_COLON   /{IdentChar}+:/           { toRoleSelector  }
+    %token  IDENT_DOTS    /{IdentChar}+\.+/         { toOctavedNote   }
     %token  IDENT         /{IdentChar}+/
-    %token  BLASH_IDENT   /\\{IDENT}/
-    %token  BLASH_NUMBER  /\\{NUMBER}/
-    %skip                 /[ \\t\\n\\f\\r]+/
-    %skip                 /\/\/.*$/
+    %token  BSLASH_IDENT  /\\{IDENT}/               { toCommandName   }
+    %token  BSLASH_NUMBER /\\{NUMBER}/
+    %skip                 /[ \t\n\f\r]+/
+    %skip_flex            "//.*$"
     %skip                 /\/\*.*?\*\//
-    %skip                 /\-/
+    %skip                 "-"
 
-    Elements -> Elements Seperator Atoms;
-    Elements -> Atoms ;
-
+    Elements -> Elements Seperator Atoms { arrayConcat } ;
+    Elements -> Atoms { newArray };
     Seperator -> Command | RoleSelector ;
 
-    Command -> BSLASH_IDENT ;
-    Command -> BSLASH_IDENT CommandParams ;
-    CommandParams  -> OPEN_PAREN  CLOSE_PAREN ;
-    CommandParams -> OPEN_PAREN ParamList CLOSE_PAREN ;
+    Command -> BSLASH_IDENT CommandParams ? { newCommand } ;
+    CommandParams -> OPEN_PAREN ParamList ? CLOSE_PAREN { $2 } ;
 
-    ParamList -> ParamList COMMA Param ;
-    ParamList -> Param ;
-    Param -> ParamKey ;
-    Param -> ParamKey EQUALS ParamValue ;
-    ParamKey  -> STRING | Fraction | IDENT ;
-    ParamValue -> STRING | Fraction | IDENT ;
+    ParamList -> ParamList COMMA Param { concatParamList } ;
+    ParamList -> Param { newParamList };
+    Param -> ParamKey { newParam } ;
+    Param -> ParamKey EQUALS ParamValue { newParam } ;
+    ParamKey  -> ( STRING | Fraction | IDENT ) ;
+    ParamValue -> ( STRING | Fraction | IDENT ) ;
 
-    RoleSelector -> IDENT_COLON ;
+    RoleSelector -> IDENT_COLON { newRoleSelector } ;
 
-    Atoms -> Atoms Atom ;
-    Atoms -> ;
+    Atoms -> Atoms Atom { concatAtoms } ;
+    Atoms -> { emptyArray } ;
 
-    Atom -> Duration Leaf ;
     Atom -> Leaf ;
+    Atom -> Duration  Leaf { durationedAtom } ;
 
     Leaf -> Space | Lit | Group ;
 
-    Space -> COMMA | SEMI_COLON | UNDER_SCORE ;
-    Lit -> DOT_IDENT | IDENT | IDENT_DOT | STRING ;
-    Group -> OPEN_SQ Atoms CLOSE_SQ ;
+    Space -> COMMA { newSpace } 
+          | SEMI_COLON { newDoubleSpace } 
+          | UNDER_SCORE { newSilentSpace } 
+          ;
+
+    Lit -> DOTS_IDENT
+        | IDENT
+        | IDENT_DOTS
+        | STRING
+        ;
+    Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
     Duration -> Fraction ;
-    Fraction -> NUMBER ;
-    Fraction -> NUMBER SLASH NUMBER ;
+    Fraction -> NUMBER { newFraction } ;
+    Fraction -> NUMBER SLASH NUMBER { newFraction } ;
   `,
-  { allowLeftRecursion: true, debug: "all" },
+  { allowLeftRecursion: true, debug: "", type: "lr1" },
 );
 
 export class Command {
@@ -118,7 +128,20 @@ export class V3Parser {
     }
   }
 
-  parse(input: string): void {
+  parse(input: string): any {
+    const allowList = new Set([
+      "STRING",
+      "NUMBER",
+      "IDENT",
+      "BSLASH_IDENT",
+      "BSLASH_NUMBER",
+      "IDENT_DOTS",
+      "DOTS_IDENT",
+      "SEMI_COLON",
+      "COMMA",
+    ]);
+    const ptree = parser.parse(input, {});
+    console.log("PTree: ", JSON.stringify(ptree?.debugValue(), null, 2));
     /*
     this.tokenizer.tape.push(input);
     let token = this.tokenizer.peek();
@@ -128,7 +151,7 @@ export class V3Parser {
         const cmd = this.parseCommand();
         this.addCommand(cmd.name, cmd.params);
       } else if (token.tag == TokenType.MINUS) {
-        // Hyphens on their own are innocuous - for now -
+        / Hyphens on their own are innocuous - for now -
         // we migth want to conver them into "visual breaks"
         this.tokenizer.next();
       } else {

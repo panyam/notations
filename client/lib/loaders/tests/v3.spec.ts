@@ -1,20 +1,19 @@
 import { Command, V3Parser } from "../v3";
 import { TokenType } from "../tokens";
-import { Notebook } from "../../notebook";
-import "../../../jest/matchers";
+import { Notebook } from "../../models/notebook";
+import "../../../common/jest/matchers";
 
 describe("Parser Tests", () => {
-  /*
   test("Test Command Parsing", () => {
     const notebook = new Notebook();
     const snippet = notebook.newSnippet();
-    const input = "\\line ( world , a, b, x = 1, c = 'hello', ab = cd)";
-    const tokenizer = V3Tokenizer(input);
-    const parser = new SnippetParser(snippet).setTokenizer(tokenizer);
-    const root = parser.parse();
+    const input = "\\line( world , a, b, x = 1, c = 'hello', ab = cd)";
+    const parser = new V3Parser(snippet);
+    const root = parser.parse(input);
     console.log("Result Parse Tree: \n", root?.debugValue);
   });
 
+  /*
   test("Parse Multi line command", () => {
     const notebook = new Notebook();
     const snippet = notebook.newSnippet();

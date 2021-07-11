@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Atom, Line } from "../models";
-import { Snippet, Instruction, Command, Emitter } from "../notebook";
+import { Snippet, Instruction, Command, Emitter } from "../models/notebook";
 import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
 
