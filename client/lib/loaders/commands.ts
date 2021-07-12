@@ -38,6 +38,10 @@ export class AddAtoms implements Instruction {
     this.index = 0;
   }
 
+  debugValue(): any {
+    return { name: this.name, index: this.index, atoms: this.atoms.map((a) => a.debugValue()) };
+  }
+
   get name(): string {
     return "AddAtoms";
   }
@@ -66,6 +70,10 @@ export class AddAtoms implements Instruction {
 
 export class SetProperty<V = string> extends Command {
   properties: TSU.StringMap<any> = {};
+
+  debugValue(): any {
+    return { ...super.debugValue(), ...this.properties };
+  }
 
   get name(): string {
     return "SetProperty";

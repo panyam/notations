@@ -345,6 +345,10 @@ export class Snippet {
     this.notebook = notebook;
   }
 
+  debugValue(): any {
+    return { instrs: this.instructions.map((i) => i.debugValue()) };
+  }
+
   get prevSnippet(): TSU.Nullable<Snippet> {
     return this._prevSnippet;
   }
@@ -465,6 +469,7 @@ export interface Instruction {
   index: number;
   readonly name: string;
   execute(snippet: Snippet): void;
+  debugValue(): any;
 }
 
 export class Command implements Instruction {
@@ -478,6 +483,10 @@ export class Command implements Instruction {
   constructor(params: CmdParam[] = []) {
     this.params = params;
     this.index = 0;
+  }
+
+  debugValue(): any {
+    return { name: this.name, index: this.index, params: this.params };
   }
 
   getParam(name: string): any {

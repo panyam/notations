@@ -13,6 +13,10 @@ export class Entity {
     this.metadata = config.metadata || {};
   }
 
+  debugValue(): any {
+    return { metadata: this.metadata, type: this.type };
+  }
+
   children(): Entity[] {
     return [];
   }
@@ -114,6 +118,7 @@ export abstract class TimedEntity extends Entity {
 
 export enum AtomType {
   NOTE,
+  LITERAL,
   SYLLABLE,
   SPACE,
   GROUP,
@@ -125,14 +130,13 @@ export type Atom = LeafAtom | Group | Label;
 export abstract class AtomBase extends TimedEntity {
   protected _duration: TSU.Num.Fraction;
 
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another._duration = TSU.Num.Frac(this._duration.num, this._duration.den);
-  }
-
   constructor(duration = TSU.Num.Fraction.ONE) {
     super();
     this._duration = duration || TSU.Num.Fraction.ONE;
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), duration: this.duration };
   }
 
   get duration(): TSU.Num.Fraction {
@@ -172,6 +176,10 @@ export class Label extends AtomBase {
     this.content = content;
   }
 
+  debugValue(): any {
+    return { ...super.debugValue(), content: this.content };
+  }
+
   get type(): unknown {
     return AtomType.LABEL;
   }
@@ -197,13 +205,6 @@ export abstract class LeafAtom extends AtomBase {}
  */
 export class Space extends LeafAtom {
   /**
-   * Returns the type of this Entity.
-   */
-  get type(): unknown {
-    return AtomType.SPACE;
-  }
-
-  /**
    * Tells if this is a silent space or a continuation of previous note.
    */
   isSilent = false;
@@ -211,6 +212,17 @@ export class Space extends LeafAtom {
   constructor(duration = TSU.Num.Fraction.ONE, isSilent = false) {
     super(duration);
     this.isSilent = isSilent;
+  }
+
+  /**
+   * Returns the type of this Entity.
+   */
+  get type(): unknown {
+    return AtomType.SPACE;
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), isSilent: this.isSilent };
   }
 
   toString(): string {
@@ -227,57 +239,7 @@ export class Space extends LeafAtom {
   }
 }
 
-export class Note extends LeafAtom {
-  /**
-   * Which octave is the note in.  Can be +ve or -ve to indicate higher or lower octaves.
-   */
-  octave = 0;
-
-  /**
-   * How is the note shifted - ie by shifted towards major or minore by # of semi-tones.
-   */
-  shift = 0;
-
-  /**
-   * The value of this note.
-   * TODO - move to a normalize note value
-   */
-  value: string;
-
-  constructor(value: string, duration = TSU.Num.Fraction.ONE, octave = 0, shift = 0) {
-    super(duration);
-    this.octave = octave;
-    this.shift = shift;
-    this.value = value;
-  }
-
-  toString(): string {
-    return `Note(${this.duration}-${this.value}-${this.octave})`;
-  }
-
-  equals(another: this): boolean {
-    return (
-      super.equals(another) &&
-      this.octave == another.octave &&
-      this.shift == another.shift &&
-      this.value == another.value
-    );
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another.value = this.value;
-    another.octave = this.octave;
-    another.shift = this.shift;
-  }
-
-  // readonly type: AtomType = AtomType.NOTE;
-  get type(): unknown {
-    return AtomType.NOTE;
-  }
-}
-
-export class Syllable extends LeafAtom {
+export class Literal extends LeafAtom {
   /**
    * The value of this Syllable.
    */
@@ -288,8 +250,12 @@ export class Syllable extends LeafAtom {
     this.value = value;
   }
 
+  debugValue(): any {
+    return { ...super.debugValue(), value: this.value };
+  }
+
   toString(): string {
-    return `Syll(${this.duration}-${this.value})`;
+    return `Lit(${this.duration}-${this.value})`;
   }
 
   equals(another: this): boolean {
@@ -301,9 +267,58 @@ export class Syllable extends LeafAtom {
     another.value = this.value;
   }
 
-  // readonly type: AtomType = AtomType.SYLLABLE;
+  get type(): unknown {
+    return AtomType.LITERAL;
+  }
+}
+
+export class Syllable extends Literal {
+  toString(): string {
+    return `Syll(${this.duration}-${this.value})`;
+  }
+
   get type(): unknown {
     return AtomType.SYLLABLE;
+  }
+}
+
+export class Note extends Literal {
+  /**
+   * Which octave is the note in.  Can be +ve or -ve to indicate higher or lower octaves.
+   */
+  octave = 0;
+
+  /**
+   * How is the note shifted - ie by shifted towards major or minore by # of semi-tones.
+   */
+  shift = 0;
+
+  constructor(value: string, duration = TSU.Num.Fraction.ONE, octave = 0, shift = 0) {
+    super(value, duration);
+    this.octave = octave;
+    this.shift = shift;
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), octave: this.octave, shift: this.shift };
+  }
+
+  toString(): string {
+    return `Note(${this.duration}-${this.value}-${this.octave})`;
+  }
+
+  equals(another: this): boolean {
+    return super.equals(another) && this.octave == another.octave && this.shift == another.shift;
+  }
+
+  copyTo(another: this): void {
+    super.copyTo(another);
+    another.octave = this.octave;
+    another.shift = this.shift;
+  }
+
+  get type(): unknown {
+    return AtomType.NOTE;
   }
 }
 
@@ -313,6 +328,10 @@ export class Group extends AtomBase {
   constructor(duration = TSU.Num.Fraction.ONE, ...atoms: Atom[]) {
     super(duration);
     this.addAtoms(...atoms);
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
   }
 
   get totalChildDuration(): TSU.Num.Fraction {
@@ -391,6 +410,10 @@ export class CyclePart extends TimedEntity {
     }
   }
 
+  debugValue(): any {
+    return { ...super.debugValue(), name: name, beatLengths: this.beatLengths };
+  }
+
   equals(another: this): boolean {
     if (!super.equals(another)) return false;
     if (this.beatLengths.length != another.beatLengths.length) return false;
@@ -437,6 +460,10 @@ export class Cycle extends TimedEntity {
     super((config = config || {}));
     this.name = config.name || "";
     this.parts = config.parts || [];
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), name: name, parts: this.parts.map((p) => p.debugValue()) };
   }
 
   children(): Entity[] {
@@ -499,6 +526,10 @@ export class Line extends Entity {
   constructor(config: any = null) {
     super((config = config || {}));
     this.cycle = config.cycle || null;
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), cycle: this.cycle?.debugValue(), roles: this.roles, atoms: this.atoms };
   }
 
   /**

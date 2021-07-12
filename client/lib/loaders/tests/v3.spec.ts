@@ -7,10 +7,48 @@ describe("Parser Tests", () => {
   test("Test Command Parsing", () => {
     const notebook = new Notebook();
     const snippet = notebook.newSnippet();
-    const input = "\\line( world , a, b, x = 1, c = 'hello', ab = cd)";
+    const input = `\\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`;
     const parser = new V3Parser(snippet);
     const root = parser.parse(input);
-    console.log("Result Parse Tree: \n", root?.debugValue);
+    console.log("Result Parse Tree: \n", JSON.stringify(root?.debugValue(), null, 2));
+    console.log("Result Snippet: \n", JSON.stringify(parser.snippet.debugValue(), null, 2));
+    expect(parser.snippet.debugValue()).toEqual({
+      instrs: [
+        {
+          name: "CreateLine",
+          index: 0,
+          params: [
+            {
+              key: null,
+              value: "world",
+            },
+            {
+              key: null,
+              value: "a",
+            },
+            {
+              key: null,
+              value: "b",
+            },
+            {
+              key: "x",
+              value: {
+                num: 1,
+                den: 1,
+              },
+            },
+            {
+              key: "c",
+              value: "hello",
+            },
+            {
+              key: "ab",
+              value: "cd",
+            },
+          ],
+        },
+      ],
+    });
   });
 
   /*

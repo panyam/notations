@@ -36,9 +36,9 @@ const [parser, itemGraph] = G.newParser(
     %token  NUMBER        /\d+/                     { toNumber }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
     %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
-    %token  DOTS_IDENT    /\.+{IdentChar}+/         { toOctavedNote   }
+    %token  DOTS_IDENT    /(\.+)({IdentChar}+)/     { toOctavedNote   }
+    %token  IDENT_DOTS    /({IdentChar}+)(\.+)/     { toOctavedNote   }
     %token  IDENT_COLON   /{IdentChar}+:/           { toRoleSelector  }
-    %token  IDENT_DOTS    /{IdentChar}+\.+/         { toOctavedNote   }
     %token  IDENT         /{IdentChar}+/
     %token  BSLASH_IDENT  /\\{IDENT}/               { toCommandName   }
     %token  BSLASH_NUMBER /\\{NUMBER}/
@@ -47,27 +47,28 @@ const [parser, itemGraph] = G.newParser(
     %skip                 /\/\*.*?\*\//
     %skip                 "-"
 
-    Elements -> Elements Seperator Atoms { arrayConcat } ;
-    Elements -> Atoms { newArray };
-    Seperator -> Command | RoleSelector ;
+    Elements -> Elements Command Atoms { appendCommand } 
+              | Elements RoleSelector Atoms { appendRoleSelector } 
+              | Atoms { appendAtoms }
+              ;
 
     Command -> BSLASH_IDENT CommandParams ? { newCommand } ;
     CommandParams -> OPEN_PAREN ParamList ? CLOSE_PAREN { $2 } ;
 
     ParamList -> ParamList COMMA Param { concatParamList } ;
     ParamList -> Param { newParamList };
-    Param -> ParamKey { newParam } ;
+    Param -> ParamValue { newParam } ;
     Param -> ParamKey EQUALS ParamValue { newParam } ;
-    ParamKey  -> ( STRING | Fraction | IDENT ) ;
-    ParamValue -> ( STRING | Fraction | IDENT ) ;
+    ParamKey  -> IDENT ;
+    ParamValue -> ( STRING | Fraction ) ;
 
-    RoleSelector -> IDENT_COLON { newRoleSelector } ;
+    RoleSelector -> IDENT_COLON ;
 
     Atoms -> Atoms Atom { concatAtoms } ;
-    Atoms -> { emptyArray } ;
+    Atoms -> { newArray } ;
 
     Atom -> Leaf ;
-    Atom -> Duration  Leaf { durationedAtom } ;
+    Atom -> Duration  Leaf { applyDuration } ;
 
     Leaf -> Space | Lit | Group ;
 
@@ -76,10 +77,10 @@ const [parser, itemGraph] = G.newParser(
           | UNDER_SCORE { newSilentSpace } 
           ;
 
-    Lit -> DOTS_IDENT
-        | IDENT
-        | IDENT_DOTS
-        | STRING
+    Lit -> DOTS_IDENT { litToAtom } 
+        | IDENT { litToAtom } 
+        | IDENT_DOTS { litToAtom } 
+        | STRING  { litToAtom }
         ;
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
@@ -87,7 +88,40 @@ const [parser, itemGraph] = G.newParser(
     Fraction -> NUMBER { newFraction } ;
     Fraction -> NUMBER SLASH NUMBER { newFraction } ;
   `,
-  { allowLeftRecursion: true, debug: "", type: "lr1" },
+  {
+    allowLeftRecursion: true,
+    debug: "",
+    type: "lalr",
+    tokenHandlers: {
+      toCommandName: (token: TLEX.Token, tape: TLEX.Tape) => {
+        token.value = token.value.substring(1);
+        return token;
+      },
+      toNumber: (token: TLEX.Token, tape: TLEX.Tape) => {
+        token.value = parseInt(token.value);
+        return token;
+      },
+      toString: (token: TLEX.Token, tape: TLEX.Tape) => {
+        token.value = token.value.substring(1, token.value.length - 1);
+        return token;
+      },
+      toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape) => {
+        console.log("Octaved Note Token: ", token);
+        if (token.tag == "DOTS_IDENT") {
+          token.value = new Note(token.value);
+        } else if (token.tag == "IDENT_DOTS") {
+          token.value = new Note(token.value);
+        } else {
+          throw new Error("Invalid token for converting to note: " + token.tag);
+        }
+        return token;
+      },
+      toRoleSelector: (token: TLEX.Token, tape: TLEX.Tape) => {
+        token.value = token.value.substring(token.value.length - 1);
+        return token;
+      },
+    },
+  },
 );
 
 export class Command {
@@ -105,6 +139,107 @@ export class V3Parser {
   readonly snippet: Snippet;
   private runCommandFound = false;
   // readonly parseTree = new PTNodeList("Snippet", null);
+  protected ruleHandlers = {
+    newFraction: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      if (children.length == 1) {
+        return new TSU.Num.Fraction(children[0].value);
+      } else {
+        return new TSU.Num.Fraction(children[0].value, children[1].value);
+      }
+    },
+    newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return new Group(ONE, children[1].value);
+    },
+    litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const role = this.snippet.currRole;
+      const lit = children[0];
+      if (lit.sym.label == "DOTS_IDENT" || lit.sym.label == "IDENT_DOTS") {
+        return lit.value;
+      } else if (lit.sym.label == "IDENT") {
+        return role.notesOnly ? new Note(lit.value) : new Syllable(lit.value);
+      } else if (lit.sym.label == "STRING") {
+        if (role.notesOnly) throw new Error("Strings cannot appear in notes only mode");
+        return new Syllable(lit.value);
+      } else {
+        throw new Error("Invalid lit: " + lit);
+      }
+    },
+    newSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return new Space();
+    },
+    newDoubleSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return new Space(ONE.timesNum(2));
+    },
+    newSilentSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return new Space(ONE, true);
+    },
+    applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const dur = children[0].value as TSU.Num.Fraction;
+      const leaf = children[1].value as Atom;
+      leaf.duration = dur;
+      return leaf;
+    },
+    newArray: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      // create an array of values from all the values of child nodes
+      return children.map((c) => c.value);
+    },
+    concatAtoms: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const atoms = children[0].value;
+      const atom = children[1].value;
+      atoms.push(atom);
+      return atoms;
+    },
+    newParam: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      if (children.length == 1) {
+        return { key: null, value: children[0].value };
+      } else {
+        return { key: children[0].value, value: children[2].value };
+      }
+    },
+    newParamList: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return [children[0].value];
+    },
+    concatParamList: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const params = children[0].value;
+      const newParam = children[2].value;
+      params.push(newParam);
+      return params;
+    },
+    newCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const cmd = new Command();
+      cmd.name = children[0].value;
+      cmd.params = children[1].value;
+      return cmd;
+    },
+    appendAtoms: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const atoms = children[0].value as Atom[];
+      if (atoms.length > 0) {
+        const cmd = new AddAtoms(...atoms);
+        this.snippet.add(cmd);
+      }
+      return null;
+    },
+    appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const command = children[1].value as Command;
+      this.addCommand(command.name, command.params);
+
+      const atoms = children[2].value as Atom[];
+      if (atoms.length > 0) {
+        this.snippet.add(new AddAtoms(...atoms));
+      }
+      return null;
+    },
+    appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const command = children[1].value as Command;
+      this.addCommand(command.name, command.params);
+
+      const atoms = children[2].value as Atom[];
+      if (atoms.length > 0) {
+        this.snippet.add(new AddAtoms(...atoms));
+      }
+      return null;
+    },
+  };
 
   constructor(snippet: Snippet, config?: any) {
     config = config || {};
@@ -129,223 +264,11 @@ export class V3Parser {
   }
 
   parse(input: string): any {
-    const allowList = new Set([
-      "STRING",
-      "NUMBER",
-      "IDENT",
-      "BSLASH_IDENT",
-      "BSLASH_NUMBER",
-      "IDENT_DOTS",
-      "DOTS_IDENT",
-      "SEMI_COLON",
-      "COMMA",
-    ]);
-    const ptree = parser.parse(input, {});
-    console.log("PTree: ", JSON.stringify(ptree?.debugValue(), null, 2));
-    /*
-    this.tokenizer.tape.push(input);
-    let token = this.tokenizer.peek();
-    while (token != null) {
-      if (token.tag == TokenType.BSLASH) {
-        // set tokenizer state to command reading
-        const cmd = this.parseCommand();
-        this.addCommand(cmd.name, cmd.params);
-      } else if (token.tag == TokenType.MINUS) {
-        / Hyphens on their own are innocuous - for now -
-        // we migth want to conver them into "visual breaks"
-        this.tokenizer.next();
-      } else {
-        const atom = this.parseAtom();
-        this.snippet.add(new AddAtoms(atom));
-      }
-      token = this.tokenizer.peek();
-    }
-   */
+    const ptree = parser.parse(input, {
+      ruleHandlers: this.ruleHandlers,
+    });
+    return ptree;
   }
-
-  /*
-  parseCommand(): Command {
-    const out = new Command();
-    let token = this.tokenizer.expectToken(TokenType.BSLASH);
-    token = this.tokenizer.expectToken(TokenType.IDENT);
-    out.name = token.value;
-    if (this.tokenizer.nextMatches(TokenType.OPEN_PAREN)) {
-      this.parseCommandParams(out);
-    }
-    return out;
-  }
-
-  parseCommandParams(cmd: Command) {
-    this.tokenizer.expectToken(TokenType.OPEN_PAREN);
-    let done = false;
-    while (!done) {
-      let token = this.tokenizer.expectToken(
-        TokenType.STRING,
-        TokenType.NUMBER,
-        TokenType.IDENT,
-        TokenType.CLOSE_PAREN,
-      );
-      let key: any = null;
-      let value: any = null;
-      if (token.tag == TokenType.STRING) {
-        key = token.value;
-      } else if (token.tag == TokenType.NUMBER) {
-        key = token.value;
-        if (this.tokenizer.consumeIf(TokenType.SLASH) != null) {
-          const den = this.tokenizer.expectToken(TokenType.NUMBER);
-          key = TSU.Num.Frac(value, den.value);
-        }
-      } else if (token.tag == TokenType.IDENT) {
-        key = token.value;
-        while (
-          this.tokenizer.match(
-            (t) => t.tag === TokenType.IDENT,
-            false,
-            true,
-            (token) => (key += token.value),
-          ) != null
-        );
-      } else {
-        // CLOSE_PAREN so break out
-        break;
-      }
-
-      // "=" or "," or "CLOSE"
-      token = this.tokenizer.expectToken(TokenType.EQUALS, TokenType.COMMA, TokenType.CLOSE_PAREN);
-      if (token.tag == TokenType.EQUALS) {
-        token = this.tokenizer.expectToken(TokenType.STRING, TokenType.NUMBER, TokenType.IDENT);
-        if (token.tag == TokenType.STRING) {
-          value = token.value;
-        } else if (token.tag == TokenType.NUMBER) {
-          value = token.value;
-          if (this.tokenizer.consumeIf(TokenType.SLASH) != null) {
-            const den = this.tokenizer.expectToken(TokenType.NUMBER);
-            value = TSU.Num.Frac(value, den.value);
-          }
-        } else if (token.tag == TokenType.IDENT) {
-          value = token.value;
-          while (
-            this.tokenizer.match(
-              (t) => t.tag === TokenType.IDENT,
-              false,
-              true,
-              (token) => (value += token.value),
-            ) != null
-          );
-        }
-        // next *must* be a COMMA or a CLOSE_P
-        token = this.tokenizer.expectToken(TokenType.COMMA, TokenType.CLOSE_PAREN);
-        done = token.tag == TokenType.CLOSE_PAREN;
-      } else if (token.tag == TokenType.CLOSE_PAREN) {
-        done = true;
-      } else {
-        // COMMA
-        // nothing - go ahead to next kv pair
-        const a = 0;
-      }
-      if (value == null) {
-        cmd.params.push({ key: null, value: key });
-      } else {
-        cmd.params.push({ key: key, value: value });
-      }
-    }
-  }
-
-  parseAtom(): Atom {
-    // Extract duration if found
-    const duration = this.parseDuration();
-
-    let token = this.tokenizer.next();
-    if (token == null) {
-      throw new G.ParseError(-1, "Unexpected end of input after duration");
-    }
-
-    if (token.tag == TokenType.COMMA) {
-      return new Space(duration || ONE);
-    }
-
-    if (token.value == "_") {
-      return new Space(duration || ONE, true);
-    }
-
-    if (token.tag == TokenType.SEMI_COLON) {
-      return new Space((duration || ONE).timesNum(2));
-    }
-
-    if (token.tag == TokenType.OPEN_SQ) {
-      token = this.tokenizer.peek();
-      const children: Atom[] = [];
-      while (token != null && token.tag != TokenType.CLOSE_SQ) {
-        const atom = this.parseAtom();
-        if (atom == null) break;
-        children.push(atom);
-        token = this.tokenizer.peek();
-      }
-      this.tokenizer.expectToken(TokenType.CLOSE_SQ);
-      return new Group(duration || ONE, ...children);
-    }
-
-    // Here we MUST be a syllable or a note
-    // Both will be Identifiers at this point
-
-    const role = this.snippet.currRole;
-    if (token.tag == TokenType.IDENT) {
-      // see if the next token is a ":" - indicating a role change
-      // TODO - Should this become a top level production instead of at
-      // the atom level? - Would need custom look ahead
-      if (!duration) {
-        const t2 = this.tokenizer.peek();
-        if (t2?.tag == TokenType.COLON) {
-          // Ensure this follows immediately after the ident
-          // kicking off a role change
-          if (t2.immediatelyFollows(token)) {
-            // consume it
-            this.tokenizer.next();
-            this.activateRole(token.value);
-            return this.parseAtom();
-          }
-        }
-      }
-      if (role.notesOnly) {
-        return new Note(token.value, duration || ONE);
-      } else {
-        return new Syllable(token.value, duration || ONE);
-      }
-    } else if (token.tag == TokenType.STRING) {
-      if (role.notesOnly) {
-        throw new G.ParseError(token.offset, "Strings cannot appear when writing notes");
-      } else {
-        return new Syllable(token.value, duration || ONE);
-      }
-    } else if (token.tag == TokenType.DOTTED_IDENT) {
-      const [value, octave] = token.value;
-      if (role.notesOnly) {
-        return new Note(value, duration || ONE, octave);
-      } else {
-        return new Syllable(value, duration || ONE);
-      }
-    }
-
-    throw new G.UnexpectedTokenError(token);
-  }
-
-  parseDuration(): TSU.Nullable<TSU.Num.Fraction> {
-    let token = this.tokenizer.consumeIf(TokenType.NUMBER);
-    if (token == null) return null;
-
-    // then parse a number or fraction for duration
-    const num = token.value;
-
-    if (this.tokenizer.consumeIf(TokenType.SLASH) == null) {
-      return TSU.Num.Frac(num);
-    }
-
-    // we have a slash so expect a number now
-    token = this.tokenizer.expectToken(TokenType.NUMBER);
-    const den = token.value;
-    return TSU.Num.Frac(num, den);
-  }
- */
 
   activateRole(roleName: string): void {
     const lName = roleName.toLowerCase().trim();
