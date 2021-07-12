@@ -90,7 +90,7 @@ export class SetProperty<V = string> extends Command {
       if (typeof value === "string") {
         if (name == "cycle") {
           value = parseCycle(value);
-        } else if (name == "aksharas per beat" || name == "aksharasPerBeat") {
+        } else if (name == "aksharasPerBeat") {
           name = "aksharasPerBeat";
           value = parseInt(value);
         } else if (name == "render titles") {
