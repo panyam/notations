@@ -34,6 +34,7 @@ const [parser, itemGraph] = G.newParser(
     %token  COLON         ":"
 
     %token  NUMBER        /\d+/                     { toNumber }
+    %token  BOOLEAN       /true|false/              { toBoolean }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
     %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
     %token  DOTS_IDENT    /(\.+)({IdentChar}+)/     { toOctavedNote   }
@@ -60,7 +61,7 @@ const [parser, itemGraph] = G.newParser(
     Param -> ParamValue { newParam } ;
     Param -> ParamKey EQUALS ParamValue { newParam } ;
     ParamKey  -> IDENT ;
-    ParamValue -> ( STRING | Fraction ) ;
+    ParamValue -> ( STRING | Fraction | BOOLEAN ) ;
 
     RoleSelector -> IDENT_COLON ;
 
@@ -97,6 +98,10 @@ const [parser, itemGraph] = G.newParser(
         token.value = token.value.substring(1);
         return token;
       },
+      toBoolean: (token: TLEX.Token, tape: TLEX.Tape) => {
+        token.value = token.value == "true";
+        return token;
+      },
       toNumber: (token: TLEX.Token, tape: TLEX.Tape) => {
         token.value = parseInt(token.value);
         return token;
@@ -117,7 +122,7 @@ const [parser, itemGraph] = G.newParser(
         return token;
       },
       toRoleSelector: (token: TLEX.Token, tape: TLEX.Tape) => {
-        token.value = token.value.substring(token.value.length - 1);
+        token.value = token.value.substring(0, token.value.length - 1);
         return token;
       },
     },
@@ -144,7 +149,7 @@ export class V3Parser {
       if (children.length == 1) {
         return new TSU.Num.Fraction(children[0].value);
       } else {
-        return new TSU.Num.Fraction(children[0].value, children[1].value);
+        return new TSU.Num.Fraction(children[0].value, children[2].value);
       }
     },
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
@@ -230,8 +235,8 @@ export class V3Parser {
       return null;
     },
     appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const command = children[1].value as Command;
-      this.addCommand(command.name, command.params);
+      console.log("Children in RS: ", children);
+      this.activateRole(children[1].value);
 
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
