@@ -14,7 +14,8 @@ export class Entity {
   }
 
   debugValue(): any {
-    return { metadata: this.metadata, type: this.type };
+    if (Object.keys(this.metadata).length > 0) return { metadata: this.metadata, type: this.type };
+    else return { type: this.type };
   }
 
   children(): Entity[] {
@@ -136,7 +137,12 @@ export abstract class AtomBase extends TimedEntity {
   }
 
   debugValue(): any {
-    return { ...super.debugValue(), duration: this.duration };
+    return this.duration.isOne ? super.debugValue() : { ...super.debugValue(), duration: this.duration.toString() };
+  }
+
+  copyTo(another: this): void {
+    super.copyTo(another);
+    another.duration = new TSU.Num.Fraction(this.duration.num, this.duration.den);
   }
 
   get duration(): TSU.Num.Fraction {
@@ -300,7 +306,10 @@ export class Note extends Literal {
   }
 
   debugValue(): any {
-    return { ...super.debugValue(), octave: this.octave, shift: this.shift };
+    const out = { ...super.debugValue() };
+    if (this.octave != 0) out.octave = this.octave;
+    if (this.shift != 0) out.shift = this.shift;
+    return out;
   }
 
   toString(): string {

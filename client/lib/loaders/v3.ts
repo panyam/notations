@@ -111,7 +111,6 @@ const [parser, itemGraph] = G.newParser(
         return token;
       },
       toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape) => {
-        console.log("Octaved Note Token: ", token);
         if (token.tag == "DOTS_IDENT") {
           const octave = token.positions[1][1] - token.positions[1][0];
           const note = token.value.substring(octave);
@@ -239,7 +238,6 @@ export class V3Parser {
       return null;
     },
     appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      console.log("Children in RS: ", children);
       this.activateRole(children[1].value);
 
       const atoms = children[2].value as Atom[];
