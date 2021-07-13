@@ -85,13 +85,12 @@ export class SetProperty<V = string> extends Command {
       if (param.key == null) {
         throw new Error("Property must have a valid key");
       }
-      let name = param.key;
+      const name = param.key;
       let value = param.value;
       if (typeof value === "string") {
         if (name == "cycle") {
           value = parseCycle(value);
         } else if (name == "aksharasPerBeat") {
-          name = "aksharasPerBeat";
           value = parseInt(value);
         } else if (name == "render titles") {
           value = value === "true" || value === "yes";

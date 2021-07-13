@@ -113,9 +113,13 @@ const [parser, itemGraph] = G.newParser(
       toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape) => {
         console.log("Octaved Note Token: ", token);
         if (token.tag == "DOTS_IDENT") {
-          token.value = new Note(token.value);
+          const octave = token.positions[1][1] - token.positions[1][0];
+          const note = token.value.substring(octave);
+          token.value = new Note(note, ONE, -octave);
         } else if (token.tag == "IDENT_DOTS") {
-          token.value = new Note(token.value);
+          const octave = token.positions[2][1] - token.positions[2][0];
+          const note = token.value.substring(0, token.value.length - octave);
+          token.value = new Note(note, ONE, octave);
         } else {
           throw new Error("Invalid token for converting to note: " + token.tag);
         }
