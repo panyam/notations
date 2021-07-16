@@ -61,7 +61,7 @@ const [parser, itemGraph] = G.newParser(
     Param -> ParamValue { newParam } ;
     Param -> ParamKey EQUALS ParamValue { newParam } ;
     ParamKey  -> IDENT ;
-    ParamValue -> ( STRING | Fraction | BOOLEAN ) ;
+    ParamValue -> ( STRING | Fraction | NUMBER | BOOLEAN ) ;
 
     RoleSelector -> IDENT_COLON ;
 
@@ -85,8 +85,7 @@ const [parser, itemGraph] = G.newParser(
         ;
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
-    Duration -> Fraction ;
-    Fraction -> NUMBER { newFraction } ;
+    Duration -> Fraction | NUMBER;
     Fraction -> NUMBER SLASH NUMBER { newFraction } ;
   `,
   {

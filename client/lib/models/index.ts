@@ -402,10 +402,10 @@ export class Group extends AtomBase {
 export type CyclePosition = [TSU.Num.Fraction, number, number];
 export type CycleIterator = Generator<CyclePosition>;
 
-export class CyclePart extends TimedEntity {
+export class Bar extends TimedEntity {
   name: string;
   beatLengths: TSU.Num.Fraction[] = [];
-  // todo - also add "visuals" at some point
+  // TODO: also add "visuals" at some point
 
   constructor(config: any = null) {
     super((config = config || {}));
@@ -454,53 +454,53 @@ export class CyclePart extends TimedEntity {
 // Describes the cycle pattern
 export class Cycle extends TimedEntity {
   name: string;
-  parts: CyclePart[];
+  bars: Bar[];
 
   static readonly DEFAULT = new Cycle({
     name: "Adi Thalam",
-    parts: [
-      new CyclePart({ name: "Laghu", beatLengths: [1, 1, 1, 1] }),
-      new CyclePart({ name: "Dhrutam", beatLengths: [1, 1] }),
-      new CyclePart({ name: "Dhrutam", beatLengths: [1, 1] }),
+    bars: [
+      new Bar({ name: "Laghu", beatLengths: [1, 1, 1, 1] }),
+      new Bar({ name: "Dhrutam", beatLengths: [1, 1] }),
+      new Bar({ name: "Dhrutam", beatLengths: [1, 1] }),
     ],
   });
 
   constructor(config: any = null) {
     super((config = config || {}));
     this.name = config.name || "";
-    this.parts = config.parts || [];
+    this.bars = config.bars || [];
   }
 
   debugValue(): any {
-    return { ...super.debugValue(), name: name, parts: this.parts.map((p) => p.debugValue()) };
+    return { ...super.debugValue(), name: name, bars: this.bars.map((p) => p.debugValue()) };
   }
 
   children(): Entity[] {
-    return this.parts;
+    return this.bars;
   }
 
   equals(another: this): boolean {
     if (!super.equals(another)) {
       return false;
     }
-    if (this.parts.length != another.parts.length) return false;
-    for (let i = 0; i < this.parts.length; i++) {
-      if (!this.parts[i].equals(another.parts[i])) return false;
+    if (this.bars.length != another.bars.length) return false;
+    for (let i = 0; i < this.bars.length; i++) {
+      if (!this.bars[i].equals(another.bars[i])) return false;
     }
     return true;
   }
 
-  *iterateBeats(startPart = 0, startBeat = 0): Generator<CyclePosition> {
-    let currPart = startPart;
+  *iterateBeats(startBar = 0, startBeat = 0): Generator<CyclePosition> {
+    let currBar = startBar;
     let currBeat = startBeat;
     while (true) {
-      yield [this.parts[currPart].beatLengths[currBeat], currPart, currBeat];
+      yield [this.bars[currBar].beatLengths[currBeat], currBar, currBeat];
       currBeat++;
-      if (currBeat >= this.parts[currPart].beatLengths.length) {
+      if (currBeat >= this.bars[currBar].beatLengths.length) {
         currBeat = 0;
-        currPart++;
-        if (currPart >= this.parts.length) {
-          currPart = 0;
+        currBar++;
+        if (currBar >= this.bars.length) {
+          currBar = 0;
         }
       }
     }
@@ -509,18 +509,18 @@ export class Cycle extends TimedEntity {
   copyTo(another: this): void {
     super.copyTo(another);
     another.name = this.name;
-    another.parts = this.parts.map((x) => x.clone());
+    another.bars = this.bars.map((x) => x.clone());
   }
 
   get barCount(): number {
     let out = 0;
-    for (const part of this.parts) out += part.barCount;
+    for (const part of this.bars) out += part.barCount;
     return out;
   }
 
   get duration(): TSU.Num.Fraction {
     let out = ZERO;
-    for (const p of this.parts) {
+    for (const p of this.bars) {
       out = out.plus(p.duration);
     }
     return out;

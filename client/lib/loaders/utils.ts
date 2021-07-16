@@ -1,12 +1,12 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, CyclePart, Atom, Space, Group, Syllable } from "../models/index";
+import { Cycle, Bar, Atom, Space, Group, Syllable } from "../models/index";
 const ONE = TSU.Num.Fraction.ONE;
 
 /**
- * Convert a cycle given as a string into the parts representing
- * each of its cycle parts.
+ * Convert a cycle given as a string into the bars representing
+ * each of its cycle bars.
  */
-export function cycleStrToPartsStrs(cycleStr: string): string[] {
+export function cycleStrToBarsStrs(cycleStr: string): string[] {
   return cycleStr
     .replace(/\|+/g, "|")
     .split("|")
@@ -19,20 +19,20 @@ export function cycleStrToPartsStrs(cycleStr: string): string[] {
  */
 export function parseCycle(cycleStr: string): Cycle {
   return new Cycle({
-    parts: cycleStrToPartsStrs(cycleStr).map(parseCyclePart),
+    bars: cycleStrToBarsStrs(cycleStr).map(parseBar),
   });
 }
 
 /**
  * Parse a cycle part string into beat lengths.
  */
-export function parseCyclePart(partStr: string): CyclePart {
-  const parts = partStr.replace(/\s+/g, " ").split(" ");
-  const cp = new CyclePart();
-  if (parts.length == 1) {
-    for (let i = 0; i < partStr.length; i++) {
+export function parseBar(barStr: string): Bar {
+  const bars = barStr.replace(/\s+/g, " ").split(" ");
+  const cp = new Bar();
+  if (bars.length == 1) {
+    for (let i = 0; i < barStr.length; i++) {
       let count = 0;
-      const ch = partStr[i];
+      const ch = barStr[i];
       if (ch == ",") {
         count = 1;
       } else {
@@ -47,11 +47,11 @@ export function parseCyclePart(partStr: string): CyclePart {
       }
     }
   } else {
-    for (let i = 0; i < parts.length; i++) {
-      if (/^,+$/.test(parts[i])) {
-        cp.beatLengths.push(TSU.Num.Frac(parts[i].length));
+    for (let i = 0; i < bars.length; i++) {
+      if (/^,+$/.test(bars[i])) {
+        cp.beatLengths.push(TSU.Num.Frac(bars[i].length));
       } else {
-        const num = parseInt(parts[i]);
+        const num = parseInt(bars[i]);
         if (num) cp.beatLengths.push(TSU.Num.Frac(num));
       }
     }
@@ -85,11 +85,11 @@ export function parseSyllable(value: string): Atom {
 }
 
 export function parseProperty(line: string): [string, string] {
-  const parts = line.split("=").map((x) => x.trim());
-  if (parts.length < 2) {
+  const bars = line.split("=").map((x) => x.trim());
+  if (bars.length < 2) {
     throw new Error("Properties must be of type <key> = <value>");
   }
-  const key = parts[0];
-  const value = parts[1];
+  const key = bars[0];
+  const value = bars[1];
   return [key, value];
 }

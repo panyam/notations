@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Entity, Line, Cycle, CyclePart, Syllable, Space, Group, Note } from "../";
+import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
 import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -31,31 +31,23 @@ describe("Entity Tests", () => {
 describe("Cycle tests", () => {
   test("Clone", () => {
     const cycle = new Cycle({
-      parts: [
-        new CyclePart({ beatLengths: [1, 2, 3, 4] }),
-        new CyclePart({ beatLengths: [5] }),
-        new CyclePart({ beatLengths: [6, 7] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
     });
     const c2 = cycle.clone();
     expect(cycle.equals(c2)).toBe(true);
 
     const c3 = new Cycle({
-      parts: [
-        new CyclePart({ beatLengths: [1, 2, 3, 4] }),
-        new CyclePart({ beatLengths: [5] }),
-        new CyclePart({ beatLengths: [6, 8] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 8] })],
     });
     expect(cycle.equals(c3)).toBe(false);
   });
 
   test("Creation", () => {
     const cycle = new Cycle({
-      parts: [
-        new CyclePart({ beatLengths: [1, 2, 3, 4] }),
-        new CyclePart({ beatLengths: [5] }),
-        new CyclePart({ beatLengths: [TSU.Num.Frac(6), 7] }),
+      bars: [
+        new Bar({ beatLengths: [1, 2, 3, 4] }),
+        new Bar({ beatLengths: [5] }),
+        new Bar({ beatLengths: [TSU.Num.Frac(6), 7] }),
       ],
     });
     expect(cycle.barCount).toEqual(7);
@@ -64,11 +56,7 @@ describe("Cycle tests", () => {
 
   test("Iteration", () => {
     const cycle = new Cycle({
-      parts: [
-        new CyclePart({ beatLengths: [1, 2, 3, 4] }),
-        new CyclePart({ beatLengths: [5] }),
-        new CyclePart({ beatLengths: [6, 7] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
     });
     const values = [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7];
     const iter = cycle.iterateBeats();

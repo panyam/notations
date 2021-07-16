@@ -91,8 +91,10 @@ export class SetProperty<V = string> extends Command {
         if (name == "cycle") {
           value = parseCycle(value);
         } else if (name == "aksharasPerBeat") {
-          value = parseInt(value);
-        } else if (name == "render titles") {
+          if (typeof value !== "number") {
+            throw new Error("aksharasPerBeat must be an integer");
+          }
+        } else if (name == "renderTitles") {
           value = value === "true" || value === "yes";
         } else if (name == "layout") {
           value = TSU.Misc.trimmedSplit(value, " ")
@@ -100,7 +102,7 @@ export class SetProperty<V = string> extends Command {
             .filter((x) => !isNaN(x));
         }
       }
-      snippet.properties.setone(name, value);
+      snippet.properties.setone(name.toLowerCase(), value);
       this.properties[name] = value;
     }
   }
@@ -262,7 +264,7 @@ export class RunAllCommand extends Emitter {
     }
   }
 
-  static DEFAULT_CYCLE = new Cycle({ parts: new CyclePart({ beatLengths: [4] }) });
+  static DEFAULT_CYCLE = new Cycle({ bars: new Bar({ beatLengths: [4] }) });
 
   renderLine(line: Line, snippet: Snippet, layoutParams: any, defaultLayoutParams: any): void {
     // go for it!

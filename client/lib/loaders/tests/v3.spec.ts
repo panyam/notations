@@ -35,10 +35,7 @@ describe("Parser Tests", () => {
             },
             {
               key: "x",
-              value: {
-                num: 1,
-                den: 1,
-              },
+              value: 1,
             },
             {
               key: "c",
@@ -86,10 +83,7 @@ describe("Parser Tests", () => {
               },
               {
                 key: "x",
-                value: {
-                  num: 3,
-                  den: 1,
-                },
+                value: 3,
               },
               {
                 key: "d",
@@ -161,16 +155,10 @@ describe("Parser Tests", () => {
             params: [
               {
                 key: "aksharasPerBeat",
-                value: {
-                  num: 4,
-                  den: 1,
-                },
+                value: 4,
               },
             ],
-            aksharasPerBeat: {
-              num: 4,
-              den: 1,
-            },
+            aksharasPerBeat: 4,
           },
           {
             name: "CreateRole",

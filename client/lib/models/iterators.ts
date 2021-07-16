@@ -1,15 +1,14 @@
 import * as TSU from "@panyam/tsutils";
 import { TimedEntity, Atom, LeafAtom, Space, Group, AtomType, Cycle } from "./";
 
+type Fraction = TSU.Num.Fraction;
+
 export class FlatAtom extends TimedEntity {
-  atom: Atom;
   depth: number;
   duration: TSU.Num.Fraction;
   offset: TSU.Num.Fraction;
-
-  constructor(atom: Atom, config: any = null) {
+  constructor(public readonly atom: LeafAtom, config: any = null) {
     super((config = config || {}));
-    this.atom = atom;
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
@@ -21,7 +20,7 @@ export class FlatAtom extends TimedEntity {
 }
 
 export class AtomIterator {
-  private atomQueue = new TSU.Lists.List<FlatAtom>();
+  private atomQueue = new TSU.Lists.List<[Atom, number, Fraction]>();
   private currOffset = TSU.Num.Fraction.ZERO;
   private peeked: TSU.Nullable<FlatAtom> = null;
 
@@ -34,7 +33,7 @@ export class AtomIterator {
    */
   push(...atoms: Atom[]): this {
     for (const atom of atoms) {
-      this.atomQueue.add(new FlatAtom(atom));
+      this.atomQueue.add([atom, 0, atom.duration]);
     }
     return this;
   }
@@ -51,8 +50,8 @@ export class AtomIterator {
   peek(): TSU.Nullable<FlatAtom> {
     if (this.peeked == null) {
       if (this.hasNext) {
-        this.peeked = this.atomQueue.popFront();
-        this.peeked.offset = this.currOffset;
+        const [nextAtom, nextDepth, nextDuration] = this.atomQueue.popFront();
+        this.peeked = new FlatAtom(nextAtom, { depth: nextDepth, offset: this.currOffset, duration: nextDuration });
       }
     }
     return this.peeked;
@@ -61,18 +60,18 @@ export class AtomIterator {
   get hasNext(): boolean {
     while (this.atomQueue.first != null) {
       // Get from front of queue
-      const next = this.atomQueue.first.value;
-      if (next.atom.type != AtomType.GROUP) {
+      const [nextAtom, nextDepth, nextDuration] = this.atomQueue.first.value;
+      if (nextAtom.type != AtomType.GROUP) {
         return true;
       } else {
         this.atomQueue.popFront();
-        const group = next.atom as Group;
-        for (const child of group.atoms.values(true)) {
-          const fa = new FlatAtom(child, {
-            depth: next.depth + 1,
-            duration: group.duration.times(child.duration).divby(group.totalChildDuration),
-          });
-          this.atomQueue.pushFront(fa);
+        const group = nextAtom as Group;
+        for (const child of group.atoms.reversedValues()) {
+          this.atomQueue.pushFront([
+            child,
+            nextDepth + 1,
+            nextDuration.times(child.duration).divby(group.totalChildDuration),
+          ]);
         }
       }
     }

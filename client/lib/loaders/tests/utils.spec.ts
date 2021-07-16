@@ -1,29 +1,29 @@
 import * as TSU from "@panyam/tsutils";
-import { parseSyllable, parseCyclePart, cycleStrToPartsStrs } from "../utils";
+import { parseSyllable, parseBar, cycleStrToBarsStrs } from "../utils";
 import { AtomBase, Syllable, Space, Note, Group } from "../../models/index";
 
 const ONE = TSU.Num.Fraction.ONE;
 
 describe("Utils Tests", () => {
-  test("CyclePart Parsing Tests", () => {
-    let cp = parseCyclePart(",,,,");
+  test("Bar Parsing Tests", () => {
+    let cp = parseBar(",,,,");
     expect(cp.beatLengths.length).toBe(4);
 
-    cp = parseCyclePart(",, ,,");
+    cp = parseBar(",, ,,");
     expect(cp.beatLengths.length).toBe(2);
 
-    cp = parseCyclePart("5,, ,,");
+    cp = parseBar("5,, ,,");
     expect(cp.beatLengths.length).toBe(2);
     expect(cp.beatLengths[0]).toEqual(TSU.Num.Frac(5));
     expect(cp.beatLengths[1]).toEqual(TSU.Num.Frac(2));
 
-    cp = parseCyclePart("1 2 3");
+    cp = parseBar("1 2 3");
     expect(cp.beatLengths.length).toBe(3);
     expect(cp.beatLengths[0]).toEqual(TSU.Num.Frac(1));
     expect(cp.beatLengths[1]).toEqual(TSU.Num.Frac(2));
     expect(cp.beatLengths[2]).toEqual(TSU.Num.Frac(3));
 
-    cp = parseCyclePart(",, ,,, , _ __ ,,,,");
+    cp = parseBar(",, ,,, , _ __ ,,,,");
     expect(cp.beatLengths.length).toBe(4);
     expect(cp.beatLengths[0]).toEqual(TSU.Num.Frac(2));
     expect(cp.beatLengths[1]).toEqual(TSU.Num.Frac(3));
@@ -31,14 +31,14 @@ describe("Utils Tests", () => {
     expect(cp.beatLengths[3]).toEqual(TSU.Num.Frac(4));
   });
 
-  test("CyclePart Parsing Tests", () => {
-    let cp = parseCyclePart(",,,,");
+  test("Bar Parsing Tests", () => {
+    let cp = parseBar(",,,,");
     expect(cp.beatLengths.length).toBe(4);
 
-    cp = parseCyclePart(",, ,,");
+    cp = parseBar(",, ,,");
     expect(cp.beatLengths.length).toBe(2);
 
-    cp = parseCyclePart(",, ,,, , _ __ ,,,,");
+    cp = parseBar(",, ,,, , _ __ ,,,,");
     expect(cp.beatLengths.length).toBe(4);
     expect(cp.beatLengths[0]).toEqual(TSU.Num.Frac(2));
     expect(cp.beatLengths[1]).toEqual(TSU.Num.Frac(3));
@@ -47,16 +47,16 @@ describe("Utils Tests", () => {
   });
 
   test("Cycle Parsing Tests", () => {
-    let ps = cycleStrToPartsStrs(",,,,");
+    let ps = cycleStrToBarsStrs(",,,,");
     expect(ps).toEqual([",,,,"]);
 
-    ps = cycleStrToPartsStrs("|||,,,,|");
+    ps = cycleStrToBarsStrs("|||,,,,|");
     expect(ps).toEqual([",,,,"]);
 
-    ps = cycleStrToPartsStrs("|,,    ,,|   |,,,,|");
+    ps = cycleStrToBarsStrs("|,,    ,,|   |,,,,|");
     expect(ps).toEqual([",,    ,,", ",,,,"]);
 
-    ps = cycleStrToPartsStrs("|,, ,,  ,,,,");
+    ps = cycleStrToBarsStrs("|,, ,,  ,,,,");
     expect(ps).toEqual([",, ,,  ,,,,"]);
   });
 
