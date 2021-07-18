@@ -52,7 +52,7 @@ export class PatantaraParser {
   get numAksharasInCurrLine(): number {
     if (this.aksharasForLastLine >= 0) return this.aksharasForLastLine;
     else if (this.aksharasPerLine > 0) return this.aksharasPerLine;
-    else if (this.aksharasPerLine < 0 && this.currCycle != null) return this.currCycle.barCount;
+    else if (this.aksharasPerLine < 0 && this.currCycle != null) return this.currCycle.beatCount;
     return -1;
   }
 

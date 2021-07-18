@@ -50,7 +50,7 @@ describe("Cycle tests", () => {
         new Bar({ beatLengths: [TSU.Num.Frac(6), 7] }),
       ],
     });
-    expect(cycle.barCount).toEqual(7);
+    expect(cycle.beatCount).toEqual(7);
     expect(cycle.duration).toEqual(TSU.Num.Frac(28));
   });
 

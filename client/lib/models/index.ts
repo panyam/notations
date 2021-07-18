@@ -438,16 +438,15 @@ export class Bar extends TimedEntity {
     another.beatLengths = this.beatLengths.slice(0);
   }
 
-  get barCount(): number {
+  get beatCount(): number {
     return this.beatLengths.length;
   }
 
+  /**
+   * Total duration (of time) across all beats in this bar.
+   */
   get duration(): TSU.Num.Fraction {
-    let out = ZERO;
-    for (const bl of this.beatLengths) {
-      out = out.plus(bl);
-    }
-    return out;
+    return this.beatLengths.reduce((x, y) => x.plus(y), ZERO);
   }
 }
 
@@ -512,18 +511,17 @@ export class Cycle extends TimedEntity {
     another.bars = this.bars.map((x) => x.clone());
   }
 
-  get barCount(): number {
+  get beatCount(): number {
     let out = 0;
-    for (const part of this.bars) out += part.barCount;
+    for (const bar of this.bars) out += bar.beatCount;
     return out;
   }
 
+  /**
+   * Total duration (of time) across all bars in this cycle.
+   */
   get duration(): TSU.Num.Fraction {
-    let out = ZERO;
-    for (const p of this.bars) {
-      out = out.plus(p.duration);
-    }
-    return out;
+    return this.bars.reduce((x, y) => x.plus(y.duration), ZERO);
   }
 }
 
