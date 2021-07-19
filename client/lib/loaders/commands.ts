@@ -3,6 +3,7 @@ import { Atom, Line } from "../models";
 import { Snippet, Instruction, Command, Emitter } from "../models/notebook";
 import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
+import { LayoutParams } from "../rendering/Layout";
 
 const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
 
@@ -19,10 +20,11 @@ export class ActivateRole extends Command {
 
     const snippetView = (snippet.locals.get("view") as SnippetView) || null;
     if (snippetView != null) {
-      const layoutParams = {} as any;
+      const params = {} as any;
       for (const param of ALL_LAYOUT_PARAMS) {
-        layoutParams[param] = snippet.properties.get(param.toLowerCase()) || null;
+        params[param] = snippet.properties.get(param.toLowerCase()) || null;
       }
+      const layoutParams = new LayoutParams(params);
       const lineView = snippetView.addLine(line, layoutParams);
       lineView.ensureRole(name);
     }
