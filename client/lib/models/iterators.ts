@@ -186,6 +186,12 @@ export class BeatsBuilder {
   atomIter: AtomIterator;
   durIter: DurationIterator;
 
+  // Callback for when an atom is added to this role.
+  onAtomAdded: (flatAtom: FlatAtom, beat: Beat) => void;
+
+  // Callback for when a new beat is added
+  onBeatAdded: (beat: Beat) => void;
+
   constructor(public readonly role: Role, public readonly cycle: Cycle, public readonly aksharasPerBeat = 1) {
     this.cycleIter = cycle.iterateBeats();
     this.atomIter = new AtomIterator();
@@ -205,6 +211,7 @@ export class BeatsBuilder {
       nextCP[2],
     );
     this.beats.push(newBeat);
+    if (this.onBeatAdded) this.onBeatAdded(newBeat);
     return newBeat;
   }
 
@@ -244,7 +251,4 @@ export class BeatsBuilder {
       }
     }
   }
-
-  // Callback for when an atom is added to this role.
-  onAtomAdded: (flatAtom: FlatAtom, beat: Beat) => void;
 }
