@@ -1,7 +1,8 @@
 import * as TSU from "@panyam/tsutils";
-import { TimedEntity, Atom, LeafAtom, Space, Group, AtomType, Cycle } from "./";
+import { CycleIterator, TimedEntity, Atom, Role, LeafAtom, Space, Group, AtomType, Cycle } from "./";
 
 type Fraction = TSU.Num.Fraction;
+const ZERO = TSU.Num.Fraction.ZERO;
 
 export class FlatAtom extends TimedEntity {
   depth: number;
@@ -144,4 +145,106 @@ export class DurationIterator {
     }
     return [out, remaining.isZero];
   }
+}
+
+export class Beat {
+  readonly atoms: FlatAtom[] = [];
+  constructor(
+    public readonly index: number,
+    public readonly role: Role,
+    public readonly offset: Fraction,
+    public readonly duration: Fraction,
+    public readonly barIndex: number,
+    public readonly beatIndex: number,
+  ) {}
+
+  get endOffset(): Fraction {
+    return this.offset.plus(this.duration);
+  }
+
+  get filled(): boolean {
+    return this.remaining.isZero;
+  }
+
+  get remaining(): Fraction {
+    return this.duration.minus(this.atoms.reduce((a, b) => a.plus(b.duration), ZERO));
+  }
+
+  add(atom: FlatAtom): boolean {
+    if (this.remaining.cmp(atom.duration) < 0) {
+      return false;
+    }
+    this.atoms.push(atom);
+    return true;
+  }
+}
+
+export class BeatsBuilder {
+  // All atoms divided into beats
+  readonly beats: Beat[] = [];
+  cycleIter: CycleIterator;
+  atomIter: AtomIterator;
+  durIter: DurationIterator;
+
+  constructor(public readonly role: Role, public readonly cycle: Cycle, public readonly aksharasPerBeat = 1) {
+    this.cycleIter = cycle.iterateBeats();
+    this.atomIter = new AtomIterator();
+    this.durIter = new DurationIterator(this.atomIter);
+  }
+
+  protected addBeat(): Beat {
+    const numBeats = this.beats.length;
+    const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
+    const nextCP = this.cycleIter.next().value;
+    const newBeat = new Beat(
+      numBeats,
+      this.role,
+      lastBeat == null ? ZERO : lastBeat.endOffset,
+      nextCP[0].timesNum(this.aksharasPerBeat),
+      nextCP[1],
+      nextCP[2],
+    );
+    this.beats.push(newBeat);
+    return newBeat;
+  }
+
+  addAtoms(...atoms: Atom[]): void {
+    // First add all atoms to the atom Iterator so we can
+    // fetch them as FlatAtoms.  This is needed because atoms
+    // passed here could be unflatted (via groups) or much larger
+    // than what can fit in the given role/bar etc.  So this
+    // flattening and windowing is needed before we add them
+    // to the views - and this is done by the durationIterators.
+    this.atomIter.push(...atoms);
+
+    if (this.beats.length == 0) {
+      this.addBeat();
+    }
+
+    let hasMore = true;
+    while (hasMore) {
+      // get the last/current row and add a new one if it is full
+      let currBeat = this.beats[this.beats.length - 1];
+
+      // First add a row if last row is filled
+      if (currBeat.filled) {
+        // what should be the beatlengths be here?
+        currBeat = this.addBeat();
+      }
+
+      // For this beat get symbols in all roles
+      const [flatAtoms, filled] = this.durIter.get(currBeat.remaining);
+      hasMore = flatAtoms.length > 0; // && !filled;
+      if (hasMore) {
+        // render the atoms now
+        for (const flatAtom of flatAtoms) {
+          TSU.assert(currBeat.add(flatAtom), "Should return true as we are already using a duration iterator here");
+          if (this.onAtomAdded) this.onAtomAdded(flatAtom, currBeat);
+        }
+      }
+    }
+  }
+
+  // Callback for when an atom is added to this role.
+  onAtomAdded: (flatAtom: FlatAtom, beat: Beat) => void;
 }

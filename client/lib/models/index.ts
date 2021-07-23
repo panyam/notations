@@ -4,7 +4,7 @@ const ZERO = TSU.Num.Fraction.ZERO;
 
 export class Entity {
   private static counter = 0;
-  readonly uuid: string = "" + Entity.counter++;
+  readonly uuid = Entity.counter++;
   metadata: TSU.StringMap<any>;
   parent: TSU.Nullable<Entity> = null;
 
@@ -525,10 +525,44 @@ export class Cycle extends TimedEntity {
   }
 }
 
+export class Role extends Entity {
+  atoms: Atom[] = [];
+  private layoutLine = -1;
+
+  constructor(public readonly line: Line, public readonly name: string) {
+    super();
+  }
+  debugValue(): any {
+    return { name: this.name, atoms: this.atoms };
+  }
+
+  addAtoms(...atoms: Atom[]): void {
+    for (const atom of atoms) this.atoms.push(atom);
+  }
+
+  copyTo(another: Role): void {
+    another.addAtoms(...this.atoms);
+  }
+
+  /**
+   * Returns the type of this Entity.
+   */
+  get type(): unknown {
+    return "Role";
+  }
+
+  /**
+   * Duration for this role.
+   */
+  get duration(): TSU.Num.Fraction {
+    return this.atoms.reduce((a, b) => a.plus(b.duration), ZERO);
+  }
+}
+
 export class Line extends Entity {
   cycle: TSU.Nullable<Cycle> = null;
-  atoms: TSU.StringMap<Atom[]> = {};
-  roles: string[] = [];
+  // atoms: TSU.StringMap<Atom[]> = {};
+  roles: Role[] = [];
 
   constructor(config: any = null) {
     super((config = config || {}));
@@ -536,7 +570,7 @@ export class Line extends Entity {
   }
 
   debugValue(): any {
-    return { ...super.debugValue(), cycle: this.cycle?.debugValue(), roles: this.roles, atoms: this.atoms };
+    return { ...super.debugValue(), cycle: this.cycle?.debugValue(), roles: this.roles.map((r) => r.debugValue()) };
   }
 
   /**
@@ -549,27 +583,23 @@ export class Line extends Entity {
   copyTo(another: this): void {
     super.copyTo(another);
     another.cycle = this.cycle?.clone() || null;
-    another.roles = [...this.roles];
-    for (const role in this.atoms) {
-      another.addAtoms(role, ...this.atoms[role]);
-    }
+    another.roles = this.roles.map((r) => r.clone());
   }
 
-  addAtoms(role: string, ...atoms: Atom[]): this {
-    this.ensureRole(role);
-    const roleAtoms = this.atoms[role];
-    for (const atom of atoms) roleAtoms.push(atom);
+  addAtoms(roleName: string, ...atoms: Atom[]): this {
+    const role = this.ensureRole(roleName);
+    role.addAtoms(...atoms);
     return this;
   }
 
-  ensureRole(role: string, roleDuration = ZERO): this {
+  ensureRole(roleName: string): Role {
     // Ensure we have this many roles
-    if (!(role in this.atoms)) {
-      this.atoms[role] = [];
-      this.roles.push(role);
+    let ri = this.roles.findIndex((r) => r.name == roleName);
+    if (ri < 0) {
+      ri = this.roles.length;
+      this.roles.push(new Role(this, roleName));
     }
-    this.ensureRoleDuration(role, roleDuration);
-    return this;
+    return this.roles[ri];
   }
 
   /**
@@ -578,33 +608,8 @@ export class Line extends Entity {
   get duration(): TSU.Num.Fraction {
     let max = ZERO;
     for (const role of this.roles) {
-      max = TSU.Num.Fraction.max(this.roleDuration(role), max);
+      max = TSU.Num.Fraction.max(role.duration, max);
     }
     return max;
-  }
-
-  /**
-   * Duration for a particular role in this line.
-   */
-  roleDuration(role: string): TSU.Num.Fraction {
-    let total = ZERO;
-    for (const atom of this.atoms[role]) {
-      total = total.plus(atom.duration);
-    }
-    return total;
-  }
-
-  /**
-   * Ensures this role has given length by padding with Spaces if necessary.
-   * If duration is already greater than length then no trimming will
-   * be done.
-   */
-  ensureRoleDuration(role: string, length: TSU.Num.Fraction): this {
-    const diff = length.minus(this.duration);
-    const atoms = this.atoms[role];
-    if (diff.cmp(ZERO) > 0) {
-      atoms.push(new Space(diff, true));
-    }
-    return this;
   }
 }

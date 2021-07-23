@@ -3,7 +3,7 @@ import { Atom, Line } from "../models";
 import { Snippet, Instruction, Command, Emitter } from "../models/notebook";
 import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
-import { LayoutParams } from "../rendering/Layout";
+import { LayoutParams } from "../rendering/Core";
 
 const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
 
@@ -64,8 +64,8 @@ export class AddAtoms implements Instruction {
       for (const param of ALL_LAYOUT_PARAMS) {
         layoutParams[param] = snippet.properties.get(param.toLowerCase()) || null;
       }
-      const lineView = snippetView.addLine(line, layoutParams);
-      lineView.addAtoms(roleDef.name, ...this.atoms);
+      snippetView.addLine(line, layoutParams);
+      snippetView.addAtoms(line.ensureRole(roleDef.name), ...this.atoms);
     }
   }
 }
