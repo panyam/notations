@@ -332,11 +332,28 @@ export class Note extends Literal {
 }
 
 export class Group extends AtomBase {
+  /**
+   * This indicates whether our duration is static or linear to number of
+   * atoms in this group.
+   */
+  durationIsMultiplier = false;
   readonly atoms: TSU.Lists.List<AtomBase> = new TSU.Lists.List<AtomBase>();
 
   constructor(duration = TSU.Num.Fraction.ONE, ...atoms: Atom[]) {
     super(duration);
     this.addAtoms(...atoms);
+  }
+
+  get duration(): TSU.Num.Fraction {
+    if (this.durationIsMultiplier) {
+      return this.totalChildDuration.divby(this._duration);
+    } else {
+      return this._duration;
+    }
+  }
+
+  set duration(d: TSU.Num.Fraction) {
+    this._duration = d;
   }
 
   debugValue(): any {
@@ -358,31 +375,6 @@ export class Group extends AtomBase {
   copyTo(another: this): void {
     super.copyTo(another);
     this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
-  }
-
-  static groupAtoms(atoms: Atom[], groupSize = 1, offset = 0, length = -1): Group[] {
-    // Group groupSize atoms at a time and add as a group
-    // For the last group add spaces
-    const groups = [] as Group[];
-    let currGroup: TSU.Nullable<Group> = null;
-    if (offset < 0) offset = 0;
-    if (length < 0) length = atoms.length - offset;
-    for (let i = 0; i < length; i++) {
-      if (currGroup == null) {
-        currGroup = new Group();
-      }
-
-      const atom = atoms[offset + i];
-      currGroup.addAtoms(atom);
-      if (currGroup.atoms.size % groupSize == 0) {
-        groups.push(currGroup);
-        currGroup = null;
-      }
-    }
-    if (currGroup != null) {
-      groups.push(currGroup);
-    }
-    return groups;
   }
 
   // readonly type: AtomType = AtomType.GROUP;
@@ -489,7 +481,7 @@ export class Cycle extends TimedEntity {
     return true;
   }
 
-  *iterateBeats(startBar = 0, startBeat = 0): Generator<CyclePosition> {
+  *iterateBeats(startBar = 0, startBeat = 0): CycleIterator {
     let currBar = startBar;
     let currBeat = startBeat;
     while (true) {

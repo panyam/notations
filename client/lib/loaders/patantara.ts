@@ -6,6 +6,31 @@ import { Snippet } from "../models/notebook";
 
 const ZERO = TSU.Num.Fraction.ZERO;
 
+function groupAtoms(atoms: Atom[], groupSize = 1, offset = 0, length = -1): Group[] {
+  // Group groupSize atoms at a time and add as a group
+  // For the last group add spaces
+  const groups = [] as Group[];
+  let currGroup: TSU.Nullable<Group> = null;
+  if (offset < 0) offset = 0;
+  if (length < 0) length = atoms.length - offset;
+  for (let i = 0; i < length; i++) {
+    if (currGroup == null) {
+      currGroup = new Group();
+    }
+
+    const atom = atoms[offset + i];
+    currGroup.addAtoms(atom);
+    if (currGroup.atoms.size % groupSize == 0) {
+      groups.push(currGroup);
+      currGroup = null;
+    }
+  }
+  if (currGroup != null) {
+    groups.push(currGroup);
+  }
+  return groups;
+}
+
 /**
  * Patantara syntax is something as follows:
  *
@@ -238,7 +263,7 @@ export function parseLine(line: string, numGroups = -1): [Atom[], boolean] {
   if (length > numGroups) {
     let groupSize = Math.floor(length / numGroups);
     if (length % numGroups != 0) groupSize++;
-    out = Group.groupAtoms(atoms, groupSize, 0, length);
+    out = groupAtoms(atoms, groupSize, 0, length);
   } else {
     // length < numGroups
     // Here we need to "expand" each atom to be a certain size
