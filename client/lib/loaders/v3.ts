@@ -155,7 +155,7 @@ export class V3Parser {
       }
     },
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      return new Group(ONE, children[1].value);
+      return new Group(ONE, ...children[1].value);
     },
     litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const role = this.snippet.currRole;

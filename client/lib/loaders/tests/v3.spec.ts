@@ -1,6 +1,22 @@
+/**
+ * @jest-environment jsdom
+ */
 import { V3Parser } from "../v3";
 import { Notebook } from "../../models/notebook";
 import "../../../common/jest/matchers";
+
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (key: any, value: any) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
 
 function testV3(input: string, debug = false, expected: any = null): void {
   const notebook = new Notebook();
@@ -8,8 +24,8 @@ function testV3(input: string, debug = false, expected: any = null): void {
   const parser = new V3Parser(snippet);
   const root = parser.parse(input);
   if (debug || expected == null) {
-    console.log("Result Parse Tree: \n", JSON.stringify(root?.debugValue(), null, 2));
-    console.log("Result Snippet: \n", JSON.stringify(parser.snippet.debugValue(), null, 2));
+    console.log("Result Parse Tree: \n", JSON.stringify(root?.debugValue(), getCircularReplacer(), 2));
+    console.log("Result Snippet: \n", JSON.stringify(parser.snippet.debugValue(), getCircularReplacer(), 2));
   }
   expect(parser.snippet.debugValue()).toEqual(expected);
 }
@@ -129,6 +145,86 @@ describe("Parser Tests", () => {
         ],
       },
     );
+  });
+
+  test("Test Groups", () => {
+    testV3(`\\role("sw", notes = true) Sw: [ a b c d ] 3 / 5 [ e f g h ] `, false, {
+      instrs: [
+        {
+          name: "CreateRole",
+          index: 0,
+          params: [
+            {
+              key: null,
+              value: "sw",
+            },
+            {
+              key: "notes",
+              value: true,
+            },
+          ],
+        },
+        {
+          name: "ActivateRole",
+          index: 1,
+          params: [
+            {
+              key: null,
+              value: "sw",
+            },
+          ],
+        },
+        {
+          name: "AddAtoms",
+          index: 2,
+          atoms: [
+            {
+              type: 4,
+              atoms: [
+                {
+                  type: 0,
+                  value: "a",
+                },
+                {
+                  type: 0,
+                  value: "b",
+                },
+                {
+                  type: 0,
+                  value: "c",
+                },
+                {
+                  type: 0,
+                  value: "d",
+                },
+              ],
+            },
+            {
+              type: 4,
+              duration: "3/5",
+              atoms: [
+                {
+                  type: 0,
+                  value: "e",
+                },
+                {
+                  type: 0,
+                  value: "f",
+                },
+                {
+                  type: 0,
+                  value: "g",
+                },
+                {
+                  type: 0,
+                  value: "h",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
   });
 
   test("Test Duplicate Roles", () => {
