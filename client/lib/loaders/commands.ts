@@ -5,7 +5,20 @@ import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
 import { LayoutParams } from "../rendering/Core";
 
-const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
+function getLayoutParams(snippet: Snippet): LayoutParams {
+  // See if the snippet already has one then return it
+  let layoutParams = null; // snippet.properties.get("layoutParams") || null;
+  if (!layoutParams) {
+    const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
+    const params = {} as any;
+    for (const param of ALL_LAYOUT_PARAMS) {
+      params[param] = snippet.properties.get(param.toLowerCase()) || null;
+    }
+    layoutParams = new LayoutParams(params);
+    snippet.properties.setone("layoutParams", layoutParams);
+  }
+  return layoutParams;
+}
 
 export class ActivateRole extends Command {
   get name(): string {
@@ -20,11 +33,7 @@ export class ActivateRole extends Command {
 
     const snippetView = (snippet.locals.get("view") as SnippetView) || null;
     if (snippetView != null) {
-      const params = {} as any;
-      for (const param of ALL_LAYOUT_PARAMS) {
-        params[param] = snippet.properties.get(param.toLowerCase()) || null;
-      }
-      const layoutParams = new LayoutParams(params);
+      const layoutParams = getLayoutParams(snippet);
       const lineView = snippetView.addLine(line, layoutParams);
       lineView.ensureRole(name);
     }
@@ -60,10 +69,7 @@ export class AddAtoms implements Instruction {
     // Also add the atom to the line view (which *should* exist)
     const snippetView = (snippet.locals.get("view") as SnippetView) || null;
     if (snippetView != null) {
-      const layoutParams = {} as any;
-      for (const param of ALL_LAYOUT_PARAMS) {
-        layoutParams[param] = snippet.properties.get(param.toLowerCase()) || null;
-      }
+      const layoutParams = getLayoutParams(snippet);
       snippetView.addLine(line, layoutParams);
       snippetView.addAtoms(line.ensureRole(roleDef.name), ...this.atoms);
     }
@@ -154,10 +160,7 @@ export class CreateLine extends Command {
     // For now even doing a complete render isnt so bad so ok for now
     const snippetView = (snippet.locals.get("view") as SnippetView) || null;
     if (snippetView) {
-      const layoutParams = {} as any;
-      for (const param of ALL_LAYOUT_PARAMS) {
-        layoutParams[param] = snippet.properties.get(param.toLowerCase()) || null;
-      }
+      const layoutParams = getLayoutParams(snippet);
       snippetView.addLine(line, layoutParams);
     }
   }
