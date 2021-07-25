@@ -181,9 +181,13 @@ export class V3Parser {
       return new Space(ONE, true);
     },
     applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const dur = children[0].value as TSU.Num.Fraction;
+      const dur = children[0].value as TSU.Num.Fraction | number;
       const leaf = children[1].value as Atom;
-      leaf.duration = dur;
+      if (typeof dur === "number") {
+        leaf.duration = ONE.timesNum(dur);
+      } else {
+        leaf.duration = dur;
+      }
       return leaf;
     },
     newArray: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
