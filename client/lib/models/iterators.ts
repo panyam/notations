@@ -220,6 +220,8 @@ export class BeatsBuilder {
 
   // Callback for when a new beat is added
   onBeatAdded: (beat: Beat) => void;
+  // Callback for when a beat has been filled
+  onBeatFilled: (beat: Beat) => void;
 
   constructor(public readonly role: Role, public readonly cycle: Cycle, public readonly aksharasPerBeat = 1) {
     this.cycleIter = cycle.iterateBeats();
@@ -269,6 +271,9 @@ export class BeatsBuilder {
       for (const flatAtom of flatAtoms) {
         TSU.assert(currBeat.add(flatAtom), "Should return true as we are already using a duration iterator here");
         if (this.onAtomAdded) this.onAtomAdded(flatAtom, currBeat);
+      }
+      if (currBeat.filled) {
+        if (this.onBeatFilled) this.onBeatFilled(currBeat);
       }
     }
   }
