@@ -15,8 +15,25 @@ export class FlatAtom extends TimedEntity {
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
   }
 
+  /**
+   * Returns the type of this Entity.
+   */
+  get type(): unknown {
+    return "FlatAtom";
+  }
+
   get endOffset(): TSU.Num.Fraction {
     return this.offset.plus(this.duration);
+  }
+
+  debugValue(): any {
+    return {
+      ...super.debugValue(),
+      atom: this.atom.debugValue(),
+      duration: this.duration.toString(),
+      offset: this.offset.toString(),
+      depth: this.depth,
+    };
   }
 }
 
@@ -158,6 +175,18 @@ export class Beat {
     public readonly beatIndex: number,
   ) {}
 
+  debugValue(): any {
+    return {
+      index: this.index,
+      role: this.role.name,
+      offset: this.offset.toString(),
+      duration: this.duration.toString(),
+      barIndex: this.barIndex,
+      beatIndex: this.beatIndex,
+      atoms: this.atoms.map((a) => a.debugValue()),
+    };
+  }
+
   get endOffset(): Fraction {
     return this.offset.plus(this.duration);
   }
@@ -223,31 +252,23 @@ export class BeatsBuilder {
     // flattening and windowing is needed before we add them
     // to the views - and this is done by the durationIterators.
     this.atomIter.push(...atoms);
-
-    if (this.beats.length == 0) {
-      this.addBeat();
-    }
-
-    let hasMore = true;
-    while (hasMore) {
+    while (this.durIter.hasMore) {
       // get the last/current row and add a new one if it is full
       let currBeat = this.beats[this.beats.length - 1];
 
       // First add a row if last row is filled
-      if (currBeat.filled) {
+      if (this.beats.length == 0 || currBeat.filled) {
         // what should be the beatlengths be here?
         currBeat = this.addBeat();
       }
 
       // For this beat get symbols in all roles
       const [flatAtoms, filled] = this.durIter.get(currBeat.remaining);
-      hasMore = flatAtoms.length > 0; // && !filled;
-      if (hasMore) {
-        // render the atoms now
-        for (const flatAtom of flatAtoms) {
-          TSU.assert(currBeat.add(flatAtom), "Should return true as we are already using a duration iterator here");
-          if (this.onAtomAdded) this.onAtomAdded(flatAtom, currBeat);
-        }
+      TSU.assert(flatAtoms.length > 0, "Atleast one element should have been available here");
+      // render the atoms now
+      for (const flatAtom of flatAtoms) {
+        TSU.assert(currBeat.add(flatAtom), "Should return true as we are already using a duration iterator here");
+        if (this.onAtomAdded) this.onAtomAdded(flatAtom, currBeat);
       }
     }
   }

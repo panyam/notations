@@ -201,7 +201,8 @@ describe("Parser Tests", () => {
             },
             {
               type: 4,
-              duration: "3/5",
+              duration: "20/3",
+              durationIsMultiplier: true,
               atoms: [
                 {
                   type: 0,

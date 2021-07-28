@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { LeafAtom, Space, Syllable, Group, Note } from "../";
-import { FlatAtom, AtomIterator, DurationIterator } from "../iterators";
+import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note } from "../";
+import { Beat, BeatsBuilder, FlatAtom, AtomIterator, DurationIterator } from "../iterators";
 import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -159,5 +159,307 @@ describe("DurationIterator Tests", () => {
     [d1, filled] = dIter.get(ONE);
     expect(d1.length).toBe(0);
     expect(filled).toBe(false);
+  });
+});
+
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (key: any, value: any) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
+
+describe("BeatsBuilder", () => {
+  test("Create beats from BeatsBuilder", () => {
+    const l = new Line();
+    const g1 = new Group(ONE, new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
+    g1.durationIsMultiplier = true;
+    const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
+    l.addAtoms("test", ...atoms);
+    const c = Cycle.DEFAULT;
+    const bb = new BeatsBuilder(l.ensureRole("test"), c, 2);
+    bb.addAtoms(...atoms);
+    const beats = bb.beats.map((b) => b.debugValue());
+    // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
+    expect(beats).toEqual([
+      {
+        index: 0,
+        role: "test",
+        offset: "0/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "a",
+            },
+            duration: "1/1",
+            offset: "0/1",
+            depth: 0,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              duration: "2/1",
+              value: "b",
+            },
+            duration: "1/1",
+            offset: "1/1",
+            depth: 0,
+          },
+        ],
+      },
+      {
+        index: 1,
+        role: "test",
+        offset: "2/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 1,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              isSilent: false,
+            },
+            duration: "1/1",
+            offset: "0/1",
+            depth: 0,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              duration: "3/1",
+              value: "c",
+            },
+            duration: "1/1",
+            offset: "3/1",
+            depth: 0,
+          },
+        ],
+      },
+      {
+        index: 2,
+        role: "test",
+        offset: "4/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 2,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              duration: "2/1",
+              isSilent: false,
+            },
+            duration: "2/1",
+            offset: "0/1",
+            depth: 0,
+          },
+        ],
+      },
+      {
+        index: 3,
+        role: "test",
+        offset: "6/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 3,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              duration: "5/1",
+              value: "d",
+            },
+            duration: "2/1",
+            offset: "6/1",
+            depth: 0,
+          },
+        ],
+      },
+      {
+        index: 4,
+        role: "test",
+        offset: "8/1",
+        duration: "2/1",
+        barIndex: 1,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              duration: "3/1",
+              isSilent: false,
+            },
+            duration: "2/1",
+            offset: "0/1",
+            depth: 0,
+          },
+        ],
+      },
+      {
+        index: 5,
+        role: "test",
+        offset: "10/1",
+        duration: "2/1",
+        barIndex: 1,
+        beatIndex: 1,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              isSilent: false,
+            },
+            duration: "1/1",
+            offset: "0/1",
+            depth: 0,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "1",
+            },
+            duration: "6/6",
+            offset: "11/1",
+            depth: 1,
+          },
+        ],
+      },
+      {
+        index: 6,
+        role: "test",
+        offset: "12/1",
+        duration: "2/1",
+        barIndex: 2,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              duration: "2/1",
+              value: "2",
+            },
+            duration: "12/6",
+            offset: "72/6",
+            depth: 1,
+          },
+        ],
+      },
+      {
+        index: 7,
+        role: "test",
+        offset: "14/1",
+        duration: "2/1",
+        barIndex: 2,
+        beatIndex: 1,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              duration: "3/1",
+              value: "3",
+            },
+            duration: "2/1",
+            offset: "504/36",
+            depth: 1,
+          },
+        ],
+      },
+      {
+        index: 8,
+        role: "test",
+        offset: "16/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              isSilent: false,
+            },
+            duration: "6/6",
+            offset: "0/1",
+            depth: 0,
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("Create beats from groups", () => {
+    const l = new Line();
+    const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
+    g1.durationIsMultiplier = true;
+    const atoms = [new Note("P", ONE), g1];
+    l.addAtoms("test", ...atoms);
+    const c = Cycle.DEFAULT;
+    const bb = new BeatsBuilder(l.ensureRole("test"), c, 2);
+    bb.addAtoms(...atoms);
+    const beats = bb.beats.map((b) => b.debugValue());
+    // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
+    expect(beats).toEqual([
+      {
+        index: 0,
+        role: "test",
+        offset: "0/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "P",
+            },
+            duration: "1/1",
+            offset: "0/1",
+            depth: 0,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "Pa",
+            },
+            duration: "2/4",
+            offset: "1/1",
+            depth: 1,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "Ma",
+            },
+            duration: "2/4",
+            offset: "6/4",
+            depth: 1,
+          },
+        ],
+      },
+    ]);
   });
 });

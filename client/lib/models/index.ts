@@ -357,7 +357,9 @@ export class Group extends AtomBase {
   }
 
   debugValue(): any {
-    return { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
+    const out = { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
+    if (this.durationIsMultiplier) out.durationIsMultiplier = true;
+    return out;
   }
 
   get totalChildDuration(): TSU.Num.Fraction {

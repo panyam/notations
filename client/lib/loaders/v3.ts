@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { Note, Atom, Space, Syllable, Group } from "../models/index";
+import { AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
 import { Snippet, CmdParam } from "../models/notebook";
 import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
 
@@ -181,12 +181,14 @@ export class V3Parser {
       return new Space(ONE, true);
     },
     applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const dur = children[0].value as TSU.Num.Fraction | number;
+      let dur = children[0].value as TSU.Num.Fraction | number;
       const leaf = children[1].value as Atom;
       if (typeof dur === "number") {
-        leaf.duration = ONE.timesNum(dur);
-      } else {
-        leaf.duration = dur;
+        dur = ONE.timesNum(dur);
+      }
+      leaf.duration = dur;
+      if (leaf.type == AtomType.GROUP) {
+        (leaf as Group).durationIsMultiplier = true;
       }
       return leaf;
     },
