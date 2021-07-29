@@ -228,7 +228,6 @@ export class Beat {
         }
       }
     });
-    console.log("LCM: ", lcm);
 
     // Easiest option is (without worrying about depths)
     // just adding this N number 1 / LCM sized spaces for
