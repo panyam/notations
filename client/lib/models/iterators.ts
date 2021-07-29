@@ -213,17 +213,22 @@ export class Beat {
   }
 
   ensureUniformSpaces(aksharasPerBeat = 1): void {
-    let mult = 1;
+    let lcm = 1;
     let gcd = 0;
     this.atoms.forEach((a, index) => {
       a.duration = a.duration.factorized;
       const currDen = a.duration.den;
       if (currDen != 1) {
-        mult *= currDen;
-        gcd = gcd == 0 ? a.duration.den : TSU.Num.gcdof(gcd, currDen);
+        lcm *= currDen;
+        if (gcd == 0) {
+          gcd = a.duration.den;
+        } else {
+          gcd = TSU.Num.gcdof(gcd, currDen);
+          lcm /= gcd;
+        }
       }
     });
-    const lcm = mult / gcd;
+    console.log("LCM: ", lcm);
 
     // Easiest option is (without worrying about depths)
     // just adding this N number 1 / LCM sized spaces for
@@ -242,7 +247,7 @@ export class Beat {
     let currOffset = this.offset;
     for (let i = 0; i < this.atoms.length; ) {
       const fa = this.atoms[i];
-      const numSpaces = lcm / fa.duration.den - 1;
+      const numSpaces = lcm == 1 ? fa.duration.num - 1 : lcm / fa.duration.den - 1;
       // reset its duration to 1 / LCM so we can add numSpaces after it
       fa.duration = baseDur;
       currOffset = currOffset.plus(baseDur);
