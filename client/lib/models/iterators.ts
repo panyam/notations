@@ -8,11 +8,14 @@ export class FlatAtom extends TimedEntity {
   depth: number;
   duration: TSU.Num.Fraction;
   offset: TSU.Num.Fraction;
+  isContinuation: boolean;
+
   constructor(public readonly atom: LeafAtom, config: any = null) {
     super((config = config || {}));
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
+    this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
   }
 
   /**
@@ -27,13 +30,15 @@ export class FlatAtom extends TimedEntity {
   }
 
   debugValue(): any {
-    return {
+    const out = {
       ...super.debugValue(),
       atom: this.atom.debugValue(),
       duration: this.duration.toString(),
       offset: this.offset.toString(),
       depth: this.depth,
     };
+    if (this.isContinuation) out.isContinuation = true;
+    return out;
   }
 }
 
@@ -205,6 +210,57 @@ export class Beat {
     }
     this.atoms.push(atom);
     return true;
+  }
+
+  ensureUniformSpaces(aksharasPerBeat = 1): void {
+    let mult = 1;
+    let gcd = 0;
+    this.atoms.forEach((a, index) => {
+      a.duration = a.duration.factorized;
+      const currDen = a.duration.den;
+      if (currDen != 1) {
+        mult *= currDen;
+        gcd = gcd == 0 ? a.duration.den : TSU.Num.gcdof(gcd, currDen);
+      }
+    });
+    const lcm = mult / gcd;
+
+    // Easiest option is (without worrying about depths)
+    // just adding this N number 1 / LCM sized spaces for
+    // each note where N = (LCM / note.frac.den) - 1
+
+    // eg in the case of something like (a beat with) the notes
+    // A: 1/2, B: 1/4, C: 1/6
+    // LCM (of dens) = 24
+    // 12 (1/24) spaces, 6 (1/24)
+    // A = (24 / 2) - 1 = 11 spaces after A
+    // B = (24 / 4) - 1 = 5 spaces after B
+    // C = (24 / 6) - 1 = 3 spaces after C
+    // Total = 11 + 5 + 3 + 3 (for A + B + C) = 22 notes in the beat
+
+    const baseDur = new TSU.Num.Fraction(1, lcm);
+    let currOffset = this.offset;
+    for (let i = 0; i < this.atoms.length; ) {
+      const fa = this.atoms[i];
+      const numSpaces = lcm / fa.duration.den - 1;
+      // reset its duration to 1 / LCM so we can add numSpaces after it
+      fa.duration = baseDur;
+      currOffset = currOffset.plus(baseDur);
+      i++;
+      for (let j = 0; j < numSpaces; j++, i++) {
+        this.atoms.splice(
+          i,
+          0,
+          new FlatAtom(new Space(), {
+            isContinuation: true,
+            offset: currOffset.factorized,
+            duration: baseDur,
+            depth: fa.depth,
+          }),
+        );
+        currOffset = currOffset.plus(baseDur);
+      }
+    }
   }
 }
 

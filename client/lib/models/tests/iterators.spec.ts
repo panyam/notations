@@ -462,4 +462,74 @@ describe("BeatsBuilder", () => {
       },
     ]);
   });
+
+  test("Test uniform spacing", () => {
+    const l = new Line();
+    const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
+    g1.durationIsMultiplier = true;
+    const atoms = [new Note("P", ONE), g1];
+    l.addAtoms("test", ...atoms);
+    const c = Cycle.DEFAULT;
+    const APB = 2;
+    const bb = new BeatsBuilder(l.ensureRole("test"), c, APB);
+    bb.onBeatFilled = (beat: Beat) => {
+      beat.ensureUniformSpaces(APB);
+    };
+    bb.addAtoms(...atoms);
+    const beats = bb.beats.map((b) => b.debugValue());
+    console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
+    expect(beats).toEqual([
+      {
+        index: 0,
+        role: "test",
+        offset: "0/1",
+        duration: "2/1",
+        barIndex: 0,
+        beatIndex: 0,
+        atoms: [
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "P",
+            },
+            duration: "1/2",
+            offset: "0/1",
+            depth: 0,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 3,
+              isSilent: false,
+            },
+            duration: "1/2",
+            offset: "1/2",
+            depth: 0,
+            isContinuation: true,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "Pa",
+            },
+            duration: "1/2",
+            offset: "1/1",
+            depth: 1,
+          },
+          {
+            type: "FlatAtom",
+            atom: {
+              type: 0,
+              value: "Ma",
+            },
+            duration: "1/2",
+            offset: "6/4",
+            depth: 1,
+          },
+        ],
+      },
+    ]);
+  });
 });
