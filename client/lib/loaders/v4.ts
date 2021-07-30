@@ -3,7 +3,7 @@ import * as G from "galore";
 import * as TLEX from "tlex";
 import { AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
 import { Snippet, CmdParam } from "../models/notebook";
-import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
+import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -35,8 +35,8 @@ const [parser, itemGraph] = G.newParser(
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
 
-    %token  SINGLE_LINE_RAW_STRING       /^[ \t\n]*>(.*)$/  { toSingleLineRawString }
-    %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/        { toMultiLineRawString }
+    %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
+    %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
     %token  NUMBER        /\d+/                     { toNumber }
     %token  BOOLEAN       /true|false/              { toBoolean }
@@ -142,14 +142,19 @@ const [parser, itemGraph] = G.newParser(
       },
       toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape) => {
         // consume everything until "#<N times> as start
+        const hashes = token.value.substring(token.positions[1][0], token.positions[1][1]);
+        const endPat = '"' + hashes;
+        const startPos = tape.index;
+        const endPos = TLEX.TapeHelper.advanceAfter(tape, endPat) - endPat.length;
+        if (endPos < 0) {
+          throw new Error("EOF expected while finding end of Raw String Literal: '" + endPat + "'");
+        }
+        token.value = tape.substring(startPos, endPos);
         return token;
       },
     },
   },
 );
-
-const grammar = `
-`;
 
 export class Command {
   name = "_";
@@ -265,6 +270,17 @@ export class V4Parser {
     appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       this.activateRole(children[1].value);
 
+      const atoms = children[2].value as Atom[];
+      if (atoms.length > 0) {
+        this.snippet.add(new AddAtoms(...atoms));
+      }
+      return null;
+    },
+    insertEmbedding: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      // How to handle embeddings - these are just blocks
+      // to escape out of song (most likely for some rendering of html/md etc)
+      const rawVal = children[1].value;
+      this.snippet.add(new RawEmbedding([{ key: null, value: rawVal }]));
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
         this.snippet.add(new AddAtoms(...atoms));

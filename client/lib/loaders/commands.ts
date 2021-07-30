@@ -20,6 +20,26 @@ function getLayoutParams(snippet: Snippet): LayoutParams {
   return layoutParams;
 }
 
+export class RawEmbedding extends Command {
+  get name(): string {
+    return "RawEmbedding";
+  }
+  execute(snippet: Snippet): void {
+    // Call to insert the raw embedding
+    // TBD -
+    // Create the role
+    // see what kind of raw value it is - for now assume html
+    const rawVal = this.getParamAt(0);
+    const snippetView = (snippet.locals.get("view") as SnippetView) || null;
+    if (snippetView != null) {
+      // create an element out of this
+      const elem = TSU.DOM.createNode("div");
+      elem.innerHTML = rawVal;
+      snippetView.addElement(elem);
+    }
+  }
+}
+
 export class ActivateRole extends Command {
   get name(): string {
     return "ActivateRole";
