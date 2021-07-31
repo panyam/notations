@@ -1,65 +1,11 @@
 import * as TSU from "@panyam/tsutils";
 import { Entity, Line } from "../models";
 import { KeyedEnv } from "./env";
+import { Cursor, DefaultCursor } from "./cursor";
 
 export const CURSOR_START = -1;
 
 export type CmdParam = { key: TSU.Nullable<string>; value: any };
-
-export interface Cursor {
-  readonly id: string;
-  readonly indexes: ReadonlyArray<number>;
-}
-
-class DefaultCursor implements Cursor {
-  private static counter = 0;
-  readonly id: string = "" + DefaultCursor.counter++;
-  indexes: number[] = [];
-
-  constructor(...indexes: number[]) {
-    this.indexes = [...indexes];
-  }
-
-  clone(): DefaultCursor {
-    return new DefaultCursor(...this.indexes);
-  }
-
-  top(newVal: TSU.Nullable<number> = null): number {
-    if (this.indexes.length == 0) {
-      if (newVal != null) {
-        this.indexes.push(newVal);
-      } else {
-        throw new Error("Cursor is not deep enough.");
-      }
-    } else if (newVal != null) {
-      this.indexes[this.indexes.length - 1] = newVal;
-    }
-    return this.indexes[this.indexes.length - 1];
-  }
-
-  push(val: number): void {
-    this.indexes.push(val);
-  }
-
-  pop(): number {
-    if (this.indexes.length < 1) {
-      throw new Error("Cursor is not deep enough.");
-    }
-    return this.indexes.pop() as number;
-  }
-
-  cmp(another: Cursor): number {
-    let i = 0;
-    const otherIP = another.indexes;
-    for (; i < this.indexes.length; i++) {
-      if (i > otherIP.length) return 1;
-      const diff = this.indexes[i] - otherIP[i];
-      if (diff != 0) return diff;
-    }
-    if (i < otherIP.length) return -1;
-    return 0;
-  }
-}
 
 /**
  * A snippet notebook shared by all snippets on a document.
@@ -325,7 +271,7 @@ export class Role {
  * like mini scores.  These parts are Snippets and can be thought
  * of as a grouping of entities for rendering/viewing purposes.
  *
- * In this regard Snippets are not data but _instructions on how
+ * In this regard Snippets are not data but _commands on how
  * to view and manipulate the document.
  */
 export class Snippet {
@@ -333,7 +279,7 @@ export class Snippet {
   readonly uuid: string = "" + Snippet.counter++;
   private _currRole: TSU.Nullable<Role> = null;
   readonly notebook: Notebook;
-  private _instructions: Instruction[] = [];
+  private _commands: Command[] = [];
   cursor: Cursor;
   roles: Role[] = [];
   readonly locals = new KeyedEnv();
@@ -346,7 +292,7 @@ export class Snippet {
   }
 
   debugValue(): any {
-    return { instrs: this.instructions.map((i) => i.debugValue()) };
+    return { cmds: this.commands.map((i) => i.debugValue()) };
   }
 
   get prevSnippet(): TSU.Nullable<Snippet> {
@@ -435,8 +381,8 @@ export class Snippet {
     this._currRole = roleDef;
   }
 
-  get instructions(): ReadonlyArray<Instruction> {
-    return this._instructions;
+  get commands(): ReadonlyArray<Command> {
+    return this._commands;
   }
 
   /**
@@ -450,29 +396,22 @@ export class Snippet {
     this.roles = [];
   }
 
-  add(instr: Instruction): void {
-    instr.index = this._instructions.length;
-    this._instructions.push(instr);
+  add(cmd: Command): void {
+    cmd.index = this._commands.length;
+    this._commands.push(cmd);
     // And execute it too to begin parsing
-    instr.execute(this);
+    // cmd.execute(this);
   }
 
   execute(): void {
     this.reset();
-    for (const cmd of this._instructions) {
+    for (const cmd of this._commands) {
       cmd.execute(this);
     }
   }
 }
 
-export interface Instruction {
-  index: number;
-  readonly name: string;
-  execute(snippet: Snippet): void;
-  debugValue(): any;
-}
-
-export class Command implements Instruction {
+export class Command {
   params: CmdParam[];
   index: number;
 
@@ -504,10 +443,3 @@ export class Command implements Instruction {
     // Does nothing
   }
 }
-
-/**
- * Instructions in general update state of the Notebook and our
- * document.  Emitters are kinds of instruction that can affect
- * the world outside the Snippet via events.
- */
-export class Emitter extends Command {}
