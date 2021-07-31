@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Atom, Line } from "../models";
-import { Snippet, Instruction, Command, Emitter } from "../models/notebook";
+import { Snippet, Command } from "../models/notebook";
 import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
 import { LayoutParams } from "../rendering/Core";
@@ -66,11 +66,12 @@ export class ActivateRole extends Command {
   }
 }
 
-export class AddAtoms implements Instruction {
+export class AddAtoms extends Command {
   index: number;
   atoms: Atom[];
 
   constructor(...atoms: Atom[]) {
+    super();
     this.atoms = atoms;
     this.index = 0;
   }
@@ -201,116 +202,5 @@ export class CreateRole extends Command {
     const name = this.getParamAt(0);
     const notesOnly = this.getParam("notes");
     snippet.newRole(name, notesOnly == "true" || notesOnly == "yes" || notesOnly == true);
-  }
-}
-
-/**
- * Invokes the layout for pieces of music.
- * \run(
- *    bit1,
- *    bit2,
- *    bit3,
- *    ...
- *    bitn,
- * )
- *
- * Each bit represents atoms for a list of roles
- *
- * Bitx is defined by:
- *   path_spec       - to denote entire lines with *all* roles or a single role
- *   path_spec_list  - to denote a list of roles - so we can parallelize these
- *                     roles as part of the run
- *
- *  path_spec_list = "(" <path_spec_string>(,<path_spec_string>)* ")"
- *
- *  path_spec = name|number (.name|number)*
- */
-export class RunCommand extends Emitter {
-  layoutParamNames = ["cycle", "layout", "aksharasPerBeat"];
-  get name(): string {
-    return "Run";
-  }
-}
-
-export class RunAllCommand extends Emitter {
-  layoutParamNames = ["cycle", "layout", "aksharasPerBeat"];
-  get name(): string {
-    return "RunAll";
-  }
-
-  // How should we render?
-  // we could go through all instructions and
-  //
-  //
-  // for line,instr in snippet.alllines:
-  //    renderLine(line, layoutForRunCmd or layoutForLineBeforeInstr(instr))
-  execute(snippet: Snippet): void {
-    // Create the role
-    // see if have some layout parameters before the run command
-    // otherwise pick those before the line's instruction
-    /*
-    const lines = snippet.locals.get("lines") || [];
-    if (lines.length > 0) {
-      const instructions = snippet.instructions;
-      let lastLine: Nullable<Line> = null;
-      let lastInstr: Nullable<Instruction> = null;
-      const defaultLayoutParams = {} as any;
-      this.extractLayoutParams(snippet, lines[lines.length - 1], null, defaultLayoutParams);
-
-      const lineLayoutParams = {} as any;
-      // Start off layout params with defaults first and then
-      // add more between lines.
-      for (const param of this.layoutParamNames) {
-        lineLayoutParams[param] = snippet.properties.get(param) || null;
-      }
-      for (const [line, lineInstr] of lines) {
-        // In order to render the line, we need to find its
-        // layout parameters like cycle, aksharasPerBeat and
-        // layout (and any other).
-        this.extractLayoutParams(snippet, lastInstr, lineInstr, lineLayoutParams);
-        lastLine = line;
-        lastInstr = lineInstr;
-        this.renderLine(line, snippet, lineLayoutParams, defaultLayoutParams);
-      }
-    }
-  }
-
-  extractLayoutParams(
-    snippet: Snippet,
-    firstInstr: Nullable<Instruction>,
-    lastInstr: Nullable<Instruction>,
-    layoutParams: any,
-  ): void {
-    const instructions = snippet.instructions;
-    const firstIndex = firstInstr == null ? 0 : firstInstr.index;
-    const lastIndex = lastInstr == null ? instructions.length - 1 : lastInstr.index;
-    for (let i = firstIndex; i <= lastIndex; i++) {
-      const instr = instructions[i];
-      if (instr.name == "SetProperty") {
-        const setProp = instr as SetProperty;
-        for (const param in this.layoutParamNames) {
-          layoutParams[param] = setProp.properties[param] || layoutParams[param];
-        }
-      }
-    }
-  }
-
-  static DEFAULT_CYCLE = new Cycle({ bars: new Bar({ beatLengths: [4] }) });
-
-  renderLine(line: Line, snippet: Snippet, layoutParams: any, defaultLayoutParams: any): void {
-    // go for it!
-    const snippetView = (snippet.locals.get("view") as SnippetView) || null;
-    if (snippetView != null) {
-      const atomsView = new LineView(null, {
-        parent: rendertarget as HTMLElement,
-        layoutParams: {
-          numRoles: line.roles.length,
-          cycle: layoutParams["cycle"] || defaultLayoutParams["cycle"] || RunAllCommand.DEFAULT_CYCLE,
-          layout: layoutParams["layout"] || defaultLayoutParams["layout"] || [],
-          aksharasPerBeat: layoutParams["aksharasPerBeat"] || defaultLayoutParams["aksharasPerBeat"] || 1,
-        },
-      } as ViewParams);
-    }
-   */
   }
 }
