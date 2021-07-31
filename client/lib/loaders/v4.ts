@@ -1,9 +1,9 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
+import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
 import { Snippet, CmdParam } from "../models/notebook";
-import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
+import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -183,14 +183,16 @@ export class V4Parser {
       return new Group(ONE, ...children[1].value);
     },
     litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const role = this.snippet.currRole;
       const lit = children[0];
       if (lit.sym.label == "DOTS_IDENT" || lit.sym.label == "IDENT_DOTS") {
         return lit.value;
       } else if (lit.sym.label == "IDENT") {
-        return role.notesOnly ? new Note(lit.value) : new Syllable(lit.value);
+        // Mark this as a Literal to be processed later
+        return new Literal(lit.value);
+        // return role.notesOnly ? new Note(lit.value) : new Syllable(lit.value);
       } else if (lit.sym.label == "STRING") {
-        if (role.notesOnly) throw new Error("Strings cannot appear in notes only mode");
+        // const role = this.snippet.currRole;
+        // if (role.notesOnly) throw new Error("Strings cannot appear in notes only mode");
         return new Syllable(lit.value);
       } else {
         throw new Error("Invalid lit: " + lit);
@@ -302,9 +304,6 @@ export class V4Parser {
       this.snippet.add(new CreateRole(params));
     } else if (lName == "set") {
       this.snippet.add(new SetProperty(params));
-    } else if (lName == "run") {
-      this.snippet.add(new RunCommand(params));
-      this.runCommandFound = true;
     } else {
       // Try to set this as the current role
       throw new Error("Invalid command: " + lName);
