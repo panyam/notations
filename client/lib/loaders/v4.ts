@@ -142,7 +142,7 @@ const [parser, itemGraph] = G.newParser(
       },
       toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape) => {
         // consume everything until "#<N times> as start
-        const hashes = token.value.substring(token.positions[1][0], token.positions[1][1]);
+        const hashes = tape.substring(token.positions[1][0], token.positions[1][1]);
         const endPat = '"' + hashes;
         const startPos = tape.index;
         const endPos = TLEX.TapeHelper.advanceAfter(tape, endPat) - endPat.length;

@@ -4,6 +4,7 @@ import { Snippet, Instruction, Command, Emitter } from "../models/notebook";
 import { parseCycle } from "./utils";
 import { SnippetView } from "../rendering/SnippetView";
 import { LayoutParams } from "../rendering/Core";
+const MarkdownIt = require("markdown-it");
 
 function getLayoutParams(snippet: Snippet): LayoutParams {
   // See if the snippet already has one then return it
@@ -34,7 +35,12 @@ export class RawEmbedding extends Command {
     if (snippetView != null) {
       // create an element out of this
       const elem = TSU.DOM.createNode("div");
-      elem.innerHTML = rawVal;
+      const md = new MarkdownIt({
+        html: true,
+      });
+      const tokens = md.parse(rawVal.trim(), {});
+      const html = md.renderer.render(tokens, {});
+      elem.innerHTML = html;
       snippetView.addElement(elem);
     }
   }
