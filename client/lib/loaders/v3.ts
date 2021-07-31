@@ -3,7 +3,7 @@ import * as G from "galore";
 import * as TLEX from "tlex";
 import { AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
 import { Snippet, CmdParam } from "../models/notebook";
-import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine, RunCommand } from "./commands";
+import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -266,9 +266,6 @@ export class V3Parser {
       this.snippet.add(new CreateRole(params));
     } else if (lName == "set") {
       this.snippet.add(new SetProperty(params));
-    } else if (lName == "run") {
-      this.snippet.add(new RunCommand(params));
-      this.runCommandFound = true;
     } else {
       // Try to set this as the current role
       throw new Error("Invalid command: " + lName);
