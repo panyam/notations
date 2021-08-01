@@ -2,7 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
 import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
-import { Snippet, CmdParam } from "../models/notebook";
+import { Snippet, Command, CmdParam } from "../models/notebook";
 import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
@@ -156,11 +156,6 @@ const [parser, itemGraph] = G.newParser(
   },
 );
 
-export class Command {
-  name = "_";
-  params: CmdParam[] = [];
-}
-
 /**
  * A notation doc is a list of lines that are found in a single document.
  *
@@ -168,7 +163,7 @@ export class Command {
  * all these snippets are related
  */
 export class V4Parser {
-  readonly snippet: Snippet;
+  readonly commands: Command[] = [];
   private runCommandFound = false;
   // readonly parseTree = new PTNodeList("Snippet", null);
   protected ruleHandlers = {
@@ -246,35 +241,33 @@ export class V4Parser {
       return params;
     },
     newCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const cmd = new Command();
-      cmd.name = children[0].value;
-      cmd.params = children[1].value;
-      return cmd;
+      return this.createCommand(children[0].value, children[1].value);
     },
     appendAtoms: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const atoms = children[0].value as Atom[];
       if (atoms.length > 0) {
-        const cmd = new AddAtoms(...atoms);
-        this.snippet.add(cmd);
+        this.addCommand(new AddAtoms(...atoms));
       }
       return null;
     },
     appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const command = children[1].value as Command;
-      this.addCommand(command.name, command.params);
+      this.addCommand(command);
 
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
-        this.snippet.add(new AddAtoms(...atoms));
+        this.addCommand(new AddAtoms(...atoms));
       }
       return null;
     },
     appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      this.activateRole(children[1].value);
+      const roleName = children[1].value;
+      const lName = roleName.toLowerCase().trim();
+      this.addCommand(new ActivateRole([{ key: null, value: lName }]));
 
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
-        this.snippet.add(new AddAtoms(...atoms));
+        this.addCommand(new AddAtoms(...atoms));
       }
       return null;
     },
@@ -282,10 +275,10 @@ export class V4Parser {
       // How to handle embeddings - these are just blocks
       // to escape out of song (most likely for some rendering of html/md etc)
       const rawVal = children[1].value;
-      this.snippet.add(new RawEmbedding([{ key: null, value: rawVal }]));
+      this.addCommand(new RawEmbedding([{ key: null, value: rawVal }]));
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
-        this.snippet.add(new AddAtoms(...atoms));
+        this.addCommand(new AddAtoms(...atoms));
       }
       return null;
     },
@@ -293,21 +286,25 @@ export class V4Parser {
 
   constructor(snippet: Snippet, config?: any) {
     config = config || {};
-    this.snippet = snippet;
   }
 
-  addCommand(name: string, params: CmdParam[]): void {
+  createCommand(name: string, params: CmdParam[]): Command {
     const lName = name.trim().toLowerCase();
     if (lName == "line") {
-      this.snippet.add(new CreateLine(params));
+      return new CreateLine(params);
     } else if (lName == "role") {
-      this.snippet.add(new CreateRole(params));
+      return new CreateRole(params);
     } else if (lName == "set") {
-      this.snippet.add(new SetProperty(params));
+      return new SetProperty(params);
     } else {
       // Try to set this as the current role
       throw new Error("Invalid command: " + lName);
     }
+  }
+
+  addCommand(cmd: Command): void {
+    cmd.index = this.commands.length;
+    this.commands.push(cmd);
   }
 
   parse(input: string): any {
@@ -315,14 +312,5 @@ export class V4Parser {
       ruleHandlers: this.ruleHandlers,
     });
     return ptree;
-  }
-
-  activateRole(roleName: string): void {
-    const lName = roleName.toLowerCase().trim();
-    if (this.snippet.getRole(lName) != null) {
-      this.snippet.add(new ActivateRole([{ key: null, value: lName }]));
-    } else {
-      throw new Error("Invalid role or entity type: " + name);
-    }
   }
 }
