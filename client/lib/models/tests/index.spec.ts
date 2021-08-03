@@ -124,14 +124,16 @@ describe("Atom tests", () => {
     expect(g.type).toBe(AtomType.GROUP);
 
     let child = g.atoms.first;
-    for (let i = 0; i < 3; i++, child = child!.next) {
-      expect(child?.value.parent).toBe(g);
-      if (i > 0) expect(child?.prev?.value).toBe(notes[i - 1]);
-      if (i < 3) expect(child?.next?.value).toBe(notes[i + 1]);
+    for (let i = 0; i < 3; i++, child = child!.nextSibling) {
+      expect(child?.parent).toBe(g);
+      // if (i > 0)
+      expect(child?.prevSibling).toBe(notes[i - 1] || null);
+      // if (i < 2)
+      expect(child?.nextSibling).toBe(notes[i + 1] || null);
     }
 
-    expect(g.atoms.first?.value).toBe(notes[0]);
-    expect(g.atoms.last?.value).toBe(notes[2]);
+    expect(g.atoms.first).toBe(notes[0]);
+    expect(g.atoms.last).toBe(notes[2]);
     expect(g.atoms.size).toBe(3);
   });
 });
@@ -196,8 +198,8 @@ describe("Atom tests", () => {
     const g2 = g.clone();
     expect(g2.duration).toEntityEqual(g.duration);
     expect(g2.atoms.size).toBe(g.atoms.size);
-    expect(g2.atoms.first?.value).toEntityEqual(atoms[0]);
-    expect(g2.atoms.first?.next?.value).toEntityEqual(atoms[1]);
-    expect(g2.atoms.first?.next?.next?.value).toEntityEqual(atoms[2]);
+    expect(g2.atoms.first).toEntityEqual(atoms[0]);
+    expect(g2.atoms.first?.nextSibling).toEntityEqual(atoms[1]);
+    expect(g2.atoms.first?.nextSibling?.nextSibling).toEntityEqual(atoms[2]);
   });
 });

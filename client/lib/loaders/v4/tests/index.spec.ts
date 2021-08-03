@@ -1,9 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { V4Parser } from "../v4";
-import { Notebook } from "../../models/notebook";
-import "../../../common/jest/matchers";
+import { V4Parser } from "../";
+import "../../../../common/jest/matchers";
 
 const getCircularReplacer = () => {
   const seen = new WeakSet();
@@ -19,9 +18,7 @@ const getCircularReplacer = () => {
 };
 
 function testV4(input: string, debug = false, expected: any = null): void {
-  const notebook = new Notebook();
-  const snippet = notebook.newSnippet();
-  const parser = new V4Parser(snippet);
+  const parser = new V4Parser();
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
   if (debug || expected == null) {
@@ -245,6 +242,7 @@ describe("Parser Tests", () => {
         {
           name: "SetProperty",
           index: 0,
+          aksharasPerBeat: 4,
           params: [
             {
               key: "aksharasPerBeat",

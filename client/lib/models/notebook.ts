@@ -5,8 +5,6 @@ import { Cursor, DefaultCursor } from "./cursor";
 
 export const CURSOR_START = -1;
 
-export type CmdParam = { key: TSU.Nullable<string>; value: any };
-
 /**
  * A snippet notebook shared by all snippets on a document.
  */
@@ -400,7 +398,7 @@ export class Snippet {
     cmd.index = this._commands.length;
     this._commands.push(cmd);
     // And execute it too to begin parsing
-    // cmd.execute(this);
+    cmd.execute(this);
   }
 
   execute(): void {
@@ -411,6 +409,7 @@ export class Snippet {
   }
 }
 
+export type CmdParam = { key: TSU.Nullable<string>; value: any };
 export class Command {
   params: CmdParam[];
   index: number;

@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
-import { Snippet, CmdParam } from "../models/notebook";
+import { AtomType, Note, Atom, Space, Syllable, Group } from "../../models/index";
+import { Snippet, CmdParam } from "../../models/notebook";
 import { AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;

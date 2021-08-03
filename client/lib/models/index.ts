@@ -130,6 +130,8 @@ export type Atom = LeafAtom | Group | Label;
 
 export abstract class AtomBase extends TimedEntity {
   protected _duration: TSU.Num.Fraction;
+  nextSibling: TSU.Nullable<AtomBase> = null;
+  prevSibling: TSU.Nullable<AtomBase> = null;
 
   constructor(duration = TSU.Num.Fraction.ONE) {
     super();
@@ -337,7 +339,7 @@ export class Group extends AtomBase {
    * atoms in this group.
    */
   durationIsMultiplier = false;
-  readonly atoms: TSU.Lists.List<AtomBase> = new TSU.Lists.List<AtomBase>();
+  readonly atoms: TSU.Lists.ValueList<AtomBase> = new TSU.Lists.ValueList<AtomBase>();
 
   constructor(duration = TSU.Num.Fraction.ONE, ...atoms: Atom[]) {
     super(duration);

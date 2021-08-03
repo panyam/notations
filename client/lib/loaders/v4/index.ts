@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models/index";
-import { Snippet, Command, CmdParam } from "../models/notebook";
+import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../../models/index";
+import { Notation, Command, CmdParam } from "./models";
 import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
@@ -164,6 +164,7 @@ const [parser, itemGraph] = G.newParser(
  */
 export class V4Parser {
   readonly commands: Command[] = [];
+  readonly notation: Notation = new Notation();
   private runCommandFound = false;
   // readonly parseTree = new PTNodeList("Snippet", null);
   protected ruleHandlers = {
@@ -284,7 +285,7 @@ export class V4Parser {
     },
   };
 
-  constructor(snippet: Snippet, config?: any) {
+  constructor(config?: any) {
     config = config || {};
   }
 
@@ -305,6 +306,7 @@ export class V4Parser {
   addCommand(cmd: Command): void {
     cmd.index = this.commands.length;
     this.commands.push(cmd);
+    cmd.applyToNotation(this.notation);
   }
 
   parse(input: string): any {

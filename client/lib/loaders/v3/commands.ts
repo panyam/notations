@@ -1,9 +1,9 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom, Line } from "../models";
-import { Snippet, Command } from "../models/notebook";
-import { parseCycle } from "./utils";
-import { SnippetView } from "../rendering/SnippetView";
-import { LayoutParams } from "../rendering/Core";
+import { Atom, Line } from "../../models";
+import { Snippet, Command } from "../../models/notebook";
+import { parseCycle } from "../utils";
+import { SnippetView } from "../../rendering/SnippetView";
+import { LayoutParams } from "../../rendering/Core";
 const MarkdownIt = require("markdown-it");
 
 function getLayoutParams(snippet: Snippet): LayoutParams {
