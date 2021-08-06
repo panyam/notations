@@ -1,6 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity, Line } from "../models";
-import { KeyedEnv } from "../models/env";
+import { LayoutParams, Cycle, Entity, Line } from "../models";
 
 export class RawBlock extends Entity {
   get type(): unknown {
@@ -27,6 +26,14 @@ export abstract class Command extends Entity {
     super();
     this.params = params;
     this.index = 0;
+    this.validateParams();
+  }
+
+  /**
+   * called to validate parameters.
+   */
+  validateParams(): void {
+    //
   }
 
   get name(): string {
@@ -51,34 +58,31 @@ export abstract class Command extends Entity {
   getParamAt(index: number): any {
     return index < this.params.length ? this.params[index].value : null;
   }
-  // abstract applyToNotation(notebook: Notation): void;
+  abstract applyToNotation(notebook: Notation): void;
 }
 
 export class Notation extends Entity {
-  readonly blocks: (Line | RawBlock)[] = [];
   private _currRole: TSU.Nullable<Role> = null;
+  private unnamedLayoutParams: LayoutParams[] = [];
+  private namedLayoutParams = new Map<string, LayoutParams>();
   roles: Role[] = [];
-  readonly properties = new KeyedEnv();
-
-  debugValue(): any {
-    return {
-      ...super.debugValue,
-      blocks: this.blocks.map((b) => b.debugValue()),
-      roles: this.roles,
-      properties: this.properties,
-    };
-  }
-
-  add(item: Line | RawBlock): void {
-    this.blocks.push(item);
-  }
+  currentAPB = 1;
+  currentCycle: Cycle = Cycle.DEFAULT;
+  currentBreaks: number[] = [];
 
   get type(): unknown {
     return "Notation";
   }
 
-  children(): Entity[] {
-    return this.blocks;
+  debugValue(): any {
+    return {
+      ...super.debugValue,
+      // blocks: this.blocks.map((b) => b.debugValue()),
+      roles: this.roles,
+      currentAPB: this.currentAPB,
+      currentCycle: this.currentCycle?.debugValue(),
+      currentBreaks: this.currentBreaks,
+    };
   }
 
   getRole(name: string): TSU.Nullable<Role> {
@@ -141,16 +145,78 @@ export class Notation extends Entity {
   }
 
   // Gets the current line, creating it if needed
+  private _currentLine: Line | null = null;
   get currentLine(): Line {
-    if (this.blocks.length == 0 || this.blocks[this.blocks.length - 1].type != "Line") {
-      this.newLine();
+    if (this._currentLine == null) {
+      return this.newLine();
     }
-    return this.blocks[this.blocks.length - 1] as Line;
+    return this._currentLine;
+  }
+
+  resetLine(): void {
+    this._currentLine = null;
   }
 
   newLine(): Line {
-    const l = new Line();
-    this.blocks.push(l);
-    return l;
+    this._currentLine = new Line();
+    // this.blocks.push(this._currentLine);
+    return this._currentLine;
+  }
+
+  private _layoutParams: LayoutParams | null = null;
+  resetLayoutParams(): void {
+    this._layoutParams = null;
+  }
+
+  get layoutParams(): LayoutParams {
+    if (this._layoutParams == null) {
+      // create it or find one that matches current params
+      this._layoutParams = this.findUnnamedLayoutParams();
+      if (this._layoutParams == null) {
+        this._layoutParams = this.snapshotLayoutParams();
+        this.unnamedLayoutParams.push(this._layoutParams);
+      }
+    }
+    return this._layoutParams;
+  }
+
+  ensureNamedLayoutParams(name: string): LayoutParams {
+    this._layoutParams = this.namedLayoutParams.get(name) || null;
+    if (this._layoutParams == null) {
+      // does not exist so create one by re-snapshotting it
+      // and saving it
+      this._layoutParams = this.snapshotLayoutParams();
+      this.namedLayoutParams.set(name, this._layoutParams);
+    } else {
+      // copy named LPs attributes into our locals
+      this.currentCycle = this._layoutParams.cycle;
+      this.currentAPB = this._layoutParams.aksharasPerBeat;
+      this.currentBreaks = this._layoutParams.lineBreaks;
+    }
+    return this._layoutParams;
+  }
+
+  protected snapshotLayoutParams(): LayoutParams {
+    return new LayoutParams({
+      cycle: this.currentCycle,
+      aksharasPerBeat: this.currentAPB,
+      layout: this.currentBreaks,
+    });
+  }
+
+  /**
+   * Find a layout params that is currently unnamed but matches one
+   * by current set of layout attributes.
+   */
+  protected findUnnamedLayoutParams(): LayoutParams | null {
+    return (
+      this.unnamedLayoutParams.find((lp) => {
+        return (
+          lp.aksharasPerBeat == this.currentAPB &&
+          this.currentCycle.equals(lp.cycle) &&
+          lp.lineBreaksEqual(this.currentBreaks)
+        );
+      }) || null
+    );
   }
 }

@@ -3,22 +3,6 @@ import { V4Parser } from "./";
 import * as G from "galore";
 import { NotationView } from "./views";
 import { Notation, Command } from "./models";
-import { LayoutParams } from "../rendering/Core";
-
-function getLayoutParams(notation: Notation): LayoutParams {
-  // See if the snippet already has one then return it
-  let layoutParams = null; // snippet.properties.get("layoutParams") || null;
-  if (!layoutParams) {
-    const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
-    const params = {} as any;
-    for (const param of ALL_LAYOUT_PARAMS) {
-      params[param] = notation.properties.get(param.toLowerCase()) || null;
-    }
-    layoutParams = new LayoutParams(params);
-    notation.properties.setone("layoutParams", layoutParams);
-  }
-  return layoutParams;
-}
 
 export function renderV4Notation(
   notationView: NotationView,

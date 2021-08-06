@@ -1,6 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 
+type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
+const ONE = TSU.Num.Fraction.ONE;
 
 export class Entity {
   private static counter = 0;
@@ -110,7 +112,7 @@ export class Entity {
 export abstract class TimedEntity extends Entity {
   // Duration of this entity in beats.
   // By default entities durations are readonly
-  abstract get duration(): TSU.Num.Fraction;
+  abstract get duration(): Fraction;
 
   equals(another: this): boolean {
     return super.equals(another) && this.duration.equals(another.duration);
@@ -129,13 +131,13 @@ export enum AtomType {
 export type Atom = LeafAtom | Group | Label;
 
 export abstract class AtomBase extends TimedEntity {
-  protected _duration: TSU.Num.Fraction;
+  protected _duration: Fraction;
   nextSibling: TSU.Nullable<AtomBase> = null;
   prevSibling: TSU.Nullable<AtomBase> = null;
 
-  constructor(duration = TSU.Num.Fraction.ONE) {
+  constructor(duration = ONE) {
     super();
-    this._duration = duration || TSU.Num.Fraction.ONE;
+    this._duration = duration || ONE;
   }
 
   debugValue(): any {
@@ -147,11 +149,11 @@ export abstract class AtomBase extends TimedEntity {
     another.duration = new TSU.Num.Fraction(this.duration.num, this.duration.den);
   }
 
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     return this._duration;
   }
 
-  set duration(d: TSU.Num.Fraction) {
+  set duration(d: Fraction) {
     this._duration = d;
   }
 
@@ -179,7 +181,7 @@ export abstract class AtomBase extends TimedEntity {
 
 export class Label extends AtomBase {
   content: string;
-  constructor(content: string, duration = TSU.Num.Fraction.ZERO) {
+  constructor(content: string, duration = ZERO) {
     super(duration);
     this.content = content;
   }
@@ -217,7 +219,7 @@ export class Space extends LeafAtom {
    */
   isSilent = false;
 
-  constructor(duration = TSU.Num.Fraction.ONE, isSilent = false) {
+  constructor(duration = ONE, isSilent = false) {
     super(duration);
     this.isSilent = isSilent;
   }
@@ -253,7 +255,7 @@ export class Literal extends LeafAtom {
    */
   value: string;
 
-  constructor(value: string, duration = TSU.Num.Fraction.ONE) {
+  constructor(value: string, duration = ONE) {
     super(duration);
     this.value = value;
   }
@@ -301,7 +303,7 @@ export class Note extends Literal {
    */
   shift = 0;
 
-  constructor(value: string, duration = TSU.Num.Fraction.ONE, octave = 0, shift = 0) {
+  constructor(value: string, duration = ONE, octave = 0, shift = 0) {
     super(value, duration);
     this.octave = octave;
     this.shift = shift;
@@ -341,12 +343,12 @@ export class Group extends AtomBase {
   durationIsMultiplier = false;
   readonly atoms: TSU.Lists.ValueList<AtomBase> = new TSU.Lists.ValueList<AtomBase>();
 
-  constructor(duration = TSU.Num.Fraction.ONE, ...atoms: Atom[]) {
+  constructor(duration = ONE, ...atoms: Atom[]) {
     super(duration);
     this.addAtoms(...atoms);
   }
 
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     if (this.durationIsMultiplier) {
       return this.totalChildDuration.divby(this._duration);
     } else {
@@ -354,7 +356,7 @@ export class Group extends AtomBase {
     }
   }
 
-  set duration(d: TSU.Num.Fraction) {
+  set duration(d: Fraction) {
     this._duration = d;
   }
 
@@ -364,7 +366,7 @@ export class Group extends AtomBase {
     return out;
   }
 
-  get totalChildDuration(): TSU.Num.Fraction {
+  get totalChildDuration(): Fraction {
     let out = ZERO;
     this.atoms.forEach((atom) => (out = out.plus(atom.duration)));
     return out;
@@ -395,12 +397,12 @@ export class Group extends AtomBase {
   }
 }
 
-export type CyclePosition = [TSU.Num.Fraction, number, number];
+export type CyclePosition = [Fraction, number, number];
 export type CycleIterator = Generator<CyclePosition>;
 
 export class Bar extends TimedEntity {
   name: string;
-  beatLengths: TSU.Num.Fraction[] = [];
+  beatLengths: Fraction[] = [];
   // TODO: also add "visuals" at some point
 
   constructor(config: any = null) {
@@ -441,7 +443,7 @@ export class Bar extends TimedEntity {
   /**
    * Total duration (of time) across all beats in this bar.
    */
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     return this.beatLengths.reduce((x, y) => x.plus(y), ZERO);
   }
 }
@@ -516,7 +518,7 @@ export class Cycle extends TimedEntity {
   /**
    * Total duration (of time) across all bars in this cycle.
    */
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     return this.bars.reduce((x, y) => x.plus(y.duration), ZERO);
   }
 }
@@ -550,7 +552,7 @@ export class Role extends Entity {
   /**
    * Duration for this role.
    */
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     return this.atoms.reduce((a, b) => a.plus(b.duration), ZERO);
   }
 }
@@ -601,11 +603,171 @@ export class Line extends Entity {
   /**
    * Returns the maximum duration of all roles in this line.
    */
-  get duration(): TSU.Num.Fraction {
+  get duration(): Fraction {
     let max = ZERO;
     for (const role of this.roles) {
       max = TSU.Num.Fraction.max(role.duration, max);
     }
     return max;
+  }
+}
+
+export class LayoutParams extends Entity {
+  aksharasPerBeat: number;
+  cycle: Cycle;
+  protected _lineBreaks: number[];
+  private _rowStartOffsets: Fraction[] = [];
+  private _rowEndOffsets: Fraction[] = [];
+  private _rowDurations: Fraction[] = [];
+  private _totalLayoutDuration = ZERO;
+  private _totalBeats = 0;
+  private _beatLayouts: CyclePosition[][];
+
+  constructor(config: any) {
+    super(config);
+    this.aksharasPerBeat = config.aksharasPerBeat || 1;
+    if ("cycle" in config) this.cycle = config.cycle;
+    if (!this.cycle || this.cycle.duration.isZero) {
+      this.cycle = Cycle.DEFAULT;
+    }
+    this.lineBreaks = config.layout || [];
+  }
+
+  equals(another: this): boolean {
+    return (
+      super.equals(another) &&
+      this.aksharasPerBeat == another.aksharasPerBeat &&
+      this.cycle.equals(another.cycle) &&
+      this.lineBreaksEqual(another._lineBreaks)
+    );
+  }
+
+  lineBreaksEqual(another: number[]): boolean {
+    return this._lineBreaks.length == another.length && this._lineBreaks.every((x, i) => x == another[i]);
+  }
+
+  debugValue(): any {
+    return {
+      ...super.debugValue(),
+      cycle: this.cycle?.debugValue(),
+      aksharasPerBeat: this.aksharasPerBeat,
+      lineBreaks: this._lineBreaks,
+    };
+  }
+
+  getBeatOffset(beatIndex: number): [number, number, number] {
+    const modIndex = beatIndex % this.totalBeats;
+    let total = 0;
+    for (let i = 0; i < this._lineBreaks.length; i++) {
+      if (modIndex < total + this._lineBreaks[i]) {
+        return [Math.floor(beatIndex / this.totalBeats) + i, i, modIndex - total];
+      }
+      total += this._lineBreaks[i];
+    }
+    throw new Error("Invalid beat index: " + beatIndex);
+    return [-1, -1, -1];
+  }
+
+  /**
+   * Return the line layout - ie number of beats in each line - as a
+   * repeating pattern.
+   *
+   * For example 4,2,4 indicates that the notes in our song should be
+   * laid out 4 beats in line 1, 2 beats in line 2, 4 beats in line 3 and
+   * 4 beats in line 4 and so on as long as there are more notes available
+   * in this line.
+   */
+  get lineBreaks(): number[] {
+    if (!this._lineBreaks || this._lineBreaks.length == 0) {
+      // trigger a refresh
+      this.lineBreaks = [this.cycle.beatCount];
+    }
+    return this._lineBreaks;
+  }
+
+  /**
+   * Sets the line layout pattern.
+   */
+  set lineBreaks(val: number[]) {
+    this._lineBreaks = val;
+    this.refreshLayout();
+  }
+
+  refreshLayout(): void {
+    const cycleIter = this.cycle.iterateBeats();
+    const akb = this.aksharasPerBeat;
+    this._beatLayouts = this.lineBreaks.map((numBeats, index) => {
+      const beats: CyclePosition[] = [];
+      // see what the beat lengths are here
+      for (let i = 0; i < numBeats; i++) {
+        const nextCP = cycleIter.next().value;
+        nextCP[0] = nextCP[0].timesNum(akb);
+        beats.push(nextCP);
+      }
+      return beats;
+    });
+    this._totalBeats = this.lineBreaks.reduce((a, b) => a + b, 0);
+    this._rowDurations = this._beatLayouts.map((beats) => beats.reduce((x, y) => x.plus(y[0]), ZERO));
+    this._rowStartOffsets = this._rowDurations.map((rd, index) => {
+      return index == 0 ? ZERO : this._rowStartOffsets[index - 1].plus(rd);
+    });
+    this._rowEndOffsets = this._rowDurations.map((rd, index) => {
+      return this._rowStartOffsets[index].plus(rd);
+    });
+    this._totalLayoutDuration = this._rowDurations.reduce((x, y) => x.plus(y), ZERO);
+  }
+
+  /**
+   * Returns the number of beats in each line based on the line layout
+   * after taking aksharasPerBeat into account.
+   */
+  get beatLayouts(): ReadonlyArray<ReadonlyArray<CyclePosition>> {
+    if (!this._beatLayouts || this._beatLayouts.length < this.lineBreaks.length) {
+      this.refreshLayout();
+    }
+    return this._beatLayouts;
+  }
+
+  /**
+   * Total duration of all beats across all lines in our line layout.
+   */
+  get totalBeats(): number {
+    this.beatLayouts;
+    return this._totalBeats;
+  }
+
+  /**
+   * Total duration of all beats across all lines in our line layout.
+   */
+  get totalLayoutDuration(): Fraction {
+    this.beatLayouts;
+    return this._totalLayoutDuration;
+  }
+
+  layoutOffsetsFor(offset: Fraction, layoutLine = -1): [number, Fraction] {
+    const m1 = offset.mod(this.totalLayoutDuration);
+
+    // layoutLine = L such that layout[L].startOffset <= atom.offset % totalLayoutDuration < layout[L].endOffset
+    // calculate layoutLine if not provided
+    if (layoutLine < 0) {
+      // this.beatLayouts should kick off eval of all row offsets, durations etc
+      for (let i = 0; i < this.beatLayouts.length; i++) {
+        let cmp = this._rowStartOffsets[i].cmp(m1);
+        if (cmp >= 0) {
+          cmp = m1.cmp(this._rowEndOffsets[i]);
+          if (cmp < 0) {
+            layoutLine = i;
+            break;
+          }
+        }
+      }
+    }
+    if (layoutLine < 0) {
+      throw new Error("Atom offset falls outside beat layout range: " + offset.toString());
+    }
+
+    // offset = atom.offset % totalLayoutDuration - rowOffset[layoutLine]
+    const layoutOffset = m1.minus(this._rowStartOffsets[layoutLine]);
+    return [layoutLine, layoutOffset];
   }
 }

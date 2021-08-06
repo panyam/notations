@@ -3,7 +3,7 @@ import * as G from "galore";
 import * as TLEX from "tlex";
 import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models";
 import { Command, CmdParam } from "./models";
-import { RawEmbedding, AddAtoms, SetProperty, ActivateRole, CreateRole, CreateLine } from "./commands";
+import { RawEmbedding, ApplyLayout, AddAtoms, SetCycle, SetAPB, SetBreaks, ActivateRole, CreateRole, CreateLine } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -295,8 +295,14 @@ export class V4Parser {
       return new CreateLine(params);
     } else if (lName == "role") {
       return new CreateRole(params);
-    } else if (lName == "set") {
-      return new SetProperty(params);
+    } else if (lName == "layout") {
+      return new ApplyLayout(params);
+    } else if (lName == "aksharasPerBeat") {
+      return new SetAPB(params);
+    } else if (lName == "breaks") {
+      return new SetBreaks(params);
+    } else if (lName == "cycle") {
+      return new SetCycle(params);
     } else {
       // Try to set this as the current role
       throw new Error("Invalid command: " + lName);
