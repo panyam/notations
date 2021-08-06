@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity, Line } from "../../models";
-import { KeyedEnv } from "../../models/env";
+import { Entity, Line } from "../models";
+import { KeyedEnv } from "../models/env";
 
 export class RawBlock extends Entity {
   get type(): unknown {
@@ -51,15 +51,23 @@ export abstract class Command extends Entity {
   getParamAt(index: number): any {
     return index < this.params.length ? this.params[index].value : null;
   }
-
-  abstract applyToNotation(notebook: Notation): void;
+  // abstract applyToNotation(notebook: Notation): void;
 }
 
 export class Notation extends Entity {
-  private blocks: (Line | RawBlock)[] = [];
+  readonly blocks: (Line | RawBlock)[] = [];
   private _currRole: TSU.Nullable<Role> = null;
   roles: Role[] = [];
   readonly properties = new KeyedEnv();
+
+  debugValue(): any {
+    return {
+      ...super.debugValue,
+      blocks: this.blocks.map((b) => b.debugValue()),
+      roles: this.roles,
+      properties: this.properties,
+    };
+  }
 
   add(item: Line | RawBlock): void {
     this.blocks.push(item);

@@ -2,7 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import { parseSyllable, parseProperty, parseCycle } from "./utils";
 
 import { Label, AtomBase, Cycle, AtomType, Atom, Line, Space, Note, Group } from "../models/index";
-import { Snippet } from "../models/notebook";
+import { Snippet } from "../v3/models";
 
 const ZERO = TSU.Num.Fraction.ZERO;
 

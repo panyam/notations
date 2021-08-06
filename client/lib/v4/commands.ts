@@ -1,24 +1,9 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom } from "../../models";
+import { Literal, Atom, AtomType, Note, Syllable } from "../models";
 import { Command, RawBlock, Notation } from "./models";
-import { parseCycle } from "../utils";
-import { LayoutParams } from "../../rendering/Core";
+import { parseCycle } from "../loaders/utils";
+import { LayoutParams } from "../rendering/Core";
 const MarkdownIt = require("markdown-it");
-
-function getLayoutParams(notation: Notation): LayoutParams {
-  // See if the snippet already has one then return it
-  let layoutParams = null; // snippet.properties.get("layoutParams") || null;
-  if (!layoutParams) {
-    const ALL_LAYOUT_PARAMS = ["cycle", "layout", "aksharasPerBeat"];
-    const params = {} as any;
-    for (const param of ALL_LAYOUT_PARAMS) {
-      params[param] = notation.properties.get(param.toLowerCase()) || null;
-    }
-    layoutParams = new LayoutParams(params);
-    notation.properties.setone("layoutParams", layoutParams);
-  }
-  return layoutParams;
-}
 
 export class RawEmbedding extends Command {
   applyToNotation(notation: Notation): void {
@@ -63,11 +48,21 @@ export class AddAtoms extends Command {
       throw new Error("Current role is invalid");
     }
     // Ensure a line exists
-    notation.currentLine.addAtoms(roleDef.name, ...this.atoms);
+    const finalised = this.atoms.map((a) => {
+      if (a.type == AtomType.LITERAL) {
+        if (roleDef.notesOnly) {
+          a = new Note((a as Literal).value, a.duration);
+        } else {
+          a = new Syllable((a as Literal).value, a.duration);
+        }
+      }
+      return a;
+    });
+    notation.currentLine.addAtoms(roleDef.name, ...finalised);
   }
 }
 
-export class SetProperty<V = string> extends Command {
+export class SetProperty extends Command {
   properties: TSU.StringMap<any> = {};
 
   debugValue(): any {
@@ -103,24 +98,6 @@ export class SetProperty<V = string> extends Command {
   }
 }
 
-// Layouts let us control how lines are rendered going forward
-// By default a line when rendered is wrapped at the boundaries
-// of a cycle
-// Layouts specs are similar to line-dash pattern specification
-// in SVG but much simpler.  layout specs (for now) are defined
-// as number of bars to show in each line.  Eg a pattern that defines
-// [ 3, 4, 5 ]
-//
-// Would indicate taht a line would be rendered as 3 bars in first line
-// 4 bars in the second and 5 bars in the 3 rd line and repeating with
-// 3 bars in the fourth line and so on
-// An empty array (or value) indicates falling back to the "default"
-// layout
-//
-// Note that this command automatically creates a new line so that
-// if the previous line has empty slots in the current cycle then
-// it is automatically "closed"
-
 export class CreateLine extends Command {
   applyToNotation(notation: Notation): void {
     notation.newLine();
@@ -131,7 +108,11 @@ export class CreateRole extends Command {
   applyToNotation(notation: Notation): void {
     // Create the role
     const name = this.getParamAt(0);
+    notation.newRole(name, this.notesOnly);
+  }
+
+  get notesOnly(): boolean {
     const notesOnly = this.getParam("notes");
-    notation.newRole(name, notesOnly == "true" || notesOnly == "yes" || notesOnly == true);
+    return notesOnly == "true" || notesOnly == "yes" || notesOnly == true;
   }
 }
