@@ -10,7 +10,9 @@ export class RawEmbedding extends Command {
   }
 
   applyToNotation(notation: Notation): void {
-    notation.resetLine();
+    const raw = new RawBlock();
+    raw.content = this.rawContents;
+    notation.addRawBlock(raw);
   }
 }
 
@@ -57,6 +59,14 @@ export class AddAtoms extends Command {
       }
       return a;
     });
+    if (notation.currentLine.layoutParams == null) {
+      notation.currentLine.layoutParams = notation.layoutParams;
+    } else {
+      TSU.assert(
+        notation.currentLine.layoutParams == notation.layoutParams,
+        "Layout parameters have changed so a new line should have been started",
+      );
+    }
     notation.currentLine.addAtoms(roleDef.name, ...finalised);
   }
 }
@@ -170,10 +180,6 @@ export class SetBreaks extends LayoutParamCommand {
         throw new Error("Breaks command must be a list of integers");
       }
     }
-  }
-
-  get layoutName(): string | null {
-    return this.getParamAt(1);
   }
 
   applyToNotation(notation: Notation): void {

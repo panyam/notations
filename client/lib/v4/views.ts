@@ -2,18 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { LayoutParams, Line, Role, Atom } from "../models";
 import { FlatAtom, Beat } from "../models/iterators";
-import { Notation, Command } from "../../lib/v4/models";
-import {
-  RawEmbedding,
-  AddAtoms,
-  CreateLine,
-  ActivateRole,
-  CreateRole,
-  SetAPB,
-  SetCycle,
-  SetBreaks,
-  ApplyLayout,
-} from "../../lib/v4/commands";
+import { Notation, LineBeats, RawBlock } from "../../lib/v4/models";
 import { AtomView } from "../rendering/Core";
 import { BarLayout } from "../rendering/Layouts";
 import { LineView } from "../rendering/LineView";
@@ -21,6 +10,7 @@ const MarkdownIt = require("markdown-it");
 
 export class NotationView extends TSV.EntityView<Notation> {
   lineViews: LineView[] = [];
+  lineBeats = new Map<number, LineBeats>();
   atomLayouts = new Map<number, BarLayout>();
 
   get notation(): Notation {
@@ -32,7 +22,7 @@ export class NotationView extends TSV.EntityView<Notation> {
   }
 
   ensureLineView(line: Line): LineView {
-    const layoutParams: LayoutParams = this.notation.layoutParams;
+    const layoutParams: LayoutParams = line.layoutParams!;
     let lineView = this.getLineView(line);
     if (lineView == null) {
       if (this.lineViews.length > 0) {
@@ -79,28 +69,31 @@ export class NotationView extends TSV.EntityView<Notation> {
     return lineView.rootElementForBeat(beat);
   }
 
-  renderCommands(commands: Command[], reset = false): void {
-    const handlers: TSU.StringMap<(command: any) => void> = {};
-    handlers["AddAtoms"] = this.renderAddAtoms.bind(this);
-    handlers["RawEmbedding"] = this.renderRawEmbedding.bind(this);
-    for (const cmd of commands) {
-      cmd.applyToNotation(this.notation);
-      if (cmd.name in handlers) handlers[cmd.name](cmd);
+  /**
+   * Layout all the blocks in the Notation along with their corresponding blocks.
+   * Key thing is here is an opportunity to perform any batch rendering as needed.
+   */
+  refreshLayout(): void {
+    for (const block of this.notation.blocks) {
+      if (block.type == "RawBlock") {
+        // Add the markdown here
+        const raw = block as RawBlock;
+        const md = new MarkdownIt({
+          html: true,
+        });
+        const tokens = md.parse(raw.content.trim(), {});
+        const html = md.renderer.render(tokens, { langPrefix: "v4_" });
+        const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
+        div.innerHTML = html;
+      } else {
+        const line = block as Line;
+        const lineView = this.ensureLineView(line);
+        const atomLayout = this.atomLayouts.get(line.layoutParams!.uuid)!;
+        for (const role of line.roles) {
+          atomLayout.addAtoms(role, ...role.atoms);
+        }
+        lineView.layoutChildViews();
+      }
     }
-  }
-
-  renderAddAtoms(command: AddAtoms): void {
-    const lineView = this.ensureLineView(this.notation.currentLine);
-  }
-
-  renderRawEmbedding(command: RawEmbedding): void {
-    // Add the markdown here
-    const md = new MarkdownIt({
-      html: true,
-    });
-    const tokens = md.parse(command.rawContents.trim(), {});
-    const html = md.renderer.render(tokens, { langPrefix: "v4_" });
-    const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
-    div.innerHTML = html;
   }
 }

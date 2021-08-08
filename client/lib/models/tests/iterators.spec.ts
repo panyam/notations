@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note } from "../";
+import { LayoutParams, Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note } from "../";
 import { Beat, BeatsBuilder, FlatAtom, AtomIterator, DurationIterator } from "../iterators";
 import "../../../common/jest/matchers";
 
@@ -184,7 +184,8 @@ describe("BeatsBuilder", () => {
     const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
     l.addAtoms("test", ...atoms);
     const c = Cycle.DEFAULT;
-    const bb = new BeatsBuilder(l.ensureRole("test"), c, 2);
+    const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
+    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
     // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
@@ -200,7 +201,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "a",
             },
             duration: "1/1",
@@ -210,7 +211,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "2/1",
               value: "b",
             },
@@ -231,7 +232,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/1",
@@ -241,7 +242,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "3/1",
               value: "c",
             },
@@ -262,7 +263,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               duration: "2/1",
               isSilent: false,
             },
@@ -283,7 +284,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "5/1",
               value: "d",
             },
@@ -304,7 +305,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               duration: "3/1",
               isSilent: false,
             },
@@ -325,7 +326,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/1",
@@ -335,7 +336,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "1",
             },
             duration: "6/6",
@@ -355,7 +356,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "2/1",
               value: "2",
             },
@@ -376,7 +377,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "3/1",
               value: "3",
             },
@@ -397,7 +398,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "6/6",
@@ -416,7 +417,8 @@ describe("BeatsBuilder", () => {
     const atoms = [new Note("P", ONE), g1];
     l.addAtoms("test", ...atoms);
     const c = Cycle.DEFAULT;
-    const bb = new BeatsBuilder(l.ensureRole("test"), c, 2);
+    const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
+    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
     // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
@@ -432,7 +434,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "P",
             },
             duration: "1/1",
@@ -442,7 +444,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "Pa",
             },
             duration: "2/4",
@@ -452,7 +454,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "Ma",
             },
             duration: "2/4",
@@ -471,10 +473,10 @@ describe("BeatsBuilder", () => {
     const atoms = [new Note("P", ONE), g1];
     l.addAtoms("test", ...atoms);
     const c = Cycle.DEFAULT;
-    const APB = 2;
-    const bb = new BeatsBuilder(l.ensureRole("test"), c, APB);
+    const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
+    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces(APB);
+      beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
@@ -491,7 +493,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "P",
             },
             duration: "1/2",
@@ -501,7 +503,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/2",
@@ -512,7 +514,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "Pa",
             },
             duration: "1/2",
@@ -522,7 +524,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "Ma",
             },
             duration: "1/2",
@@ -539,10 +541,10 @@ describe("BeatsBuilder", () => {
     const atoms = [new Note("P", HALF), new Note("M", HALF), new Note("G", HALF), new Note("R", HALF)];
     l.addAtoms("test", ...atoms);
     const c = Cycle.DEFAULT;
-    const APB = 2;
-    const bb = new BeatsBuilder(l.ensureRole("test"), c, APB);
+    const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
+    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces(APB);
+      beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
@@ -559,7 +561,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "1/2",
               value: "P",
             },
@@ -570,7 +572,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "1/2",
               value: "M",
             },
@@ -581,7 +583,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "1/2",
               value: "G",
             },
@@ -592,7 +594,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "1/2",
               value: "R",
             },
@@ -610,10 +612,10 @@ describe("BeatsBuilder", () => {
     const atoms = [new Note("S", ONE), new Note("R", TWO), new Note("G", THREE)];
     l.addAtoms("test", ...atoms);
     const c = Cycle.DEFAULT;
-    const APB = 6;
-    const bb = new BeatsBuilder(l.ensureRole("test"), c, APB);
+    const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 6 });
+    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces(APB);
+      beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
@@ -630,7 +632,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               value: "S",
             },
             duration: "1/1",
@@ -640,7 +642,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "2/1",
               value: "R",
             },
@@ -651,7 +653,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/1",
@@ -662,7 +664,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 0,
+              type: "Note",
               duration: "3/1",
               value: "G",
             },
@@ -673,7 +675,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/1",
@@ -684,7 +686,7 @@ describe("BeatsBuilder", () => {
           {
             type: "FlatAtom",
             atom: {
-              type: 3,
+              type: "Space",
               isSilent: false,
             },
             duration: "1/1",

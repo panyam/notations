@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { CycleIterator, TimedEntity, Atom, Role, LeafAtom, Space, Group, AtomType, Cycle } from "./";
+import { LayoutParams, CycleIterator, TimedEntity, Atom, Role, LeafAtom, Space, Group, AtomType, Cycle } from "./";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -283,8 +283,8 @@ export class BeatsBuilder {
   // Callback for when a beat has been filled
   onBeatFilled: (beat: Beat) => void;
 
-  constructor(public readonly role: Role, public readonly cycle: Cycle, public readonly aksharasPerBeat = 1) {
-    this.cycleIter = cycle.iterateBeats();
+  constructor(public readonly role: Role, public readonly layoutParams: LayoutParams) {
+    this.cycleIter = layoutParams.cycle.iterateBeats();
     this.atomIter = new AtomIterator();
     this.durIter = new DurationIterator(this.atomIter);
   }
@@ -297,7 +297,7 @@ export class BeatsBuilder {
       numBeats,
       this.role,
       lastBeat == null ? ZERO : lastBeat.endOffset,
-      nextCP[0].timesNum(this.aksharasPerBeat),
+      nextCP[0].timesNum(this.layoutParams.aksharasPerBeat),
       nextCP[1],
       nextCP[2],
     );

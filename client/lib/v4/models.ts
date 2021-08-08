@@ -1,10 +1,9 @@
 import * as TSU from "@panyam/tsutils";
 import { LayoutParams, Cycle, Entity, Line } from "../models";
+import { FlatAtom, Beat, BeatsBuilder } from "../models/iterators";
 
 export class RawBlock extends Entity {
-  get type(): unknown {
-    return "Raw";
-  }
+  content: string;
 }
 
 export class Role {
@@ -63,15 +62,33 @@ export abstract class Command extends Entity {
 
 export class Notation extends Entity {
   private _currRole: TSU.Nullable<Role> = null;
-  private unnamedLayoutParams: LayoutParams[] = [];
-  private namedLayoutParams = new Map<string, LayoutParams>();
+  private _unnamedLayoutParams: LayoutParams[] = [];
+  private _namedLayoutParams = new Map<string, LayoutParams>();
   roles: Role[] = [];
+  blocks: (Line | RawBlock)[] = [];
   currentAPB = 1;
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
 
+  get unnamedLayoutParams(): ReadonlyArray<LayoutParams> {
+    return this._unnamedLayoutParams;
+  }
+
+  get namedLayoutParams(): ReadonlyMap<string, LayoutParams> {
+    return this._namedLayoutParams;
+  }
+
   get type(): unknown {
     return "Notation";
+  }
+
+  addLine(line: Line): void {
+    this.blocks.push(line);
+  }
+
+  addRawBlock(raw: RawBlock): void {
+    this.blocks.push(raw);
+    this.resetLine();
   }
 
   debugValue(): any {
@@ -79,8 +96,9 @@ export class Notation extends Entity {
       ...super.debugValue,
       // blocks: this.blocks.map((b) => b.debugValue()),
       roles: this.roles,
+      blocks: this.blocks.map((b) => b.debugValue()),
       currentAPB: this.currentAPB,
-      currentCycle: this.currentCycle?.debugValue(),
+      currentCycle: this.currentCycle?.uuid,
       currentBreaks: this.currentBreaks,
     };
   }
@@ -104,12 +122,9 @@ export class Notation extends Entity {
     }
     const roleDef = this.getRole(name);
     if (roleDef != null) {
-      // if (snippet == this) {
-      // then replace it
-      roleDef.notesOnly = notesOnly;
-      return roleDef;
-      // }
-      // throw new Error(`Role ${name} already exists`);
+      throw new Error("Role already exists");
+      // roleDef.notesOnly = notesOnly;
+      // return roleDef;
     }
     // create new and add
     const rd = new Role();
@@ -159,13 +174,14 @@ export class Notation extends Entity {
 
   newLine(): Line {
     this._currentLine = new Line();
-    // this.blocks.push(this._currentLine);
+    this.addLine(this._currentLine);
     return this._currentLine;
   }
 
   private _layoutParams: LayoutParams | null = null;
   resetLayoutParams(): void {
     this._layoutParams = null;
+    this.resetLine();
   }
 
   get layoutParams(): LayoutParams {
@@ -174,24 +190,29 @@ export class Notation extends Entity {
       this._layoutParams = this.findUnnamedLayoutParams();
       if (this._layoutParams == null) {
         this._layoutParams = this.snapshotLayoutParams();
-        this.unnamedLayoutParams.push(this._layoutParams);
+        this._unnamedLayoutParams.push(this._layoutParams);
       }
     }
     return this._layoutParams;
   }
 
   ensureNamedLayoutParams(name: string): LayoutParams {
-    this._layoutParams = this.namedLayoutParams.get(name) || null;
-    if (this._layoutParams == null) {
-      // does not exist so create one by re-snapshotting it
-      // and saving it
-      this._layoutParams = this.snapshotLayoutParams();
-      this.namedLayoutParams.set(name, this._layoutParams);
-    } else {
-      // copy named LPs attributes into our locals
-      this.currentCycle = this._layoutParams.cycle;
-      this.currentAPB = this._layoutParams.aksharasPerBeat;
-      this.currentBreaks = this._layoutParams.lineBreaks;
+    let lp = this._namedLayoutParams.get(name) || null;
+    if (lp == null || this._layoutParams != lp) {
+      // no change so go ahead
+      if (lp == null) {
+        // does not exist so create one by re-snapshotting it
+        // and saving it
+        lp = this.snapshotLayoutParams();
+        this._namedLayoutParams.set(name, lp);
+      } else {
+        // copy named LPs attributes into our locals
+        this.currentCycle = lp.cycle;
+        this.currentAPB = lp.aksharasPerBeat;
+        this.currentBreaks = lp.lineBreaks;
+      }
+      this._layoutParams = lp;
+      this.resetLine(); // since layout params have changed
     }
     return this._layoutParams;
   }
@@ -205,12 +226,12 @@ export class Notation extends Entity {
   }
 
   /**
-   * Find a layout params that is currently unnamed but matches one
+   * Find a layout params that is currently _unnamed but matches one
    * by current set of layout attributes.
    */
   protected findUnnamedLayoutParams(): LayoutParams | null {
     return (
-      this.unnamedLayoutParams.find((lp) => {
+      this._unnamedLayoutParams.find((lp) => {
         return (
           lp.aksharasPerBeat == this.currentAPB &&
           this.currentCycle.equals(lp.cycle) &&
@@ -218,5 +239,21 @@ export class Notation extends Entity {
         );
       }) || null
     );
+  }
+}
+
+/**
+ * Given a line which contains its atoms in Roles, LineBeats is
+ * a grouping of atoms by Beat (as per the specs defined in LayoutParams).
+ */
+export class LineBeats {
+  roleBeats: Beat[][];
+  constructor(public readonly line: Line) {
+    this.roleBeats = [];
+    for (const role of line.roles) {
+      const bb = new BeatsBuilder(role, line.layoutParams!);
+      bb.addAtoms(...role.atoms);
+      this.roleBeats.push(bb.beats);
+    }
   }
 }

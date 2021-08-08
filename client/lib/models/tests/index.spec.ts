@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
+import { LayoutParams, AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
 import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -201,5 +201,25 @@ describe("Atom tests", () => {
     expect(g2.atoms.first).toEntityEqual(atoms[0]);
     expect(g2.atoms.first?.nextSibling).toEntityEqual(atoms[1]);
     expect(g2.atoms.first?.nextSibling?.nextSibling).toEntityEqual(atoms[2]);
+  });
+});
+
+describe("LayoutParam Tests", () => {
+  test("Creation", () => {
+    const lp = new LayoutParams();
+    expect(lp.cycle).toEqual(Cycle.DEFAULT);
+    expect(lp.aksharasPerBeat).toEqual(1);
+    expect(lp.lineBreaks).toEqual([lp.cycle.beatCount]);
+  });
+
+  test("Creation with configs", () => {
+    const lp = new LayoutParams({
+      aksharasPerBeat: 4,
+      lineBreaks: [3, 2, 1],
+    });
+    expect(lp.cycle).toEqual(Cycle.DEFAULT);
+    expect(lp.aksharasPerBeat).toEqual(4);
+    expect(lp.lineBreaks).toEqual([3, 2, 1]);
+    expect(lp.totalLayoutDuration).toEqual(ONE.timesNum(24));
   });
 });

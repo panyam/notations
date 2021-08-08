@@ -81,7 +81,7 @@ export class Entity {
    * Returns the type of this Entity.
    */
   get type(): unknown {
-    return "Entity";
+    return this.constructor.name;
   }
 
   toString(): string {
@@ -120,12 +120,12 @@ export abstract class TimedEntity extends Entity {
 }
 
 export enum AtomType {
-  NOTE,
-  LITERAL,
-  SYLLABLE,
-  SPACE,
-  GROUP,
-  LABEL,
+  NOTE = "Note",
+  LITERAL = "Literal",
+  SYLLABLE = "Syllable",
+  SPACE = "Space",
+  GROUP = "Group",
+  LABEL = "Label",
 }
 
 export type Atom = LeafAtom | Group | Label;
@@ -190,10 +190,6 @@ export class Label extends AtomBase {
     return { ...super.debugValue(), content: this.content };
   }
 
-  get type(): unknown {
-    return AtomType.LABEL;
-  }
-
   toString(): string {
     return `Space(${this.duration}-${this.content})`;
   }
@@ -222,13 +218,6 @@ export class Space extends LeafAtom {
   constructor(duration = ONE, isSilent = false) {
     super(duration);
     this.isSilent = isSilent;
-  }
-
-  /**
-   * Returns the type of this Entity.
-   */
-  get type(): unknown {
-    return AtomType.SPACE;
   }
 
   debugValue(): any {
@@ -276,19 +265,11 @@ export class Literal extends LeafAtom {
     super.copyTo(another);
     another.value = this.value;
   }
-
-  get type(): unknown {
-    return AtomType.LITERAL;
-  }
 }
 
 export class Syllable extends Literal {
   toString(): string {
     return `Syll(${this.duration}-${this.value})`;
-  }
-
-  get type(): unknown {
-    return AtomType.SYLLABLE;
   }
 }
 
@@ -328,10 +309,6 @@ export class Note extends Literal {
     super.copyTo(another);
     another.octave = this.octave;
     another.shift = this.shift;
-  }
-
-  get type(): unknown {
-    return AtomType.NOTE;
   }
 }
 
@@ -381,11 +358,6 @@ export class Group extends AtomBase {
   copyTo(another: this): void {
     super.copyTo(another);
     this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
-  }
-
-  // readonly type: AtomType = AtomType.GROUP;
-  get type(): unknown {
-    return AtomType.GROUP;
   }
 
   addAtoms(...atoms: Atom[]): this {
@@ -523,114 +495,32 @@ export class Cycle extends TimedEntity {
   }
 }
 
-export class Role extends Entity {
-  atoms: Atom[] = [];
-  private layoutLine = -1;
-
-  constructor(public readonly line: Line, public readonly name: string) {
-    super();
-  }
-  debugValue(): any {
-    return { name: this.name, atoms: this.atoms };
-  }
-
-  addAtoms(...atoms: Atom[]): void {
-    for (const atom of atoms) this.atoms.push(atom);
-  }
-
-  copyTo(another: Role): void {
-    another.addAtoms(...this.atoms);
-  }
-
-  /**
-   * Returns the type of this Entity.
-   */
-  get type(): unknown {
-    return "Role";
-  }
-
-  /**
-   * Duration for this role.
-   */
-  get duration(): Fraction {
-    return this.atoms.reduce((a, b) => a.plus(b.duration), ZERO);
-  }
-}
-
-export class Line extends Entity {
-  cycle: TSU.Nullable<Cycle> = null;
-  // atoms: TSU.StringMap<Atom[]> = {};
-  roles: Role[] = [];
-
-  constructor(config: any = null) {
-    super((config = config || {}));
-    this.cycle = config.cycle || null;
-  }
-
-  debugValue(): any {
-    return { ...super.debugValue(), cycle: this.cycle?.debugValue(), roles: this.roles.map((r) => r.debugValue()) };
-  }
-
-  /**
-   * Returns the type of this Entity.
-   */
-  get type(): unknown {
-    return "Line";
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another.cycle = this.cycle?.clone() || null;
-    another.roles = this.roles.map((r) => r.clone());
-  }
-
-  addAtoms(roleName: string, ...atoms: Atom[]): this {
-    const role = this.ensureRole(roleName);
-    role.addAtoms(...atoms);
-    return this;
-  }
-
-  ensureRole(roleName: string): Role {
-    // Ensure we have this many roles
-    let ri = this.roles.findIndex((r) => r.name == roleName);
-    if (ri < 0) {
-      ri = this.roles.length;
-      this.roles.push(new Role(this, roleName));
-    }
-    return this.roles[ri];
-  }
-
-  /**
-   * Returns the maximum duration of all roles in this line.
-   */
-  get duration(): Fraction {
-    let max = ZERO;
-    for (const role of this.roles) {
-      max = TSU.Num.Fraction.max(role.duration, max);
-    }
-    return max;
-  }
-}
-
 export class LayoutParams extends Entity {
   aksharasPerBeat: number;
   cycle: Cycle;
   protected _lineBreaks: number[];
-  private _rowStartOffsets: Fraction[] = [];
-  private _rowEndOffsets: Fraction[] = [];
-  private _rowDurations: Fraction[] = [];
-  private _totalLayoutDuration = ZERO;
-  private _totalBeats = 0;
+  private _rowStartOffsets: Fraction[];
+  private _rowEndOffsets: Fraction[];
+  private _rowDurations: Fraction[];
+  private _totalLayoutDuration;
   private _beatLayouts: CyclePosition[][];
+  private _totalBeats: number;
 
-  constructor(config: any) {
-    super(config);
+  constructor(config?: any) {
+    super((config = config || {}));
     this.aksharasPerBeat = config.aksharasPerBeat || 1;
     if ("cycle" in config) this.cycle = config.cycle;
     if (!this.cycle || this.cycle.duration.isZero) {
       this.cycle = Cycle.DEFAULT;
     }
-    this.lineBreaks = config.layout || [];
+
+    this._rowStartOffsets = [];
+    this._rowEndOffsets = [];
+    this._rowDurations = [];
+    this._totalLayoutDuration = ZERO;
+    this._totalBeats = 0;
+    this._beatLayouts = [];
+    this.lineBreaks = config.lineBreaks || config.layout || [];
   }
 
   equals(another: this): boolean {
@@ -655,6 +545,14 @@ export class LayoutParams extends Entity {
     };
   }
 
+  /**
+   * Returns the "location" of a beat within a layout.
+   *
+   * Lines are broken into beats of notes (which can be changed) and those beats
+   * are aligned as per the specs in the LayoutParams (breaks).
+   *
+   * TODO - What is this method actually for?
+   */
   getBeatOffset(beatIndex: number): [number, number, number] {
     const modIndex = beatIndex % this.totalBeats;
     let total = 0;
@@ -708,8 +606,8 @@ export class LayoutParams extends Entity {
     });
     this._totalBeats = this.lineBreaks.reduce((a, b) => a + b, 0);
     this._rowDurations = this._beatLayouts.map((beats) => beats.reduce((x, y) => x.plus(y[0]), ZERO));
-    this._rowStartOffsets = this._rowDurations.map((rd, index) => {
-      return index == 0 ? ZERO : this._rowStartOffsets[index - 1].plus(rd);
+    this._rowDurations.forEach((rd, index) => {
+      this._rowStartOffsets[index] = index == 0 ? ZERO : this._rowStartOffsets[index - 1].plus(rd);
     });
     this._rowEndOffsets = this._rowDurations.map((rd, index) => {
       return this._rowStartOffsets[index].plus(rd);
@@ -769,5 +667,77 @@ export class LayoutParams extends Entity {
     // offset = atom.offset % totalLayoutDuration - rowOffset[layoutLine]
     const layoutOffset = m1.minus(this._rowStartOffsets[layoutLine]);
     return [layoutLine, layoutOffset];
+  }
+}
+
+export class Line extends Entity {
+  roles: Role[] = [];
+  layoutParams: LayoutParams | null = null;
+
+  debugValue(): any {
+    return {
+      ...super.debugValue(),
+      roles: this.roles.map((r) => r.debugValue()),
+      layoutParams: this.layoutParams?.uuid,
+    };
+  }
+
+  copyTo(another: this): void {
+    super.copyTo(another);
+    another.roles = this.roles.map((r) => r.clone());
+  }
+
+  addAtoms(roleName: string, ...atoms: Atom[]): this {
+    const role = this.ensureRole(roleName);
+    role.addAtoms(...atoms);
+    return this;
+  }
+
+  ensureRole(roleName: string): Role {
+    // Ensure we have this many roles
+    let ri = this.roles.findIndex((r) => r.name == roleName);
+    if (ri < 0) {
+      ri = this.roles.length;
+      this.roles.push(new Role(this, roleName));
+    }
+    return this.roles[ri];
+  }
+
+  /**
+   * Returns the maximum duration of all roles in this line.
+   */
+  get duration(): Fraction {
+    let max = ZERO;
+    for (const role of this.roles) {
+      max = TSU.Num.Fraction.max(role.duration, max);
+    }
+    return max;
+  }
+}
+
+export class Role extends Entity {
+  atoms: Atom[] = [];
+  private layoutLine = -1;
+
+  constructor(public readonly line: Line, public readonly name: string) {
+    super();
+  }
+  debugValue(): any {
+    return { name: this.name, atoms: this.atoms.map((a) => a.debugValue()) };
+  }
+
+  addAtoms(...atoms: Atom[]): void {
+    for (const atom of atoms) this.atoms.push(atom);
+  }
+
+  copyTo(another: Role): void {
+    another.addAtoms(...this.atoms);
+  }
+
+  /**
+   * Duration for this role.
+   */
+  get duration(): Fraction {
+    return this.atoms.reduce((a, b) => a.plus(b.duration), ZERO);
   }
 }

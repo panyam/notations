@@ -3,7 +3,17 @@ import * as G from "galore";
 import * as TLEX from "tlex";
 import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models";
 import { Command, CmdParam } from "./models";
-import { RawEmbedding, ApplyLayout, AddAtoms, SetCycle, SetAPB, SetBreaks, ActivateRole, CreateRole, CreateLine } from "./commands";
+import {
+  RawEmbedding,
+  ApplyLayout,
+  AddAtoms,
+  SetCycle,
+  SetAPB,
+  SetBreaks,
+  ActivateRole,
+  CreateRole,
+  CreateLine,
+} from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -297,7 +307,7 @@ export class V4Parser {
       return new CreateRole(params);
     } else if (lName == "layout") {
       return new ApplyLayout(params);
-    } else if (lName == "aksharasPerBeat") {
+    } else if (lName == "aksharasperbeat") {
       return new SetAPB(params);
     } else if (lName == "breaks") {
       return new SetBreaks(params);
@@ -312,7 +322,6 @@ export class V4Parser {
   addCommand(cmd: Command): void {
     cmd.index = this.commands.length;
     this.commands.push(cmd);
-    // cmd.applyToNotation(this.notation);
   }
 
   parse(input: string): any {
