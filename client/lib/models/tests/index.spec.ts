@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { LayoutParams, AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
+import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
+import { LayoutParams } from "../layouts";
 import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;

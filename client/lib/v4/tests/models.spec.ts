@@ -54,10 +54,11 @@ function expectNotation(notation: Notation, expected: any) {
       } else {
         const line = found as Line;
         expect(line.roles.map((r) => r.debugValue())).toEqual(block.roles);
+        const lpForLine = notation.layoutParamsForLine(line);
         if (typeof block.layoutParams === "number") {
-          expect(line.layoutParams).toBe(notation.unnamedLayoutParams[block.layoutParams]);
+          expect(lpForLine).toBe(notation.unnamedLayoutParams[block.layoutParams]);
         } else {
-          expect(line.layoutParams).toBe(notation.namedLayoutParams.get(block.layoutParams));
+          expect(lpForLine).toBe(notation.namedLayoutParams.get(block.layoutParams));
         }
       }
     }

@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { LayoutParams, Cycle, Entity, Line } from "../models";
-import { FlatAtom, Beat, BeatsBuilder } from "../models/iterators";
+import { Cycle, Entity, Line } from "../models";
+import { LayoutParams, Beat, BeatsBuilder } from "../models/layouts";
 
 export class RawBlock extends Entity {
   content: string;
@@ -66,9 +66,18 @@ export class Notation extends Entity {
   private _namedLayoutParams = new Map<string, LayoutParams>();
   roles: Role[] = [];
   blocks: (Line | RawBlock)[] = [];
+  private lpsForLine = new Map<number, LayoutParams>();
   currentAPB = 1;
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
+
+  layoutParamsForLine(line: Line): null | LayoutParams {
+    return this.lpsForLine.get(line.uuid) || null;
+  }
+
+  setLayoutParamsForLine(line: Line, layoutParams: LayoutParams): void {
+    this.lpsForLine.set(line.uuid, layoutParams);
+  }
 
   get unnamedLayoutParams(): ReadonlyArray<LayoutParams> {
     return this._unnamedLayoutParams;
@@ -239,21 +248,5 @@ export class Notation extends Entity {
         );
       }) || null
     );
-  }
-}
-
-/**
- * Given a line which contains its atoms in Roles, LineBeats is
- * a grouping of atoms by Beat (as per the specs defined in LayoutParams).
- */
-export class LineBeats {
-  roleBeats: Beat[][];
-  constructor(public readonly line: Line) {
-    this.roleBeats = [];
-    for (const role of line.roles) {
-      const bb = new BeatsBuilder(role, line.layoutParams!);
-      bb.addAtoms(...role.atoms);
-      this.roleBeats.push(bb.beats);
-    }
   }
 }

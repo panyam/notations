@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { LayoutParams, Cycle, Literal, Atom, AtomType, Note, Syllable } from "../models";
+import { Cycle, Literal, Atom, AtomType, Note, Syllable } from "../models";
+import { LayoutParams } from "../models/layouts";
 import { Command, RawBlock, Notation } from "./models";
 import { parseCycle } from "../loaders/utils";
 const MarkdownIt = require("markdown-it");
@@ -59,11 +60,12 @@ export class AddAtoms extends Command {
       }
       return a;
     });
-    if (notation.currentLine.layoutParams == null) {
-      notation.currentLine.layoutParams = notation.layoutParams;
+    const lpForLine = notation.layoutParamsForLine(notation.currentLine);
+    if (lpForLine == null) {
+      notation.setLayoutParamsForLine(notation.currentLine, notation.layoutParams);
     } else {
       TSU.assert(
-        notation.currentLine.layoutParams == notation.layoutParams,
+        lpForLine == notation.layoutParams,
         "Layout parameters have changed so a new line should have been started",
       );
     }

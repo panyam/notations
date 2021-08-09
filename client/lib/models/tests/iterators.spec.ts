@@ -1,6 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { LayoutParams, Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note } from "../";
-import { Beat, BeatsBuilder, FlatAtom, AtomIterator, DurationIterator } from "../iterators";
+import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note } from "../";
+import { FlatAtom, AtomIterator, DurationIterator } from "../iterators";
+import { LayoutParams, Beat, BeatsBuilder } from "../layouts";
 import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;
