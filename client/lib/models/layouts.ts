@@ -236,6 +236,7 @@ export class BeatLayout {
     }
   }
   */
+  readonly DEBUG = true;
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
     let currLayoutLine = 0;
     const lp = this.layoutParams;
@@ -247,18 +248,20 @@ export class BeatLayout {
       // Lay one role at a time upto numBeatsInLine number of beats
       let numDone = 0;
       for (let currRole = 0; currRole < beatIndexes.length; currRole++) {
-      let maxHeight = 0;
-      let currX = 0;
+        let maxHeight = 0;
+        let currX = 0;
         const roleBeats = allRoleBeats[currRole];
         let beatIndex = beatIndexes[currRole];
         for (let i = 0; i < numBeatsInRow && beatIndex < roleBeats.length; i++, beatIndex++, numDone++) {
           const currBeat = roleBeats[beatIndex];
           const beatView = beatViewDelegate.viewForBeat(currBeat);
-          beatView.x = currX;
           beatView.y = currY;
-          beatView.applyLayout();
-          maxHeight = Math.max(maxHeight, beatView.height);
-          currX += beatView.width;
+          if (this.DEBUG) {
+            beatView.x = currX;
+            beatView.applyLayout();
+            currX += beatView.width;
+          }
+          maxHeight = Math.max(maxHeight, beatView.minHeight);
         }
         beatIndexes[currRole] = beatIndex;
         currY += maxHeight;

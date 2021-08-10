@@ -92,17 +92,6 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     }
   }
 
-  renderBlock(raw: RawBlock): void {
-    const md = new MarkdownIt({
-      html: true,
-    });
-    const tokens = md.parse(raw.content.trim(), {});
-    const html = md.renderer.render(tokens, { langPrefix: "v4_" });
-    const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
-    div.innerHTML = html;
-    this.currentSVGElement = null;
-  }
-
   renderLine(line: Line): void {
     const lineView = this.ensureLineView(line);
     // For beats in this line - ensure beatViews exists
@@ -118,6 +107,17 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     // Layout the "rows" for this line - x has already been set by the
     // previous column spacing step
     lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
+  }
+
+  renderBlock(raw: RawBlock): void {
+    const md = new MarkdownIt({
+      html: true,
+    });
+    const tokens = md.parse(raw.content.trim(), {});
+    const html = md.renderer.render(tokens, { langPrefix: "v4_" });
+    const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
+    div.innerHTML = html;
+    this.currentSVGElement = null;
   }
 }
 
@@ -235,78 +235,64 @@ class TextBeatView implements BeatView {
     }
 
     this.setStyles(config || {});
-    this.refreshBBox();
+    this._bbox = this.rootElement.getBBox();
+    this._width = -1;
   }
 
   protected _bbox: SVGRect;
+
+  // Custom settable width different bbox.width
+  // <ve implies using evaled width
+  protected _width: number;
   xChanged = true;
   yChanged = true;
   widthChanged = true;
   heightChanged = true;
 
-  protected refreshBBox(): SVGRect {
-    this._bbox = this.rootElement.getBBox();
-    // Due to safari bug which returns really crazy span widths!
-    /*
-    if (Browser.is_safari) {
-      const clientRect = this.element.getClientRects()[0];
-      if (clientRect) {
-        const parentClientRect = this.element.parentElement?.getBoundingClientRect();
-        this._bbox.x = this._bbox.x + clientRect.x - (parentClientRect?.x || 0);
-        // this._bbox.y = clientRect.y; //  - (parentClientRect?.y || 0);
-        this._bbox.width = clientRect.width;
-        this._bbox.height = clientRect.height;
-      }
-    }
-    */
-    this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
-    return this._bbox;
-  }
-
   get bbox(): SVGRect {
     if (!this._bbox) {
-      this.refreshBBox();
+      this._bbox = this.rootElement.getBBox();
     }
     return this._bbox;
   }
 
   get x(): number {
-    return this.xChanged ? this.bbox.x : this._bbox.x;
+    return this.bbox.x;
   }
 
   set x(x: number) {
     // remove the dx attribute
-    if (x != this._bbox.x) {
-      this.rootElement.setAttribute("x", "" + x);
-      this._bbox.x = x;
+    if (x != this.bbox.x) {
+      this.bbox.x = x;
+      this.xChanged = true;
     }
   }
 
   get y(): number {
-    return this.yChanged ? this.bbox.y : this._bbox.y;
+    return this.bbox.y;
   }
 
   set y(y: number) {
     // remove the dx attribute
-    if (y != this._bbox.y) {
-      this.rootElement.setAttribute("y", "" + y);
-      this._bbox.y = y;
+    if (y != this.bbox.y) {
+      this.bbox.y = y;
+      this.yChanged = true;
     }
   }
 
   get width(): number {
-    return this.widthChanged ? this.bbox.width : this._bbox.width;
+    return this._width < 0 ? this.bbox.width : this._width;
   }
 
   set width(value: number) {
-    if (this._bbox.width != value) {
-      this._bbox.width = value;
+    if (this._width != value) {
+      this._width = value;
       this.widthChanged = true;
     }
   }
 
   get height(): number {
-    return this.heightChanged ? this.bbox.height : this._bbox.height;
+    return this.bbox.height;
   }
 
   setStyles(config: any): void {
@@ -330,6 +316,7 @@ class TextBeatView implements BeatView {
       });
 
       for (const e of this._embelishments) e.refreshLayout();
+      this._bbox = null as unknown as SVGRect;
     }
     this.xChanged = this.yChanged = false;
     this.widthChanged = this.heightChanged = false;
