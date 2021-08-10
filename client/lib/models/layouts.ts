@@ -172,8 +172,9 @@ export class Beat {
  *
  */
 export class BeatLayout {
-  // beatColumns[i][j] returns all beats in a particular layoutLine and layoutColumn
-  // the purpose of beatColumns is to ensure horizontal alignment of beats in a single column
+  // beatColumns[i][j] returns all beats in a particular layoutLine and
+  // layoutColumn the purpose of beatColumns is to ensure horizontal alignment
+  // of beats in a single column
   beatColumns: BeatColumn[][];
 
   // beatRows[i][j] returns beats in line (by id) i and row j
@@ -236,7 +237,21 @@ export class BeatLayout {
     }
   }
   */
-  readonly DEBUG = true;
+
+  readonly DEBUG = false;
+  evalColumnSizes(beatViewDelegate: BeatViewDelegate): void {
+    for (let line = 0; line < this.beatColumns.length; line++) {
+      const cols = this.beatColumns[line];
+      let currX = 0;
+      for (let col = 0; col < cols.length; col++) {
+        const bcol = cols[col];
+        const colWidth = bcol.evalMaxWidth(beatViewDelegate);
+        bcol.setX(currX, beatViewDelegate);
+        currX += colWidth;
+      }
+    }
+  }
+
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
     let currLayoutLine = 0;
     const lp = this.layoutParams;
@@ -312,9 +327,12 @@ export class BeatColumn {
     return this._x;
   }
 
-  set x(val: number) {
+  setX(val: number, beatViewDelegate: BeatViewDelegate): void {
     this._x = val;
-    this.needsLayout = true;
+    for (const beat of this.beats) {
+      const beatView = beatViewDelegate.viewForBeat(beat);
+      beatView.x = val;
+    }
   }
 
   get maxWidth(): number {
@@ -328,6 +346,18 @@ export class BeatColumn {
     if (right >= 0) {
       this.paddingRight = right;
     }
+  }
+
+  evalMaxWidth(beatViewDelegate: BeatViewDelegate): number {
+    this._maxWidth = 0;
+    for (const beat of this.beats) {
+      const beatView = beatViewDelegate.viewForBeat(beat);
+      const minWidth = beatView.minWidth;
+      if (minWidth > this._maxWidth) {
+        this._maxWidth = minWidth;
+      }
+    }
+    return this._maxWidth;
   }
 
   /**

@@ -77,36 +77,43 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
    * Key thing is here is an opportunity to perform any batch rendering as needed.
    */
   refreshLayout(): void {
+    const lines = [] as Line[];
+    const lineViews = [] as LineView[];
     for (const block of this.notation.blocks) {
       if (block.type == "RawBlock") {
         // Add the markdown here
         this.renderBlock(block as RawBlock);
       } else {
-        this.renderLine(block as Line);
+        lines.push(block as Line);
+        const lineView = this.renderLine(block as Line);
+        lineViews.push(lineView);
       }
     }
+
+    // Eval column sizes all beat layouts
+    for (const bl of this.beatLayouts.values()) {
+      bl.evalColumnSizes(this);
+    }
+
     // now that all spacing has been calculated
     // go through all
     for (const beatView of this.beatViews.values()) {
       beatView.applyLayout();
     }
+
+    // Set line view preferred sizes
+    for (const lineView of lineViews) {
+      const ps = lineView.prefSize;
+      lineView.setSize(ps.width, ps.height);
+    }
   }
 
-  renderLine(line: Line): void {
+  renderLine(line: Line): LineView {
     const lineView = this.ensureLineView(line);
-    // For beats in this line - ensure beatViews exists
-    /*
-    for (const role of lineView.beatsByLineRole) {
-      for (const beat of role) {
-        this.viewForBeat(beat);
-      }
-    }
-    */
-    // Do column spacing
-
     // Layout the "rows" for this line - x has already been set by the
     // previous column spacing step
     lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
+    return lineView;
   }
 
   renderBlock(raw: RawBlock): void {
@@ -165,7 +172,6 @@ export class LineView extends TSV.EntityView<Line> {
 
     // Update all embelishments here before calculating preferred size
     // this.atomLayout.refreshEmbelishments();
-
     const ps = this.prefSize;
     this.setSize(ps.width, ps.height);
   }
@@ -190,16 +196,12 @@ export class LineView extends TSV.EntityView<Line> {
 }
 
 class TextBeatView implements BeatView {
-  protected paddingLeft: number;
-  protected paddingRight: number;
   protected atomSpacing: number;
   needsLayout = true;
   private _embelishments: Embelishment[];
   private atomViews: AtomView[] = [];
   rootElement: SVGTextElement;
   constructor(public readonly beat: Beat, rootElement: Element, config?: any) {
-    this.paddingLeft = 0;
-    this.paddingRight = 0;
     this.atomSpacing = 2;
     this.rootElement = TSU.DOM.createSVGNode("text", {
       parent: rootElement,
@@ -296,8 +298,6 @@ class TextBeatView implements BeatView {
   }
 
   setStyles(config: any): void {
-    if ("paddingLeft" in config) this.paddingLeft = config.paddingLeft;
-    if ("paddingRight" in config) this.paddingRight = config.paddingRight;
     if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
     this.needsLayout = true;
   }
@@ -325,10 +325,7 @@ class TextBeatView implements BeatView {
 
   get minWidth(): number {
     return (
-      this.atomViews.reduce((total, view) => total + view.width, 0) +
-      this.paddingLeft +
-      this.paddingRight +
-      this.atomSpacing * (this.atomViews.length - 1)
+      this.atomViews.reduce((total, view) => total + view.width, 0) + this.atomSpacing * (this.atomViews.length - 1)
     );
   }
 
