@@ -1,10 +1,11 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Line, Role, Atom } from "../models";
+import { AtomType, Line, Syllable, Note, Literal } from "../models";
 import { Embelishment, BeatLayout, BeatView, LayoutParams, Beat } from "../models/layouts";
 import { FlatAtom } from "../models/iterators";
 import { Notation, RawBlock } from "../../lib/v4/models";
 import { AtomView } from "../rendering/Core";
+import { createAtomView } from "../rendering/AtomViews";
 import { BarLayout } from "../rendering/Layouts";
 const MarkdownIt = require("markdown-it");
 
@@ -14,10 +15,6 @@ const ZERO = TSU.Num.Fraction.ZERO;
 interface BeatViewDelegate {
   // A way to create all beats for an entire Line in one go (instead of one by one)
   viewForBeat(beat: Beat): BeatView;
-}
-
-export interface AtomViewProvider {
-  createAtomView(beat: Beat, flatAtom: FlatAtom, beforeAtom: null | FlatAtom): AtomView;
 }
 
 export class NotationView extends TSV.EntityView<Notation> implements BeatViewDelegate {
@@ -112,43 +109,6 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
         this.viewForBeat(beat);
       }
     }
-
-    // The confusion is we have beats broken up and saved in columns
-    // but we are loosing how a line is supposed to access it in its own way
-    // we have beatsByRole for getting all beats for a role (in a line) sequentially
-    // we have beatColumns for getting all beats in a particular column across all lines
-    // and roles globally.
-    //
-    // What we want here is for a given line get all roles, their beats in zipped way:
-    //
-    // eg for a Line with 3 roles and say 10 beats each (with the breaks of 4, 1)
-    // we need:
-    //
-    // R1 B1 R1 B2 R1 B3 R1 B4
-    // R2 B1 R2 B2 R2 B3 R2 B4
-    // R3 B1 R3 B2 R3 B3 R3 B4
-    //
-    // R1 B5
-    // R2 B5
-    // R3 B5
-    //
-    // R1 B6 R1 B7 R1 B8 R1 B9
-    // R2 B6 R2 B7 R2 B8 R2 B9
-    // R3 B6 R3 B7 R3 B8 R3 B9
-    //
-    // R1 B10
-    // R2 B10
-    // R3 B10
-    //
-    //
-    // Here we have 5 distinct beat columns:
-    //
-    // 1: R1B1, R2B1, R3B1, R1B6, R2B6, R3B6,
-    // 2: R1B2, R2B2, R3B2, R1B7, R2B7, R3B7,
-    // 3: R1B3, R2B3, R3B3, R1B8, R2B8, R3B8,
-    // 4: R1B4, R2B4, R3B4, R1B9, R2B9, R3B9,
-    // 5: R1B5, R2B5, R3B5, R1B10, R2B10, R3B10,
-    //
   }
 }
 
@@ -178,8 +138,6 @@ export class LineView extends TSV.EntityView<Line> {
   }
 
   get prefSize(): TSV.Size {
-    // TODO - we need a way to differentiate this as when
-    // called *before* and *after* a layout.
     const bbox = (this.rootElement as SVGSVGElement).getBBox();
     return new TSV.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
   }
@@ -207,7 +165,7 @@ export class LineView extends TSV.EntityView<Line> {
   viewForBeat(beat: Beat): BeatView {
     if (!this.beatViews.has(beat.uuid)) {
       // how to get the bar and beat index for a given beat in a given row?
-      const b = new TextBeatView(beat);
+      const b = new TextBeatView(beat, this.rootElement);
       // Check if this needs bar start/end lines?
       this.beatViews.set(beat.uuid, b);
       return b;
@@ -223,8 +181,56 @@ export class LineView extends TSV.EntityView<Line> {
 }
 
 class TextBeatView implements BeatView {
-  private views: AtomView[] = [];
-  constructor(public readonly beat: Beat) {}
+  protected paddingLeft: number;
+  protected paddingRight: number;
+  protected atomSpacing: number;
+  needsLayout = true;
+  private _embelishments: Embelishment[];
+  private atomViews: AtomView[] = [];
+  rootElement: SVGTextElement;
+  constructor(public readonly beat: Beat, rootElement: Element, config?: any) {
+    this.paddingLeft = 0;
+    this.paddingRight = 0;
+    this.atomSpacing = 2;
+    this.rootElement = TSU.DOM.createSVGNode("text", {
+      parent: rootElement,
+      attrs: {
+        class: "roleAtomsText",
+        // y: "0%",
+        style: "dominant-baseline: hanging",
+        beatId: beat.uuid,
+        id: "beat" + beat.uuid,
+        roleName: beat.role.name,
+        layoutLine: beat.layoutLine,
+        layoutColumn: beat.layoutColumn,
+        beatIndex: beat.index,
+      },
+    }) as SVGTextElement;
+
+    // create the children
+    this._embelishments = [];
+    for (const flatAtom of beat.atoms) {
+      const atom = flatAtom.atom;
+      if (atom.type != AtomType.SYLLABLE && atom.type != AtomType.NOTE && atom.type != AtomType.SPACE) {
+        if (atom.type == AtomType.LITERAL) {
+          // convert to note or syllable here
+          if (beat.role.defaultToNotes) {
+            flatAtom.atom = new Note((atom as Literal).value, atom.duration);
+          } else {
+            flatAtom.atom = new Syllable((atom as Literal).value, atom.duration);
+          }
+        } else {
+          throw new Error("Only notes, syllables and spaces allowed");
+        }
+      }
+      const atomView = createAtomView(this.rootElement, flatAtom);
+      atomView.depth = flatAtom.depth;
+      this.atomViews.push(atomView);
+      this._embelishments.push(...atomView.embelishments);
+    }
+
+    this.setStyles(config || {});
+  }
 
   private _x: number;
   private _y: number;
@@ -235,47 +241,73 @@ class TextBeatView implements BeatView {
     return this._x;
   }
 
+  set x(value: number) {
+    if (this._x != value) {
+      this._x = value;
+      this.needsLayout = true;
+    }
+  }
+
   get y(): number {
     return this._y;
+  }
+
+  set y(value: number) {
+    if (this._y != value) {
+      this._y = value;
+      this.needsLayout = true;
+    }
   }
 
   get width(): number {
     return this._width;
   }
 
+  set width(value: number) {
+    if (this._width != value) {
+      this._width = value;
+      this.needsLayout = true;
+    }
+  }
+
   get height(): number {
     return this._height;
   }
 
-  /*
-  add(atomView: AtomView): void {
-    const bb = atomView.bbox;
-    this.views.push(atomView);
+  setStyles(config: any): void {
+    if ("paddingLeft" in config) this.paddingLeft = config.paddingLeft;
+    if ("paddingRight" in config) this.paddingRight = config.paddingRight;
+    if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
+    this.needsLayout = true;
   }
- */
 
   layout(): void {
-    /*
-    const startX = this.beatCol.x + this.beatCol.paddingLeft;
+    const startX = this.x + this.paddingLeft;
 
     // All our atoms have to be laid out between startX and endX
     let currX = startX;
-    this.views.forEach((av) => {
+    this.atomViews.forEach((av) => {
       av.x = currX;
-      currX += av.bbox.width + this.beatCol.atomSpacing;
+      currX += av.bbox.width + this.atomSpacing;
     });
-    */
+
+    for (const e of this._embelishments) e.refreshLayout();
   }
 
   get minWidth(): number {
-    return this.views.reduce((total, view) => total + view.bbox.width, 0);
+    return (
+      this.atomViews.reduce((total, view) => total + view.width, 0) +
+      this.paddingLeft +
+      this.paddingRight +
+      this.atomSpacing * (this.atomViews.length - 1)
+    );
   }
 
   get minHeight(): number {
-    return this.views.reduce((total, view) => total + view.bbox.width, 0);
+    return this.atomViews.reduce((total, view) => Math.max(total, view.width), 0);
   }
 
   get embelishments(): Embelishment[] {
-    return [];
+    return this._embelishments;
   }
 }

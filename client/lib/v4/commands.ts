@@ -50,16 +50,6 @@ export class AddAtoms extends Command {
       throw new Error("Current role is invalid");
     }
     // Ensure a line exists
-    const finalised = this.atoms.map((a) => {
-      if (a.type == AtomType.LITERAL) {
-        if (roleDef.notesOnly) {
-          a = new Note((a as Literal).value, a.duration);
-        } else {
-          a = new Syllable((a as Literal).value, a.duration);
-        }
-      }
-      return a;
-    });
     const lpForLine = notation.layoutParamsForLine(notation.currentLine);
     if (lpForLine == null) {
       notation.setLayoutParamsForLine(notation.currentLine, notation.layoutParams);
@@ -69,7 +59,8 @@ export class AddAtoms extends Command {
         "Layout parameters have changed so a new line should have been started",
       );
     }
-    notation.currentLine.addAtoms(roleDef.name, ...finalised);
+    const finalised = this.atoms;
+    notation.currentLine.addAtoms(roleDef.name, roleDef.notesOnly, ...finalised);
   }
 }
 

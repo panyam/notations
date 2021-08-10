@@ -11,6 +11,7 @@ export interface Embelishment {
 
 export interface BeatView {
   readonly beat: Beat;
+  readonly needsLayout: boolean;
   readonly minHeight: number;
   readonly minWidth: number;
   x: number;
@@ -19,6 +20,7 @@ export interface BeatView {
   height: number;
   layout(): void;
   get embelishments(): Embelishment[];
+  setStyles(config: any): void;
 }
 
 export class Beat {
@@ -26,6 +28,8 @@ export class Beat {
   layoutLine = -1;
   layoutColumn = -1;
   readonly uuid = Beat.idCounter++;
+  // Should this be as flat Atoms or should we keep it as atoms and breakdown
+  // later?
   readonly atoms: FlatAtom[] = [];
   constructor(
     public readonly index: number,
@@ -126,6 +130,41 @@ export class Beat {
 
 /**
  * Grouping of beats by their column based on the layout params.
+ * The confusion is we have beats broken up and saved in columns
+ * but we are loosing how a line is supposed to access it in its own way
+ * we have beatsByRole for getting all beats for a role (in a line)
+ * sequentially we have beatColumns for getting all beats in a particular
+ * column across all lines and roles globally.
+ *
+ * What we want here is for a given line get all roles, their beats
+ * in zipped way.  eg for a Line with 3 roles and say 10 beats each
+ * (with the breaks of 4, 1) we need:
+ *
+ * R1 B1 R1 B2 R1 B3 R1 B4
+ * R2 B1 R2 B2 R2 B3 R2 B4
+ * R3 B1 R3 B2 R3 B3 R3 B4
+ *
+ * R1 B5
+ * R2 B5
+ * R3 B5
+ *
+ * R1 B6 R1 B7 R1 B8 R1 B9
+ * R2 B6 R2 B7 R2 B8 R2 B9
+ * R3 B6 R3 B7 R3 B8 R3 B9
+ *
+ * R1 B10
+ * R2 B10
+ * R3 B10
+ *
+ *
+ * Here we have 5 distinct beat columns:
+ *
+ * 1: R1B1, R2B1, R3B1, R1B6, R2B6, R3B6,
+ * 2: R1B2, R2B2, R3B2, R1B7, R2B7, R3B7,
+ * 3: R1B3, R2B3, R3B3, R1B8, R2B8, R3B8,
+ * 4: R1B4, R2B4, R3B4, R1B9, R2B9, R3B9,
+ * 5: R1B5, R2B5, R3B5, R1B10, R2B10, R3B10,
+ *
  */
 export class BeatLayout {
   // beatColumns[i][j] returns all beats in a particular layoutLine and layoutColumn
@@ -169,16 +208,10 @@ export class BeatLayout {
     this.columnForBeat.set(beat.uuid, bcol);
     beat.layoutLine = layoutLine;
     beat.layoutColumn = layoutColumn;
-
-    /*
-    const brow = this.beatRows[row];
-    brow.add(beat);
-    this.rowForBeat.set(beat.uuid, brow);
-   */
   }
 
-  // Instnat update ensures that layout happens every time any beat changes in size.
-  // otherwise we ensure batching occurs
+  // Instant update ensures that layout happens every time any beat
+  // changes in sizeotherwise we ensure batching occurs
   /*
   instantUpdate = true;
   changedBeatViews = new Map<number, BeatView>();

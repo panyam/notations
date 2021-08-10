@@ -512,18 +512,20 @@ export class Line extends Entity {
     another.roles = this.roles.map((r) => r.clone());
   }
 
-  addAtoms(roleName: string, ...atoms: Atom[]): this {
-    const role = this.ensureRole(roleName);
+  addAtoms(roleName: string, defaultToNotes: boolean, ...atoms: Atom[]): this {
+    const role = this.ensureRole(roleName, defaultToNotes);
     role.addAtoms(...atoms);
     return this;
   }
 
-  ensureRole(roleName: string): Role {
+  ensureRole(roleName: string, defaultToNotes: boolean): Role {
     // Ensure we have this many roles
     let ri = this.roles.findIndex((r) => r.name == roleName);
     if (ri < 0) {
       ri = this.roles.length;
-      this.roles.push(new Role(this, roleName));
+      const role = new Role(this, roleName);
+      role.defaultToNotes = defaultToNotes;
+      this.roles.push(role);
     }
     return this.roles[ri];
   }
@@ -541,8 +543,8 @@ export class Line extends Entity {
 }
 
 export class Role extends Entity {
+  defaultToNotes = true;
   atoms: Atom[] = [];
-  private layoutLine = -1;
 
   constructor(public readonly line: Line, public readonly name: string) {
     super();

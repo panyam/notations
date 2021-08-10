@@ -9,7 +9,7 @@ export class FlatAtom extends TimedEntity {
   offset: TSU.Num.Fraction;
   isContinuation: boolean;
 
-  constructor(public readonly atom: LeafAtom, config: any = null) {
+  constructor(public atom: LeafAtom, config: any = null) {
     super((config = config || {}));
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;

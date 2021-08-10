@@ -183,10 +183,10 @@ describe("BeatsBuilder", () => {
     const g1 = new Group(ONE, new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
     g1.durationIsMultiplier = true;
     const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
-    l.addAtoms("test", ...atoms);
+    l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
-    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
+    const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
     // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
@@ -416,10 +416,10 @@ describe("BeatsBuilder", () => {
     const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
     g1.durationIsMultiplier = true;
     const atoms = [new Note("P", ONE), g1];
-    l.addAtoms("test", ...atoms);
+    l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
-    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
+    const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
     // console.log("Beats: ", JSON.stringify(beats, getCircularReplacer(), 2));
@@ -472,10 +472,10 @@ describe("BeatsBuilder", () => {
     const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
     g1.durationIsMultiplier = true;
     const atoms = [new Note("P", ONE), g1];
-    l.addAtoms("test", ...atoms);
+    l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
-    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
+    const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
       beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
@@ -540,10 +540,10 @@ describe("BeatsBuilder", () => {
   test("Test uniform spacing with all half beats", () => {
     const l = new Line();
     const atoms = [new Note("P", HALF), new Note("M", HALF), new Note("G", HALF), new Note("R", HALF)];
-    l.addAtoms("test", ...atoms);
+    l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
-    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
+    const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
       beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
@@ -611,10 +611,10 @@ describe("BeatsBuilder", () => {
   test("Test uniform spacing with whole bun uneven size beats", () => {
     const l = new Line();
     const atoms = [new Note("S", ONE), new Note("R", TWO), new Note("G", THREE)];
-    l.addAtoms("test", ...atoms);
+    l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 6 });
-    const bb = new BeatsBuilder(l.ensureRole("test"), lp);
+    const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
       beat.ensureUniformSpaces(lp.aksharasPerBeat);
     };
