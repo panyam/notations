@@ -85,6 +85,11 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
         this.renderLine(block as Line);
       }
     }
+    // now that all spacing has been calculated
+    // go through all
+    for (const beatView of this.beatViews.values()) {
+      beatView.applyLayout();
+    }
   }
 
   renderBlock(raw: RawBlock): void {
@@ -100,15 +105,19 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
 
   renderLine(line: Line): void {
     const lineView = this.ensureLineView(line);
-    const beatsByLineRole = lineView.beatsByLineRole;
-    const beatLayout = lineView.beatLayout;
-
     // For beats in this line - ensure beatViews exists
-    for (const role of beatsByLineRole) {
+    /*
+    for (const role of lineView.beatsByLineRole) {
       for (const beat of role) {
         this.viewForBeat(beat);
       }
     }
+    */
+    // Do column spacing
+
+    // Layout the "rows" for this line - x has already been set by the
+    // previous column spacing step
+    lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
   }
 }
 
@@ -226,48 +235,78 @@ class TextBeatView implements BeatView {
     }
 
     this.setStyles(config || {});
+    this.refreshBBox();
   }
 
-  private _x: number;
-  private _y: number;
-  private _width: number;
-  private _height: number;
+  protected _bbox: SVGRect;
+  xChanged = true;
+  yChanged = true;
+  widthChanged = true;
+  heightChanged = true;
+
+  protected refreshBBox(): SVGRect {
+    this._bbox = this.rootElement.getBBox();
+    // Due to safari bug which returns really crazy span widths!
+    /*
+    if (Browser.is_safari) {
+      const clientRect = this.element.getClientRects()[0];
+      if (clientRect) {
+        const parentClientRect = this.element.parentElement?.getBoundingClientRect();
+        this._bbox.x = this._bbox.x + clientRect.x - (parentClientRect?.x || 0);
+        // this._bbox.y = clientRect.y; //  - (parentClientRect?.y || 0);
+        this._bbox.width = clientRect.width;
+        this._bbox.height = clientRect.height;
+      }
+    }
+    */
+    this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
+    return this._bbox;
+  }
+
+  get bbox(): SVGRect {
+    if (!this._bbox) {
+      this.refreshBBox();
+    }
+    return this._bbox;
+  }
 
   get x(): number {
-    return this._x;
+    return this.xChanged ? this.bbox.x : this._bbox.x;
   }
 
-  set x(value: number) {
-    if (this._x != value) {
-      this._x = value;
-      this.needsLayout = true;
+  set x(x: number) {
+    // remove the dx attribute
+    if (x != this._bbox.x) {
+      this.rootElement.setAttribute("x", "" + x);
+      this._bbox.x = x;
     }
   }
 
   get y(): number {
-    return this._y;
+    return this.yChanged ? this.bbox.y : this._bbox.y;
   }
 
-  set y(value: number) {
-    if (this._y != value) {
-      this._y = value;
-      this.needsLayout = true;
+  set y(y: number) {
+    // remove the dx attribute
+    if (y != this._bbox.y) {
+      this.rootElement.setAttribute("y", "" + y);
+      this._bbox.y = y;
     }
   }
 
   get width(): number {
-    return this._width;
+    return this.widthChanged ? this.bbox.width : this._bbox.width;
   }
 
   set width(value: number) {
-    if (this._width != value) {
-      this._width = value;
-      this.needsLayout = true;
+    if (this._bbox.width != value) {
+      this._bbox.width = value;
+      this.widthChanged = true;
     }
   }
 
   get height(): number {
-    return this._height;
+    return this.heightChanged ? this.bbox.height : this._bbox.height;
   }
 
   setStyles(config: any): void {
@@ -277,17 +316,24 @@ class TextBeatView implements BeatView {
     this.needsLayout = true;
   }
 
-  layout(): void {
-    const startX = this.x + this.paddingLeft;
+  applyLayout(): void {
+    if (this.xChanged) {
+      this.rootElement.setAttribute("x", this.x + "");
+    }
+    if (this.yChanged) {
+      this.rootElement.setAttribute("y", this.y + "");
+    }
+    if (this.widthChanged) {
+      // All our atoms have to be laid out between startX and endX
+      this.atomViews.forEach((av, index) => {
+        if (index > 0) av.dx = this.atomSpacing;
+      });
 
-    // All our atoms have to be laid out between startX and endX
-    let currX = startX;
-    this.atomViews.forEach((av) => {
-      av.x = currX;
-      currX += av.bbox.width + this.atomSpacing;
-    });
-
-    for (const e of this._embelishments) e.refreshLayout();
+      for (const e of this._embelishments) e.refreshLayout();
+    }
+    this.xChanged = this.yChanged = false;
+    this.widthChanged = this.heightChanged = false;
+    this.needsLayout = false;
   }
 
   get minWidth(): number {
@@ -300,7 +346,7 @@ class TextBeatView implements BeatView {
   }
 
   get minHeight(): number {
-    return this.atomViews.reduce((total, view) => Math.max(total, view.width), 0);
+    return this.atomViews.reduce((total, view) => Math.max(total, view.height), 0);
   }
 
   get embelishments(): Embelishment[] {

@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom, CycleIterator, Space, Role, Cycle, CyclePosition } from "./";
+import { Line, Atom, CycleIterator, Space, Role, Cycle, CyclePosition } from "./";
 import { AtomIterator, DurationIterator, FlatAtom } from "./iterators";
 
 type Fraction = TSU.Num.Fraction;
@@ -7,6 +7,11 @@ const ZERO = TSU.Num.Fraction.ZERO;
 
 export interface Embelishment {
   refreshLayout(): void;
+}
+
+interface BeatViewDelegate {
+  // A way to create all beats for an entire Line in one go (instead of one by one)
+  viewForBeat(beat: Beat): BeatView;
 }
 
 export interface BeatView {
@@ -18,7 +23,7 @@ export interface BeatView {
   y: number;
   width: number;
   height: number;
-  layout(): void;
+  applyLayout(): void;
   get embelishments(): Embelishment[];
   setStyles(config: any): void;
 }
@@ -231,6 +236,38 @@ export class BeatLayout {
     }
   }
   */
+  layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
+    let currLayoutLine = 0;
+    const lp = this.layoutParams;
+    const beatIndexes = line.roles.map((l) => 0);
+    let currY = 0;
+    while (true) {
+      const numBeatsInRow = lp.lineBreaks[currLayoutLine];
+
+      // Lay one role at a time upto numBeatsInLine number of beats
+      let numDone = 0;
+      for (let currRole = 0; currRole < beatIndexes.length; currRole++) {
+      let maxHeight = 0;
+      let currX = 0;
+        const roleBeats = allRoleBeats[currRole];
+        let beatIndex = beatIndexes[currRole];
+        for (let i = 0; i < numBeatsInRow && beatIndex < roleBeats.length; i++, beatIndex++, numDone++) {
+          const currBeat = roleBeats[beatIndex];
+          const beatView = beatViewDelegate.viewForBeat(currBeat);
+          beatView.x = currX;
+          beatView.y = currY;
+          beatView.applyLayout();
+          maxHeight = Math.max(maxHeight, beatView.height);
+          currX += beatView.width;
+        }
+        beatIndexes[currRole] = beatIndex;
+        currY += maxHeight;
+      }
+
+      currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
+      if (numDone == 0) break;
+    }
+  }
 }
 
 export class BeatRow {
