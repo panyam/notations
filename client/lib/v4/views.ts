@@ -210,17 +210,13 @@ class TextBeatView implements BeatView {
     // create the children
     this._embelishments = [];
     for (const flatAtom of beat.atoms) {
-      const atom = flatAtom.atom;
-      if (atom.type != AtomType.SYLLABLE && atom.type != AtomType.NOTE && atom.type != AtomType.SPACE) {
-        if (atom.type == AtomType.LITERAL) {
-          // convert to note or syllable here
-          if (beat.role.defaultToNotes) {
-            flatAtom.atom = new Note((atom as Literal).value, atom.duration);
-          } else {
-            flatAtom.atom = new Syllable((atom as Literal).value, atom.duration);
-          }
+      if (flatAtom.atom.type == AtomType.LITERAL) {
+        const lit = flatAtom.atom as Literal;
+        // convert to note or syllable here
+        if (beat.role.defaultToNotes) {
+          flatAtom.atom = new Note(lit.value, lit.duration);
         } else {
-          throw new Error("Only notes, syllables and spaces allowed");
+          flatAtom.atom = new Syllable(lit.value, lit.duration);
         }
       }
       const atomView = createAtomView(this.rootElement, flatAtom);
