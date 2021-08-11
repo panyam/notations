@@ -37,6 +37,7 @@ function loadV4Notation(codeText: string): [Notation, Map<number, Beat[][]>, Map
 
         // Add these to the beat layout too
         for (const beat of bb.beats) {
+          beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
           beatLayout.addBeat(beat);
         }
       }
