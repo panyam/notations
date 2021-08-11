@@ -1,16 +1,12 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { AtomType, Line, Syllable, Note, Literal } from "../models";
+import { Cycle, AtomType, Line, Syllable, Note, Literal } from "../models";
 import { Embelishment, BeatLayout, BeatView, LayoutParams, Beat } from "../models/layouts";
-import { FlatAtom } from "../models/iterators";
 import { Notation, RawBlock } from "../../lib/v4/models";
 import { AtomView } from "../rendering/Core";
 import { createAtomView } from "../rendering/AtomViews";
-import { BarLayout } from "../rendering/Layouts";
+import { BeatStartLines, BeatEndLines } from "../rendering/Embelishments";
 const MarkdownIt = require("markdown-it");
-
-type Fraction = TSU.Num.Fraction;
-const ZERO = TSU.Num.Fraction.ZERO;
 
 interface BeatViewDelegate {
   // A way to create all beats for an entire Line in one go (instead of one by one)
@@ -158,29 +154,11 @@ export class LineView extends TSV.EntityView<Line> {
     return new TSV.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
   }
 
-  /**
-   * Ensures that all atom views are created and laid in respective
-   * line and role views.
-   *
-   * This LineView only creates child views necessary in the most base
-   * form and ensures that atoms are added to these child views.  The
-   * positioning of the atom views is performed by AtomLayout delegate.
-   */
-  layoutChildViews(): void {
-    // Now layout all the AtomRows
-    // this.layoutRows();
-
-    // Update all embelishments here before calculating preferred size
-    // this.atomLayout.refreshEmbelishments();
-    const ps = this.prefSize;
-    this.setSize(ps.width, ps.height);
-  }
-
   beatViews = new Map<number, BeatView>();
   viewForBeat(beat: Beat): BeatView {
     if (!this.beatViews.has(beat.uuid)) {
       // how to get the bar and beat index for a given beat in a given row?
-      const b = new TextBeatView(beat, this.rootElement);
+      const b = new TextBeatView(beat, this.rootElement, this.beatLayout.layoutParams.cycle);
       // Check if this needs bar start/end lines?
       this.beatViews.set(beat.uuid, b);
       return b;
@@ -201,7 +179,7 @@ class TextBeatView implements BeatView {
   private _embelishments: Embelishment[];
   private atomViews: AtomView[] = [];
   rootElement: SVGTextElement;
-  constructor(public readonly beat: Beat, rootElement: Element, config?: any) {
+  constructor(public readonly beat: Beat, rootElement: Element, public readonly cycle: Cycle, config?: any) {
     this.atomSpacing = 5;
     this.rootElement = TSU.DOM.createSVGNode("text", {
       parent: rootElement,
@@ -219,7 +197,6 @@ class TextBeatView implements BeatView {
     }) as SVGTextElement;
 
     // create the children
-    this._embelishments = [];
     for (const flatAtom of beat.atoms) {
       if (flatAtom.atom.type == AtomType.LITERAL) {
         const lit = flatAtom.atom as Literal;
@@ -233,10 +210,10 @@ class TextBeatView implements BeatView {
       const atomView = createAtomView(this.rootElement, flatAtom);
       atomView.depth = flatAtom.depth;
       this.atomViews.push(atomView);
-      this._embelishments.push(...atomView.embelishments);
     }
 
     this.setStyles(config || {});
+
     this._bbox = this.rootElement.getBBox();
     this._width = -1;
   }
@@ -315,7 +292,6 @@ class TextBeatView implements BeatView {
         av.dx = this.atomSpacing;
       });
 
-      for (const e of this._embelishments) e.refreshLayout();
       this._bbox = null as unknown as SVGRect;
     }
     // Since atom views would havechagned position need to reposition embelishments
@@ -324,6 +300,7 @@ class TextBeatView implements BeatView {
         e.refreshLayout();
       }
     });
+    for (const e of this.embelishments) e.refreshLayout();
     this.xChanged = this.yChanged = false;
     this.widthChanged = this.heightChanged = false;
     this.needsLayout = false;
@@ -338,6 +315,30 @@ class TextBeatView implements BeatView {
   }
 
   get embelishments(): Embelishment[] {
-    return [];
+    if (!this._embelishments) {
+      this._embelishments = [];
+      const beat = this.beat;
+      const rootElement = this.rootElement.parentElement as any as SVGGraphicsElement;
+      if (beat.beatIndex == 0 && beat.barIndex == 0) {
+        // first beat in bar - Do a BarStart
+        const emb = new BeatStartLines(this, rootElement);
+        this._embelishments = [emb];
+      } else {
+        const cycle = this.cycle;
+        const bar = cycle.bars[beat.barIndex];
+        if (beat.beatIndex == bar.beatCount - 1) {
+          if (beat.barIndex == cycle.bars.length - 1) {
+            // last beat in last bar so - do a thalam end (2 lines)
+            const emb = new BeatEndLines(this, rootElement, 2);
+            this._embelishments = [emb];
+          } else {
+            // end of a bar so single line end
+            const emb = new BeatEndLines(this, rootElement);
+            this._embelishments = [emb];
+          }
+        }
+      }
+    }
+    return this._embelishments;
   }
 }

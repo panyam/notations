@@ -314,6 +314,7 @@ export class BeatColumn {
     for (const beat of this.beats) {
       const beatView = beatViewDelegate.viewForBeat(beat);
       beatView.x = val + this.paddingLeft;
+      beatView.width = this._maxWidth;
     }
   }
 
