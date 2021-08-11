@@ -300,8 +300,8 @@ export class BeatColumn {
   protected _maxWidth = 0;
   needsLayout = false;
   atomSpacing = 5;
-  paddingLeft = 20;
-  paddingRight = 0;
+  paddingLeft = 15;
+  paddingRight = 15;
   beats: Beat[] = [];
   constructor(public readonly layoutLine: number, public readonly layoutColumn: number) {}
 
