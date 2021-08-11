@@ -202,7 +202,7 @@ class TextBeatView implements BeatView {
   private atomViews: AtomView[] = [];
   rootElement: SVGTextElement;
   constructor(public readonly beat: Beat, rootElement: Element, config?: any) {
-    this.atomSpacing = 2;
+    this.atomSpacing = 5;
     this.rootElement = TSU.DOM.createSVGNode("text", {
       parent: rootElement,
       attrs: {
@@ -312,21 +312,25 @@ class TextBeatView implements BeatView {
     if (this.widthChanged) {
       // All our atoms have to be laid out between startX and endX
       this.atomViews.forEach((av, index) => {
-        if (index > 0) av.dx = this.atomSpacing;
+        av.dx = this.atomSpacing;
       });
 
       for (const e of this._embelishments) e.refreshLayout();
       this._bbox = null as unknown as SVGRect;
     }
+    // Since atom views would havechagned position need to reposition embelishments
+    this.atomViews.forEach((av, index) => {
+      for (const e of av.embelishments) {
+        e.refreshLayout();
+      }
+    });
     this.xChanged = this.yChanged = false;
     this.widthChanged = this.heightChanged = false;
     this.needsLayout = false;
   }
 
   get minWidth(): number {
-    return (
-      this.atomViews.reduce((total, view) => total + view.width, 0) + this.atomSpacing * (this.atomViews.length - 1)
-    );
+    return this.atomViews.reduce((total, view) => total + view.width, 0) + this.atomSpacing * this.atomViews.length;
   }
 
   get minHeight(): number {
@@ -334,6 +338,6 @@ class TextBeatView implements BeatView {
   }
 
   get embelishments(): Embelishment[] {
-    return this._embelishments;
+    return [];
   }
 }

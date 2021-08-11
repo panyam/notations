@@ -216,28 +216,6 @@ export class BeatLayout {
     beat.layoutColumn = layoutColumn;
   }
 
-  // Instant update ensures that layout happens every time any beat
-  // changes in sizeotherwise we ensure batching occurs
-  /*
-  instantUpdate = true;
-  changedBeatViews = new Map<number, BeatView>();
-  markBeatViewChanged(beatView: BeatView, beatIndex: number, lineIndex: number): void {
-    if (this.instantUpdate) {
-      for (let i = beatIndex; i < this.beatColumns[lineIndex].length; i++) {
-        const currSlot = this.beatColumns[lineIndex][i];
-        if (i == 0) {
-          currSlot.x = 0;
-        } else {
-          const prevSlot = this.beatColumns[lineIndex][i - 1];
-          currSlot.x = prevSlot.x + prevSlot.maxWidth + this.beatSpacing * 2;
-        }
-      }
-    } else {
-      this.changedBeats.add(beat.uuid);
-    }
-  }
-  */
-
   readonly DEBUG = false;
   evalColumnSizes(beatViewDelegate: BeatViewDelegate): void {
     for (let line = 0; line < this.beatColumns.length; line++) {
@@ -247,16 +225,18 @@ export class BeatLayout {
         const bcol = cols[col];
         const colWidth = bcol.evalMaxWidth(beatViewDelegate);
         bcol.setX(currX, beatViewDelegate);
-        currX += colWidth;
+        currX += colWidth + bcol.paddingLeft + bcol.paddingRight;
       }
     }
   }
 
+  roleSpacing = 10;
+  rowSpacing = 20;
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
     let currLayoutLine = 0;
     const lp = this.layoutParams;
     const beatIndexes = line.roles.map((l) => 0);
-    let currY = 0;
+    let currY = this.roleSpacing;
     while (true) {
       const numBeatsInRow = lp.lineBreaks[currLayoutLine];
 
@@ -280,9 +260,11 @@ export class BeatLayout {
         }
         beatIndexes[currRole] = beatIndex;
         currY += maxHeight;
+        currY += this.roleSpacing;
       }
 
       currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
+      currY += this.rowSpacing;
       if (numDone == 0) break;
     }
   }
@@ -331,7 +313,7 @@ export class BeatColumn {
     this._x = val;
     for (const beat of this.beats) {
       const beatView = beatViewDelegate.viewForBeat(beat);
-      beatView.x = val;
+      beatView.x = val + this.paddingLeft;
     }
   }
 
