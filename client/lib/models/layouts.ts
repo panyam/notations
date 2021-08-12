@@ -43,6 +43,7 @@ export class Beat {
     public readonly duration: Fraction,
     public readonly barIndex: number,
     public readonly beatIndex: number,
+    public readonly instance: number,
   ) {}
 
   debugValue(): any {
@@ -53,6 +54,7 @@ export class Beat {
       duration: this.duration.toString(),
       barIndex: this.barIndex,
       beatIndex: this.beatIndex,
+      instance: this.instance,
       atoms: this.atoms.map((a) => a.debugValue()),
     };
   }
@@ -398,7 +400,7 @@ export class BeatsBuilder {
   protected addBeat(): Beat {
     const numBeats = this.beats.length;
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
-    const nextCP = this.cycleIter.next().value;
+    const nextCP: [Fraction, number, number, number] = this.cycleIter.next().value;
     const newBeat = new Beat(
       numBeats,
       this.role,
@@ -406,6 +408,7 @@ export class BeatsBuilder {
       nextCP[0].timesNum(this.layoutParams.aksharasPerBeat),
       nextCP[1],
       nextCP[2],
+      nextCP[3],
     );
     this.beats.push(newBeat);
     if (this.onBeatAdded) this.onBeatAdded(newBeat);

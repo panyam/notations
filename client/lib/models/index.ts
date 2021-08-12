@@ -369,13 +369,16 @@ export class Group extends AtomBase {
   }
 }
 
-export type CyclePosition = [Fraction, number, number];
+export type CyclePosition = [Fraction, number, number, number];
 export type CycleIterator = Generator<CyclePosition>;
 
 export class Bar extends TimedEntity {
   name: string;
+  // Length/Duration of each beat.
   beatLengths: Fraction[] = [];
-  // TODO: also add "visuals" at some point
+
+  // How many times should a beat be repeated - the Kalai!
+  beatCounts: number[] = [];
 
   constructor(config: any = null) {
     super((config = config || {}));
@@ -387,6 +390,12 @@ export class Bar extends TimedEntity {
         this.beatLengths.push(bl);
       }
     }
+    for (const bc of config.beatCounts || []) {
+      this.beatCounts.push(bc);
+    }
+    while (this.beatCounts.length < this.beatLengths.length) {
+      this.beatCounts.push(1);
+    }
   }
 
   debugValue(): any {
@@ -396,8 +405,12 @@ export class Bar extends TimedEntity {
   equals(another: this): boolean {
     if (!super.equals(another)) return false;
     if (this.beatLengths.length != another.beatLengths.length) return false;
+    if (this.beatCounts.length != another.beatCounts.length) return false;
     for (let i = 0; i < this.beatLengths.length; i++) {
       if (!this.beatLengths[i].equals(another.beatLengths[i])) return false;
+    }
+    for (let i = 0; i < this.beatCounts.length; i++) {
+      if (this.beatCounts[i] != another.beatCounts[i]) return false;
     }
     return true;
   }
@@ -405,7 +418,8 @@ export class Bar extends TimedEntity {
   copyTo(another: this): void {
     super.copyTo(another);
     another.name = this.name;
-    another.beatLengths = this.beatLengths.slice(0);
+    another.beatLengths = [...this.beatLengths];
+    another.beatCounts = [...this.beatCounts];
   }
 
   get beatCount(): number {
@@ -459,17 +473,23 @@ export class Cycle extends TimedEntity {
     return true;
   }
 
-  *iterateBeats(startBar = 0, startBeat = 0): CycleIterator {
-    let currBar = startBar;
-    let currBeat = startBeat;
+  *iterateBeats(startBar = 0, startBeat = 0, startInstance = 0): CycleIterator {
+    let barIndex = startBar;
+    let beatIndex = startBeat;
+    let instanceIndex = startInstance;
     while (true) {
-      yield [this.bars[currBar].beatLengths[currBeat], currBar, currBeat];
-      currBeat++;
-      if (currBeat >= this.bars[currBar].beatLengths.length) {
-        currBeat = 0;
-        currBar++;
-        if (currBar >= this.bars.length) {
-          currBar = 0;
+      const currBar = this.bars[barIndex];
+      yield [currBar.beatLengths[beatIndex], barIndex, beatIndex, instanceIndex];
+      instanceIndex++;
+      if (instanceIndex >= currBar.beatCounts[beatIndex]) {
+        instanceIndex = 0;
+        beatIndex++;
+        if (beatIndex >= currBar.beatLengths.length) {
+          beatIndex = 0;
+          barIndex++;
+          if (barIndex >= this.bars.length) {
+            barIndex = 0;
+          }
         }
       }
     }
