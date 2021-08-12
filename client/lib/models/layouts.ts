@@ -459,6 +459,7 @@ export class LayoutParams {
   private _totalBeats: number;
 
   constructor(config?: any) {
+    config = config || {};
     this.aksharasPerBeat = config.aksharasPerBeat || 1;
     if ("cycle" in config) this.cycle = config.cycle;
     if (!this.cycle || this.cycle.duration.isZero) {

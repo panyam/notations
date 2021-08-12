@@ -224,7 +224,7 @@ describe("Parser Tests", () => {
   test("Test Duplicate Roles", () => {
     testV4(
       `
-        \\set(aksharasPerBeat = 4)
+        \\aksharasPerBeat(4)
         \\role("sw", notes = true)
         \\role("sh")
 
@@ -240,10 +240,9 @@ describe("Parser Tests", () => {
 
       [
         {
-          name: "SetProperty",
+          name: "SetAPB",
           index: 0,
-          aksharasPerBeat: 4,
-          params: [{ key: "aksharasPerBeat", value: 4 }],
+          params: [{ key: null, value: 4 }],
         },
         {
           name: "CreateRole",

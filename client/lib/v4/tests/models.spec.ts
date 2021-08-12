@@ -96,23 +96,23 @@ describe("Parser Tests", () => {
               name: "sw",
               atoms: [
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "s",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "r",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "g",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "m",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "p",
                 },
                 {
@@ -220,23 +220,23 @@ describe("Parser Tests", () => {
               name: "sw",
               atoms: [
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "s",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "r",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "g",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "m",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "p",
                 },
                 {
@@ -255,23 +255,23 @@ describe("Parser Tests", () => {
               name: "sh",
               atoms: [
                 {
-                  type: "Syllable",
+                  type: "Literal",
                   value: "a",
                 },
                 {
-                  type: "Syllable",
+                  type: "Literal",
                   value: "b",
                 },
                 {
-                  type: "Syllable",
+                  type: "Literal",
                   value: "c",
                 },
                 {
-                  type: "Syllable",
+                  type: "Literal",
                   value: "d",
                 },
                 {
-                  type: "Syllable",
+                  type: "Literal",
                   value: "e",
                 },
                 {
@@ -295,19 +295,19 @@ describe("Parser Tests", () => {
                   octave: 1,
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "n",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "d",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "p",
                 },
                 {
-                  type: "Note",
+                  type: "Literal",
                   value: "m",
                 },
                 {
