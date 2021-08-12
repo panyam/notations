@@ -448,7 +448,7 @@ export class Cycle extends TimedEntity {
     ],
   });
 
-  constructor(config: any = null) {
+  constructor(config: null | { name?: string, bars?: Bar[] } = null) {
     super((config = config || {}));
     this.name = config.name || "";
     this.bars = config.bars || [];
