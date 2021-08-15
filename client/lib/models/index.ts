@@ -448,7 +448,7 @@ export class Cycle extends TimedEntity {
     ],
   });
 
-  constructor(config: null | { name?: string, bars?: Bar[] } = null) {
+  constructor(config: null | { name?: string; bars?: Bar[] } = null) {
     super((config = config || {}));
     this.name = config.name || "";
     this.bars = config.bars || [];
@@ -481,7 +481,7 @@ export class Cycle extends TimedEntity {
       const currBar = this.bars[barIndex];
       yield [currBar.beatLengths[beatIndex], barIndex, beatIndex, instanceIndex];
       instanceIndex++;
-      if (instanceIndex >= currBar.beatCounts[beatIndex]) {
+      if (!currBar.beatCounts[beatIndex] || instanceIndex >= currBar.beatCounts[beatIndex]) {
         instanceIndex = 0;
         beatIndex++;
         if (beatIndex >= currBar.beatLengths.length) {

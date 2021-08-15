@@ -319,13 +319,15 @@ class TextBeatView implements BeatView {
       this._embelishments = [];
       const beat = this.beat;
       const rootElement = this.rootElement.parentElement as any as SVGGraphicsElement;
-      if (beat.beatIndex == 0 && beat.barIndex == 0) {
+      if (beat.beatIndex == 0 && beat.barIndex == 0 && beat.instance == 0) {
         // first beat in bar - Do a BarStart
         const emb = new BeatStartLines(this, rootElement);
         this._embelishments = [emb];
       } else {
         const cycle = this.cycle;
         const bar = cycle.bars[beat.barIndex];
+        // TODO - ensure that we are in the last instance of this beat
+        // since for now we dont have a way of specifying kalai this wont fail
         if (beat.beatIndex == bar.beatCount - 1) {
           if (beat.barIndex == cycle.bars.length - 1) {
             // last beat in last bar so - do a thalam end (2 lines)
