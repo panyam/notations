@@ -128,12 +128,10 @@ export enum AtomType {
   LABEL = "Label",
 }
 
-export type Atom = LeafAtom | Group | Label;
-
-export abstract class AtomBase extends TimedEntity {
+export abstract class Atom extends TimedEntity {
   protected _duration: Fraction;
-  nextSibling: TSU.Nullable<AtomBase> = null;
-  prevSibling: TSU.Nullable<AtomBase> = null;
+  nextSibling: TSU.Nullable<Atom> = null;
+  prevSibling: TSU.Nullable<Atom> = null;
 
   constructor(duration = ONE) {
     super();
@@ -179,7 +177,7 @@ export abstract class AtomBase extends TimedEntity {
   }
 }
 
-export class Label extends AtomBase {
+export class Label extends Atom {
   content: string;
   constructor(content: string, duration = ZERO) {
     super(duration);
@@ -204,7 +202,7 @@ export class Label extends AtomBase {
   }
 }
 
-export abstract class LeafAtom extends AtomBase {}
+export abstract class LeafAtom extends Atom {}
 
 /**
  * Spaces are used to denote either silence or continuations of previous notes.
@@ -312,13 +310,13 @@ export class Note extends Literal {
   }
 }
 
-export class Group extends AtomBase {
+export class Group extends Atom {
   /**
    * This indicates whether our duration is static or linear to number of
    * atoms in this group.
    */
   durationIsMultiplier = false;
-  readonly atoms: TSU.Lists.ValueList<AtomBase> = new TSU.Lists.ValueList<AtomBase>();
+  readonly atoms: TSU.Lists.ValueList<Atom> = new TSU.Lists.ValueList<Atom>();
 
   constructor(duration = ONE, ...atoms: Atom[]) {
     super(duration);

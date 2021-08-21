@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { isSwaramLine, parseNote } from "../patantara";
-import { AtomBase, Space, Note, Group, Syllable } from "../../models/index";
+import { Atom, Space, Note, Group, Syllable } from "../../models/index";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -30,7 +30,7 @@ describe("Patantara Tests", () => {
   });
 
   test("Note Parsing Tests", () => {
-    let atom: AtomBase = parseNote("SNDP");
+    let atom: Atom = parseNote("SNDP");
     expect(atom.equals(new Group(ONE, new Note("S"), new Note("N"), new Note("D"), new Note("P")))).toBe(true);
 
     atom = parseNote("S_N,D,P");

@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { parseSyllable, parseBar, cycleStrToBarsStrs } from "../utils";
-import { AtomBase, Syllable, Space, Note, Group } from "../../models/index";
+import { Atom, Syllable, Space, Note, Group } from "../../models/index";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -61,7 +61,7 @@ describe("Utils Tests", () => {
   });
 
   test("Syllable Parsing Tests", () => {
-    let atom = parseSyllable("SNDP") as AtomBase;
+    let atom = parseSyllable("SNDP") as Atom;
     expect(atom.equals(new Syllable("SNDP"))).toBe(true);
 
     atom = parseSyllable("S_N_D,P");
