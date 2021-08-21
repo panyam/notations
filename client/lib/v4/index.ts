@@ -39,7 +39,8 @@ const [parser, itemGraph] = G.newParser(
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
     %token  SLASH         "/"
-    %token  HYPHEN        "-"
+    // %token  HYPHEN        "-"
+    %skip "-"
     %token  COMMA         ","
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
@@ -87,7 +88,8 @@ const [parser, itemGraph] = G.newParser(
     Atom -> Leaf ;
     Atom -> Duration  Leaf { applyDuration } ;
 
-    Leaf -> ( Space | Lit | Group ) HYPHEN ? ;
+    // Leaf -> ( Space | Lit | Group ) HYPHEN ? ;
+    Leaf -> Space | Lit | Group ;
 
     Space -> COMMA { newSpace } 
           | SEMI_COLON { newDoubleSpace } 
