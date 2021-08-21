@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { parseSyllable, parseProperty, parseCycle } from "./utils";
 
-import { Label, AtomBase, Cycle, AtomType, Atom, Line, Space, Note, Group } from "../models/index";
+import { Label, Cycle, AtomType, Atom, Line, Space, Note, Group } from "../models/index";
 import { Snippet } from "../v3/models";
 
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -267,7 +267,7 @@ export function parseLine(line: string, numGroups = -1): [Atom[], boolean] {
   } else {
     // length < numGroups
     // Here we need to "expand" each atom to be a certain size
-    out = AtomBase.expandAtoms(atoms, 0, length, numGroups);
+    out = Atom.expandAtoms(atoms, 0, length, numGroups);
   }
   return [out, allSwarams];
 }
