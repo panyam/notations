@@ -40,6 +40,10 @@ Cons:
 * Editing semantics is a bit more hacky - if/when we implement backspace - and a note with this flag set is deleted we will have to carry this flag to its predecessor and so on.
 * In general this seems messy - why should a note know if it is before a rest or not?  On the other hand - the rest can be thought off as hint to "trail off" the previous note in effect.
 
+### Parsing Concerns
+
+Currently hyphens are parsed and skipped like spaces.  Both of the above options allow the parsign to continue with extra rules to be added around treating hyphens as Rest atoms instead of skipped tokens.  One option could be to add rest as a suffix for a Leaf rule but this has the problem that continuous hyphens in a row will result in a parse error.  But this is not such a bad thing given we are at early stages and can always add this back if needed instead of providing this all the time.  This will also mean a hyphen can only follow space, syllable or a note and cannot exist freely or as more than one.
+
 ### Choice
 
 Given both options are reversible and wont have any impact on the syntax itself for now Option 2 will be selected.  If this has issues we can revert this another approach.
