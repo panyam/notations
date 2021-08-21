@@ -204,7 +204,10 @@ export class Label extends AtomBase {
   }
 }
 
-export abstract class LeafAtom extends AtomBase {}
+export abstract class LeafAtom extends AtomBase {
+  // Tells if this atom is followed by a rest
+  beforeRest = false;
+}
 
 /**
  * Spaces are used to denote either silence or continuations of previous notes.

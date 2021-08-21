@@ -73,7 +73,11 @@ export class AtomIterator {
     if (this.peeked == null) {
       if (this.hasNext) {
         const [nextAtom, nextDepth, nextDuration] = this.atomQueue.popFront();
-        this.peeked = new FlatAtom(nextAtom, { depth: nextDepth, offset: this.currOffset, duration: nextDuration });
+        this.peeked = new FlatAtom(nextAtom as LeafAtom, {
+          depth: nextDepth,
+          offset: this.currOffset,
+          duration: nextDuration,
+        });
       }
     }
     return this.peeked;
