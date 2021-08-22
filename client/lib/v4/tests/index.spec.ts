@@ -411,6 +411,165 @@ describe("Parser Tests", () => {
     );
   });
 
+  test("Test Rests", () => {
+    testV4(
+      String.raw`
+       \role("sw", notes = true)
+       \role("sh")
+       Sw: - S -- -- - R G M. -
+       Sh: - a b c- d - e - - -
+        `,
+      false,
+      [
+        {
+          name: "CreateRole",
+          index: 0,
+          params: [
+            {
+              key: null,
+              value: "sw",
+            },
+            {
+              key: "notes",
+              value: true,
+            },
+          ],
+        },
+        {
+          name: "CreateRole",
+          index: 1,
+          params: [
+            {
+              key: null,
+              value: "sh",
+            },
+          ],
+        },
+        {
+          name: "ActivateRole",
+          index: 2,
+          params: [
+            {
+              key: null,
+              value: "sw",
+            },
+          ],
+        },
+        {
+          name: "AddAtoms",
+          index: 3,
+          atoms: [
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Literal",
+              value: "S",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Literal",
+              value: "R",
+            },
+            {
+              type: "Literal",
+              value: "G",
+            },
+            {
+              type: "Note",
+              value: "M",
+              octave: 1,
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+          ],
+        },
+        {
+          name: "ActivateRole",
+          index: 4,
+          params: [
+            {
+              key: null,
+              value: "sh",
+            },
+          ],
+        },
+        {
+          name: "AddAtoms",
+          index: 5,
+          atoms: [
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Literal",
+              value: "a",
+            },
+            {
+              type: "Literal",
+              value: "b",
+            },
+            {
+              type: "Literal",
+              value: "c",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Literal",
+              value: "d",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Literal",
+              value: "e",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+            {
+              type: "Rest",
+              duration: "0/1",
+            },
+          ],
+        },
+      ],
+    );
+  });
+
   /*
   test("Test Atoms", () => {
     const notebook = new Notebook();

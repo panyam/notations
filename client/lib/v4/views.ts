@@ -206,6 +206,8 @@ class TextBeatView implements BeatView {
         } else {
           flatAtom.atom = new Syllable(lit.value, lit.duration);
         }
+        // carry over rest info
+        flatAtom.atom.beforeRest = lit.beforeRest;
       }
       const atomView = createAtomView(this.rootElement, flatAtom);
       atomView.depth = flatAtom.depth;

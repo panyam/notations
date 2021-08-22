@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { Literal, AtomType, Note, Atom, Space, Syllable, Group } from "../models";
+import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group } from "../models";
 import { Command, CmdParam } from "./models";
 import {
   RawEmbedding,
@@ -39,8 +39,8 @@ const [parser, itemGraph] = G.newParser(
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
     %token  SLASH         "/"
-    // %token  HYPHEN        "-"
-    %skip "-"
+    %token  HYPHEN        "-"
+    // %skip "-"
     %token  COMMA         ","
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
@@ -87,9 +87,8 @@ const [parser, itemGraph] = G.newParser(
 
     Atom -> Leaf ;
     Atom -> Duration  Leaf { applyDuration } ;
-
-    // Leaf -> ( Space | Lit | Group ) HYPHEN ? ;
-    Leaf -> Space | Lit | Group ;
+    Leaf -> Space | Lit | Group | Rest ;
+    Rest -> HYPHEN { newRest };
 
     Space -> COMMA { newSpace } 
           | SEMI_COLON { newDoubleSpace } 
@@ -206,6 +205,9 @@ export class V4Parser {
     },
     newSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Space();
+    },
+    newRest: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      return new Rest();
     },
     newDoubleSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Space(ONE.timesNum(2));

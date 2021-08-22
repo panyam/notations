@@ -126,6 +126,7 @@ export enum AtomType {
   SPACE = "Space",
   GROUP = "Group",
   LABEL = "Label",
+  REST = "Rest",
 }
 
 export abstract class Atom extends TimedEntity {
@@ -205,6 +206,17 @@ export class Label extends Atom {
 export abstract class LeafAtom extends Atom {
   // Tells if this atom is followed by a rest
   beforeRest = false;
+
+  debugValue(): any {
+    return this.beforeRest ? { ...super.debugValue(), beforeRest: true } : super.debugValue();
+  }
+}
+
+export class Rest extends LeafAtom {
+  // rests are zero length - why not just use 0 length silent spaces?
+  constructor() {
+    super(ZERO);
+  }
 }
 
 /**
@@ -363,8 +375,15 @@ export class Group extends Atom {
 
   addAtoms(...atoms: Atom[]): this {
     for (const atom of atoms) {
-      atom.parent = this;
-      this.atoms.add(atom);
+      if (atom.type == AtomType.REST) {
+        const last = this.atoms.last;
+        if (last && last.type != AtomType.GROUP && last.type != AtomType.LABEL) {
+          (last as LeafAtom).beforeRest = true;
+        }
+      } else {
+        atom.parent = this;
+        this.atoms.add(atom);
+      }
     }
     return this;
   }
@@ -575,7 +594,17 @@ export class Role extends Entity {
   }
 
   addAtoms(...atoms: Atom[]): void {
-    for (const atom of atoms) this.atoms.push(atom);
+    let last: null | Atom = null;
+    for (const atom of atoms) {
+      if (atom.type == AtomType.REST) {
+        if (last && last.type != AtomType.GROUP && last.type != AtomType.LABEL) {
+          (last as LeafAtom).beforeRest = true;
+        }
+      } else {
+        this.atoms.push(atom);
+      }
+      last = atom;
+    }
   }
 
   copyTo(another: Role): void {

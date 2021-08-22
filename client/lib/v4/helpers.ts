@@ -5,7 +5,9 @@ import { BeatLayout, Beat, BeatsBuilder } from "../models/layouts";
 import { NotationView } from "./views";
 import { Notation } from "./models";
 
-function loadV4Notation(codeText: string): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
+export function loadV4Notation(
+  codeText: string,
+): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
   const notation = new Notation();
   const beatsByLineRole = new Map<number, Beat[][]>();
   const beatLayouts = new Map<number, BeatLayout>();
