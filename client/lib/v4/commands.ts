@@ -68,7 +68,12 @@ export class CreateLine extends Command {
   applyToNotation(notation: Notation): void {
     // We are not calling a newLine here just to avoid
     // a series of \line commands creating wasteful empty lines
+    // TODO - how do we consider offsets in line create
     notation.resetLine();
+  }
+
+  get offset(): TSU.Num.Fraction {
+    return this.getParam("offset") || TSU.Num.Fraction.ZERO;
   }
 }
 
