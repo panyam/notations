@@ -33,7 +33,7 @@ export function loadV4Notation(
       beatsByLineRole.set(line.uuid, roleBeats);
 
       for (const role of line.roles) {
-        const bb = new BeatsBuilder(role, layoutParams);
+        const bb = new BeatsBuilder(role, layoutParams, line.offset);
         bb.addAtoms(...role.atoms);
         roleBeats.push(bb.beats);
 

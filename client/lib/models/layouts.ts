@@ -44,6 +44,8 @@ export class Beat {
     public readonly barIndex: number,
     public readonly beatIndex: number,
     public readonly instance: number,
+    public readonly prevBeat: null | Beat,
+    public nextBeat: null | Beat,
   ) {}
 
   debugValue(): any {
@@ -177,58 +179,114 @@ export class BeatLayout {
   // beatColumns[i][j] returns all beats in a particular layoutLine and
   // layoutColumn the purpose of beatColumns is to ensure horizontal alignment
   // of beats in a single column
-  beatColumns: BeatColumn[][];
-
-  // beatRows[i][j] returns beats in line (by id) i and row j
-  // beatRows: BeatRow[];
-
-  // IDs of all beats that have changed
-  changedBeats = new Set<number>();
+  bcolNextList = new Map<string, Set<string>>();
+  beatColumns = new Map<string, BeatColumn>();
+  // bcolsStartingAt = new Map<string, BeatColumn[]>();
+  // bcolsEndingAt = new Map<string, BeatColumn[]>();
+  startingColumns: BeatColumn[] = [];
 
   // Mapping from beat -> BeatColumn where it resides
   columnForBeat = new Map<number, BeatColumn>();
 
-  // Mapping from beat -> BeatRow where it resides
-  rowForBeat = new Map<number, BeatRow>();
+  constructor(public readonly layoutParams: LayoutParams) {}
 
-  constructor(public readonly layoutParams: LayoutParams) {
-    this.beatColumns = [];
+  static keyFor(offset: Fraction, duration: Fraction): string {
+    return offset.factorized.toString() + ":" + duration.factorized.toString();
   }
 
-  addBeat(beat: Beat): void {
+  getBeatColumn(offset: Fraction, duration: Fraction): BeatColumn {
+    const key = BeatLayout.keyFor(offset, duration);
+    let bcol = this.beatColumns.get(key) || null;
+    if (!bcol) {
+      bcol = new BeatColumn(offset, duration);
+      this.beatColumns.set(key, bcol);
+      if (bcol.offset.isZero) {
+        // this is a "starting" column
+        this.startingColumns.push(bcol);
+      } else {
+        const endOffset = offset.plus(duration);
+        // Find all columns "before" this and add this as a neighbour to those
+        // columsn before are such that their prev.offset + prev.duration == bcol.offset
+        for (const other of this.beatColumns.values()) {
+          if (other.offset.plus(other.duration).equals(offset)) {
+            // mark us as a successor of other
+            this.addSuccessor(other, bcol);
+          } else if (other.offset.equals(endOffset)) {
+            // mark other as a successor of us
+            this.addSuccessor(bcol, other);
+          }
+        }
+
+        // Similary find all columns who could "next" sets and add us to them
+      }
+    }
+    return bcol;
+  }
+
+  protected addSuccessor(prev: BeatColumn, next: BeatColumn): void {
+    TSU.assert(prev.offset.plus(prev.duration).equals(next.offset), "BeatColumns are not adjacent to each other");
+    const prevKey = BeatLayout.keyFor(prev.offset, prev.duration);
+    const nextKey = BeatLayout.keyFor(next.offset, next.duration);
+    let nextset = this.bcolNextList.get(prevKey) || null;
+    if (!nextset) {
+      nextset = new Set<string>();
+      this.bcolNextList.set(prevKey, nextset);
+    }
+    nextset.add(nextKey);
+  }
+
+  /**
+   * Adds the beat to this layout and returns the BeatColumn to which this beat was added.
+   */
+  addBeat(beat: Beat): BeatColumn {
     // Get the beat column at this index (and line) and add to it.
     const lp = this.layoutParams;
-    const [layoutLine, layoutColumn] = lp.getBeatLocation(beat.index);
-    // Ensure we have enough lines
-    while (this.beatColumns.length <= layoutLine) {
-      this.beatColumns.push([]);
-    }
+    const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
+    const bcol = this.getBeatColumn(rowOffset, beat.duration);
 
-    while (this.beatColumns[layoutLine].length <= layoutColumn) {
-      const bc = new BeatColumn(layoutLine, this.beatColumns[layoutLine].length);
-      this.beatColumns[layoutLine].push(bc);
-    }
-
-    const bcol = this.beatColumns[layoutLine][layoutColumn];
     bcol.add(beat);
 
     // TODO: see if beat exists in another column
     this.columnForBeat.set(beat.uuid, bcol);
     beat.layoutLine = layoutLine;
     beat.layoutColumn = layoutColumn;
+    return bcol;
   }
 
   readonly DEBUG = false;
   evalColumnSizes(beatViewDelegate: BeatViewDelegate): void {
-    for (let line = 0; line < this.beatColumns.length; line++) {
-      const cols = this.beatColumns[line];
-      let currX = 0;
-      for (let col = 0; col < cols.length; col++) {
-        const bcol = cols[col];
+    // Do a bread first traversal of the beat columns so those with earlier offsets will be
+    // laidout and nudged so that later ones' offsets can be set only once.
+    // TODO - should this be a priority queue - ie is there a need to sort these by
+    // "larger" widths first?
+    let queue: BeatColumn[] = [...this.startingColumns];
+    const xForOffsets: TSU.StringMap<number> = {};
+    while (queue.length > 0) {
+      const nextQueue: BeatColumn[] = [];
+      for (const bcol of queue) {
+        const offset = bcol.offset.factorized;
         const colWidth = bcol.evalMaxWidth(beatViewDelegate);
-        bcol.setX(currX, beatViewDelegate);
-        currX += colWidth + bcol.paddingLeft + bcol.paddingRight;
+        let currX = 0;
+        if (!bcol.offset.isZero) {
+          // this *must* be in xForOffsets as it would have been calculated by a previous bcol
+          TSU.assert(offset.toString() in xForOffsets, "Cannot find x for given offset");
+          currX = xForOffsets[offset.toString()];
+          bcol.setX(currX, beatViewDelegate);
+        }
+        const endOffset = offset.plus(bcol.duration).factorized;
+        xForOffsets[endOffset.toString()] = Math.max(
+          xForOffsets[endOffset.toString()] || 0,
+          currX + colWidth + bcol.paddingLeft + bcol.paddingRight,
+        );
+        // add all neighbours here
+        // TODO - Use better lists of going through all beat cols
+        for (const other of this.beatColumns.values()) {
+          if (endOffset.equals(other.offset)) {
+            nextQueue.push(other);
+          }
+        }
       }
+      queue = nextQueue;
     }
   }
 
@@ -305,7 +363,10 @@ export class BeatColumn {
   paddingLeft = 15;
   paddingRight = 15;
   beats: Beat[] = [];
-  constructor(public readonly layoutLine: number, public readonly layoutColumn: number) {}
+  constructor(public readonly offset: Fraction, public readonly duration: Fraction) {
+    offset = offset.factorized;
+    duration = duration.factorized;
+  }
 
   get x(): number {
     return this._x;
@@ -379,6 +440,7 @@ export class BeatColumn {
 export class BeatsBuilder {
   // All atoms divided into beats
   readonly beats: Beat[] = [];
+  readonly startIndex: number;
   cycleIter: CycleIterator;
   atomIter: AtomIterator;
   durIter: DurationIterator;
@@ -391,10 +453,20 @@ export class BeatsBuilder {
   // Callback for when a beat has been filled
   onBeatFilled: (beat: Beat) => void;
 
-  constructor(public readonly role: Role, public readonly layoutParams: LayoutParams) {
-    this.cycleIter = layoutParams.cycle.iterateBeats();
+  constructor(
+    public readonly role: Role,
+    public readonly layoutParams: LayoutParams,
+    public readonly startOffset: Fraction = ZERO,
+  ) {
+    const [, bar, beat, instance, , index] = layoutParams.cycle.getPosition(startOffset);
+    this.cycleIter = layoutParams.cycle.iterateBeats(bar, beat, instance);
     this.atomIter = new AtomIterator();
     this.durIter = new DurationIterator(this.atomIter);
+
+    // evaluate the start beatindex - typically it would be 0 if things start at beginning
+    // of a cycle.  Butif the start offset is < 0 then the startIndex should also shift
+    // accordingly
+    this.startIndex = index;
   }
 
   protected addBeat(): Beat {
@@ -402,14 +474,17 @@ export class BeatsBuilder {
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
     const nextCP: [Fraction, number, number, number] = this.cycleIter.next().value;
     const newBeat = new Beat(
-      numBeats,
+      lastBeat == null ? this.startIndex : lastBeat.index + 1,
       this.role,
       lastBeat == null ? ZERO : lastBeat.endOffset,
       nextCP[0].timesNum(this.layoutParams.aksharasPerBeat),
       nextCP[1],
       nextCP[2],
       nextCP[3],
+      lastBeat,
+      null,
     );
+    if (lastBeat) lastBeat.nextBeat = newBeat;
     this.beats.push(newBeat);
     if (this.onBeatAdded) this.onBeatAdded(newBeat);
     return newBeat;
@@ -506,27 +581,44 @@ export class LayoutParams {
    * Lines are broken into beats of notes (which can be changed) and those beats
    * are aligned as per the specs in the LayoutParams (breaks).
    *
-   * This methods returns the triple: [layoutLine, layoutColumn]
+   * This methods returns the triple: [layoutLine, layoutColumn, rowOffset]
    * where
    *
-   *  layoutLine: The particular line in the layout break spec this index falls in.
+   *  layoutLine: The particular line in the layout break spec this index falls in.  Note
+   *              that since lines can start with negative offsets, we can even return a
+   *              layoutLine that is towards the end and then go back to 0, eg 4, 0, 1, 2, 3, 4 ...
    *  layoutColumn: The column within the layoutLine line where this beat falls.
+   *  rowOffset: The note offset of the beat from the start of the row/line
+   *             (not from the start of the cycle).
+   *
+   * Note the beatIndex can also be negative so we can return a beat starting from before
+   * the cycle starting point.
    *
    *  To calculate the "real" line globally simply do:
    *
    *    realLine = [Math.floor(beatIndex / this.totalBeats) + layoutLine;
    */
-  getBeatLocation(beatIndex: number): [number, number] {
-    const modIndex = beatIndex % this.totalBeats;
+  getBeatLocation(beat: Beat): [number, number, Fraction] {
+    const modIndex = beat.index % this.totalBeats;
     let total = 0;
     for (let i = 0; i < this._lineBreaks.length; i++) {
       if (modIndex < total + this._lineBreaks[i]) {
-        return [i, modIndex - total];
+        // TODO: What is the right offset here?
+        let offset = ZERO;
+        let startBeat = beat;
+        if (modIndex > total) {
+          for (let i = total; i < modIndex; i++) {
+            TSU.assert(startBeat.prevBeat != null, "prev beat MUST exist");
+            startBeat = startBeat.prevBeat;
+          }
+          offset = beat.offset.minus(startBeat.offset);
+        }
+        return [i, modIndex - total, offset];
       }
       total += this._lineBreaks[i];
     }
-    throw new Error("Invalid beat index: " + beatIndex);
-    return [-1, -1];
+    throw new Error("Invalid beat index: " + beat.index);
+    return [-1, -1, ZERO];
   }
 
   /**
@@ -605,6 +697,7 @@ export class LayoutParams {
     return this._totalLayoutDuration;
   }
 
+  /*
   layoutOffsetsFor(offset: Fraction, layoutLine = -1): [number, Fraction] {
     const m1 = offset.mod(this.totalLayoutDuration);
 
@@ -631,4 +724,5 @@ export class LayoutParams {
     const layoutOffset = m1.minus(this._rowStartOffsets[layoutLine]);
     return [layoutLine, layoutOffset];
   }
+ */
 }

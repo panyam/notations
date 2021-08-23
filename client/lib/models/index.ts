@@ -446,11 +446,23 @@ export class Bar extends TimedEntity {
     return this.beatLengths.length;
   }
 
+  get totalBeatCount(): number {
+    let out = 0;
+    for (let i = 0; i < this.beatLengths.length; i++) {
+      out += this.beatCounts[i] || 1;
+    }
+    return out;
+  }
+
   /**
    * Total duration (of time) across all beats in this bar.
    */
   get duration(): Fraction {
-    return this.beatLengths.reduce((x, y) => x.plus(y), ZERO);
+    let total = ZERO;
+    for (let i = 0; i < this.beatLengths.length; i++) {
+      total = total.plus(this.beatLengths[i].timesNum(this.beatCounts[i] || 1));
+    }
+    return total;
   }
 }
 
@@ -493,6 +505,109 @@ export class Cycle extends TimedEntity {
     return true;
   }
 
+  /**
+   * Given a global beat index returns four values [cycle,bar,beat,instance] where:
+   *
+   * cycle        - The nth cycle in which the beat lies.  Since the global beat index can
+   *                be greater the number of beats in this cycle this allows us to wrap
+   *                around.  Similarly if beatindex is less than 0 then we can also go
+   *                behind a cycle.
+   * bar          - The mth bar in the nth cycle which the offset exists
+   * beat         - The beat within the mth bar in the nth cycle where the offset lies
+   * instance     - The beat instance where the offset lies.
+   * startOffset  - Offset of the beat at this global index.
+   */
+  getAtIndex(beatIndex: number): [number, number, number, number, Fraction] {
+    let cycle = 0;
+    while (beatIndex < 0) {
+      beatIndex += this.totalBeatCount;
+      cycle--;
+    }
+    if (beatIndex > this.totalBeatCount) {
+      cycle = Math.floor(beatIndex / this.totalBeatCount);
+    }
+    beatIndex = beatIndex % this.totalBeatCount;
+    let offset = ZERO;
+    for (let barIndex = 0; barIndex < this.bars.length; barIndex++) {
+      const bar = this.bars[barIndex];
+      if (beatIndex >= bar.totalBeatCount) {
+        beatIndex -= bar.totalBeatCount;
+        offset = offset.plus(bar.duration);
+      } else {
+        // this is the bar!
+        for (let beatIndex = 0; beatIndex < bar.beatCount; beatIndex++) {
+          const beatLength = bar.beatLengths[beatIndex];
+          const beatCount = bar.beatCounts[beatIndex] || 1;
+          for (let instance = 0; instance < beatCount; instance++) {
+            if (beatIndex >= beatCount) {
+              beatIndex -= beatCount;
+              offset = offset.plus(beatLength);
+            } else {
+              // this is it
+              return [cycle, barIndex, beatIndex, instance, offset];
+            }
+          }
+        }
+      }
+    }
+    throw new Error("Should not be here!");
+  }
+
+  /**
+   * Given a global offset returns five values [cycle, bar,beat,instance,offset] where:
+   *
+   * cycle        - The nth cycle in which the beat lies.  Since the global offset can be
+   *                greater the duration of the cycle this allows us to wrap around.
+   *                Similarly if globalOffset is less than 0 then we can also go behind a cycle.
+   * bar          - The mth bar in the nth cycle which the offset exists
+   * beat         - The beat within the mth bar in the nth cycle where the offset lies
+   * instance     - The beat instance where the offset lies.
+   * startOffset  - The note offset within the beat where the global offset lies.
+   * globalIndex  - The beat index within the entire cycle and not just within the bar.
+   */
+  getPosition(globalOffset: Fraction): [number, number, number, number, Fraction, number] {
+    const duration = this.duration;
+    let cycleNum = 0;
+    if (globalOffset.isLT(ZERO)) {
+      while (globalOffset.isLT(ZERO)) {
+        cycleNum--;
+        globalOffset = globalOffset.plus(duration);
+      }
+    } else if (globalOffset.isGTE(duration)) {
+      const realOffset = globalOffset.mod(duration);
+      globalOffset = globalOffset.minus(realOffset).divby(duration);
+      TSU.assert(globalOffset.isWhole);
+      cycleNum = globalOffset.floor;
+      globalOffset = realOffset;
+    }
+
+    // here globalOffset is positive and >= 0 and < this.duration
+    let globalIndex = 0;
+    for (let barIndex = 0; barIndex < this.bars.length; barIndex++) {
+      const bar = this.bars[barIndex];
+      const barDuration = bar.duration;
+      if (globalOffset.isGTE(barDuration)) {
+        globalOffset = globalOffset.minus(barDuration);
+      } else {
+        // this is the bar!
+        for (let beatIndex = 0; beatIndex < bar.beatCount; beatIndex++) {
+          const beatLength = bar.beatLengths[beatIndex];
+          const beatCount = bar.beatCounts[beatIndex] || 1;
+          for (let instance = 0; instance < beatCount; instance++, globalIndex++) {
+            if (globalOffset.isGTE(beatLength)) {
+              globalOffset = globalOffset.minus(beatLength);
+            } else {
+              // this is it
+              return [cycleNum, barIndex, beatIndex, instance, globalOffset, globalIndex];
+            }
+          }
+        }
+      }
+    }
+
+    throw new Error("Should not be here!");
+  }
+
   *iterateBeats(startBar = 0, startBeat = 0, startInstance = 0): CycleIterator {
     let barIndex = startBar;
     let beatIndex = startBeat;
@@ -527,6 +642,12 @@ export class Cycle extends TimedEntity {
     return out;
   }
 
+  get totalBeatCount(): number {
+    let out = 0;
+    for (const bar of this.bars) out += bar.totalBeatCount;
+    return out;
+  }
+
   /**
    * Total duration (of time) across all bars in this cycle.
    */
@@ -536,6 +657,9 @@ export class Cycle extends TimedEntity {
 }
 
 export class Line extends Entity {
+  // Line can have atoms starting "before" the cycle.  The offset tells how many notes
+  // before or after the cycle this line's atoms start at.
+  offset: Fraction = ZERO;
   roles: Role[] = [];
   // layoutParams: LayoutParams | null = null;
 
