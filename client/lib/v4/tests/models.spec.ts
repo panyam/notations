@@ -3,21 +3,9 @@
  */
 import { V4Parser } from "../";
 import "../../../../common/jest/matchers";
+import { getCircularReplacer } from "../../../common/utils";
 import { Line } from "../../models";
 import { RawBlock, Command, Notation } from "../models";
-
-const getCircularReplacer = () => {
-  const seen = new WeakSet();
-  return (key: any, value: any) => {
-    if (typeof value === "object" && value !== null) {
-      if (seen.has(value)) {
-        return;
-      }
-      seen.add(value);
-    }
-    return value;
-  };
-};
 
 function fromCommands(cmds: Command[]): Notation {
   const out = new Notation();
