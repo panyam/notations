@@ -69,11 +69,14 @@ export class CreateLine extends Command {
     // We are not calling a newLine here just to avoid
     // a series of \line commands creating wasteful empty lines
     // TODO - how do we consider offsets in line create
-    notation.resetLine();
+    const line = notation.newLine();
+    line.offset = this.offset;
   }
 
   get offset(): TSU.Num.Fraction {
-    return this.getParam("offset") || TSU.Num.Fraction.ZERO;
+    let offset = this.getParam("offset") || TSU.Num.Fraction.ZERO;
+    if (typeof offset === "number") offset = new TSU.Num.Fraction(offset);
+    return offset;
   }
 }
 

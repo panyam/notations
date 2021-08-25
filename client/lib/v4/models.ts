@@ -95,6 +95,14 @@ export class Notation extends Entity {
     this.blocks.push(line);
   }
 
+  removeLine(line: Line): number {
+    const index = this.blocks.findIndex((l) => l == line);
+    if (index >= 0) {
+      this.blocks.splice(index, 1);
+    }
+    return index;
+  }
+
   addRawBlock(raw: RawBlock): void {
     this.blocks.push(raw);
     this.resetLine();
@@ -182,6 +190,11 @@ export class Notation extends Entity {
   }
 
   newLine(): Line {
+    if (this._currentLine && this._currentLine.isEmpty) {
+      // then remove it first instead of adding another
+      // so we dont have a string of empty lines
+      this.removeLine(this._currentLine);
+    }
     this._currentLine = new Line();
     this.addLine(this._currentLine);
     return this._currentLine;

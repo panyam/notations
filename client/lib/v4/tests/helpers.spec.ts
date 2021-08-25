@@ -15,13 +15,27 @@ function testV4(input: string, debug = false, expected: any = null): void {
 
 describe("Parser Tests", () => {
   test("Test Command Parsing", () => {
-    testV4(String.raw`\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`, false, {
-      blocks: [],
-      currentAPB: 1,
-      currentBreaks: [],
-      currentCycle: 3,
-      roles: [],
-    });
+    testV4(
+      String.raw`
+           \line( "line1" , "a", "b", x = 1, c = 'hello', ab = "cd")
+           \line( "line2" , offset = 3/4)
+           `,
+      false,
+      {
+        // only 1 empty line in a row at most
+        blocks: [
+          {
+            roles: [],
+            offset: "3/4",
+            type: "Line",
+          },
+        ],
+        currentAPB: 1,
+        currentBreaks: [],
+        currentCycle: 3,
+        roles: [],
+      },
+    );
   });
 
   test("Test Parser", () => {

@@ -458,7 +458,7 @@ export class BeatsBuilder {
     public readonly layoutParams: LayoutParams,
     public readonly startOffset: Fraction = ZERO,
   ) {
-    const [, bar, beat, instance, , index] = layoutParams.cycle.getPosition(startOffset);
+    const [, [bar, beat, instance], , index] = layoutParams.cycle.getPosition(startOffset);
     this.cycleIter = layoutParams.cycle.iterateBeats(bar, beat, instance);
     this.atomIter = new AtomIterator();
     this.durIter = new DurationIterator(this.atomIter);
@@ -472,15 +472,15 @@ export class BeatsBuilder {
   protected addBeat(): Beat {
     const numBeats = this.beats.length;
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
-    const nextCP: [Fraction, number, number, number] = this.cycleIter.next().value;
+    const nextCP: [CyclePosition, Fraction] = this.cycleIter.next().value;
     const newBeat = new Beat(
       lastBeat == null ? this.startIndex : lastBeat.index + 1,
       this.role,
       lastBeat == null ? ZERO : lastBeat.endOffset,
-      nextCP[0].timesNum(this.layoutParams.aksharasPerBeat),
-      nextCP[1],
-      nextCP[2],
-      nextCP[3],
+      nextCP[1].timesNum(this.layoutParams.aksharasPerBeat),
+      nextCP[0][0],
+      nextCP[0][1],
+      nextCP[0][2],
       lastBeat,
       null,
     );
@@ -533,7 +533,7 @@ export class LayoutParams {
   private _rowEndOffsets: Fraction[];
   private _rowDurations: Fraction[];
   private _totalLayoutDuration;
-  private _beatLayouts: CyclePosition[][];
+  private _beatLayouts: [CyclePosition, Fraction][][];
   private _totalBeats: number;
 
   constructor(config?: any) {
@@ -608,7 +608,9 @@ export class LayoutParams {
         let startBeat = beat;
         if (modIndex > total) {
           for (let i = total; i < modIndex; i++) {
-            TSU.assert(startBeat.prevBeat != null, "prev beat MUST exist");
+            if (startBeat.prevBeat == null) {
+              throw new Error("Prev beat MUST exist");
+            }
             startBeat = startBeat.prevBeat;
           }
           offset = beat.offset.minus(startBeat.offset);
@@ -650,17 +652,17 @@ export class LayoutParams {
     const cycleIter = this.cycle.iterateBeats();
     const akb = this.aksharasPerBeat;
     this._beatLayouts = this.lineBreaks.map((numBeats, index) => {
-      const beats: CyclePosition[] = [];
+      const beats: [CyclePosition, Fraction][] = [];
       // see what the beat lengths are here
       for (let i = 0; i < numBeats; i++) {
         const nextCP = cycleIter.next().value;
-        nextCP[0] = nextCP[0].timesNum(akb);
+        nextCP[1] = nextCP[1].timesNum(akb);
         beats.push(nextCP);
       }
       return beats;
     });
     this._totalBeats = this.lineBreaks.reduce((a, b) => a + b, 0);
-    this._rowDurations = this._beatLayouts.map((beats) => beats.reduce((x, y) => x.plus(y[0]), ZERO));
+    this._rowDurations = this._beatLayouts.map((beats) => beats.reduce((x, y) => x.plus(y[1]), ZERO));
     this._rowDurations.forEach((rd, index) => {
       this._rowStartOffsets[index] = index == 0 ? ZERO : this._rowStartOffsets[index - 1].plus(rd);
     });
@@ -674,7 +676,7 @@ export class LayoutParams {
    * Returns the number of beats in each line based on the line layout
    * after taking aksharasPerBeat into account.
    */
-  get beatLayouts(): ReadonlyArray<ReadonlyArray<CyclePosition>> {
+  get beatLayouts(): ReadonlyArray<ReadonlyArray<[CyclePosition, Fraction]>> {
     if (!this._beatLayouts || this._beatLayouts.length < this.lineBreaks.length) {
       this.refreshLayout();
     }

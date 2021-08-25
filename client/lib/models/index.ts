@@ -389,8 +389,56 @@ export class Group extends Atom {
   }
 }
 
-export type CyclePosition = [Fraction, number, number, number];
-export type CycleIterator = Generator<CyclePosition>;
+export type CyclePosition = [number, number, number];
+export type CycleIterator = Generator<[CyclePosition, Fraction]>;
+
+export class CycleCursor {
+  constructor(public readonly cycle: Cycle, public barIndex = 0, public beatIndex = 0, public instance = 0) {}
+
+  get next(): [CyclePosition, Fraction] {
+    const currBar = this.cycle.bars[this.barIndex];
+    const result: [CyclePosition, Fraction] = [
+      [this.barIndex, this.beatIndex, this.instance],
+      currBar.beatLengths[this.beatIndex],
+    ];
+    this.instance++;
+    if (!currBar.beatCounts[this.beatIndex] || this.instance >= currBar.beatCounts[this.beatIndex]) {
+      this.instance = 0;
+      this.beatIndex++;
+      if (this.beatIndex >= currBar.beatLengths.length) {
+        this.beatIndex = 0;
+        this.barIndex++;
+        if (this.barIndex >= this.cycle.bars.length) {
+          this.barIndex = 0;
+        }
+      }
+    }
+    return result;
+  }
+
+  get prev(): [CyclePosition, Fraction] {
+    const currBar = this.cycle.bars[this.barIndex];
+    const result: [CyclePosition, Fraction] = [
+      [this.barIndex, this.beatIndex, this.instance],
+      currBar.beatLengths[this.beatIndex],
+    ];
+    // TODO - result should be set *after* decrementing if we had already
+    // done a "next" before this otherwise user may have to do a prev twice
+    this.instance--;
+    if (this.instance < 0) {
+      this.beatIndex--;
+      if (this.beatIndex < 0) {
+        this.barIndex--;
+        if (this.barIndex < 0) {
+          this.barIndex = this.cycle.bars.length - 1;
+        }
+        this.beatIndex = this.cycle.bars[this.barIndex].beatCount - 1;
+      }
+      this.instance = this.cycle.bars[this.barIndex].beatCounts[this.beatIndex] || 1;
+    }
+    return result;
+  }
+}
 
 export class Bar extends TimedEntity {
   name: string;
@@ -508,44 +556,44 @@ export class Cycle extends TimedEntity {
   /**
    * Given a global beat index returns four values [cycle,bar,beat,instance] where:
    *
-   * cycle        - The nth cycle in which the beat lies.  Since the global beat index can
-   *                be greater the number of beats in this cycle this allows us to wrap
-   *                around.  Similarly if beatindex is less than 0 then we can also go
-   *                behind a cycle.
+   * cycle        - The nth cycle in which the beat lies.  Since the global beat
+   *                index can be greater the number of beats in this cycle this
+   *                allows us to wrap around.  Similarly if beatindex is less than
+   *                0 then we can also go behind a cycle.
    * bar          - The mth bar in the nth cycle which the offset exists
-   * beat         - The beat within the mth bar in the nth cycle where the offset lies
+   * beat         - The beat within the mth bar in the nth cycle where the
+   *                offset lies
    * instance     - The beat instance where the offset lies.
    * startOffset  - Offset of the beat at this global index.
    */
-  getAtIndex(beatIndex: number): [number, number, number, number, Fraction] {
+  getAtIndex(globalIndex: number): [number, CyclePosition, Fraction] {
     let cycle = 0;
-    while (beatIndex < 0) {
-      beatIndex += this.totalBeatCount;
+    while (globalIndex < 0) {
+      globalIndex += this.totalBeatCount;
       cycle--;
     }
-    if (beatIndex > this.totalBeatCount) {
-      cycle = Math.floor(beatIndex / this.totalBeatCount);
+    if (globalIndex >= this.totalBeatCount) {
+      cycle = Math.floor(globalIndex / this.totalBeatCount);
     }
-    beatIndex = beatIndex % this.totalBeatCount;
+    globalIndex = globalIndex % this.totalBeatCount;
     let offset = ZERO;
     for (let barIndex = 0; barIndex < this.bars.length; barIndex++) {
       const bar = this.bars[barIndex];
-      if (beatIndex >= bar.totalBeatCount) {
-        beatIndex -= bar.totalBeatCount;
+      if (globalIndex >= bar.totalBeatCount) {
+        globalIndex -= bar.totalBeatCount;
         offset = offset.plus(bar.duration);
       } else {
         // this is the bar!
         for (let beatIndex = 0; beatIndex < bar.beatCount; beatIndex++) {
           const beatLength = bar.beatLengths[beatIndex];
           const beatCount = bar.beatCounts[beatIndex] || 1;
-          for (let instance = 0; instance < beatCount; instance++) {
-            if (beatIndex >= beatCount) {
-              beatIndex -= beatCount;
-              offset = offset.plus(beatLength);
-            } else {
-              // this is it
-              return [cycle, barIndex, beatIndex, instance, offset];
-            }
+          if (globalIndex >= beatCount) {
+            globalIndex -= beatCount;
+            offset = offset.plus(beatLength.timesNum(beatCount));
+          } else {
+            // this is it
+            const instance = globalIndex;
+            return [cycle, [barIndex, beatIndex, instance], offset.plus(beatLength.timesNum(instance))];
           }
         }
       }
@@ -565,7 +613,7 @@ export class Cycle extends TimedEntity {
    * startOffset  - The note offset within the beat where the global offset lies.
    * globalIndex  - The beat index within the entire cycle and not just within the bar.
    */
-  getPosition(globalOffset: Fraction): [number, number, number, number, Fraction, number] {
+  getPosition(globalOffset: Fraction): [number, CyclePosition, Fraction, number] {
     const duration = this.duration;
     let cycleNum = 0;
     if (globalOffset.isLT(ZERO)) {
@@ -598,11 +646,12 @@ export class Cycle extends TimedEntity {
               globalOffset = globalOffset.minus(beatLength);
             } else {
               // this is it
-              return [cycleNum, barIndex, beatIndex, instance, globalOffset, globalIndex];
+              return [cycleNum, [barIndex, beatIndex, instance], globalOffset, globalIndex];
             }
           }
         }
       }
+      globalIndex += bar.totalBeatCount;
     }
 
     throw new Error("Should not be here!");
@@ -614,7 +663,7 @@ export class Cycle extends TimedEntity {
     let instanceIndex = startInstance;
     while (true) {
       const currBar = this.bars[barIndex];
-      yield [currBar.beatLengths[beatIndex], barIndex, beatIndex, instanceIndex];
+      yield [[barIndex, beatIndex, instanceIndex], currBar.beatLengths[beatIndex]];
       instanceIndex++;
       if (!currBar.beatCounts[beatIndex] || instanceIndex >= currBar.beatCounts[beatIndex]) {
         instanceIndex = 0;
@@ -663,12 +712,21 @@ export class Line extends Entity {
   roles: Role[] = [];
   // layoutParams: LayoutParams | null = null;
 
+  get isEmpty(): boolean {
+    for (const r of this.roles) if (!r.isEmpty) return false;
+    return true;
+  }
+
   debugValue(): any {
-    return {
+    const out = {
       ...super.debugValue(),
       roles: this.roles.map((r) => r.debugValue()),
       // layoutParams: this.layoutParams?.uuid,
     };
+    if (!this.offset.isZero) {
+      out.offset = this.offset.toString();
+    }
+    return out;
   }
 
   copyTo(another: this): void {
@@ -713,6 +771,11 @@ export class Role extends Entity {
   constructor(public readonly line: Line, public readonly name: string) {
     super();
   }
+
+  get isEmpty(): boolean {
+    return this.atoms.length == 0;
+  }
+
   debugValue(): any {
     return { name: this.name, atoms: this.atoms.map((a) => a.debugValue()) };
   }

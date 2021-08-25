@@ -18,6 +18,33 @@ function testV4(input: string, debug = false, expected: any = null): void {
 
 describe("Parser Tests", () => {
   test("Test Command Parsing", () => {
+    testV4(`\\line(-2, -2/-1, 2/-2, offset = -2)`, false, [
+      {
+        name: "CreateLine",
+        index: 0,
+        params: [
+          {
+            key: null,
+            value: -2,
+          },
+          {
+            key: null,
+            value: { num: -2, den: -1 },
+          },
+          {
+            key: null,
+            value: { num: 2, den: -2 },
+          },
+          {
+            key: "offset",
+            value: -2,
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("Test Command Parsing", () => {
     testV4(`\\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`, false, [
       {
         name: "CreateLine",

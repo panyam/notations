@@ -1,6 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note, Bar } from "../";
 import { LayoutParams, BeatsBuilder, Beat, BeatView, BeatColumn } from "../layouts";
+import { FlatAtom } from "../iterators";
 import "../../../common/jest/matchers";
 import { getCircularReplacer } from "../../../common/utils";
 
@@ -14,7 +15,15 @@ const HALF = ONE.divbyNum(2);
 
 describe("Beat Tests", () => {
   test("Create Beats", () => {
-    //
+    const l = new Line();
+    const role = l.ensureRole("test", true);
+    const b = new Beat(0, role, FIVE, TEN, 1, 1, 1, null, null);
+    expect(b.endOffset).toEqual(FIVE.plus(TEN));
+    expect(b.filled).toEqual(false);
+    expect(b.remaining).toEqual(TEN);
+    expect(b.add(new FlatAtom(new Note("1", ONE)))).toEqual(true);
+    expect(b.remaining).toEqual(TEN.minus(ONE));
+    expect(b.filled).toEqual(false);
   });
 });
 
@@ -991,5 +1000,19 @@ describe("BeatsBuilder", () => {
         ],
       },
     ]);
+  });
+});
+
+describe("BeatLayout Tests", () => {
+  test("Create Beats", () => {
+    const l = new Line();
+    const role = l.ensureRole("test", true);
+    const b = new Beat(0, role, FIVE, TEN, 1, 1, 1, null, null);
+    expect(b.endOffset).toEqual(FIVE.plus(TEN));
+    expect(b.filled).toEqual(false);
+    expect(b.remaining).toEqual(TEN);
+    expect(b.add(new FlatAtom(new Note("1", ONE)))).toEqual(true);
+    expect(b.remaining).toEqual(TEN.minus(ONE));
+    expect(b.filled).toEqual(false);
   });
 });

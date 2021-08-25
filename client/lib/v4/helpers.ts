@@ -1,3 +1,4 @@
+import * as TSU from "@panyam/tsutils";
 import { V4Parser } from "./";
 import * as G from "galore";
 import { Line } from "../models";
@@ -7,6 +8,7 @@ import { Notation } from "./models";
 
 export function loadV4Notation(
   codeText: string,
+  config: any = {},
 ): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
   const notation = new Notation();
   const beatsByLineRole = new Map<number, Beat[][]>();
@@ -23,30 +25,37 @@ export function loadV4Notation(
     if (block.type == "Line") {
       const line = block as Line;
       // LP should exist by now
-      const layoutParams = notation.layoutParamsForLine(line)!;
-      let beatLayout = beatLayouts.get(layoutParams.uuid) || null;
-      if (beatLayout == null) {
-        beatLayout = new BeatLayout(layoutParams);
-        beatLayouts.set(layoutParams.uuid, beatLayout);
-      }
-      const roleBeats = [] as Beat[][];
-      beatsByLineRole.set(line.uuid, roleBeats);
+      const layoutParams = notation.layoutParamsForLine(line) || null;
+      if (!line.isEmpty) {
+        // Probably because this is an empty line and AddAtoms was not called
+        TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
+        let beatLayout = beatLayouts.get(layoutParams.uuid) || null;
+        if (beatLayout == null) {
+          beatLayout = new BeatLayout(layoutParams);
+          beatLayouts.set(layoutParams.uuid, beatLayout);
+        }
+        const roleBeats = [] as Beat[][];
+        beatsByLineRole.set(line.uuid, roleBeats);
 
-      for (const role of line.roles) {
-        const bb = new BeatsBuilder(role, layoutParams, line.offset);
-        bb.addAtoms(...role.atoms);
-        roleBeats.push(bb.beats);
+        const lineOffset = line.offset.divbyNum(layoutParams.aksharasPerBeat);
+        for (const role of line.roles) {
+          const bb = new BeatsBuilder(role, layoutParams, lineOffset);
+          bb.addAtoms(...role.atoms);
+          roleBeats.push(bb.beats);
 
-        // Add these to the beat layout too
-        for (const beat of bb.beats) {
-          beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
-          beatLayout.addBeat(beat);
+          // Add these to the beat layout too
+          for (const beat of bb.beats) {
+            beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
+            beatLayout.addBeat(beat);
+          }
         }
       }
     }
   }
-  const buildTime = performance.now();
-  console.log(`V4 Document, Parse Time: ${parseTime - startTime}ms, Build Time: ${buildTime - parseTime}ms`);
+  if (config.log) {
+    const buildTime = performance.now();
+    console.log(`V4 Document, Parse Time: ${parseTime - startTime}ms, Build Time: ${buildTime - parseTime}ms`);
+  }
   return [notation, beatsByLineRole, beatLayouts, errors];
 }
 
@@ -54,8 +63,9 @@ export function renderV4Notation(
   notationView: NotationView,
   codeText: string,
   rootElement: HTMLElement,
+  config: any = {},
 ): G.ParseError[] {
-  const [notation, beatsByLineRole, beatLayouts, errors] = loadV4Notation(codeText);
+  const [notation, beatsByLineRole, beatLayouts, errors] = loadV4Notation(codeText, config);
   rootElement.innerHTML = "";
   notationView.entity = notation;
   notationView.beatsByLineRole = beatsByLineRole;

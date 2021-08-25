@@ -39,7 +39,6 @@ const [parser, itemGraph] = G.newParser(
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
     %token  SLASH         "/"
-    %token  HYPHEN        "-"
     // %skip "-"
     %token  COMMA         ","
     %token  SEMI_COLON    ";"
@@ -48,7 +47,7 @@ const [parser, itemGraph] = G.newParser(
     %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
     %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
-    %token  NUMBER        /\d+/                     { toNumber }
+    %token  NUMBER        /-?\d+/                   { toNumber }
     %token  BOOLEAN       /true|false/              { toBoolean }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
     %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
@@ -58,6 +57,7 @@ const [parser, itemGraph] = G.newParser(
     %token  IDENT         /{IdentChar}+/
     %token  BSLASH_IDENT  /\\{IDENT}/               { toCommandName   }
     %token  BSLASH_NUMBER /\\{NUMBER}/
+    %token  HYPHEN        /-/
     %skip                 /[ \t\n\f\r]+/
     %skip_flex            "//.*$"
     %skip                 /\/\*.*?\*\//
@@ -303,6 +303,7 @@ export class V4Parser {
 
   createCommand(name: string, params: CmdParam[]): Command {
     const lName = name.trim().toLowerCase();
+    params = params || [];
     if (lName == "line") {
       return new CreateLine(params);
     } else if (lName == "role") {
