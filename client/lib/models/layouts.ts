@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Line, Atom, CycleIterator, Space, Role, Cycle, CyclePosition } from "./";
+import { Line, Atom, CycleIterator, Space, Role, Cycle, CyclePosition, CycleCursor } from "./";
 import { AtomIterator, DurationIterator, FlatAtom } from "./iterators";
 
 type Fraction = TSU.Num.Fraction;
@@ -458,6 +458,7 @@ export class BeatsBuilder {
   // All atoms divided into beats
   readonly beats: Beat[] = [];
   readonly startIndex: number;
+  readonly beatOffset: Fraction;
   cycleIter: CycleIterator;
   atomIter: AtomIterator;
   durIter: DurationIterator;
@@ -475,10 +476,11 @@ export class BeatsBuilder {
     public readonly layoutParams: LayoutParams,
     public readonly startOffset: Fraction = ZERO,
   ) {
-    const [, [bar, beat, instance], , index] = layoutParams.cycle.getPosition(startOffset);
+    const [, [bar, beat, instance], beatOffset, index] = layoutParams.cycle.getPosition(startOffset);
     this.cycleIter = layoutParams.cycle.iterateBeats(bar, beat, instance);
     this.atomIter = new AtomIterator();
     this.durIter = new DurationIterator(this.atomIter);
+    this.beatOffset = beatOffset;
 
     // evaluate the start beatindex - typically it would be 0 if things start at beginning
     // of a cycle.  Butif the start offset is < 0 then the startIndex should also shift
@@ -490,17 +492,24 @@ export class BeatsBuilder {
     const numBeats = this.beats.length;
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
     const nextCP: [CyclePosition, Fraction] = this.cycleIter.next().value;
+    const apb = this.layoutParams.aksharasPerBeat;
     const newBeat = new Beat(
       lastBeat == null ? this.startIndex : lastBeat.index + 1,
       this.role,
-      lastBeat == null ? ZERO : lastBeat.endOffset,
-      nextCP[1].timesNum(this.layoutParams.aksharasPerBeat),
+      lastBeat == null ? this.startOffset.minus(this.beatOffset).timesNum(apb).factorized : lastBeat.endOffset,
+      nextCP[1].timesNum(apb),
       nextCP[0][0],
       nextCP[0][1],
       nextCP[0][2],
       lastBeat,
       null,
     );
+    if (lastBeat == null && this.beatOffset.isGT(ZERO)) {
+      // Add spaces to fill up empty beats
+      newBeat.add(new FlatAtom(
+        new Space(this.beatOffset.timesNum(apb))
+      ))
+    }
     if (lastBeat) lastBeat.nextBeat = newBeat;
     this.beats.push(newBeat);
     if (this.onBeatAdded) this.onBeatAdded(newBeat);
@@ -624,13 +633,12 @@ export class LayoutParams {
         let offset = ZERO;
         let startBeat = beat;
         if (modIndex > total) {
+          const cursor = new CycleCursor(this.cycle, beat.barIndex, beat.beatIndex, beat.instance);
+          let [pos, duration] = cursor.prev;
           for (let i = total; i < modIndex; i++) {
-            if (startBeat.prevBeat == null) {
-              throw new Error("Prev beat MUST exist");
-            }
-            startBeat = startBeat.prevBeat;
+            [pos, duration] = cursor.prev;
+            offset = offset.plus(duration.timesNum(this.aksharasPerBeat));
           }
-          offset = beat.offset.minus(startBeat.offset);
         }
         return [i, modIndex - total, offset];
       }

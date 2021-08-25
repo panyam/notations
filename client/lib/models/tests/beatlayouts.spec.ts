@@ -61,7 +61,7 @@ function testLayouts(
   const beatLayout = new BeatLayout(layoutParams);
   const line = new Line().addAtoms("test", false, ...atoms);
   const role = line.ensureRole("test", false);
-  const bb = new BeatsBuilder(role, layoutParams, lineOffset);
+  const bb = new BeatsBuilder(role, layoutParams, lineOffset.divbyNum(layoutParams.aksharasPerBeat));
   bb.addAtoms(...role.atoms);
   for (const beat of bb.beats) {
     beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
@@ -418,9 +418,7 @@ describe("Complex BeatLayout Tests", () => {
       },
     );
   });
-});
 
-describe("Complex BeatLayout Tests", () => {
   test("Testing negative line offsets", () => {
     testLayouts(
       "abcdefghijklmnopqrstuvwxyz",
@@ -428,7 +426,7 @@ describe("Complex BeatLayout Tests", () => {
         cycle: TEST_CYCLE2,
         aksharasPerBeat: 4,
       }),
-      Frac(-1, 2),
+      Frac(-2),
       true,
       null,
     );

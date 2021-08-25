@@ -434,7 +434,7 @@ export class CycleCursor {
         }
         this.beatIndex = this.cycle.bars[this.barIndex].beatCount - 1;
       }
-      this.instance = this.cycle.bars[this.barIndex].beatCounts[this.beatIndex] || 1;
+      this.instance = (this.cycle.bars[this.barIndex].beatCounts[this.beatIndex] || 1) - 1;
     }
     return result;
   }
