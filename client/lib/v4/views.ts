@@ -43,17 +43,21 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
   }
 
   ensureLineView(line: Line): LineView {
-    const layoutParams: LayoutParams = this.notation.layoutParamsForLine(line)!;
     let lineView = this.getLineView(line);
     if (lineView == null) {
       if (this.lineViews.length > 0) {
         this.rootElement.appendChild(TSU.DOM.createNode("br"));
       }
-      const beatLayout = this.beatLayouts.get(layoutParams.uuid)!;
+      const layoutParams = this.notation.layoutParamsForLine(line) || null;
       lineView = new LineView(LineView.newRoot(this.rootElement), line, {
         layoutParams: layoutParams,
       } as any);
-      lineView.beatLayout = beatLayout;
+      if (!line.isEmpty) {
+        // Probably because this is an empty line and AddAtoms was not called
+        TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
+        const beatLayout = this.beatLayouts.get(layoutParams.uuid)!;
+        lineView.beatLayout = beatLayout;
+      }
       lineView.beatsByLineRole = this.beatsByLineRole.get(line.uuid)!;
       this.lineViews.push(lineView);
     }
@@ -108,7 +112,9 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     const lineView = this.ensureLineView(line);
     // Layout the "rows" for this line - x has already been set by the
     // previous column spacing step
-    lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
+    if (!line.isEmpty) {
+      lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
+    }
     return lineView;
   }
 

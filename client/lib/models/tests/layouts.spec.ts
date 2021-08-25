@@ -1003,7 +1003,7 @@ describe("BeatsBuilder", () => {
   });
 });
 
-describe("BeatLayout Tests", () => {
+describe("Simple BeatLayout Tests", () => {
   test("Create Beats", () => {
     const l = new Line();
     const role = l.ensureRole("test", true);

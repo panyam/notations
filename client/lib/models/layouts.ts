@@ -190,10 +190,9 @@ export class BeatLayout {
 
   constructor(public readonly layoutParams: LayoutParams) {}
 
-  static keyFor(offset: Fraction, duration: Fraction): string {
-    return offset.factorized.toString() + ":" + duration.factorized.toString();
-  }
-
+  /**
+   * Gets the beat column of a given duration at the given offset.
+   */
   getBeatColumn(offset: Fraction, duration: Fraction): BeatColumn {
     const key = BeatLayout.keyFor(offset, duration);
     let bcol = this.beatColumns.get(key) || null;
@@ -221,6 +220,10 @@ export class BeatLayout {
       }
     }
     return bcol;
+  }
+
+  protected static keyFor(offset: Fraction, duration: Fraction): string {
+    return offset.factorized.toString() + ":" + duration.factorized.toString();
   }
 
   protected addSuccessor(prev: BeatColumn, next: BeatColumn): void {
@@ -251,6 +254,20 @@ export class BeatLayout {
     beat.layoutLine = layoutLine;
     beat.layoutColumn = layoutColumn;
     return bcol;
+  }
+
+  /**
+   * Return all beat columns that start immediately after the given beat column.
+   */
+  neighborsOf(beatColumn: BeatColumn): BeatColumn[] {
+    const out: BeatColumn[] = [];
+    const endOffset = beatColumn.offset.plus(beatColumn.duration);
+    for (const other of this.beatColumns.values()) {
+      if (endOffset.equals(other.offset)) {
+        out.push(other);
+      }
+    }
+    return out;
   }
 
   readonly DEBUG = false;
