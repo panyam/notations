@@ -310,37 +310,41 @@ export class BeatLayout {
   roleSpacing = 10;
   rowSpacing = 20;
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
-    let currLayoutLine = 0;
+    // Instead of starting currLayoutLine at 0 - it should start at the line of the first beat being rendered
+    // let currLayoutLine = 0;
     const lp = this.layoutParams;
-    const beatIndexes = line.roles.map((l) => 0);
+    const currBeats = line.roles.map((l, index) => allRoleBeats[index][0]) as (Beat | null)[];
     let currY = this.roleSpacing;
     while (true) {
-      const numBeatsInRow = lp.lineBreaks[currLayoutLine];
-
       // Lay one role at a time upto numBeatsInLine number of beats
       let numDone = 0;
-      for (let currRole = 0; currRole < beatIndexes.length; currRole++) {
-        let maxHeight = 0;
-        let currX = 0;
-        const roleBeats = allRoleBeats[currRole];
-        let beatIndex = beatIndexes[currRole];
-        for (let i = 0; i < numBeatsInRow && beatIndex < roleBeats.length; i++, beatIndex++, numDone++) {
-          const currBeat = roleBeats[beatIndex];
-          const beatView = beatViewDelegate.viewForBeat(currBeat);
-          beatView.y = currY;
-          if (this.DEBUG) {
-            beatView.x = currX;
-            beatView.applyLayout();
-            currX += beatView.width;
+      for (let currRole = 0; currRole < currBeats.length; currRole++) {
+        let currBeat: Beat | null = currBeats[currRole];
+        if (currBeat) {
+          const numBeatsInRow = lp.lineBreaks[currBeat.layoutLine];
+          let maxHeight = 0;
+          let currX = 0;
+          for (
+            let i = currBeat.layoutColumn;
+            i < numBeatsInRow && currBeat;
+            i++, currBeat = currBeat.nextBeat, numDone++
+          ) {
+            const beatView = beatViewDelegate.viewForBeat(currBeat);
+            beatView.y = currY;
+            if (this.DEBUG) {
+              beatView.x = currX;
+              beatView.applyLayout();
+              currX += beatView.width;
+            }
+            maxHeight = Math.max(maxHeight, beatView.minHeight);
           }
-          maxHeight = Math.max(maxHeight, beatView.minHeight);
+          currY += maxHeight;
+          currY += this.roleSpacing;
         }
-        beatIndexes[currRole] = beatIndex;
-        currY += maxHeight;
-        currY += this.roleSpacing;
+        currBeats[currRole] = currBeat;
       }
 
-      currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
+      // currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
       currY += this.rowSpacing;
       if (numDone == 0) break;
     }
@@ -506,9 +510,7 @@ export class BeatsBuilder {
     );
     if (lastBeat == null && this.beatOffset.isGT(ZERO)) {
       // Add spaces to fill up empty beats
-      newBeat.add(new FlatAtom(
-        new Space(this.beatOffset.timesNum(apb))
-      ))
+      newBeat.add(new FlatAtom(new Space(this.beatOffset.timesNum(apb))));
     }
     if (lastBeat) lastBeat.nextBeat = newBeat;
     this.beats.push(newBeat);
