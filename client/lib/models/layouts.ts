@@ -310,14 +310,15 @@ export class BeatLayout {
   roleSpacing = 10;
   rowSpacing = 20;
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
-    // Instead of starting currLayoutLine at 0 - it should start at the line of the first beat being rendered
-    // let currLayoutLine = 0;
+    // Instead of starting currLayoutLine at 0 - it should start at the line of the
+    // first beat being rendered
     const lp = this.layoutParams;
     const currBeats = line.roles.map((l, index) => allRoleBeats[index][0]) as (Beat | null)[];
     let currY = this.roleSpacing;
-    while (true) {
+    let numDone = 0;
+    do {
+      numDone = 0;
       // Lay one role at a time upto numBeatsInLine number of beats
-      let numDone = 0;
       for (let currRole = 0; currRole < currBeats.length; currRole++) {
         let currBeat: Beat | null = currBeats[currRole];
         if (currBeat) {
@@ -346,8 +347,7 @@ export class BeatLayout {
 
       // currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
       currY += this.rowSpacing;
-      if (numDone == 0) break;
-    }
+    } while (numDone > 0);
   }
 }
 
