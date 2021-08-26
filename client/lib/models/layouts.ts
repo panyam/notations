@@ -297,6 +297,7 @@ export class BeatLayout {
         );
         // add all neighbours here
         // TODO - Use better lists of going through all beat cols
+        // Also ensure we are adding in sorted order and avoiding duplicates
         for (const other of this.beatColumns.values()) {
           if (endOffset.equals(other.offset)) {
             nextQueue.push(other);

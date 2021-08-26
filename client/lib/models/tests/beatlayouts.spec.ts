@@ -427,8 +427,392 @@ describe("Complex BeatLayout Tests", () => {
         aksharasPerBeat: 4,
       }),
       Frac(-2),
-      true,
-      null,
+      false,
+      {
+        "12/1:4/1": {
+          offset: "12/1",
+          duration: "4/1",
+          beats: [
+            {
+              index: 3,
+              role: "test",
+              offset: "-4/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 3,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Space",
+                    duration: "8/4",
+                    isSilent: false,
+                  },
+                  duration: "1/1",
+                  offset: "0/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Space",
+                    isSilent: false,
+                  },
+                  duration: "1/1",
+                  offset: "-3/1",
+                  depth: 0,
+                  isContinuation: true,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "a",
+                  },
+                  duration: "1/1",
+                  offset: "0/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "b",
+                  },
+                  duration: "1/1",
+                  offset: "1/1",
+                  depth: 0,
+                },
+              ],
+            },
+            {
+              index: 7,
+              role: "test",
+              offset: "12/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 3,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "o",
+                  },
+                  duration: "1/1",
+                  offset: "14/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "p",
+                  },
+                  duration: "1/1",
+                  offset: "15/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "q",
+                  },
+                  duration: "1/1",
+                  offset: "16/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "r",
+                  },
+                  duration: "1/1",
+                  offset: "17/1",
+                  depth: 0,
+                },
+              ],
+            },
+          ],
+        },
+        "0/1:4/1": {
+          offset: "0/1",
+          duration: "4/1",
+          beats: [
+            {
+              index: 4,
+              role: "test",
+              offset: "0/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 0,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "c",
+                  },
+                  duration: "1/1",
+                  offset: "2/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "d",
+                  },
+                  duration: "1/1",
+                  offset: "3/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "e",
+                  },
+                  duration: "1/1",
+                  offset: "4/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "f",
+                  },
+                  duration: "1/1",
+                  offset: "5/1",
+                  depth: 0,
+                },
+              ],
+            },
+            {
+              index: 8,
+              role: "test",
+              offset: "16/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 0,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "s",
+                  },
+                  duration: "1/1",
+                  offset: "18/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "t",
+                  },
+                  duration: "1/1",
+                  offset: "19/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "u",
+                  },
+                  duration: "1/1",
+                  offset: "20/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "v",
+                  },
+                  duration: "1/1",
+                  offset: "21/1",
+                  depth: 0,
+                },
+              ],
+            },
+          ],
+        },
+        "4/1:4/1": {
+          offset: "4/1",
+          duration: "4/1",
+          beats: [
+            {
+              index: 5,
+              role: "test",
+              offset: "4/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 1,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "g",
+                  },
+                  duration: "1/1",
+                  offset: "6/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "h",
+                  },
+                  duration: "1/1",
+                  offset: "7/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "i",
+                  },
+                  duration: "1/1",
+                  offset: "8/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "j",
+                  },
+                  duration: "1/1",
+                  offset: "9/1",
+                  depth: 0,
+                },
+              ],
+            },
+            {
+              index: 9,
+              role: "test",
+              offset: "20/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 1,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "w",
+                  },
+                  duration: "1/1",
+                  offset: "22/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "x",
+                  },
+                  duration: "1/1",
+                  offset: "23/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "y",
+                  },
+                  duration: "1/1",
+                  offset: "24/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "z",
+                  },
+                  duration: "1/1",
+                  offset: "25/1",
+                  depth: 0,
+                },
+              ],
+            },
+          ],
+        },
+        "8/1:4/1": {
+          offset: "8/1",
+          duration: "4/1",
+          beats: [
+            {
+              index: 6,
+              role: "test",
+              offset: "8/1",
+              duration: "4/1",
+              barIndex: 0,
+              beatIndex: 2,
+              instance: 0,
+              atoms: [
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "k",
+                  },
+                  duration: "1/1",
+                  offset: "10/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "l",
+                  },
+                  duration: "1/1",
+                  offset: "11/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "m",
+                  },
+                  duration: "1/1",
+                  offset: "12/1",
+                  depth: 0,
+                },
+                {
+                  type: "FlatAtom",
+                  atom: {
+                    type: "Note",
+                    value: "n",
+                  },
+                  duration: "1/1",
+                  offset: "13/1",
+                  depth: 0,
+                },
+              ],
+            },
+          ],
+        },
+      },
     );
   });
 });
