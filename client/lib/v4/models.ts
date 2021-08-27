@@ -1,15 +1,17 @@
 import * as TSU from "@panyam/tsutils";
 import { Cycle, Entity, Line } from "../models";
-import { LayoutParams, Beat, BeatsBuilder } from "../models/layouts";
-
-export class RawBlock extends Entity {
-  content: string;
-}
+import { LayoutParams } from "../models/layouts";
 
 export class Role {
   name = "";
   notesOnly = false;
   index = 0;
+}
+
+export class MetaData {
+  constructor(public readonly key: string, public readonly value: string, public readonly params?: any) {
+    params = params || {};
+  }
 }
 
 export type CmdParam = { key: TSU.Nullable<string>; value: any };
@@ -60,6 +62,10 @@ export abstract class Command extends Entity {
   abstract applyToNotation(notebook: Notation): void;
 }
 
+export class RawBlock extends Entity {
+  content: string | MetaData;
+}
+
 export class Notation extends Entity {
   private _currRole: TSU.Nullable<Role> = null;
   private _unnamedLayoutParams: LayoutParams[] = [];
@@ -70,6 +76,7 @@ export class Notation extends Entity {
   currentAPB = 1;
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
+  metadata = new Map<string, MetaData>();
 
   layoutParamsForLine(line: Line): null | LayoutParams {
     return this.lpsForLine.get(line.uuid) || null;
@@ -106,6 +113,15 @@ export class Notation extends Entity {
   addRawBlock(raw: RawBlock): void {
     this.blocks.push(raw);
     this.resetLine();
+  }
+
+  addMetaData(key: string, value: MetaData): void {
+    if (!this.metadata.has(key)) {
+      // Add a new raw block here
+      const raw = new RawBlock(key);
+      this.addRawBlock(raw);
+    }
+    this.metadata.set(key, value);
   }
 
   debugValue(): any {

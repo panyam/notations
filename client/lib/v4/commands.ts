@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Cycle, Literal, Atom, AtomType, Note, Syllable } from "../models";
 import { LayoutParams } from "../models/layouts";
-import { Command, RawBlock, Notation } from "./models";
+import { Command, RawBlock, Notation, MetaData as Meta } from "./models";
 import { parseCycle } from "../loaders/utils";
 const MarkdownIt = require("markdown-it");
 
@@ -14,6 +14,27 @@ export class RawEmbedding extends Command {
     const raw = new RawBlock();
     raw.content = this.rawContents;
     notation.addRawBlock(raw);
+  }
+}
+
+export class MetaData extends Command {
+  // Called when running in execution mode
+  applyToNotation(notation: Notation): void {
+    // Create the role - ensure that we have a role
+    notation.addMetaData(this.key, this.meta);
+  }
+
+  get meta(): Meta {
+    const out = new Meta(this.key, this.value);
+    return out;
+  }
+
+  get key(): string {
+    return this.getParamAt(0);
+  }
+
+  get value(): string {
+    return this.getParamAt(1);
   }
 }
 
