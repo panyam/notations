@@ -13,6 +13,7 @@ import {
   ActivateRole,
   CreateRole,
   CreateLine,
+  MetaData,
 } from "./commands";
 
 const ONE = TSU.Num.Fraction.ONE;
@@ -306,6 +307,8 @@ export class V4Parser {
     params = params || [];
     if (lName == "line") {
       return new CreateLine(params);
+    } else if (lName == "meta") {
+      return new MetaData(params);
     } else if (lName == "role") {
       return new CreateRole(params);
     } else if (lName == "layout") {
