@@ -1,9 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Literal, Atom, AtomType, Note, Syllable } from "../models";
-import { LayoutParams } from "../models/layouts";
+import { Atom } from "../models";
 import { Command, RawBlock, Notation, MetaData as Meta } from "./models";
 import { parseCycle } from "../loaders/utils";
-const MarkdownIt = require("markdown-it");
 
 export class RawEmbedding extends Command {
   get rawContents(): string {
@@ -11,8 +9,7 @@ export class RawEmbedding extends Command {
   }
 
   applyToNotation(notation: Notation): void {
-    const raw = new RawBlock();
-    raw.content = this.rawContents;
+    const raw = new RawBlock(this.rawContents);
     notation.addRawBlock(raw);
   }
 }

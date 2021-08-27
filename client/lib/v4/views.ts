@@ -120,18 +120,19 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
 
   renderBlock(raw: RawBlock): void {
     const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
-    if (typeof raw.content === "string") {
+    if (raw.contentType == "metadata") {
+      // we have a metadata block
+      const meta = this.notation.metadata.get(raw.content);
+      if (meta) {
+        const html = `<span class = "${meta.key.toLowerCase()}"><strong>${meta.key}</strong>: ${meta.value}</span>`;
+        div.innerHTML = html;
+      }
+    } else {
       const md = new MarkdownIt({
         html: true,
       });
       const tokens = md.parse(raw.content.trim(), {});
       const html = md.renderer.render(tokens, { langPrefix: "v4_" });
-      div.innerHTML = html;
-    } else {
-      // else we have a metadata block
-      const html = `<span class = "${raw.content.key.toLowerCase()}"><strong>${raw.content.key}</strong>: ${
-        raw.content.value
-      }"</span>`;
       div.innerHTML = html;
     }
     this.currentSVGElement = null;

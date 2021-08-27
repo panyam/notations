@@ -63,7 +63,9 @@ export abstract class Command extends Entity {
 }
 
 export class RawBlock extends Entity {
-  content: string | MetaData;
+  constructor(public content: string, public contentType: string = "md") {
+    super();
+  }
 }
 
 export class Notation extends Entity {
@@ -118,7 +120,7 @@ export class Notation extends Entity {
   addMetaData(key: string, value: MetaData): void {
     if (!this.metadata.has(key)) {
       // Add a new raw block here
-      const raw = new RawBlock(key);
+      const raw = new RawBlock(key, "metadata");
       this.addRawBlock(raw);
     }
     this.metadata.set(key, value);
