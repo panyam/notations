@@ -10,11 +10,11 @@ export function loadV4Notation(
   codeText: string,
   config: any = {},
 ): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
-  const notation = new Notation();
   const beatsByLineRole = new Map<number, Beat[][]>();
   const beatLayouts = new Map<number, BeatLayout>();
   const errors: G.ParseError[] = [];
   const startTime = performance.now();
+  const notation = new Notation();
   const parser = new V4Parser();
   parser.parse(codeText);
   const parseTime = performance.now();
