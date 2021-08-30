@@ -1,7 +1,19 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Embelishment, BeatLayout, BeatView, Beat, Cycle, AtomType, Line, Syllable, Note, Literal } from "notations";
-import { V4 } from "notations";
+import {
+  RawBlock,
+  Notation,
+  Embelishment,
+  BeatLayout,
+  BeatView,
+  Beat,
+  Cycle,
+  AtomType,
+  Line,
+  Syllable,
+  Note,
+  Literal,
+} from "notations";
 import { AtomView } from "./Core";
 import { createAtomView } from "./AtomViews";
 import { BeatStartLines, BeatEndLines } from "./Embelishments";
@@ -12,7 +24,7 @@ interface BeatViewDelegate {
   viewForBeat(beat: Beat): BeatView;
 }
 
-export class NotationView extends TSV.EntityView<V4.Notation> implements BeatViewDelegate {
+export class NotationView extends TSV.EntityView<Notation> implements BeatViewDelegate {
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
   beatsByLineRole = new Map<number, Beat[][]>();
@@ -22,7 +34,7 @@ export class NotationView extends TSV.EntityView<V4.Notation> implements BeatVie
   // Returns the beat view for a given beat
   beatViews = new Map<number, BeatView>();
 
-  get notation(): V4.Notation {
+  get notation(): Notation {
     return this.entity!;
   }
 
@@ -81,7 +93,7 @@ export class NotationView extends TSV.EntityView<V4.Notation> implements BeatVie
     for (const block of this.notation.blocks) {
       if (block.type == "RawBlock") {
         // Add the markdown here
-        this.renderBlock(block as V4.RawBlock);
+        this.renderBlock(block as RawBlock);
       } else {
         lines.push(block as Line);
         const lineView = this.renderLine(block as Line);
@@ -117,7 +129,7 @@ export class NotationView extends TSV.EntityView<V4.Notation> implements BeatVie
     return lineView;
   }
 
-  renderBlock(raw: V4.RawBlock): void {
+  renderBlock(raw: RawBlock): void {
     const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
     if (raw.contentType == "metadata") {
       // we have a metadata block
