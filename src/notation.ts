@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Entity, Line } from "../core";
-import { LayoutParams } from "../layouts";
+import { Cycle, Entity, Line } from "./core";
+import { LayoutParams } from "./layouts";
 
 export class RoleDef {
   name = "";

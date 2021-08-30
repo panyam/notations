@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group } from "../core";
-import { Command, CmdParam } from "./models";
+import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group } from "./core";
+import { Command, CmdParam } from "./notation";
 import {
   RawEmbedding,
   ApplyLayout,

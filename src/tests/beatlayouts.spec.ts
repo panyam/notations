@@ -1,7 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note, Bar } from "../";
-import { BeatLayout, LayoutParams, BeatsBuilder, Beat, BeatView, BeatColumn } from "../layouts";
-import { FlatAtom } from "../iterators";
+import { Cycle, Line, Note, Bar } from "../";
+import { BeatLayout, LayoutParams, BeatsBuilder, Beat } from "../layouts";
 
 const Frac = TSU.Num.Frac;
 const ZERO = TSU.Num.Fraction.ZERO;

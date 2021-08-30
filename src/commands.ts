@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom } from "../core";
-import { Command, RawBlock, Notation, MetaData as Meta } from "./models";
-import { parseCycle } from "../utils";
+import { Atom } from "./core";
+import { parseCycle } from "./utils";
+import { Command, RawBlock, Notation, MetaData as Meta } from "./notation";
 
 export class RawEmbedding extends Command {
   get rawContents(): string {

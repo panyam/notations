@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 import * as TSU from "@panyam/tsutils";
+import { Line } from "../core";
 import { Parser } from "../parser";
-import { Line } from "../../core";
-import { RawBlock, Command, Notation } from "../models";
+import { RawBlock, Command, Notation } from "../notation";
 
 function fromCommands(cmds: Command[]): Notation {
   const out = new Notation();
