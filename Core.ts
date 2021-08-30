@@ -1,7 +1,7 @@
 import * as TSV from "@panyam/tsutils-ui";
-import { FlatAtom } from "../models/iterators";
-import { Role, Atom } from "../models";
-import { LayoutParams, Embelishment, Beat, BeatsBuilder } from "../models/layouts";
+import { FlatAtom } from "../../common/lib/models/iterators";
+import { Role, Atom } from "../../common/lib/models";
+import { LayoutParams, Embelishment, Beat, BeatsBuilder } from "../../common/lib/models/layouts";
 
 export class Browser {
   static is_explorer = navigator.userAgent.indexOf("MSIE") > -1;

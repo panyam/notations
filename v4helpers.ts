@@ -1,9 +1,9 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
-import { V4Parser } from "../v4/";
-import { Notation } from "../v4/models";
-import { Line } from "../models";
-import { BeatLayout, Beat, BeatsBuilder } from "../models/layouts";
+import { V4Parser } from "../../common/lib/v4/";
+import { Notation } from "../../common/lib/v4/models";
+import { Line } from "../../common/lib/models";
+import { BeatLayout, Beat, BeatsBuilder } from "../../common/lib/models/layouts";
 import { NotationView } from "./v4";
 
 export function loadV4Notation(

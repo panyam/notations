@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Cycle, AtomType, Line, Syllable, Note, Literal } from "../models";
-import { Embelishment, BeatLayout, BeatView, Beat } from "../models/layouts";
-import { Notation, RawBlock } from "../../lib/v4/models";
+import { Cycle, AtomType, Line, Syllable, Note, Literal } from "../../common/lib/models";
+import { Embelishment, BeatLayout, BeatView, Beat } from "../../common/lib/models/layouts";
+import { Notation, RawBlock } from "../../common/lib/v4/models";
 import { AtomView } from "./Core";
 import { createAtomView } from "./AtomViews";
 import { BeatStartLines, BeatEndLines } from "./Embelishments";

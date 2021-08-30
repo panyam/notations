@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Role } from "../models/";
-import { FlatAtom } from "../models/iterators";
-import { LayoutParams, Beat, BeatsBuilder, Embelishment } from "../models/layouts";
+import { Role } from "../../common/lib/models/";
+import { FlatAtom } from "../../common/lib/models/iterators";
+import { LayoutParams, Beat, BeatsBuilder, Embelishment } from "../../common/lib/models/layouts";
 import { TimedView, AtomLayout, AtomViewProvider } from "./Core";
 
 type Fraction = TSU.Num.Fraction;

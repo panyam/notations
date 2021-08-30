@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Line, Role, Atom } from "../models";
-import { FlatAtom } from "../models/iterators";
-import { LayoutParams, Beat } from "../models/layouts";
+import { Line, Role, Atom } from "../../common/lib/models";
+import { FlatAtom } from "../../common/lib/models/iterators";
+import { LayoutParams, Beat } from "../../common/lib/models/layouts";
 import { Snippet } from "../v3/models";
 import { AtomLayout, AtomView } from "./Core";
 import { createAtomView } from "./AtomViews";

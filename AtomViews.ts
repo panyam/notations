@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Label, Note, Space, Syllable } from "../models";
-import { FlatAtom } from "../models/iterators";
-import { Embelishment } from "../models/layouts";
+import { AtomType, Label, Note, Space, Syllable } from "../../common/lib/models";
+import { FlatAtom } from "../../common/lib/models/iterators";
+import { Embelishment } from "../../common/lib/models/layouts";
 import { AtomView, TimedView } from "./Core";
 
 class NoteView extends AtomView {

@@ -3,7 +3,7 @@
  */
 import { loadV4Notation } from "../v4helpers";
 import "../../../../common/jest/matchers";
-import { getCircularReplacer } from "../../../common/utils";
+import { getCircularReplacer } from "../../../common/jest/utils";
 
 function testV4(input: string, debug = false, expected: any = null): void {
   const [notation] = loadV4Notation(input);
