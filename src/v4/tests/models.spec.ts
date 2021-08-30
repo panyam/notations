@@ -1,9 +1,8 @@
 /**
  * @jest-environment jsdom
  */
+import * as TSU from "@panyam/tsutils";
 import { V4Parser } from "../";
-import "../../../../common/jest/matchers";
-import { getCircularReplacer } from "../../../common/utils";
 import { Line } from "../../models";
 import { RawBlock, Command, Notation } from "../models";
 
@@ -20,8 +19,14 @@ function testV4(input: string, debug = false): [Command[], Notation] {
   const notation = fromCommands(parser.commands);
   if (debug) {
     // console.log("Parse Tree: \n", JSON.stringify(root.debugValue(), getCircularReplacer(), 2));
-    console.log("Commands: \n", JSON.stringify(cmds, getCircularReplacer(), 2));
-    console.log("Notation: \n", JSON.stringify(notation.debugValue(), getCircularReplacer(), 2));
+    console.log(
+      "Commands: \n",
+      JSON.stringify(cmds, TSU.Misc.getCircularReplacer(), 2)
+    );
+    console.log(
+      "Notation: \n",
+      JSON.stringify(notation.debugValue(), TSU.Misc.getCircularReplacer(), 2)
+    );
   }
   // expect(notation.debugValue()).toEqual(expected);
   return [parser.commands, notation];
@@ -44,9 +49,13 @@ function expectNotation(notation: Notation, expected: any) {
         expect(line.roles.map((r) => r.debugValue())).toEqual(block.roles);
         const lpForLine = notation.layoutParamsForLine(line);
         if (typeof block.layoutParams === "number") {
-          expect(lpForLine).toBe(notation.unnamedLayoutParams[block.layoutParams]);
+          expect(lpForLine).toBe(
+            notation.unnamedLayoutParams[block.layoutParams]
+          );
         } else {
-          expect(lpForLine).toBe(notation.namedLayoutParams.get(block.layoutParams));
+          expect(lpForLine).toBe(
+            notation.namedLayoutParams.get(block.layoutParams)
+          );
         }
       }
     }
@@ -60,7 +69,7 @@ describe("Parser Tests", () => {
         \role("Sw", notes = true)
         \role("Sh")
         Sw: s r g m p , 
-      `,
+      `
     );
     expectNotation(notation, {
       roles: [
@@ -120,29 +129,29 @@ describe("Parser Tests", () => {
       testV4(
         String.raw`
         \aksharasPerBeat("hello")
-        `,
-      ),
+        `
+      )
     ).toThrowError("aksharasPerBeat command must contain one number");
     expect(() =>
       testV4(
         String.raw`
         \breaks(1, "b")
-        `,
-      ),
+        `
+      )
     ).toThrowError("Breaks command must be a list of integers");
     expect(() =>
       testV4(
         String.raw`
         \breaks(a = 1)
-        `,
-      ),
+        `
+      )
     ).toThrowError("Breaks command cannot have keyword params");
     expect(() =>
       testV4(
         String.raw`
         \layout(3)
-        `,
-      ),
+        `
+      )
     ).toThrowError("layout command must contain one string argument");
   });
 
@@ -151,7 +160,7 @@ describe("Parser Tests", () => {
       String.raw`
         \role("Sw", notes = true)
         \role("Sh")
-        `,
+        `
     );
     expect(notation.currRole.name).toEqual("sh");
   });
@@ -162,8 +171,8 @@ describe("Parser Tests", () => {
         String.raw`
         \role("Sw", notes = true)
         \role("Sw");
-        `,
-      ),
+        `
+      )
     ).toThrowError("Role already exists");
   });
 
@@ -185,7 +194,7 @@ describe("Parser Tests", () => {
         Sw: s. n d p m ,
 
         r"Some Raw Content"
-      `,
+      `
     );
     expectNotation(notation, {
       roles: [

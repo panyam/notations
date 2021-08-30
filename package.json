@@ -1,0 +1,84 @@
+{
+  "name": "notations",
+  "version": "0.0.1",
+  "author": "Sriram Panyam",
+  "description": "A package for modelling, parsing, laying out carnatic musical notation",
+  "homepage": "https://github.com/panyam/notations#readme",
+  "license": "ISC",
+  "types": "lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "files": [
+    "lib/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panyam/notations.git"
+  },
+  "keywords": [
+    "notation",
+    "music",
+    "carnatic"
+  ],
+  "bugs": {
+    "url": "https://github.com/panyam/notations/issues"
+  },
+  "dependencies": {
+    "@panyam/tsutils": "*",
+    "galore": "*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.14.7",
+    "@babel/preset-flow": "^7.14.5",
+    "@babel/preset-typescript": "^7.15.0",
+    "@types/ace": "^0.0.47",
+    "@types/jest": "^27.0.1",
+    "@types/request": "^2.48.7",
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "@typescript-eslint/parser": "^4.29.3",
+    "autoprefixer": "^10.3.3",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^27.1.0",
+    "babel-loader": "^8.2.2",
+    "babel-preset-env": "^1.7.0",
+    "browserify": "17.0.0",
+    "codecov": "^3.8.3",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.1",
+    "highlight.js": "11.2.0",
+    "jest": "^27.1.0",
+    "jest-each": "^27.1.0",
+    "jest-mock": "^27.1.0",
+    "jsdom": "^17.0.0",
+    "npm-run-all": "^4.1.5",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.2",
+    "typescript-tslint-plugin": "^1.0.1"
+  },
+  "pre-commit": [
+    "precommit-msg",
+    "clean",
+    "build",
+    "lintfix",
+    "test"
+  ],
+  "scripts": {
+    "clean": "rm -Rf lib && jest --clearCache && rm -rf static/lib",
+    "build": "npm run  clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "test": "jest --coverage --runInBand",
+    "lint": "eslint './src' --quiet --ext .ts --resolve-plugins-relative-to .",
+    "lintfix": "eslint 'src/**/*.ts' --quiet --fix --resolve-plugins-relative-to .",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
+    "prepare": "npm run build",
+    "prepublishOnly": "echo prepublishOnly...",
+    "preversion": "npm run build && npm run lintfix",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
+  }
+}

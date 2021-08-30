@@ -1,7 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { LeafAtom, Space, Syllable, Group, Note } from "../";
 import { FlatAtom, AtomIterator, DurationIterator } from "../iterators";
-import "../../../common/jest/matchers";
 
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
@@ -11,24 +10,28 @@ const FIVE = ONE.timesNum(5);
 
 describe("AtomIterator Tests", () => {
   test("Plain Atoms", () => {
-    const ai = new AtomIterator(new Space(TWO), new Syllable("Ga"), new Note("a"));
+    const ai = new AtomIterator(
+      new Space(TWO),
+      new Syllable("Ga"),
+      new Note("a")
+    );
     let peeked = ai.peek();
-    expect(peeked?.atom).toEntityEqual(new Space(TWO));
-    expect(peeked?.offset).toEntityEqual(ZERO);
+    expect(peeked?.atom?.debugValue()).toEqual(new Space(TWO).debugValue());
+    expect(peeked?.offset).toEqual(ZERO);
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Space(TWO));
-    expect(peeked?.offset).toEntityEqual(ZERO);
+    expect(peeked?.atom?.debugValue()).toEqual(new Space(TWO).debugValue());
+    expect(peeked?.offset).toEqual(ZERO);
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Syllable("Ga"));
-    expect(peeked?.offset).toEntityEqual(TWO);
+    expect(peeked?.atom?.debugValue()).toEqual(new Syllable("Ga").debugValue());
+    expect(peeked?.offset).toEqual(TWO);
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Note("a"));
+    expect(peeked?.atom?.debugValue()).toEqual(new Note("a").debugValue());
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
@@ -36,26 +39,30 @@ describe("AtomIterator Tests", () => {
   });
 
   test("With Groups", () => {
-    const atoms = [new Note("a"), new Group(ONE, new Note("b"), new Space(TWO)), new Note("c")];
+    const atoms = [
+      new Note("a"),
+      new Group(ONE, new Note("b"), new Space(TWO)),
+      new Note("c"),
+    ];
     const ai = new AtomIterator(...atoms);
     let peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Note("a"));
-    expect(peeked?.offset).toEntityEqual(ZERO);
+    expect(peeked?.atom?.debugValue()).toEqual(new Note("a").debugValue());
+    expect(peeked?.offset).toEqual(ZERO);
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Note("b"));
-    expect(peeked?.offset).toEntityEqual(ONE);
+    expect(peeked?.atom?.debugValue()).toEqual(new Note("b").debugValue());
+    expect(peeked?.offset).toEqual(ONE);
     expect(peeked?.depth).toEqual(1);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Space(TWO));
-    expect(peeked?.offset).toEntityEqual(TSU.Num.Frac(4, 3));
+    expect(peeked?.atom?.debugValue()).toEqual(new Space(TWO).debugValue());
+    expect(peeked?.offset).toEqual(TSU.Num.Frac(4, 3));
     expect(peeked?.depth).toEqual(1);
 
     peeked = ai.next();
-    expect(peeked?.atom).toEntityEqual(new Note("c"));
-    expect(peeked?.offset).toEntityEqual(TWO);
+    expect(peeked?.atom?.debugValue()).toEqual(new Note("c").debugValue());
+    expect(peeked?.offset.factorized).toEqual(TWO);
     expect(peeked?.depth).toEqual(0);
 
     peeked = ai.next();
@@ -72,7 +79,7 @@ describe("AtomIterator Tests", () => {
         // Offset = 1
         new Note("b"),
         // Offset = 8 / 3
-        new Space(TWO),
+        new Space(TWO)
       ),
       // Offset = 6
       new Note("c"),
@@ -86,7 +93,7 @@ describe("AtomIterator Tests", () => {
         // Offset = 3
         new Note("e"),
         // Offset = 5 / 3
-        new Space(TWO),
+        new Space(TWO)
       ),
       // Offset = 4
       new Note("f"),
@@ -130,7 +137,7 @@ describe("AtomIterator Tests", () => {
       const [role, flatAtom] = got[i];
       // console.log("I, Got: ", i, flatAtom.offset, flatAtom.atom.toString()); // got[i]);
       expect(role).toBe(expected[i][0]);
-      expect(flatAtom.atom).toEntityEqual(expected[i][2]);
+      expect(flatAtom.atom?.debugValue()).toEqual(expected[i][2].debugValue());
       expect(flatAtom.depth).toEqual(expected[i][1]);
     }
   });
@@ -138,22 +145,26 @@ describe("AtomIterator Tests", () => {
 
 describe("DurationIterator Tests", () => {
   test("Plain Atoms", () => {
-    const ai = new AtomIterator(new Space(TWO), new Syllable("Ga"), new Note("a"));
+    const ai = new AtomIterator(
+      new Space(TWO),
+      new Syllable("Ga"),
+      new Note("a")
+    );
     const dIter = new DurationIterator(ai);
     let [d1, filled] = dIter.get(ONE);
-    expect(d1[0].atom).toEntityEqual(new Space(TWO));
+    expect(d1[0].atom?.debugValue()).toEqual(new Space(TWO).debugValue());
     expect(d1[0].duration).toBe(ONE);
     expect(filled).toBe(true);
 
     [d1, filled] = dIter.get(THREE);
     expect(d1.length).toBe(3);
     expect(filled).toBe(true);
-    expect(d1[0].atom).toEntityEqual(new Space(ONE));
-    expect(d1[0].duration).toEntityEqual(ONE);
-    expect(d1[1].atom).toEntityEqual(new Syllable("Ga"));
-    expect(d1[1].duration).toEntityEqual(ONE);
-    expect(d1[2].atom).toEntityEqual(new Note("a"));
-    expect(d1[2].duration).toEntityEqual(ONE);
+    expect(d1[0].atom?.debugValue()).toEqual(new Space(ONE).debugValue());
+    expect(d1[0].duration).toEqual(ONE);
+    expect(d1[1].atom?.debugValue()).toEqual(new Syllable("Ga").debugValue());
+    expect(d1[1].duration).toEqual(ONE);
+    expect(d1[2].atom?.debugValue()).toEqual(new Note("a").debugValue());
+    expect(d1[2].duration).toEqual(ONE);
 
     [d1, filled] = dIter.get(ONE);
     expect(d1.length).toBe(0);

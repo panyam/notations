@@ -1,0 +1,31 @@
+{
+  "exclude": [
+    "node_modules",
+    "lib",
+    "./src/**/*.spec.ts"
+  ],
+  "compilerOptions": {
+    "allowJs": false,
+    "declaration": true,
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "module": "ES2020",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "outDir": "lib/esm",
+    "plugins": [ { "name": "typescript-tslint-plugin" } ],
+    "removeComments": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "target": "es5"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

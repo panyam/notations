@@ -1,9 +1,24 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note, Bar } from "../";
-import { BeatLayout, LayoutParams, BeatsBuilder, Beat, BeatView, BeatColumn } from "../layouts";
+import {
+  Cycle,
+  Line,
+  LeafAtom,
+  Role,
+  Space,
+  Syllable,
+  Group,
+  Note,
+  Bar,
+} from "../";
+import {
+  BeatLayout,
+  LayoutParams,
+  BeatsBuilder,
+  Beat,
+  BeatView,
+  BeatColumn,
+} from "../layouts";
 import { FlatAtom } from "../iterators";
-import "../../../common/jest/matchers";
-import { getCircularReplacer } from "../../../common/utils";
 
 const Frac = TSU.Num.Frac;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -54,14 +69,18 @@ function testLayouts(
   layoutParams: LayoutParams,
   lineOffset: TSU.Num.Fraction,
   debug: boolean,
-  expected: any,
+  expected: any
 ) {
   if (typeof notes === "string") notes = [...notes];
   const atoms = notes.map((a: string) => new Note(a));
   const beatLayout = new BeatLayout(layoutParams);
   const line = new Line().addAtoms("test", false, ...atoms);
   const role = line.ensureRole("test", false);
-  const bb = new BeatsBuilder(role, layoutParams, lineOffset.divbyNum(layoutParams.aksharasPerBeat));
+  const bb = new BeatsBuilder(
+    role,
+    layoutParams,
+    lineOffset.divbyNum(layoutParams.aksharasPerBeat)
+  );
   bb.addAtoms(...role.atoms);
   for (const beat of bb.beats) {
     beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
@@ -70,8 +89,14 @@ function testLayouts(
 
   const found = getBeatColumns(beatLayout);
   if (debug || expected == null) {
-    console.log("Found BeatColumns: \n", JSON.stringify(found, getCircularReplacer(), 2));
-    console.log("Expected BeatColumns: \n", JSON.stringify(expected, getCircularReplacer(), 2));
+    console.log(
+      "Found BeatColumns: \n",
+      JSON.stringify(found, TSU.Misc.getCircularReplacer(), 2)
+    );
+    console.log(
+      "Expected BeatColumns: \n",
+      JSON.stringify(expected, TSU.Misc.getCircularReplacer(), 2)
+    );
   }
   expect(found).toEqual(expected);
 }
@@ -415,7 +440,7 @@ describe("Complex BeatLayout Tests", () => {
             },
           ],
         },
-      },
+      }
     );
   });
 
@@ -812,7 +837,7 @@ describe("Complex BeatLayout Tests", () => {
             },
           ],
         },
-      },
+      }
     );
   });
 });

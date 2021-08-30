@@ -1,7 +1,16 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../";
+import {
+  AtomType,
+  Entity,
+  Line,
+  Cycle,
+  Bar,
+  Syllable,
+  Space,
+  Group,
+  Note,
+} from "../";
 import { LayoutParams } from "../layouts";
-import "../../../common/jest/matchers";
 
 const Frac = TSU.Num.Frac;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -54,13 +63,21 @@ describe("Entity Tests", () => {
 describe("Cycle tests", () => {
   test("Clone", () => {
     const cycle = new Cycle({
-      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
+      bars: [
+        new Bar({ beatLengths: [1, 2, 3, 4] }),
+        new Bar({ beatLengths: [5] }),
+        new Bar({ beatLengths: [6, 7] }),
+      ],
     });
     const c2 = cycle.clone();
     expect(cycle.equals(c2)).toBe(true);
 
     const c3 = new Cycle({
-      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 8] })],
+      bars: [
+        new Bar({ beatLengths: [1, 2, 3, 4] }),
+        new Bar({ beatLengths: [5] }),
+        new Bar({ beatLengths: [6, 8] }),
+      ],
     });
     expect(cycle.equals(c3)).toBe(false);
   });
@@ -94,12 +111,16 @@ describe("Cycle tests", () => {
 
   test("Iteration", () => {
     const cycle = new Cycle({
-      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
+      bars: [
+        new Bar({ beatLengths: [1, 2, 3, 4] }),
+        new Bar({ beatLengths: [5] }),
+        new Bar({ beatLengths: [6, 7] }),
+      ],
     });
     const values = [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7];
     const iter = cycle.iterateBeats();
     for (let i = 0; i < values.length; i++) {
-      expect(iter.next().value[1]).toEntityEqual(TSU.Num.Frac(values[i]));
+      expect(iter.next().value[1]).toEqual(TSU.Num.Frac(values[i]));
     }
   });
 
@@ -139,7 +160,11 @@ describe("Cycle tests", () => {
             offset = offset.minus(beatLength);
             // console.log( `Testing globalIndex: ${bi}, bar: ${barIndex}, beat: ${beatIndex}, instance: ${instance}, offset: ${offset.toString()}`,);
             const found = cycle.getAtIndex(bi--);
-            expect(found).toEqual([-(c + 1), [barIndex, beatIndex, instance], offset]);
+            expect(found).toEqual([
+              -(c + 1),
+              [barIndex, beatIndex, instance],
+              offset,
+            ]);
           }
         }
       }
@@ -322,7 +347,11 @@ describe("Atom tests", () => {
   });
 
   test("Group Creation", () => {
-    const notes = [new Syllable("aaa"), new Space(THREE, true), new Note("ga", THREE)];
+    const notes = [
+      new Syllable("aaa"),
+      new Space(THREE, true),
+      new Note("ga", THREE),
+    ];
     const g = new Group(FIVE, ...notes);
     expect(g.type).toBe(AtomType.GROUP);
 
@@ -347,19 +376,19 @@ describe("Atom tests", () => {
     expect(n.parent).toBe(null);
     const n2 = n.clone();
     expect(n.value).toBe(n2.value);
-    expect(n.duration).toEntityEqual(n2.duration);
+    expect(n.duration).toEqual(n2.duration);
     expect(n.octave).toBe(n2.octave);
     expect(n.shift).toBe(n2.shift);
 
     n.duration = TSU.Num.Frac(1, 3);
-    expect(n.duration).toEntityEqual(TSU.Num.Frac(1, 3));
-    expect(n.duration).not.toEntityEqual(n2.duration);
+    expect(n.duration).toEqual(TSU.Num.Frac(1, 3));
+    expect(n.duration).not.toEqual(n2.duration);
   });
 
   test("Space Copy", () => {
     const n = new Space(TSU.Num.Frac(3, 4), true);
     const n2 = n.clone();
-    expect(n.duration).toEntityEqual(n2.duration);
+    expect(n.duration).toEqual(n2.duration);
     expect(n.isSilent).toBe(n2.isSilent);
   });
 
@@ -368,42 +397,44 @@ describe("Atom tests", () => {
     expect(n.parent).toBe(null);
     const n2 = n.clone();
     expect(n.value).toBe(n2.value);
-    expect(n.duration).toEntityEqual(n2.duration);
+    expect(n.duration).toEqual(n2.duration);
 
     n.duration = TSU.Num.Frac(1, 3);
-    expect(n.duration).toEntityEqual(TSU.Num.Frac(1, 3));
-    expect(n.duration).not.toEntityEqual(n2.duration);
+    expect(n.duration).toEqual(TSU.Num.Frac(1, 3));
+    expect(n.duration).not.toEqual(n2.duration);
   });
 
   test("Group", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
     const g = new Group(ONE, ...atoms);
     expect(g.atoms.size).toBe(3);
-    expect(g.totalChildDuration).toEntityEqual(TSU.Num.Frac(4));
+    expect(g.totalChildDuration).toEqual(TSU.Num.Frac(4));
   });
 
   test("Group 2", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
     const g = new Group(ONE, ...atoms);
     expect(g.atoms.size).toBe(3);
-    expect(g.totalChildDuration).toEntityEqual(TSU.Num.Frac(4));
+    expect(g.totalChildDuration).toEqual(TSU.Num.Frac(4));
 
     const atoms2 = [new Space(TWO), new Syllable("Ga"), new Note("a")];
     const g2 = new Group(TWO, ...atoms2);
 
     const p = new Group(THREE, g, g2);
-    expect(g2.totalChildDuration).toEntityEqual(TSU.Num.Frac(4));
+    expect(g2.totalChildDuration).toEqual(TSU.Num.Frac(4));
   });
 
   test("Group Cloning", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
     const g = new Group(TWO, ...atoms);
     const g2 = g.clone();
-    expect(g2.duration).toEntityEqual(g.duration);
+    expect(g2.duration).toEqual(g.duration);
     expect(g2.atoms.size).toBe(g.atoms.size);
-    expect(g2.atoms.first).toEntityEqual(atoms[0]);
-    expect(g2.atoms.first?.nextSibling).toEntityEqual(atoms[1]);
-    expect(g2.atoms.first?.nextSibling?.nextSibling).toEntityEqual(atoms[2]);
+    expect(g2.atoms.first?.debugValue()).toEqual(atoms[0].debugValue());
+    expect(g2.atoms.first?.nextSibling?.debugValue()).toEqual(
+      atoms[1].debugValue()
+    );
+    expect(g2.atoms.first?.nextSibling?.nextSibling?.debugValue()).toEqual(atoms[2].debugValue());
   });
 });
 
