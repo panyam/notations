@@ -24,7 +24,7 @@ export interface BeatView {
   width: number;
   height: number;
   applyLayout(): void;
-  get embelishments(): Embelishment[];
+  readonly embelishments: Embelishment[];
   setStyles(config: any): void;
 }
 
