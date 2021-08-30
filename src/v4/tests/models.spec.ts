@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 import * as TSU from "@panyam/tsutils";
-import { V4Parser } from "../";
-import { Line } from "../../models";
+import { Parser } from "../parser";
+import { Line } from "../../core";
 import { RawBlock, Command, Notation } from "../models";
 
 function fromCommands(cmds: Command[]): Notation {
@@ -13,7 +13,7 @@ function fromCommands(cmds: Command[]): Notation {
 }
 
 function testV4(input: string, debug = false): [Command[], Notation] {
-  const parser = new V4Parser();
+  const parser = new Parser();
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
   const notation = fromCommands(parser.commands);
@@ -162,7 +162,7 @@ describe("Parser Tests", () => {
         \role("Sh")
         `
     );
-    expect(notation.currRole.name).toEqual("sh");
+    expect(notation.currRoleDef.name).toEqual("sh");
   });
 
   test("Test duplicate role", () => {

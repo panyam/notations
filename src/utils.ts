@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Bar, Atom, Space, Group, Syllable } from "../models/index";
+import { Cycle, Bar, Atom, Space, Group, Syllable } from "./core";
 const ONE = TSU.Num.Fraction.ONE;
 
 /**

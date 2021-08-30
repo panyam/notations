@@ -1,15 +1,19 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Entity, Line } from "../models";
-import { LayoutParams } from "../models/layouts";
+import { Cycle, Entity, Line } from "../core";
+import { LayoutParams } from "../layouts";
 
-export class Role {
+export class RoleDef {
   name = "";
   notesOnly = false;
   index = 0;
 }
 
 export class MetaData {
-  constructor(public readonly key: string, public readonly value: string, public readonly params?: any) {
+  constructor(
+    public readonly key: string,
+    public readonly value: string,
+    public readonly params?: any
+  ) {
     params = params || {};
   }
 }
@@ -69,10 +73,10 @@ export class RawBlock extends Entity {
 }
 
 export class Notation extends Entity {
-  private _currRole: TSU.Nullable<Role> = null;
   private _unnamedLayoutParams: LayoutParams[] = [];
   private _namedLayoutParams = new Map<string, LayoutParams>();
-  roles: Role[] = [];
+  private _currRoleDef: TSU.Nullable<RoleDef> = null;
+  roles: RoleDef[] = [];
   blocks: (Line | RawBlock)[] = [];
   private lpsForLine = new Map<number, LayoutParams>();
   currentAPB = 1;
@@ -138,7 +142,7 @@ export class Notation extends Entity {
     };
   }
 
-  getRole(name: string): TSU.Nullable<Role> {
+  getRoleDef(name: string): TSU.Nullable<RoleDef> {
     name = name.trim().toLowerCase();
     if (name == "") {
       return this.roles[this.roles.length - 1] || null;
@@ -150,19 +154,19 @@ export class Notation extends Entity {
     return null;
   }
 
-  newRole(name: string, notesOnly = false): Role {
+  newRoleDef(name: string, notesOnly = false): RoleDef {
     name = name.trim().toLowerCase();
     if (name.trim() == "") {
       throw new Error("Role name cannot be empty");
     }
-    const roleDef = this.getRole(name);
+    const roleDef = this.getRoleDef(name);
     if (roleDef != null) {
       throw new Error("Role already exists");
       // roleDef.notesOnly = notesOnly;
       // return roleDef;
     }
     // create new and add
-    const rd = new Role();
+    const rd = new RoleDef();
     rd.name = name;
     rd.notesOnly = notesOnly;
     rd.index = this.roles.length;
@@ -171,15 +175,15 @@ export class Notation extends Entity {
     return rd;
   }
 
-  get currRole(): Role {
-    if (this._currRole == null) {
+  get currRoleDef(): RoleDef {
+    if (this._currRoleDef == null) {
       if (this.roles.length == 0) {
         throw new Error("No roles defined");
       } else {
-        this._currRole = this.roles[this.roles.length - 1];
+        this._currRoleDef = this.roles[this.roles.length - 1];
       }
     }
-    return this._currRole;
+    return this._currRoleDef;
   }
 
   setCurrRole(name: string): void {
@@ -187,11 +191,11 @@ export class Notation extends Entity {
     if (name.trim() == "") {
       throw new Error("Role name cannot be empty");
     }
-    const roleDef = this.getRole(name);
+    const roleDef = this.getRoleDef(name);
     if (roleDef == null) {
       throw new Error("Role not found: " + name);
     }
-    this._currRole = roleDef;
+    this._currRoleDef = roleDef;
   }
 
   // Gets the current line, creating it if needed

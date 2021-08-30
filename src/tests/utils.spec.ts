@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { parseSyllable, parseBar, cycleStrToBarsStrs } from "../utils";
-import { Atom, Syllable, Space, Note, Group } from "../../models/index";
+import { Atom, Syllable, Space, Note, Group } from "../core";
 
 const ONE = TSU.Num.Fraction.ONE;
 
@@ -75,9 +75,9 @@ describe("Utils Tests", () => {
           new Space(ONE, true),
           new Syllable("D"),
           new Space(ONE, false),
-          new Syllable("P"),
-        ),
-      ),
+          new Syllable("P")
+        )
+      )
     ).toBe(true);
   });
 });

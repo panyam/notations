@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { LeafAtom, Space, Syllable, Group, Note } from "../";
+import { LeafAtom, Space, Syllable, Group, Note } from "../core";
 import { FlatAtom, AtomIterator, DurationIterator } from "../iterators";
 
 const ZERO = TSU.Num.Fraction.ZERO;

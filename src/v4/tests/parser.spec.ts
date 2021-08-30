@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 import * as TSU from "@panyam/tsutils";
-import { V4Parser } from "../";
+import { Parser } from "../parser";
 
 function testV4(input: string, debug = false, expected: any = null): void {
-  const parser = new V4Parser();
+  const parser = new Parser();
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
   if (debug || expected == null) {
@@ -602,7 +602,7 @@ describe("Parser Tests", () => {
   test("Test Atoms", () => {
     const notebook = new Notebook();
     const snippet = notebook.newSnippet();
-    const parser = new V4Parser(snippet);
+    const parser = new Parser(snippet);
     parser.parse("\\line(world)");
     parser.parse("\\role(sw, notes = true)");
     parser.parse("\\role(sh)");

@@ -9,7 +9,7 @@ import {
   Space,
   Group,
   Note,
-} from "../";
+} from "../core";
 import { LayoutParams } from "../layouts";
 
 const Frac = TSU.Num.Frac;
@@ -434,7 +434,9 @@ describe("Atom tests", () => {
     expect(g2.atoms.first?.nextSibling?.debugValue()).toEqual(
       atoms[1].debugValue()
     );
-    expect(g2.atoms.first?.nextSibling?.nextSibling?.debugValue()).toEqual(atoms[2].debugValue());
+    expect(g2.atoms.first?.nextSibling?.nextSibling?.debugValue()).toEqual(
+      atoms[2].debugValue()
+    );
   });
 });
 

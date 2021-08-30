@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom } from "../models";
+import { Atom } from "../core";
 import { Command, RawBlock, Notation, MetaData as Meta } from "./models";
-import { parseCycle } from "../loaders/utils";
+import { parseCycle } from "../utils";
 
 export class RawEmbedding extends Command {
   get rawContents(): string {
@@ -59,26 +59,37 @@ export class AddAtoms extends Command {
   }
 
   debugValue(): any {
-    return { name: this.name, index: this.index, atoms: this.atoms.map((a) => a.debugValue()) };
+    return {
+      name: this.name,
+      index: this.index,
+      atoms: this.atoms.map((a) => a.debugValue()),
+    };
   }
 
   applyToNotation(notation: Notation): void {
-    const roleDef = notation.currRole;
+    const roleDef = notation.currRoleDef;
     if (roleDef == null) {
       throw new Error("Current role is invalid");
     }
     // Ensure a line exists
     const lpForLine = notation.layoutParamsForLine(notation.currentLine);
     if (lpForLine == null) {
-      notation.setLayoutParamsForLine(notation.currentLine, notation.layoutParams);
+      notation.setLayoutParamsForLine(
+        notation.currentLine,
+        notation.layoutParams
+      );
     } else {
       TSU.assert(
         lpForLine == notation.layoutParams,
-        "Layout parameters have changed so a new line should have been started",
+        "Layout parameters have changed so a new line should have been started"
       );
     }
     const finalised = this.atoms;
-    notation.currentLine.addAtoms(roleDef.name, roleDef.notesOnly, ...finalised);
+    notation.currentLine.addAtoms(
+      roleDef.name,
+      roleDef.notesOnly,
+      ...finalised
+    );
   }
 }
 
@@ -102,7 +113,7 @@ export class CreateRole extends Command {
   applyToNotation(notation: Notation): void {
     // Create the role
     const name = this.getParamAt(0);
-    notation.newRole(name, this.notesOnly);
+    notation.newRoleDef(name, this.notesOnly);
   }
 
   get notesOnly(): boolean {
