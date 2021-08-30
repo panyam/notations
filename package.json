@@ -80,5 +80,8 @@
     "preversion": "npm run build && npm run lintfix",
     "version": "git add -A src",
     "postversion": "git push && git push --tags"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }
