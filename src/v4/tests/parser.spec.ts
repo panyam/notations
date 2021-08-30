@@ -9,14 +9,8 @@ function testV4(input: string, debug = false, expected: any = null): void {
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
   if (debug || expected == null) {
-    console.log(
-      "Result Parse Tree: \n",
-      JSON.stringify(root.debugValue(), TSU.Misc.getCircularReplacer(), 2)
-    );
-    console.log(
-      "Result Snippet: \n",
-      JSON.stringify(cmds, TSU.Misc.getCircularReplacer(), 2)
-    );
+    console.log("Result Parse Tree: \n", JSON.stringify(root.debugValue(), TSU.Misc.getCircularReplacer(), 2));
+    console.log("Result Snippet: \n", JSON.stringify(cmds, TSU.Misc.getCircularReplacer(), 2));
   }
   expect(cmds).toEqual(expected);
 }
@@ -50,42 +44,38 @@ describe("Parser Tests", () => {
   });
 
   test("Test Command Parsing", () => {
-    testV4(
-      `\\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`,
-      false,
-      [
-        {
-          name: "CreateLine",
-          index: 0,
-          params: [
-            {
-              key: null,
-              value: "world",
-            },
-            {
-              key: null,
-              value: "a",
-            },
-            {
-              key: null,
-              value: "b",
-            },
-            {
-              key: "x",
-              value: 1,
-            },
-            {
-              key: "c",
-              value: "hello",
-            },
-            {
-              key: "ab",
-              value: "cd",
-            },
-          ],
-        },
-      ]
-    );
+    testV4(`\\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`, false, [
+      {
+        name: "CreateLine",
+        index: 0,
+        params: [
+          {
+            key: null,
+            value: "world",
+          },
+          {
+            key: null,
+            value: "a",
+          },
+          {
+            key: null,
+            value: "b",
+          },
+          {
+            key: "x",
+            value: 1,
+          },
+          {
+            key: "c",
+            value: "hello",
+          },
+          {
+            key: "ab",
+            value: "cd",
+          },
+        ],
+      },
+    ]);
   });
 
   test("Test Parser", () => {
@@ -162,91 +152,87 @@ describe("Parser Tests", () => {
             },
           ],
         },
-      ]
+      ],
     );
   });
 
   test("Test Groups", () => {
-    testV4(
-      `\\role("sw", notes = true) Sw: [ a b c d ] 3 / 5 [ e f g h ] `,
-      false,
-      [
-        {
-          name: "CreateRole",
-          index: 0,
-          params: [
-            {
-              key: null,
-              value: "sw",
-            },
-            {
-              key: "notes",
-              value: true,
-            },
-          ],
-        },
-        {
-          name: "ActivateRole",
-          index: 1,
-          params: [
-            {
-              key: null,
-              value: "sw",
-            },
-          ],
-        },
-        {
-          name: "AddAtoms",
-          index: 2,
-          atoms: [
-            {
-              type: "Group",
-              atoms: [
-                {
-                  type: "Literal",
-                  value: "a",
-                },
-                {
-                  type: "Literal",
-                  value: "b",
-                },
-                {
-                  type: "Literal",
-                  value: "c",
-                },
-                {
-                  type: "Literal",
-                  value: "d",
-                },
-              ],
-            },
-            {
-              type: "Group",
-              duration: "20/3",
-              durationIsMultiplier: true,
-              atoms: [
-                {
-                  type: "Literal",
-                  value: "e",
-                },
-                {
-                  type: "Literal",
-                  value: "f",
-                },
-                {
-                  type: "Literal",
-                  value: "g",
-                },
-                {
-                  type: "Literal",
-                  value: "h",
-                },
-              ],
-            },
-          ],
-        },
-      ]
-    );
+    testV4(`\\role("sw", notes = true) Sw: [ a b c d ] 3 / 5 [ e f g h ] `, false, [
+      {
+        name: "CreateRole",
+        index: 0,
+        params: [
+          {
+            key: null,
+            value: "sw",
+          },
+          {
+            key: "notes",
+            value: true,
+          },
+        ],
+      },
+      {
+        name: "ActivateRole",
+        index: 1,
+        params: [
+          {
+            key: null,
+            value: "sw",
+          },
+        ],
+      },
+      {
+        name: "AddAtoms",
+        index: 2,
+        atoms: [
+          {
+            type: "Group",
+            atoms: [
+              {
+                type: "Literal",
+                value: "a",
+              },
+              {
+                type: "Literal",
+                value: "b",
+              },
+              {
+                type: "Literal",
+                value: "c",
+              },
+              {
+                type: "Literal",
+                value: "d",
+              },
+            ],
+          },
+          {
+            type: "Group",
+            duration: "20/3",
+            durationIsMultiplier: true,
+            atoms: [
+              {
+                type: "Literal",
+                value: "e",
+              },
+              {
+                type: "Literal",
+                value: "f",
+              },
+              {
+                type: "Literal",
+                value: "g",
+              },
+              {
+                type: "Literal",
+                value: "h",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 
   test("Test Duplicate Roles", () => {
@@ -435,7 +421,7 @@ describe("Parser Tests", () => {
             { type: "Space", isSilent: false },
           ],
         },
-      ]
+      ],
     );
   });
 
@@ -594,7 +580,7 @@ describe("Parser Tests", () => {
             },
           ],
         },
-      ]
+      ],
     );
   });
 

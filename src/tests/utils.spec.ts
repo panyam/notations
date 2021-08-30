@@ -75,9 +75,9 @@ describe("Utils Tests", () => {
           new Space(ONE, true),
           new Syllable("D"),
           new Space(ONE, false),
-          new Syllable("P")
-        )
-      )
+          new Syllable("P"),
+        ),
+      ),
     ).toBe(true);
   });
 });

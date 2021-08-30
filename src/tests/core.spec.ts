@@ -1,15 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import {
-  AtomType,
-  Entity,
-  Line,
-  Cycle,
-  Bar,
-  Syllable,
-  Space,
-  Group,
-  Note,
-} from "../core";
+import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../core";
 import { LayoutParams } from "../layouts";
 
 const Frac = TSU.Num.Frac;
@@ -63,21 +53,13 @@ describe("Entity Tests", () => {
 describe("Cycle tests", () => {
   test("Clone", () => {
     const cycle = new Cycle({
-      bars: [
-        new Bar({ beatLengths: [1, 2, 3, 4] }),
-        new Bar({ beatLengths: [5] }),
-        new Bar({ beatLengths: [6, 7] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
     });
     const c2 = cycle.clone();
     expect(cycle.equals(c2)).toBe(true);
 
     const c3 = new Cycle({
-      bars: [
-        new Bar({ beatLengths: [1, 2, 3, 4] }),
-        new Bar({ beatLengths: [5] }),
-        new Bar({ beatLengths: [6, 8] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 8] })],
     });
     expect(cycle.equals(c3)).toBe(false);
   });
@@ -111,11 +93,7 @@ describe("Cycle tests", () => {
 
   test("Iteration", () => {
     const cycle = new Cycle({
-      bars: [
-        new Bar({ beatLengths: [1, 2, 3, 4] }),
-        new Bar({ beatLengths: [5] }),
-        new Bar({ beatLengths: [6, 7] }),
-      ],
+      bars: [new Bar({ beatLengths: [1, 2, 3, 4] }), new Bar({ beatLengths: [5] }), new Bar({ beatLengths: [6, 7] })],
     });
     const values = [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7];
     const iter = cycle.iterateBeats();
@@ -160,11 +138,7 @@ describe("Cycle tests", () => {
             offset = offset.minus(beatLength);
             // console.log( `Testing globalIndex: ${bi}, bar: ${barIndex}, beat: ${beatIndex}, instance: ${instance}, offset: ${offset.toString()}`,);
             const found = cycle.getAtIndex(bi--);
-            expect(found).toEqual([
-              -(c + 1),
-              [barIndex, beatIndex, instance],
-              offset,
-            ]);
+            expect(found).toEqual([-(c + 1), [barIndex, beatIndex, instance], offset]);
           }
         }
       }
@@ -347,11 +321,7 @@ describe("Atom tests", () => {
   });
 
   test("Group Creation", () => {
-    const notes = [
-      new Syllable("aaa"),
-      new Space(THREE, true),
-      new Note("ga", THREE),
-    ];
+    const notes = [new Syllable("aaa"), new Space(THREE, true), new Note("ga", THREE)];
     const g = new Group(FIVE, ...notes);
     expect(g.type).toBe(AtomType.GROUP);
 
@@ -431,12 +401,8 @@ describe("Atom tests", () => {
     expect(g2.duration).toEqual(g.duration);
     expect(g2.atoms.size).toBe(g.atoms.size);
     expect(g2.atoms.first?.debugValue()).toEqual(atoms[0].debugValue());
-    expect(g2.atoms.first?.nextSibling?.debugValue()).toEqual(
-      atoms[1].debugValue()
-    );
-    expect(g2.atoms.first?.nextSibling?.nextSibling?.debugValue()).toEqual(
-      atoms[2].debugValue()
-    );
+    expect(g2.atoms.first?.nextSibling?.debugValue()).toEqual(atoms[1].debugValue());
+    expect(g2.atoms.first?.nextSibling?.nextSibling?.debugValue()).toEqual(atoms[2].debugValue());
   });
 });
 

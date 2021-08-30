@@ -74,22 +74,15 @@ export class AddAtoms extends Command {
     // Ensure a line exists
     const lpForLine = notation.layoutParamsForLine(notation.currentLine);
     if (lpForLine == null) {
-      notation.setLayoutParamsForLine(
-        notation.currentLine,
-        notation.layoutParams
-      );
+      notation.setLayoutParamsForLine(notation.currentLine, notation.layoutParams);
     } else {
       TSU.assert(
         lpForLine == notation.layoutParams,
-        "Layout parameters have changed so a new line should have been started"
+        "Layout parameters have changed so a new line should have been started",
       );
     }
     const finalised = this.atoms;
-    notation.currentLine.addAtoms(
-      roleDef.name,
-      roleDef.notesOnly,
-      ...finalised
-    );
+    notation.currentLine.addAtoms(roleDef.name, roleDef.notesOnly, ...finalised);
   }
 }
 

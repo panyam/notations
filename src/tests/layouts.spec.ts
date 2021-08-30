@@ -1,22 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import {
-  Cycle,
-  Line,
-  LeafAtom,
-  Role,
-  Space,
-  Syllable,
-  Group,
-  Note,
-  Bar,
-} from "../core";
-import {
-  LayoutParams,
-  BeatsBuilder,
-  Beat,
-  BeatView,
-  BeatColumn,
-} from "../layouts";
+import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note, Bar } from "../core";
+import { LayoutParams, BeatsBuilder, Beat, BeatView, BeatColumn } from "../layouts";
 import { FlatAtom } from "../iterators";
 
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -44,20 +28,9 @@ describe("Beat Tests", () => {
 describe("BeatsBuilder", () => {
   test("Create beats from BeatsBuilder", () => {
     const l = new Line();
-    const g1 = new Group(
-      ONE,
-      new Note("1", ONE),
-      new Note("2", TWO),
-      new Note("3", THREE)
-    );
+    const g1 = new Group(ONE, new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
     g1.durationIsMultiplier = true;
-    const atoms = [
-      new Note("a", ONE),
-      new Note("b", TWO),
-      new Note("c", THREE),
-      new Note("d", FIVE),
-      g1,
-    ];
+    const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
@@ -425,12 +398,7 @@ describe("BeatsBuilder", () => {
 
   test("Test uniform spacing with all half beats", () => {
     const l = new Line();
-    const atoms = [
-      new Note("P", HALF),
-      new Note("M", HALF),
-      new Note("G", HALF),
-      new Note("R", HALF),
-    ];
+    const atoms = [new Note("P", HALF), new Note("M", HALF), new Note("G", HALF), new Note("R", HALF)];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 2 });
@@ -502,11 +470,7 @@ describe("BeatsBuilder", () => {
 
   test("Test uniform spacing with whole bun uneven size beats", () => {
     const l = new Line();
-    const atoms = [
-      new Note("S", ONE),
-      new Note("R", TWO),
-      new Note("G", THREE),
-    ];
+    const atoms = [new Note("S", ONE), new Note("R", TWO), new Note("G", THREE)];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
     const lp = new LayoutParams({ cycle: c, aksharasPerBeat: 6 });

@@ -10,11 +10,7 @@ const FIVE = ONE.timesNum(5);
 
 describe("AtomIterator Tests", () => {
   test("Plain Atoms", () => {
-    const ai = new AtomIterator(
-      new Space(TWO),
-      new Syllable("Ga"),
-      new Note("a")
-    );
+    const ai = new AtomIterator(new Space(TWO), new Syllable("Ga"), new Note("a"));
     let peeked = ai.peek();
     expect(peeked?.atom?.debugValue()).toEqual(new Space(TWO).debugValue());
     expect(peeked?.offset).toEqual(ZERO);
@@ -39,11 +35,7 @@ describe("AtomIterator Tests", () => {
   });
 
   test("With Groups", () => {
-    const atoms = [
-      new Note("a"),
-      new Group(ONE, new Note("b"), new Space(TWO)),
-      new Note("c"),
-    ];
+    const atoms = [new Note("a"), new Group(ONE, new Note("b"), new Space(TWO)), new Note("c")];
     const ai = new AtomIterator(...atoms);
     let peeked = ai.next();
     expect(peeked?.atom?.debugValue()).toEqual(new Note("a").debugValue());
@@ -79,7 +71,7 @@ describe("AtomIterator Tests", () => {
         // Offset = 1
         new Note("b"),
         // Offset = 8 / 3
-        new Space(TWO)
+        new Space(TWO),
       ),
       // Offset = 6
       new Note("c"),
@@ -93,7 +85,7 @@ describe("AtomIterator Tests", () => {
         // Offset = 3
         new Note("e"),
         // Offset = 5 / 3
-        new Space(TWO)
+        new Space(TWO),
       ),
       // Offset = 4
       new Note("f"),
@@ -145,11 +137,7 @@ describe("AtomIterator Tests", () => {
 
 describe("DurationIterator Tests", () => {
   test("Plain Atoms", () => {
-    const ai = new AtomIterator(
-      new Space(TWO),
-      new Syllable("Ga"),
-      new Note("a")
-    );
+    const ai = new AtomIterator(new Space(TWO), new Syllable("Ga"), new Note("a"));
     const dIter = new DurationIterator(ai);
     let [d1, filled] = dIter.get(ONE);
     expect(d1[0].atom?.debugValue()).toEqual(new Space(TWO).debugValue());

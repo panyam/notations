@@ -9,11 +9,7 @@ export class RoleDef {
 }
 
 export class MetaData {
-  constructor(
-    public readonly key: string,
-    public readonly value: string,
-    public readonly params?: any
-  ) {
+  constructor(public readonly key: string, public readonly value: string, public readonly params?: any) {
     params = params || {};
   }
 }

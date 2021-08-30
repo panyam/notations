@@ -634,7 +634,7 @@ export class LayoutParams {
       if (modIndex < total + this._lineBreaks[i]) {
         // TODO: What is the right offset here?
         let offset = ZERO;
-        let startBeat = beat;
+        const startBeat = beat;
         if (modIndex > total) {
           const cursor = new CycleCursor(this.cycle, beat.barIndex, beat.beatIndex, beat.instance);
           let [pos, duration] = cursor.prev;

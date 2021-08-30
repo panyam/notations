@@ -1,16 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import {
-  Literal,
-  AtomType,
-  Note,
-  Atom,
-  Rest,
-  Space,
-  Syllable,
-  Group,
-} from "../core";
+import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group } from "../core";
 import { Command, CmdParam } from "./models";
 import {
   RawEmbedding,
@@ -161,26 +152,18 @@ const [parser, itemGraph] = G.newParser(
       },
       toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape) => {
         // consume everything until "#<N times> as start
-        const hashes = tape.substring(
-          token.positions[1][0],
-          token.positions[1][1]
-        );
+        const hashes = tape.substring(token.positions[1][0], token.positions[1][1]);
         const endPat = '"' + hashes;
         const startPos = tape.index;
-        const endPos =
-          TLEX.TapeHelper.advanceAfter(tape, endPat) - endPat.length;
+        const endPos = TLEX.TapeHelper.advanceAfter(tape, endPat) - endPat.length;
         if (endPos < 0) {
-          throw new Error(
-            "EOF expected while finding end of Raw String Literal: '" +
-              endPat +
-              "'"
-          );
+          throw new Error("EOF expected while finding end of Raw String Literal: '" + endPat + "'");
         }
         token.value = tape.substring(startPos, endPos);
         return token;
       },
     },
-  }
+  },
 );
 
 /**
@@ -227,25 +210,13 @@ export class Parser {
     newRest: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Rest();
     },
-    newDoubleSpace: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    newDoubleSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Space(ONE.timesNum(2));
     },
-    newSilentSpace: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    newSilentSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Space(ONE, true);
     },
-    applyDuration: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       let dur = children[0].value as TSU.Num.Fraction | number;
       const leaf = children[1].value as Atom;
       if (typeof dur === "number") {
@@ -277,11 +248,7 @@ export class Parser {
     newParamList: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return [children[0].value];
     },
-    concatParamList: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    concatParamList: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const params = children[0].value;
       const newParam = children[2].value;
       params.push(newParam);
@@ -297,11 +264,7 @@ export class Parser {
       }
       return null;
     },
-    appendCommand: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const command = children[1].value as Command;
       this.addCommand(command);
 
@@ -311,11 +274,7 @@ export class Parser {
       }
       return null;
     },
-    appendRoleSelector: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    appendRoleSelector: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const roleName = children[1].value;
       const lName = roleName.toLowerCase().trim();
       this.addCommand(new ActivateRole([{ key: null, value: lName }]));
@@ -326,11 +285,7 @@ export class Parser {
       }
       return null;
     },
-    insertEmbedding: (
-      rule: G.Rule,
-      parent: G.PTNode,
-      ...children: G.PTNode[]
-    ) => {
+    insertEmbedding: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       // How to handle embeddings - these are just blocks
       // to escape out of song (most likely for some rendering of html/md etc)
       const rawVal = children[1].value;
