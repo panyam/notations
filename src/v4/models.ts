@@ -8,12 +8,6 @@ export class RoleDef {
   index = 0;
 }
 
-export class MetaData {
-  constructor(public readonly key: string, public readonly value: string, public readonly params?: any) {
-    params = params || {};
-  }
-}
-
 export type CmdParam = { key: TSU.Nullable<string>; value: any };
 export abstract class Command extends Entity {
   // Commands that are auto generated are usually created by other commands
@@ -65,6 +59,12 @@ export abstract class Command extends Entity {
 export class RawBlock extends Entity {
   constructor(public content: string, public contentType: string = "md") {
     super();
+  }
+}
+
+export class MetaData {
+  constructor(public readonly key: string, public readonly value: string, public readonly params?: any) {
+    params = params || {};
   }
 }
 
