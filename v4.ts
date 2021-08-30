@@ -1,8 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Cycle, AtomType, Line, Syllable, Note, Literal } from "../../common/lib/models";
-import { Embelishment, BeatLayout, BeatView, Beat } from "../../common/lib/models/layouts";
-import { Notation, RawBlock } from "../../common/lib/v4/models";
+import { Embelishment, BeatLayout, BeatView, Beat, Cycle, AtomType, Line, Syllable, Note, Literal } from "notations";
+import { V4 } from "notations";
 import { AtomView } from "./Core";
 import { createAtomView } from "./AtomViews";
 import { BeatStartLines, BeatEndLines } from "./Embelishments";
@@ -13,7 +12,7 @@ interface BeatViewDelegate {
   viewForBeat(beat: Beat): BeatView;
 }
 
-export class NotationView extends TSV.EntityView<Notation> implements BeatViewDelegate {
+export class NotationView extends TSV.EntityView<V4.Notation> implements BeatViewDelegate {
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
   beatsByLineRole = new Map<number, Beat[][]>();
@@ -23,7 +22,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
   // Returns the beat view for a given beat
   beatViews = new Map<number, BeatView>();
 
-  get notation(): Notation {
+  get notation(): V4.Notation {
     return this.entity!;
   }
 
@@ -82,7 +81,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     for (const block of this.notation.blocks) {
       if (block.type == "RawBlock") {
         // Add the markdown here
-        this.renderBlock(block as RawBlock);
+        this.renderBlock(block as V4.RawBlock);
       } else {
         lines.push(block as Line);
         const lineView = this.renderLine(block as Line);
@@ -118,7 +117,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     return lineView;
   }
 
-  renderBlock(raw: RawBlock): void {
+  renderBlock(raw: V4.RawBlock): void {
     const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
     if (raw.contentType == "metadata") {
       // we have a metadata block

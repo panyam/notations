@@ -1,21 +1,18 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
-import { V4Parser } from "../../common/lib/v4/";
-import { Notation } from "../../common/lib/v4/models";
-import { Line } from "../../common/lib/models";
-import { BeatLayout, Beat, BeatsBuilder } from "../../common/lib/models/layouts";
+import { V4, Line, BeatLayout, Beat, BeatsBuilder } from "notations";
 import { NotationView } from "./v4";
 
 export function loadV4Notation(
   codeText: string,
   config: any = {},
-): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
+): [V4.Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
   const beatsByLineRole = new Map<number, Beat[][]>();
   const beatLayouts = new Map<number, BeatLayout>();
   const errors: G.ParseError[] = [];
   const startTime = performance.now();
-  const notation = new Notation();
-  const parser = new V4Parser();
+  const notation = new V4.Notation();
+  const parser = new V4.Parser();
   parser.parse(codeText);
   const parseTime = performance.now();
   for (const cmd of parser.commands) cmd.applyToNotation(notation);

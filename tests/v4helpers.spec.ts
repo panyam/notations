@@ -1,14 +1,13 @@
 /**
  * @jest-environment jsdom
  */
+import * as TSU from "@panyam/tsutils";
 import { loadV4Notation } from "../v4helpers";
-import "../../../../common/jest/matchers";
-import { getCircularReplacer } from "../../../common/jest/utils";
 
 function testV4(input: string, debug = false, expected: any = null): void {
   const [notation] = loadV4Notation(input);
   if (debug || expected == null) {
-    console.log("Result Notation: \n", JSON.stringify(notation.debugValue(), getCircularReplacer(), 2));
+    console.log("Result Notation: \n", JSON.stringify(notation.debugValue(), TSU.Misc.getCircularReplacer(), 2));
   }
   expect(notation.debugValue()).toEqual(expected);
 }
