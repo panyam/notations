@@ -79,7 +79,7 @@ export class Notation extends Entity {
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
   metadata = new Map<string, MetaData>();
-  onMissingRole: (name: string) => RoleDef | null;
+  onMissingRole: (name: string) => RoleDef | null = (name) => this.newRoleDef(name, name == "sw");
 
   layoutParamsForLine(line: Line): null | LayoutParams {
     return this.lpsForLine.get(line.uuid) || null;

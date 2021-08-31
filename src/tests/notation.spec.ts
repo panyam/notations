@@ -207,24 +207,25 @@ describe("Testing Applying Commands after Parsing", () => {
       ),
     ).toThrowError("No roles defined");
 
+    // disable autorole creation
+    let notation = new Notation();
+    notation.onMissingRole = (name) => null;
     expect(() =>
       testV4(
         String.raw`
         Sw: a b c d
         `,
+        false,
+        notation,
       ),
     ).toThrowError("Role not found: sw");
 
-    // Enable auto role creation
-    const notation = new Notation();
-    notation.onMissingRole = (name) => notation.newRoleDef(name, name == "sw");
-    testV4(
+    // auto role creation on by default
+    [, notation] = testV4(
       String.raw`
         Sw: a b c d
         Sh: ka ma la ,
         `,
-      false,
-      notation,
     );
     expectNotation(notation, {
       roles: [
