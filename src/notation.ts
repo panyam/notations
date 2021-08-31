@@ -177,10 +177,10 @@ export class Notation extends Entity {
     return rd;
   }
 
-  get currRoleDef(): RoleDef {
+  get currRoleDef(): RoleDef | null {
     if (this._currRoleDef == null) {
       if (this.roles.length == 0) {
-        throw new Error("No roles defined");
+        return null;
       } else {
         this._currRoleDef = this.roles[this.roles.length - 1];
       }

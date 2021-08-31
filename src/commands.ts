@@ -67,10 +67,10 @@ export class AddAtoms extends Command {
   }
 
   applyToNotation(notation: Notation): void {
-    const roleDef = notation.currRoleDef;
+    let roleDef = notation.currRoleDef;
     if (roleDef == null) {
       // By default create a role for swaras
-      notation.newRoleDef("Sw", true);
+      roleDef = notation.newRoleDef("Sw", true);
       // throw new Error("Current role is invalid");
     }
     // Ensure a line exists

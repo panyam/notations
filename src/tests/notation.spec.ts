@@ -184,7 +184,7 @@ describe("Testing Applying Commands after Parsing", () => {
         \role("Sh")
         `,
     );
-    expect(notation.currRoleDef.name).toEqual("sh");
+    expect(notation.currRoleDef?.name).toEqual("sh");
   });
 
   test("Test duplicate role", () => {
@@ -196,6 +196,10 @@ describe("Testing Applying Commands after Parsing", () => {
         `,
       ),
     ).toThrowError("Role already exists");
+  });
+
+  test("Test Missing role", () => {
+    expect(new Notation().currRoleDef).toEqual(null);
   });
 
   test("Test Missing role - uses default if exists", () => {
@@ -242,16 +246,6 @@ describe("Testing Applying Commands after Parsing", () => {
       currentCycle: 3,
       currentBreaks: [],
     });
-  });
-
-  test("Test Missing role", () => {
-    expect(() =>
-      testV4(
-        String.raw`
-        a b c d
-        `,
-      ),
-    ).toThrowError("No roles defined");
   });
 
   test("Test Missing role - autorole creation disabled", () => {
