@@ -79,6 +79,7 @@ export class Notation extends Entity {
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
   metadata = new Map<string, MetaData>();
+  onMissingRole: (name: string) => RoleDef | null;
 
   layoutParamsForLine(line: Line): null | LayoutParams {
     return this.lpsForLine.get(line.uuid) || null;
@@ -117,19 +118,20 @@ export class Notation extends Entity {
     this.resetLine();
   }
 
-  addMetaData(key: string, value: MetaData): void {
-    if (!this.metadata.has(key)) {
+  addMetaData(meta: MetaData): void {
+    if (!this.metadata.has(meta.key)) {
       // Add a new raw block here
-      const raw = new RawBlock(key, "metadata");
+      // set this by key so even if metadata changes we can
+      // get latest value of it
+      const raw = new RawBlock(meta.key, "metadata");
       this.addRawBlock(raw);
     }
-    this.metadata.set(key, value);
+    this.metadata.set(meta.key, meta);
   }
 
   debugValue(): any {
     return {
       ...super.debugValue,
-      // blocks: this.blocks.map((b) => b.debugValue()),
       roles: this.roles,
       blocks: this.blocks.map((b) => b.debugValue()),
       currentAPB: this.currentAPB,
@@ -187,7 +189,7 @@ export class Notation extends Entity {
     if (name.trim() == "") {
       throw new Error("Role name cannot be empty");
     }
-    const roleDef = this.getRoleDef(name);
+    const roleDef = this.getRoleDef(name) || (this.onMissingRole ? this.onMissingRole(name) || null : null);
     if (roleDef == null) {
       throw new Error("Role not found: " + name);
     }

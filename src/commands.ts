@@ -18,7 +18,7 @@ export class MetaData extends Command {
   // Called when running in execution mode
   applyToNotation(notation: Notation): void {
     // Create the role - ensure that we have a role
-    notation.addMetaData(this.key, this.meta);
+    notation.addMetaData(this.meta);
   }
 
   get meta(): Meta {

@@ -4,19 +4,19 @@
 import * as TSU from "@panyam/tsutils";
 import { Line } from "../core";
 import { Parser } from "../parser";
-import { RawBlock, Command, Notation } from "../notation";
+import { RawBlock, Command, Notation, MetaData } from "../notation";
 
-function fromCommands(cmds: Command[]): Notation {
-  const out = new Notation();
+function fromCommands(cmds: Command[], out: Notation | null = null): Notation {
+  if (!out) out = new Notation();
   for (const cmd of cmds) cmd.applyToNotation(out);
   return out;
 }
 
-function testV4(input: string, debug = false): [Command[], Notation] {
+function testV4(input: string, debug = false, notation: Notation | null = null): [Command[], Notation] {
   const parser = new Parser();
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
-  const notation = fromCommands(parser.commands);
+  notation = fromCommands(parser.commands, notation);
   if (debug) {
     // console.log("Parse Tree: \n", JSON.stringify(root.debugValue(), getCircularReplacer(), 2));
     console.log("Commands: \n", JSON.stringify(cmds, TSU.Misc.getCircularReplacer(), 2));
@@ -44,7 +44,7 @@ function expectNotation(notation: Notation, expected: any) {
         const lpForLine = notation.layoutParamsForLine(line);
         if (typeof block.layoutParams === "number") {
           expect(lpForLine).toBe(notation.unnamedLayoutParams[block.layoutParams]);
-        } else {
+        } else if (block.layoutParams) {
           expect(lpForLine).toBe(notation.namedLayoutParams.get(block.layoutParams));
         }
       }
@@ -52,7 +52,39 @@ function expectNotation(notation: Notation, expected: any) {
   }
 }
 
-describe("Parser Tests", () => {
+describe("Basic Notation Model tests", () => {
+  test("Create Notation", () => {
+    const n = new Notation();
+    expectNotation(n, { roles: [], blocks: [] });
+  });
+
+  test("Test adding metadata", () => {
+    const n = new Notation();
+    expect(n.blocks.length).toEqual(0);
+    n.addMetaData(new MetaData("test", "value1"));
+    expect(n.blocks.length).toEqual(1);
+    expect((n.blocks[0] as RawBlock).content).toEqual("test");
+    n.addMetaData(new MetaData("test", "value2"));
+    expect(n.blocks.length).toEqual(1);
+  });
+
+  test("newLine only creates one empty line in a row", () => {
+    const n = new Notation();
+    n.newLine();
+    n.newLine();
+    n.newLine();
+    expectNotation(n, {
+      roles: [],
+      blocks: [
+        {
+          roles: [],
+        },
+      ],
+    });
+  });
+});
+
+describe("Testing Applying Commands after Parsing", () => {
   test("Test Command Parsing", () => {
     const [cmds, notation] = testV4(
       String.raw`
@@ -164,6 +196,102 @@ describe("Parser Tests", () => {
         `,
       ),
     ).toThrowError("Role already exists");
+  });
+
+  test("Test Missing role", () => {
+    expect(() =>
+      testV4(
+        String.raw`
+        a b c d
+        `,
+      ),
+    ).toThrowError("No roles defined");
+
+    expect(() =>
+      testV4(
+        String.raw`
+        Sw: a b c d
+        `,
+      ),
+    ).toThrowError("Role not found: sw");
+
+    // Enable auto role creation
+    const notation = new Notation();
+    notation.onMissingRole = (name) => notation.newRoleDef(name, name == "sw");
+    testV4(
+      String.raw`
+        Sw: a b c d
+        Sh: ka ma la ,
+        `,
+      false,
+      notation,
+    );
+    expectNotation(notation, {
+      roles: [
+        {
+          name: "sw",
+          notesOnly: true,
+          index: 0,
+        },
+        {
+          name: "sh",
+          notesOnly: false,
+          index: 1,
+        },
+      ],
+      blocks: [
+        {
+          type: "Line",
+          roles: [
+            {
+              name: "sw",
+              atoms: [
+                {
+                  type: "Literal",
+                  value: "a",
+                },
+                {
+                  type: "Literal",
+                  value: "b",
+                },
+                {
+                  type: "Literal",
+                  value: "c",
+                },
+                {
+                  type: "Literal",
+                  value: "d",
+                },
+              ],
+            },
+            {
+              name: "sh",
+              atoms: [
+                {
+                  type: "Literal",
+                  value: "ka",
+                },
+                {
+                  type: "Literal",
+                  value: "ma",
+                },
+                {
+                  type: "Literal",
+                  value: "la",
+                },
+                {
+                  type: "Space",
+                  isSilent: false,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      currentAPB: 1,
+      currentCycle: 3,
+      currentBreaks: [],
+    });
   });
 
   test("Test Building more complex notation", () => {
