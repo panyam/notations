@@ -198,6 +198,52 @@ describe("Testing Applying Commands after Parsing", () => {
     ).toThrowError("Role already exists");
   });
 
+  test("Test Missing role - uses default if exists", () => {
+    const notation = new Notation();
+    notation.newRoleDef("Sw", true);
+    testV4(String.raw` a b c d `, false, notation);
+    expectNotation(notation, {
+      roles: [
+        {
+          name: "sw",
+          notesOnly: true,
+          index: 0,
+        },
+      ],
+      blocks: [
+        {
+          type: "Line",
+          roles: [
+            {
+              name: "sw",
+              atoms: [
+                {
+                  type: "Literal",
+                  value: "a",
+                },
+                {
+                  type: "Literal",
+                  value: "b",
+                },
+                {
+                  type: "Literal",
+                  value: "c",
+                },
+                {
+                  type: "Literal",
+                  value: "d",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      currentAPB: 1,
+      currentCycle: 3,
+      currentBreaks: [],
+    });
+  });
+
   test("Test Missing role", () => {
     expect(() =>
       testV4(
@@ -206,27 +252,17 @@ describe("Testing Applying Commands after Parsing", () => {
         `,
       ),
     ).toThrowError("No roles defined");
+  });
 
-    // disable autorole creation
-    let notation = new Notation();
+  test("Test Missing role - autorole creation disabled", () => {
+    const notation = new Notation();
     notation.onMissingRole = (name) => null;
-    expect(() =>
-      testV4(
-        String.raw`
-        Sw: a b c d
-        `,
-        false,
-        notation,
-      ),
-    ).toThrowError("Role not found: sw");
+    expect(() => testV4(String.raw` Sw: a b c d `, false, notation)).toThrowError("Role not found: sw");
+  });
 
+  test("Test Missing role - with autorole creation on by default", () => {
     // auto role creation on by default
-    [, notation] = testV4(
-      String.raw`
-        Sw: a b c d
-        Sh: ka ma la ,
-        `,
-    );
+    const [, notation] = testV4(String.raw` Sw: a b c d Sh: ka ma la , `);
     expectNotation(notation, {
       roles: [
         {
