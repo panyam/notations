@@ -15,7 +15,6 @@ export function loadV4Notation(
   const parser = new Parser();
   parser.parse(codeText);
   const parseTime = performance.now();
-  notation.onMissingRole = (name: string) => notation.newRoleDef(name, name == "sw");
   for (const cmd of parser.commands) cmd.applyToNotation(notation);
 
   // Create Line Beats
