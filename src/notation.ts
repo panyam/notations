@@ -60,6 +60,10 @@ export class RawBlock extends Entity {
   constructor(public content: string, public contentType: string = "md") {
     super();
   }
+
+  debugValue(): any {
+    return { ...super.debugValue(), content: this.content, contentType: this.contentType };
+  }
 }
 
 export class MetaData {
