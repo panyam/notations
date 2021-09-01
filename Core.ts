@@ -1,16 +1,6 @@
+import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { LayoutParams, Embelishment, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
-
-export class Browser {
-  static is_explorer = navigator.userAgent.indexOf("MSIE") > -1;
-  static is_firefox = navigator.userAgent.indexOf("Firefox") > -1;
-  static is_opera = navigator.userAgent.toLowerCase().indexOf("op") > -1;
-
-  protected static UAHasChrome = navigator.userAgent.indexOf("Chrome") > -1;
-  protected static UAHasSafari = navigator.userAgent.indexOf("Safari") > -1;
-  static is_safari = Browser.UAHasSafari && (!Browser.UAHasChrome || !Browser.UAHasSafari);
-  static is_chrome = Browser.UAHasChrome && (!Browser.UAHasChrome || !Browser.is_opera);
-}
 
 export interface TimedView {
   readonly viewId: number;
@@ -43,7 +33,7 @@ export abstract class AtomView implements TimedView {
   refreshBBox(): SVGRect {
     this._bbox = this.element.getBBox();
     // Due to safari bug which returns really crazy span widths!
-    if (Browser.is_safari) {
+    if (TSU.Browser.IS_SAFARI()) {
       const clientRect = this.element.getClientRects()[0];
       if (clientRect) {
         const parentClientRect = this.element.parentElement?.getBoundingClientRect();
