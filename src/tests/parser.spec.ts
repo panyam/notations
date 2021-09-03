@@ -584,16 +584,18 @@ describe("Parser Tests", () => {
     );
   });
 
-  /*
-  test("Test Atoms", () => {
-    const notebook = new Notebook();
-    const snippet = notebook.newSnippet();
-    const parser = new Parser(snippet);
-    parser.parse("\\line(world)");
-    parser.parse("\\role(sw, notes = true)");
-    parser.parse("\\role(sh)");
-    parser.parse("Sw: S R [ G. .M ]");
-    parser.parse("Sh: S R G 2/3 M");
+  test("Test Embelishments - Should ignore all embelishments for now.", () => {
+    testV4(`S ~ R ~~ G ~x ~w ~∴ M`, false, [
+      {
+        atoms: [
+          { type: "Literal", value: "S" },
+          { type: "Literal", value: "R" },
+          { type: "Literal", value: "G" },
+          { type: "Literal", value: "M" },
+        ],
+        index: 0,
+        name: "AddAtoms",
+      },
+    ]);
   });
-  */
 });

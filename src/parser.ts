@@ -29,7 +29,7 @@ const ONE = TSU.Num.Fraction.ONE;
  */
 const [parser, itemGraph] = G.newParser(
   String.raw`
-    %define IdentChar     /[^|\[\]={}()+\-,;: \t\f\r\n\v\\\.]/
+    %define IdentChar     /[^|\[\]={}()+\-,;~: \t\f\r\n\v\\\.]/
 
     %token  BSLASH        "\\"
     %token  OPEN_SQ       "["
@@ -48,6 +48,7 @@ const [parser, itemGraph] = G.newParser(
     %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
     %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
+    %token  EMBELISHMENT  /~[^\s]*/                 { toEmbelishment }
     %token  NUMBER        /-?\d+/                   { toNumber }
     %token  BOOLEAN       /true|false/              { toBoolean }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
@@ -100,6 +101,8 @@ const [parser, itemGraph] = G.newParser(
         | IDENT { litToAtom } 
         | IDENT_DOTS { litToAtom } 
         | STRING  { litToAtom }
+        | PRE_EMB Lit { litWithPreEmb }
+        // | Lit POST_EMB { litWithPostEmb }
         ;
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
@@ -111,6 +114,11 @@ const [parser, itemGraph] = G.newParser(
     debug: "",
     type: "lalr",
     tokenHandlers: {
+      toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape) => {
+        // skip it for now
+        console.log("Skipping Embelishment: ", token.value);
+        return null;
+      },
       toCommandName: (token: TLEX.Token, tape: TLEX.Tape) => {
         token.value = token.value.substring(1);
         return token;
@@ -187,6 +195,16 @@ export class Parser {
     },
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Group(ONE, ...children[1].value);
+    },
+    litWithPreEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const emb = children[0];
+      const lit = children[1].value as Literal;
+      lit.embelishmentsBefore.push(emb);
+    },
+    litWithPostEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const lit = children[0].value as Literal;
+      const emb = children[1];
+      lit.embelishmentsAfter.push(emb);
     },
     litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const lit = children[0];
