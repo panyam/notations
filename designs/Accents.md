@@ -191,23 +191,34 @@ Few things to note from the above examples:
 Starting with defining the interface:
 
 ```
-interface Embelishment {
-  // The atom that is needed for this decorator to do its thing
-  targetAtoms: LeafAtom[];
-}
-
-interface LeafAtom {
+interface Atom {
   // The actual embelishment objects for this atom.
   // The atom may not know anything about these and they could just
   // be opaque objects that parser returns - allows for extensions
   embelishments: Embelishment[];
 }
 
+interface Embelishment {
+  type: EmbelishmentType;
+
+  // An other embelishment data needed
+  // ...
+}
+
+/**
+ * Takes care of rendering all views for an Atom.  This would include
+ * creating the view elements for the Atom, for the Embelishment
+ * and layout methods to coordinate layout of all the embelishments
+ */
 interface AtomView {
   // return a list of embelishments
   // For this atom the AtomView will create a bunch of embelishments
   // based on how?
   embelishmentViews: EmbelishmentView[];
+
+  // REfresh layout of either the atom's view(s) or embelishemnt views
+  // or both
+  refreshLayout(): void;
 }
 
 // Two options:
