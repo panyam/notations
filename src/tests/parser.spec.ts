@@ -584,18 +584,132 @@ describe("Parser Tests", () => {
     );
   });
 
-  test("Test Embelishments - Should ignore all embelishments for now.", () => {
-    testV4(`S ~ R ~~ G ~x ~w ~∴ M`, false, [
-      {
-        atoms: [
-          { type: "Literal", value: "S" },
-          { type: "Literal", value: "R" },
-          { type: "Literal", value: "G" },
-          { type: "Literal", value: "M" },
-        ],
-        index: 0,
-        name: "AddAtoms",
-      },
-    ]);
+  test("Test Embelishments - Only PRE Embelishments get added to atoms proceeding it.", () => {
+    testV4(
+      String.raw`
+           ~^ ~W S ~ ~x ~w R ~~ ~∵ ~-: G ~x ~w ~∴ ~:- M ~\ ~/
+           P ~✓ ~./ ~.\  D ~γ ~Y N
+    `,
+      false,
+      [
+        {
+          name: "AddAtoms",
+          index: 0,
+          atoms: [
+            {
+              type: "Literal",
+              value: "S",
+              embsBefore: [
+                {
+                  type: "Raavi",
+                },
+                {
+                  type: "Nokku",
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "R",
+              embsBefore: [
+                {
+                  type: "Kampitham",
+                },
+                {
+                  type: "IrakkaJaaru",
+                  ascending: false,
+                  startingNote: null,
+                },
+                {
+                  type: "Nokku",
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "G",
+              embsBefore: [
+                {
+                  type: "Vaali",
+                },
+                {
+                  type: "Prathyagatham",
+                },
+                {
+                  type: "Prathyagatham",
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "M",
+              embsBefore: [
+                {
+                  type: "IrakkaJaaru",
+                  ascending: false,
+                  startingNote: null,
+                },
+                {
+                  type: "Nokku",
+                },
+                {
+                  type: "Spuritham",
+                },
+                {
+                  type: "Spuritham",
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "P",
+              embsBefore: [
+                {
+                  type: "IrakkaJaaru",
+                  ascending: false,
+                  startingNote: null,
+                },
+                {
+                  type: "EetraJaaru",
+                  ascending: true,
+                  startingNote: null,
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "D",
+              embsBefore: [
+                {
+                  type: "Kandippu",
+                },
+                {
+                  type: "Kandippu",
+                },
+                {
+                  type: "Kandippu",
+                },
+              ],
+            },
+            {
+              type: "Literal",
+              value: "N",
+              embsBefore: [
+                {
+                  type: "Kandippu",
+                },
+                {
+                  type: "Kandippu",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    );
+  });
+
+  test("POST Embelishments - Should throw error for now.", () => {
+    expect(() => testV4(String.raw` ~^ ~W S ~ `)).toThrowError();
   });
 });

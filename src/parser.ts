@@ -16,6 +16,9 @@ import {
   MetaData,
 } from "./commands";
 
+// TODO - Make this plugable from the client instead of hard coded
+import * as carnatic from "./carnatic";
+
 const ONE = TSU.Num.Fraction.ONE;
 
 /**
@@ -116,9 +119,14 @@ const [parser, itemGraph] = G.newParser(
     type: "lalr",
     tokenHandlers: {
       toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape, owner: Parser) => {
-        // skip it for now
-        console.log("Skipping Embelishment: ", token.value);
-        return null;
+        const emb = owner.parseEmbelishment(token.value);
+        if (emb == null) {
+          console.log("Skipping Embelishment: ", token.value);
+          return null;
+        }
+        token.value = emb;
+        token.tag = "PRE_EMB";
+        return token;
       },
       toCommandName: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value.substring(1);
@@ -201,7 +209,8 @@ export class Parser {
     litWithPreEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const emb = children[0];
       const lit = children[1].value as Literal;
-      lit.embelishmentsBefore.push(emb);
+      lit.embelishmentsBefore.splice(0, 0, emb.value);
+      return lit;
     },
     litWithPostEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const lit = children[0].value as Literal;
@@ -356,5 +365,9 @@ export class Parser {
       ruleHandlers: this.ruleHandlers,
     });
     return ptree;
+  }
+
+  parseEmbelishment(value: string): any {
+    return carnatic.parseEmbelishment(value);
   }
 }
