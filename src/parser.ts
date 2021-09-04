@@ -104,6 +104,7 @@ const [parser, itemGraph] = G.newParser(
         | PRE_EMB Lit { litWithPreEmb }
         // | Lit POST_EMB { litWithPostEmb }
         ;
+
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
     Duration -> Fraction | NUMBER;
@@ -114,28 +115,28 @@ const [parser, itemGraph] = G.newParser(
     debug: "",
     type: "lalr",
     tokenHandlers: {
-      toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape, owner: Parser) => {
         // skip it for now
         console.log("Skipping Embelishment: ", token.value);
         return null;
       },
-      toCommandName: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toCommandName: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value.substring(1);
         return token;
       },
-      toBoolean: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toBoolean: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value == "true";
         return token;
       },
-      toNumber: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toNumber: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = parseInt(token.value);
         return token;
       },
-      toString: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value.substring(1, token.value.length - 1);
         return token;
       },
-      toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         if (token.tag == "DOTS_IDENT") {
           const octave = token.positions[1][1] - token.positions[1][0];
           const note = token.value.substring(octave);
@@ -149,16 +150,16 @@ const [parser, itemGraph] = G.newParser(
         }
         return token;
       },
-      toRoleSelector: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toRoleSelector: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value.substring(0, token.value.length - 1);
         return token;
       },
-      toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);
         return token;
       },
-      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape) => {
+      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         // consume everything until "#<N times> as start
         const hashes = tape.substring(token.positions[1][0], token.positions[1][1]);
         const endPat = '"' + hashes;
@@ -185,6 +186,7 @@ export class Parser {
   // readonly notation: Notation = new Notation();
   private runCommandFound = false;
   // readonly parseTree = new PTNodeList("Snippet", null);
+
   protected ruleHandlers = {
     newFraction: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       if (children.length == 1) {
@@ -350,6 +352,7 @@ export class Parser {
 
   parse(input: string): any {
     const ptree = parser.parse(input, {
+      tokenizerContext: this,
       ruleHandlers: this.ruleHandlers,
     });
     return ptree;
