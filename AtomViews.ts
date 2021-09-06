@@ -1,8 +1,52 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Label, Note, Space, Syllable, FlatAtom, Embelishment } from "notations";
-import { AtomView, TimedView } from "./Core";
+import { AtomType, Label, Note, Space, Syllable, FlatAtom } from "notations";
+import { AtomView, TimedView, Embelishment } from "./Core";
 
-class NoteView extends AtomView {
+class Slot {
+  startingOffset = 0;
+  currentOffset = 0;
+  embelishments: any[] = [];
+  views: Embelishment[] = [];
+
+  clear(): void {
+    this.startingOffset = 0;
+    this.currentOffset = 0;
+    this.embelishments = [];
+    this.views = [];
+  }
+}
+
+abstract class LeafAtomView extends AtomView {
+  leftSlot = new Slot();
+  topSlot = new Slot();
+  rightSlot = new Slot();
+  bottomSlot = new Slot();
+
+  // Group and Order embelishments into left, top, right and bottom slots
+  orderEmbelishments(): void {}
+}
+
+class SpaceView extends LeafAtomView {
+  createElements(parent: SVGGraphicsElement): void {
+    const space = this.space;
+    this.element = TSU.DOM.createSVGNode("tspan", {
+      doc: document,
+      parent: parent,
+      attrs: {
+        depth: this.flatAtom.depth || 0,
+        atomid: space.uuid,
+        id: "atom" + space.uuid,
+      },
+      text: (space.isSilent ? " " : ",") + (space.beforeRest ? " - " : " "),
+    });
+  }
+
+  get space(): Space {
+    return this.flatAtom.atom as Space;
+  }
+}
+
+class NoteView extends LeafAtomView {
   octaveIndicator: null | OctaveIndicator = null;
 
   embRoot(): SVGGraphicsElement {
@@ -108,26 +152,6 @@ class SyllableView extends AtomView {
 
   get syllable(): Syllable {
     return this.flatAtom.atom as Syllable;
-  }
-}
-
-class SpaceView extends AtomView {
-  createElements(parent: SVGGraphicsElement): void {
-    const space = this.space;
-    this.element = TSU.DOM.createSVGNode("tspan", {
-      doc: document,
-      parent: parent,
-      attrs: {
-        depth: this.flatAtom.depth || 0,
-        atomid: space.uuid,
-        id: "atom" + space.uuid,
-      },
-      text: (space.isSilent ? " " : ",") + (space.beforeRest ? " - " : " "),
-    });
-  }
-
-  get space(): Space {
-    return this.flatAtom.atom as Space;
   }
 }
 

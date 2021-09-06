@@ -3,7 +3,6 @@ import * as TSV from "@panyam/tsutils-ui";
 import {
   RawBlock,
   Notation,
-  Embelishment,
   BeatLayout,
   BeatView,
   Beat,
@@ -14,7 +13,7 @@ import {
   Note,
   Literal,
 } from "notations";
-import { AtomView } from "./Core";
+import { Embelishment, AtomView } from "./Core";
 import { createAtomView } from "./AtomViews";
 import { BeatStartLines, BeatEndLines } from "./Embelishments";
 const MarkdownIt = require("markdown-it");
@@ -109,7 +108,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     // now that all spacing has been calculated
     // go through all
     for (const beatView of this.beatViews.values()) {
-      beatView.applyLayout();
+      beatView.refreshLayout();
     }
 
     // Set line view preferred sizes
@@ -307,7 +306,7 @@ class TextBeatView implements BeatView {
     this.needsLayout = true;
   }
 
-  applyLayout(): void {
+  refreshLayout(): void {
     if (this.xChanged) {
       this.rootElement.setAttribute("x", this.x + "");
     }
@@ -324,9 +323,7 @@ class TextBeatView implements BeatView {
     }
     // Since atom views would havechagned position need to reposition embelishments
     this.atomViews.forEach((av, index) => {
-      for (const e of av.embelishments) {
-        e.refreshLayout();
-      }
+      av.refreshLayout();
     });
     for (const e of this.embelishments) e.refreshLayout();
     this.xChanged = this.yChanged = false;

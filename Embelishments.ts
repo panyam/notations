@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { Embelishment, BeatView } from "notations";
+import { BeatView } from "notations";
+import { Embelishment } from "./Core";
 
 export class BeatStartLines implements Embelishment {
   barSpacing = 20;

@@ -1,6 +1,10 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { LayoutParams, Embelishment, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
+import { LayoutParams, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
+
+export interface Embelishment {
+  refreshLayout(): void;
+}
 
 export interface TimedView {
   readonly viewId: number;
@@ -16,9 +20,8 @@ export abstract class AtomView implements TimedView {
   constructor(public flatAtom: FlatAtom) {}
 
   abstract createElements(parent: SVGGraphicsElement): void;
-  get embelishments(): Embelishment[] {
-    return [];
-  }
+  refreshLayout(): void {}
+  // get embelishments(): Embelishment[] { return []; }
 
   xChanged = true;
   yChanged = true;
@@ -150,15 +153,17 @@ export interface AtomViewProvider {
 
 export abstract class AtomLayout {
   private layoutLine: number;
-  embelishments: Embelishment[] = [];
+  // embelishments: Embelishment[] = [];
   constructor(public readonly layoutParams: LayoutParams, public readonly atomViewProvider: AtomViewProvider) {}
 
   protected abstract addAtomView(atomView: AtomView, beat: Beat): void;
 
+  /*
   refreshEmbelishments(): void {
     console.log("# Embelishments: ", this.embelishments.length);
     this.embelishments.forEach((emb) => emb.refreshLayout());
   }
+  */
 
   /**
    * Called when more atoms for a particular line are added

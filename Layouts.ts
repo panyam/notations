@@ -1,14 +1,14 @@
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import { Role, FlatAtom, LayoutParams, Beat, BeatsBuilder, Embelishment } from "notations";
-import { TimedView, AtomLayout, AtomViewProvider } from "./Core";
+import { Role, FlatAtom, LayoutParams, Beat, BeatsBuilder } from "notations";
+import { TimedView, AtomLayout, AtomViewProvider, Embelishment } from "./Core";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 
 interface AtomView extends TimedView {
   flatAtom: FlatAtom;
-  get embelishments(): Embelishment[];
+  refreshLayout(): void;
 }
 
 class TimeSlot {
@@ -89,7 +89,8 @@ export class UniformAtomLayout extends AtomLayout {
       }
     }
     // Add atom's embelishments
-    atomView.embelishments.forEach((emb) => this.embelishments.push(emb));
+    atomView.refreshLayout();
+    // embelishments.forEach((emb) => this.embelishments.push(emb));
   }
 
   /**
@@ -310,7 +311,7 @@ export class BarLayout extends AtomLayout {
       this.markBeatViewChanged(changedBeatView, beatIndex, lineIndex);
     }
     // Add atom's embelishments
-    atomView.embelishments.forEach((emb) => this.embelishments.push(emb));
+    atomView.refreshLayout(); // embelishments.forEach((emb) => this.embelishments.push(emb));
   }
 
   // Instnat update ensures that layout happens every time any beat changes in size.
