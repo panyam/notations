@@ -108,6 +108,22 @@ const [parser, itemGraph] = G.newParser(
         // | Lit POST_EMB { litWithPostEmb }
         ;
 
+    /* - An alternative representation to support both pre
+     *   and post embelishment oeprators.
+     *
+     *   Lit -> LitPreEmb POST_EMB
+     *      | LitPreEmb ;
+     *
+     *   LitPreEmb -> LitToken
+     *      | PRE_EMB LitPreEmb ;
+     *
+     *   LitToken -> DOTS_IDENT { litToAtom }
+     *      | IDENT { litToAtom }
+     *      | IDENT_DOTS { litToAtom }
+     *      | STRING  { litToAtom }
+     *   ;
+    */
+
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
     Duration -> Fraction | NUMBER;

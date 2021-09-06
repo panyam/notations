@@ -44,11 +44,20 @@ export enum GamakaType {
 
 export class Gamaka {
   constructor(public readonly type: GamakaType) {}
+  debugValue(): any {
+    return { type: this.type };
+  }
 }
 
 export class Jaaru extends Gamaka {
   constructor(public readonly ascending = true, public readonly startingNote: null | Note = null) {
     super(ascending ? GamakaType.Jaaru_Eetra : GamakaType.Jaaru_Irakka);
+  }
+
+  debugValue(): any {
+    const out = { ...super.debugValue(), ascending: this.ascending };
+    if (this.startingNote) out["startingNote"] = this.startingNote.debugValue();
+    return out;
   }
 }
 
@@ -66,14 +75,16 @@ export function parseEmbelishment(value: string): any {
     return new Gamaka(GamakaType.Spuritham);
   } else if (value == "∵" || value == "-:") {
     return new Gamaka(GamakaType.Prathyagatham);
-  } else if (value == "/") {
-    return new Jaaru(true);
-  } else if (value == "\\") {
-    return new Jaaru(false);
-  } else if (value == "x") {
-    return new Jaaru(false);
   } else if (value == "✓" || value == "./" || value == ".\\") {
     return new Gamaka(GamakaType.Aahaatam_Kandippu);
+  } else if (value.endsWith("/")) {
+    value = value.substring(0, value.length - 1).trim();
+    return new Jaaru(true, value.length > 0 ? new Note(value) : null);
+  } else if (value.endsWith("\\")) {
+    value = value.substring(0, value.length - 1);
+    return new Jaaru(false, value.length > 0 ? new Note(value) : null);
+  } else if (value == "x") {
+    return new Jaaru(false);
   } else if (value == "γ" || value == "Y") {
     return new Gamaka(GamakaType.Aahaatam_Kandippu);
   }

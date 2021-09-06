@@ -588,7 +588,7 @@ describe("Parser Tests", () => {
     testV4(
       String.raw`
            ~^ ~W S ~ ~x ~w R ~~ ~∵ ~-: G ~x ~w ~∴ ~:- M ~\ ~/
-           P ~✓ ~./ ~.\  D ~γ ~Y N
+           P ~✓ ~./ ~.\  D ~γ ~Y N ~n/ S.  ~r.\ S.
     `,
       false,
       [
@@ -618,7 +618,6 @@ describe("Parser Tests", () => {
                 {
                   type: "IrakkaJaaru",
                   ascending: false,
-                  startingNote: null,
                 },
                 {
                   type: "Nokku",
@@ -647,7 +646,6 @@ describe("Parser Tests", () => {
                 {
                   type: "IrakkaJaaru",
                   ascending: false,
-                  startingNote: null,
                 },
                 {
                   type: "Nokku",
@@ -667,12 +665,10 @@ describe("Parser Tests", () => {
                 {
                   type: "IrakkaJaaru",
                   ascending: false,
-                  startingNote: null,
                 },
                 {
                   type: "EetraJaaru",
                   ascending: true,
-                  startingNote: null,
                 },
               ],
             },
@@ -702,6 +698,36 @@ describe("Parser Tests", () => {
                   type: "Kandippu",
                 },
               ],
+            },
+            {
+              embsBefore: [
+                {
+                  ascending: true,
+                  startingNote: {
+                    type: "Note",
+                    value: "n",
+                  },
+                  type: "EetraJaaru",
+                },
+              ],
+              octave: 1,
+              type: "Note",
+              value: "S",
+            },
+            {
+              embsBefore: [
+                {
+                  ascending: false,
+                  startingNote: {
+                    type: "Note",
+                    value: "r.",
+                  },
+                  type: "IrakkaJaaru",
+                },
+              ],
+              octave: 1,
+              type: "Note",
+              value: "S",
             },
           ],
         },

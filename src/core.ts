@@ -267,10 +267,10 @@ export class Literal extends LeafAtom {
   debugValue(): any {
     const out = { ...super.debugValue(), value: this.value };
     if (this.embelishmentsBefore.length > 0) {
-      out.embsBefore = this.embelishmentsBefore;
+      out.embsBefore = this.embelishmentsBefore.map((e) => ("debugValue" in e ? e.debugValue() : e));
     }
     if (this.embelishmentsAfter.length > 0) {
-      out.embsAfter = this.embelishmentsAfter;
+      out.embsAfter = this.embelishmentsAfter.map((e) => ("debugValue" in e ? e.debugValue() : e));
     }
     return out;
   }
