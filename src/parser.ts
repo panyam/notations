@@ -43,6 +43,7 @@ const [parser, itemGraph] = G.newParser(
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
     %token  SLASH         "/"
+    %token  STAR          "*"
     %token  CARET         "^"
     // %skip "-"
     %token  COMMA         ","
@@ -101,6 +102,7 @@ const [parser, itemGraph] = G.newParser(
           | UNDER_SCORE { newSilentSpace } 
           ;
 
+    /*
     Lit -> DOTS_IDENT { litToAtom } 
         | IDENT { litToAtom } 
         | IDENT_DOTS { litToAtom } 
@@ -108,22 +110,26 @@ const [parser, itemGraph] = G.newParser(
         | PRE_EMB Lit { litWithPreEmb }
         // | Lit POST_EMB { litWithPostEmb }
         ;
-
-    /* - An alternative representation to support both pre
-     *   and post embelishment oeprators.
-     *
-     *   Lit -> LitPreEmb POST_EMB
-     *      | LitPreEmb ;
-     *
-     *   LitPreEmb -> LitToken
-     *      | PRE_EMB LitPreEmb ;
-     *
-     *   LitToken -> DOTS_IDENT { litToAtom }
-     *      | IDENT { litToAtom }
-     *      | IDENT_DOTS { litToAtom }
-     *      | STRING  { litToAtom }
-     *   ;
     */
+
+    /* - An alternative representation to support both pre and post embelishment operators.  */
+     Lit -> Lit POST_EMB  { litWithPostEmb }
+         | PreEmbLit
+         ;
+
+     PreEmbLit -> LitToken 
+                | LitToken CARET NUMBER { litWithCaret }
+                | LitToken CARET STAR   { litWithCaret }
+                | LitToken CARET STRING { litWithCaret }
+                | LitToken CARET IDENT  { litWithCaret }
+                | PRE_EMB PreEmbLit     { litWithPreEmb }
+                ;
+      
+     LitToken -> DOTS_IDENT { litToAtom }
+              | IDENT { litToAtom }
+              | IDENT_DOTS { litToAtom }
+              | STRING  { litToAtom }
+              ;
 
     Group -> OPEN_SQ Atoms CLOSE_SQ { newGroup };
 
@@ -136,13 +142,13 @@ const [parser, itemGraph] = G.newParser(
     type: "lalr",
     tokenHandlers: {
       toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape, owner: Parser) => {
-        const emb = owner.parseEmbelishment(token.value);
+        const [emb, pre] = owner.parseEmbelishment(token.value);
         if (emb == null) {
           console.log("Skipping Embelishment: ", token.value);
           return null;
         }
         token.value = emb;
-        token.tag = "PRE_EMB";
+        token.tag = pre ? "PRE_EMB" : "POST_EMB";
         return token;
       },
       toCommandName: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
@@ -223,6 +229,14 @@ export class Parser {
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Group(ONE, ...children[1].value);
     },
+    litWithCaret: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const lit = children[0].value as Literal;
+      const opnode = children[2];
+      const operator = opnode.value;
+      // TODO - set the symbol's operator when implemented
+      // lit.operator = operator;
+      return lit;
+    },
     litWithPreEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const emb = children[0];
       const lit = children[1].value as Literal;
@@ -233,6 +247,7 @@ export class Parser {
       const lit = children[0].value as Literal;
       const emb = children[1];
       lit.embelishmentsAfter.push(emb);
+      return lit;
     },
     litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const lit = children[0];
@@ -384,7 +399,7 @@ export class Parser {
     return ptree;
   }
 
-  parseEmbelishment(value: string): any {
+  parseEmbelishment(value: string): [any, boolean] {
     return carnatic.parseEmbelishment(value);
   }
 }

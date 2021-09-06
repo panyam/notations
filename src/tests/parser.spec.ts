@@ -588,7 +588,7 @@ describe("Parser Tests", () => {
     testV4(
       String.raw`
            ~^ ~W S ~ ~x ~w R ~~ ~∵ ~-: G ~x ~w ~∴ ~:- M ~\ ~/
-           P ~✓ ~./ ~.\  D ~γ ~Y N ~n/ S.  ~r.\ S.
+           P ~✓ ~./ ~.\  D ~γ ~Y N ^ 3 ~n/ S. ^ "A"  ~r.\ S. ^ *
     `,
       false,
       [

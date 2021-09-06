@@ -61,32 +61,32 @@ export class Jaaru extends Gamaka {
   }
 }
 
-export function parseEmbelishment(value: string): any {
+export function parseEmbelishment(value: string): [any, boolean] {
   value = value.substring(1);
   if (value == "") {
-    return new Gamaka(GamakaType.Kampitham);
+    return [new Gamaka(GamakaType.Kampitham), true];
   } else if (value == "^") {
-    return new Gamaka(GamakaType.Aahaatam_Raavi);
+    return [new Gamaka(GamakaType.Aahaatam_Raavi), true];
   } else if (value == "~") {
-    return new Gamaka(GamakaType.Vaali);
+    return [new Gamaka(GamakaType.Vaali), true];
   } else if (value == "w" || value == "W") {
-    return new Gamaka(GamakaType.Nokku);
+    return [new Gamaka(GamakaType.Nokku), true];
   } else if (value == "∴" || value == ":-") {
-    return new Gamaka(GamakaType.Spuritham);
+    return [new Gamaka(GamakaType.Spuritham), true];
   } else if (value == "∵" || value == "-:") {
-    return new Gamaka(GamakaType.Prathyagatham);
+    return [new Gamaka(GamakaType.Prathyagatham), true];
   } else if (value == "✓" || value == "./" || value == ".\\") {
-    return new Gamaka(GamakaType.Aahaatam_Kandippu);
+    return [new Gamaka(GamakaType.Aahaatam_Kandippu), true];
   } else if (value.endsWith("/")) {
     value = value.substring(0, value.length - 1).trim();
-    return new Jaaru(true, value.length > 0 ? new Note(value) : null);
+    return [new Jaaru(true, value.length > 0 ? new Note(value) : null), true];
   } else if (value.endsWith("\\")) {
     value = value.substring(0, value.length - 1);
-    return new Jaaru(false, value.length > 0 ? new Note(value) : null);
+    return [new Jaaru(false, value.length > 0 ? new Note(value) : null), true];
   } else if (value == "x") {
-    return new Jaaru(false);
+    return [new Jaaru(false), true];
   } else if (value == "γ" || value == "Y") {
-    return new Gamaka(GamakaType.Aahaatam_Kandippu);
+    return [new Gamaka(GamakaType.Aahaatam_Kandippu), true];
   }
   throw new Error("Invalid carnatic embelishment: " + value);
   // return null;
