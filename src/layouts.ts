@@ -5,9 +5,7 @@ import { AtomIterator, DurationIterator, FlatAtom } from "./iterators";
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 
-export interface Embelishment {
-  refreshLayout(): void;
-}
+// export interface Embelishment { refreshLayout(): void; }
 
 interface BeatViewDelegate {
   // A way to create all beats for an entire Line in one go (instead of one by one)
@@ -23,9 +21,9 @@ export interface BeatView {
   y: number;
   width: number;
   height: number;
-  applyLayout(): void;
-  readonly embelishments: Embelishment[];
+  refreshLayout(): void;
   setStyles(config: any): void;
+  // readonly embelishments: Embelishment[];
 }
 
 export class Beat {
@@ -335,7 +333,7 @@ export class BeatLayout {
             beatView.y = currY;
             if (this.DEBUG) {
               beatView.x = currX;
-              beatView.applyLayout();
+              beatView.refreshLayout();
               currX += beatView.width;
             }
             maxHeight = Math.max(maxHeight, beatView.minHeight);
