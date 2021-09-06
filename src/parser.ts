@@ -32,7 +32,7 @@ const ONE = TSU.Num.Fraction.ONE;
  */
 const [parser, itemGraph] = G.newParser(
   String.raw`
-    %define IdentChar     /[^|\[\]={}()+\-,;~: \t\f\r\n\v\\\.]/
+    %define IdentChar     /[^%!@&\^|\[\]={}()+\-,;~: \t\f\r\n\v\\\.]/
 
     %token  BSLASH        "\\"
     %token  OPEN_SQ       "["
@@ -43,6 +43,7 @@ const [parser, itemGraph] = G.newParser(
     %token  OPEN_BRACE    "{"
     %token  CLOSE_BRACE   "}"
     %token  SLASH         "/"
+    %token  CARET         "^"
     // %skip "-"
     %token  COMMA         ","
     %token  SEMI_COLON    ";"
