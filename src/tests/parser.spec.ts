@@ -599,7 +599,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "S",
-              embsBefore: [
+              embs: [
                 {
                   type: "Raavi",
                 },
@@ -611,7 +611,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "R",
-              embsBefore: [
+              embs: [
                 {
                   type: "Kampitham",
                 },
@@ -627,7 +627,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "G",
-              embsBefore: [
+              embs: [
                 {
                   type: "Vaali",
                 },
@@ -642,7 +642,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "M",
-              embsBefore: [
+              embs: [
                 {
                   type: "IrakkaJaaru",
                   ascending: false,
@@ -661,7 +661,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "P",
-              embsBefore: [
+              embs: [
                 {
                   type: "IrakkaJaaru",
                   ascending: false,
@@ -675,7 +675,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "D",
-              embsBefore: [
+              embs: [
                 {
                   type: "Kandippu",
                 },
@@ -690,7 +690,7 @@ describe("Parser Tests", () => {
             {
               type: "Literal",
               value: "N",
-              embsBefore: [
+              embs: [
                 {
                   type: "Kandippu",
                 },
@@ -700,7 +700,7 @@ describe("Parser Tests", () => {
               ],
             },
             {
-              embsBefore: [
+              embs: [
                 {
                   ascending: true,
                   startingNote: {
@@ -715,7 +715,7 @@ describe("Parser Tests", () => {
               value: "S",
             },
             {
-              embsBefore: [
+              embs: [
                 {
                   ascending: false,
                   startingNote: {

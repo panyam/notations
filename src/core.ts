@@ -256,8 +256,7 @@ export class Literal extends LeafAtom {
    * The value of this Syllable.
    */
   value: string;
-  embelishmentsAfter: any[] = [];
-  embelishmentsBefore: any[] = [];
+  embelishments: any[] = [];
 
   constructor(value: string, duration = ONE) {
     super(duration);
@@ -266,11 +265,8 @@ export class Literal extends LeafAtom {
 
   debugValue(): any {
     const out = { ...super.debugValue(), value: this.value };
-    if (this.embelishmentsBefore.length > 0) {
-      out.embsBefore = this.embelishmentsBefore.map((e) => ("debugValue" in e ? e.debugValue() : e));
-    }
-    if (this.embelishmentsAfter.length > 0) {
-      out.embsAfter = this.embelishmentsAfter.map((e) => ("debugValue" in e ? e.debugValue() : e));
+    if (this.embelishments.length > 0) {
+      out.embs = this.embelishments.map((e) => ("debugValue" in e ? e.debugValue() : e));
     }
     return out;
   }

@@ -240,13 +240,13 @@ export class Parser {
     litWithPreEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const emb = children[0];
       const lit = children[1].value as Literal;
-      lit.embelishmentsBefore.splice(0, 0, emb.value);
+      lit.embelishments.splice(0, 0, emb.value);
       return lit;
     },
     litWithPostEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const lit = children[0].value as Literal;
       const emb = children[1];
-      lit.embelishmentsAfter.push(emb);
+      lit.embelishments.push(emb);
       return lit;
     },
     litToAtom: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
