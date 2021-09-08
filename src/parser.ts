@@ -20,6 +20,7 @@ import {
 import * as carnatic from "./carnatic";
 
 const ONE = TSU.Num.Fraction.ONE;
+const TWO = ONE.timesNum(2);
 
 /**
  * V4 of our parser builds on V3 and has the following improvements:
@@ -225,7 +226,9 @@ export class Parser {
       }
     },
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      return new Group(ONE, ...children[1].value);
+      const out = new Group(TWO, ...children[1].value);
+      out.durationIsMultiplier = true;
+      return out;
     },
     litWithCaret: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const lit = Note.fromLit(children[0].value as Literal);

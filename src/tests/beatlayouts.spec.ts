@@ -443,7 +443,7 @@ describe("Complex BeatLayout Tests", () => {
                   type: "FlatAtom",
                   atom: {
                     type: "Space",
-                    duration: "8/4",
+                    duration: "2/1",
                     isSilent: false,
                   },
                   duration: "1/1",

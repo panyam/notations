@@ -206,6 +206,8 @@ describe("Parser Tests", () => {
                 value: "d",
               },
             ],
+            duration: "2/1",
+            durationIsMultiplier: true,
           },
           {
             type: "Group",
