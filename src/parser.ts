@@ -120,8 +120,6 @@ const [parser, itemGraph] = G.newParser(
      PreEmbLit -> LitToken 
                 | LitToken CARET NUMBER { litWithCaret }
                 | LitToken CARET STAR   { litWithCaret }
-                | LitToken CARET STRING { litWithCaret }
-                | LitToken CARET IDENT  { litWithCaret }
                 | PRE_EMB PreEmbLit     { litWithPreEmb }
                 ;
       
@@ -230,11 +228,10 @@ export class Parser {
       return new Group(ONE, ...children[1].value);
     },
     litWithCaret: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const lit = children[0].value as Literal;
+      const lit = Note.fromLit(children[0].value as Literal);
       const opnode = children[2];
-      const operator = opnode.value;
-      // TODO - set the symbol's operator when implemented
-      // lit.operator = operator;
+      const shiftValue = opnode.sym.label == "STAR" ? true : opnode.value;
+      lit.shift = shiftValue;
       return lit;
     },
     litWithPreEmb: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {

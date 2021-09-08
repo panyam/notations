@@ -588,7 +588,7 @@ describe("Parser Tests", () => {
     testV4(
       String.raw`
            ~^ ~W S ~ ~x ~w R ~~ ~∵ ~-: G ~x ~w ~∴ ~:- M ~\ ~/
-           P ~✓ ~./ ~.\  D ~γ ~Y N ^ 3 ~n/ S. ^ "A"  ~r.\ S. ^ *
+           P ~✓ ~./ ~.\  D ~γ ~Y N ^ 3 ~n/ S. ^ -3 ~r.\ S. ^ *
     `,
       false,
       [
@@ -688,7 +688,8 @@ describe("Parser Tests", () => {
               ],
             },
             {
-              type: "Literal",
+              shift: 3,
+              type: "Note",
               value: "N",
               embs: [
                 {
@@ -713,6 +714,7 @@ describe("Parser Tests", () => {
               octave: 1,
               type: "Note",
               value: "S",
+              shift: -3,
             },
             {
               embs: [
@@ -727,6 +729,7 @@ describe("Parser Tests", () => {
               ],
               octave: 1,
               type: "Note",
+              shift: true,
               value: "S",
             },
           ],

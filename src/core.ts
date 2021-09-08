@@ -255,12 +255,10 @@ export class Literal extends LeafAtom {
   /**
    * The value of this Syllable.
    */
-  value: string;
   embelishments: any[] = [];
 
-  constructor(value: string, duration = ONE) {
+  constructor(public value: string, duration = ONE) {
     super(duration);
-    this.value = value;
   }
 
   debugValue(): any {
@@ -286,6 +284,13 @@ export class Literal extends LeafAtom {
 }
 
 export class Syllable extends Literal {
+  static fromLit(lit: Literal): Syllable {
+    if (lit.type == AtomType.SYLLABLE) return lit as Syllable;
+    const out = new Syllable(lit.value, lit.duration);
+    out.embelishments = lit.embelishments;
+    return out;
+  }
+
   toString(): string {
     return `Syll(${this.duration}-${this.value})`;
   }
@@ -300,12 +305,19 @@ export class Note extends Literal {
   /**
    * How is the note shifted - ie by shifted towards major or minore by # of semi-tones.
    */
-  shift = 0;
+  shift: number | boolean = 0;
 
   constructor(value: string, duration = ONE, octave = 0, shift = 0) {
     super(value, duration);
     this.octave = octave;
     this.shift = shift;
+  }
+
+  static fromLit(lit: Literal): Note {
+    if (lit.type == AtomType.NOTE) return lit as Note;
+    const out = new Note(lit.value, lit.duration);
+    out.embelishments = lit.embelishments;
+    return out;
   }
 
   debugValue(): any {
