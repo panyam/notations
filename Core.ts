@@ -2,8 +2,61 @@ import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { LayoutParams, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
 
-export interface Embelishment {
-  refreshLayout(): void;
+export enum EmbelishmentDir {
+  LEFT,
+  TOP,
+  RIGHT,
+  BOTTOM,
+}
+
+export class Embelishment {
+  xChanged = true;
+  yChanged = true;
+  widthChanged = true;
+  heightChanged = true;
+  protected _bbox: SVGRect;
+
+  refreshLayout(): void {
+    //
+  }
+
+  refreshBBox(): SVGRect {
+    this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
+    return this._bbox;
+  }
+
+  get bbox(): SVGRect {
+    if (!this._bbox) {
+      this.refreshBBox();
+    }
+    return this._bbox;
+  }
+
+  get x(): number {
+    return this.bbox.x;
+  }
+
+  set x(x: number) {
+    // Implement this
+    this.bbox.x = x;
+  }
+
+  get y(): number {
+    return this.bbox.y;
+  }
+
+  set y(y: number) {
+    // Implement this
+    this.bbox.y = y;
+  }
+
+  get width(): number {
+    return this.bbox.width;
+  }
+
+  get height(): number {
+    return this.bbox.height;
+  }
 }
 
 export interface TimedView {
@@ -20,7 +73,12 @@ export abstract class AtomView implements TimedView {
   constructor(public flatAtom: FlatAtom) {}
 
   abstract createElements(parent: SVGGraphicsElement): void;
-  refreshLayout(): void {}
+  createEmbelishments(): void {
+    //
+  }
+  refreshLayout(): void {
+    // TODO
+  }
   // get embelishments(): Embelishment[] { return []; }
 
   xChanged = true;
@@ -31,6 +89,14 @@ export abstract class AtomView implements TimedView {
 
   get viewId(): number {
     return this.flatAtom.uuid;
+  }
+
+  embRoot(): SVGGraphicsElement {
+    let rootElem = this.element.parentElement as any as SVGGraphicsElement;
+    while (rootElem && (rootElem.tagName == "tspan" || rootElem.tagName == "text")) {
+      rootElem = rootElem.parentElement as any as SVGGraphicsElement;
+    }
+    return rootElem;
   }
 
   refreshBBox(): SVGRect {

@@ -2,11 +2,12 @@ import * as TSU from "@panyam/tsutils";
 import { BeatView } from "notations";
 import { Embelishment } from "./Core";
 
-export class BeatStartLines implements Embelishment {
+export class BeatStartLines extends Embelishment {
   barSpacing = 20;
   protected line: SVGLineElement;
 
   constructor(public readonly source: BeatView, public readonly rootElement: SVGGraphicsElement) {
+    super();
     this.line = TSU.DOM.createSVGNode("line", {
       doc: document,
       parent: this.rootElement,
@@ -30,11 +31,12 @@ export class BeatStartLines implements Embelishment {
   }
 }
 
-export class BeatEndLines implements Embelishment {
+export class BeatEndLines extends Embelishment {
   lineSpacing = 2;
   protected lines: SVGLineElement[];
 
   constructor(public readonly source: BeatView, public readonly rootElement: SVGGraphicsElement, nLines = 1) {
+    super();
     this.lines = [];
     for (let i = 0; i < nLines; i++) {
       this.lines.push(

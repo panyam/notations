@@ -227,9 +227,9 @@ class TextBeatView implements BeatView {
         const lit = flatAtom.atom as Literal;
         // convert to note or syllable here
         if (beat.role.defaultToNotes) {
-          flatAtom.atom = new Note(lit.value, lit.duration);
+          flatAtom.atom = Note.fromLit(lit);
         } else {
-          flatAtom.atom = new Syllable(lit.value, lit.duration);
+          flatAtom.atom = Syllable.fromLit(lit);
         }
         // carry over rest info
         flatAtom.atom.beforeRest = lit.beforeRest;
