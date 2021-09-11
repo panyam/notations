@@ -52,7 +52,7 @@ class Slot {
         this.currentOffset = bbox.x + bbox.width + 2;
         break;
       case EmbelishmentDir.BOTTOM:
-        this.currentOffset = bbox.y + bbox.height + 2;
+        this.currentOffset = bbox.y + bbox.height + 4;
         break;
     }
 
