@@ -52,6 +52,16 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     this.rootElement.appendChild(elem);
   }
 
+  public newRoot(parent: Element): SVGSVGElement {
+    return TSU.DOM.createSVGNode("svg", {
+      parent: parent,
+      attrs: {
+        width: "100%",
+        style: "margin-bottom: 20px",
+      },
+    }) as SVGSVGElement;
+  }
+
   ensureLineView(line: Line): LineView {
     let lineView = this.getLineView(line);
     if (lineView == null) {
@@ -59,7 +69,8 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
         this.rootElement.appendChild(TSU.DOM.createNode("br"));
       }
       const layoutParams = this.notation.layoutParamsForLine(line) || null;
-      lineView = new LineView(LineView.newRoot(this.rootElement), line, {
+      const svgElem = this.newRoot(this.rootElement);
+      lineView = new LineView(svgElem, line, {
         layoutParams: layoutParams,
       } as any);
       if (!line.isEmpty) {
@@ -113,8 +124,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
 
     // Set line view preferred sizes
     for (const lineView of lineViews) {
-      const ps = lineView.prefSize;
-      lineView.setSize(ps.width, ps.height);
+      lineView.wrapToSize();
     }
   }
 
@@ -156,34 +166,40 @@ export class LineView extends TSV.EntityView<Line> {
   // The beat layout associated with the layout params of this Line
   // at this point beats have already been added to the right columns
   beatLayout: BeatLayout;
-
-  public static newRoot(parent: Element): SVGSVGElement {
-    return TSU.DOM.createSVGNode("svg", {
-      parent: parent,
-      attrs: {
-        width: "100%",
-        style: "margin-bottom: 20px",
-      },
-    }) as SVGSVGElement;
-  }
+  gElem: SVGGElement;
 
   protected processConfigs(config: any): any {
-    if (this.rootElement.tagName != "svg") {
-      throw new Error("LineView root MUST be a svg node");
+    if (this.rootElement.tagName != "svg" && this.rootElement.tagName != "g") {
+      throw new Error("LineView root MUST be a svg or g node");
     }
+    // create the gElem for wrapping and adjusting to size
+    this.gElem = TSU.DOM.createSVGNode("g", {
+      parent: this.rootElement,
+      attrs: {
+        id: "gElem" + this.viewId,
+      },
+    }) as SVGGElement;
     return config;
   }
 
-  get prefSize(): TSV.Size {
+  wrapToSize(): void {
+    const bbox = (this.gElem as SVGSVGElement).getBBox();
+    // set the size of the svg
+    this.setSize(4 + bbox.width, 4 + bbox.height);
+    this.gElem.setAttribute("transform", `translate(${4 - bbox.x}, ${4 - bbox.y})`);
+  }
+
+  get prefSize(): TSU.Geom.Size {
     const bbox = (this.rootElement as SVGSVGElement).getBBox();
-    return new TSV.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
+    // return new TSU.Geom.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
+    return new TSU.Geom.Size(4 + bbox.width, 4 + bbox.height);
   }
 
   beatViews = new Map<number, BeatView>();
   viewForBeat(beat: Beat): BeatView {
     if (!this.beatViews.has(beat.uuid)) {
       // how to get the bar and beat index for a given beat in a given row?
-      const b = new TextBeatView(beat, this.rootElement, this.beatLayout.layoutParams.cycle);
+      const b = new TextBeatView(beat, this.gElem, this.beatLayout.layoutParams.cycle);
       // Check if this needs bar start/end lines?
       this.beatViews.set(beat.uuid, b);
       return b;

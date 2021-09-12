@@ -1,5 +1,4 @@
 import * as TSU from "@panyam/tsutils";
-import * as TSV from "@panyam/tsutils-ui";
 import { Role, FlatAtom, LayoutParams, Beat, BeatsBuilder } from "notations";
 import { TimedView, AtomLayout, AtomViewProvider } from "./Core";
 
@@ -219,7 +218,7 @@ class BeatView {
   protected maxHeight = 0;
   constructor(public readonly beatCol: BeatColumn, public readonly beat: Beat) {}
 
-  get bbox(): TSV.BBox {
+  get bbox(): TSU.Geom.BBox {
     return { x: this.beatCol.x, y: this.minY, width: this.beatCol.maxWidth, height: this.maxHeight };
   }
 

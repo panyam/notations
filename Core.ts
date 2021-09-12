@@ -1,5 +1,4 @@
 import * as TSU from "@panyam/tsutils";
-import * as TSV from "@panyam/tsutils-ui";
 import { LayoutParams, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
 
 export enum EmbelishmentDir {
@@ -9,25 +8,29 @@ export enum EmbelishmentDir {
   BOTTOM,
 }
 
-export class Embelishment {
+export abstract class Embelishment {
   xChanged = true;
   yChanged = true;
   widthChanged = true;
   heightChanged = true;
-  protected _bbox: SVGRect;
+  protected _bbox: TSU.Geom.Rect;
 
   refreshLayout(): void {
-    //
+    throw new Error("Implement this");
   }
 
-  refreshBBox(): SVGRect {
-    this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
-    return this._bbox;
+  protected refreshBBox(): TSU.Geom.Rect {
+    return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
-  get bbox(): SVGRect {
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    return true;
+  }
+
+  get bbox(): TSU.Geom.Rect {
     if (!this._bbox) {
-      this.refreshBBox();
+      this._bbox = this.refreshBBox();
+      this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
     }
     return this._bbox;
   }
@@ -38,7 +41,7 @@ export class Embelishment {
 
   set x(x: number) {
     // Implement this
-    this.bbox.x = x;
+    if (this.updatePosition(x, null)) this.bbox.x = x;
   }
 
   get y(): number {
@@ -47,7 +50,7 @@ export class Embelishment {
 
   set y(y: number) {
     // Implement this
-    this.bbox.y = y;
+    if (this.updatePosition(null, y)) this.bbox.y = y;
   }
 
   get width(): number {
@@ -62,7 +65,7 @@ export class Embelishment {
 export interface TimedView {
   readonly viewId: number;
   x: number;
-  readonly bbox: TSV.BBox;
+  readonly bbox: TSU.Geom.BBox;
 }
 
 export abstract class AtomView implements TimedView {
@@ -72,20 +75,19 @@ export abstract class AtomView implements TimedView {
 
   constructor(public flatAtom: FlatAtom) {}
 
+  /**
+   * Creates views needed for this AtomView.
+   */
   abstract createElements(parent: SVGGraphicsElement): void;
-  createEmbelishments(): void {
-    //
-  }
   refreshLayout(): void {
     // TODO
   }
-  // get embelishments(): Embelishment[] { return []; }
 
   xChanged = true;
   yChanged = true;
   widthChanged = true;
   heightChanged = true;
-  protected _bbox: SVGRect;
+  protected _bbox: TSU.Geom.Rect;
 
   get viewId(): number {
     return this.flatAtom.uuid;
@@ -99,7 +101,7 @@ export abstract class AtomView implements TimedView {
     return rootElem;
   }
 
-  refreshBBox(): SVGRect {
+  refreshBBox(): TSU.Geom.Rect {
     this._bbox = this.element.getBBox();
     // Due to safari bug which returns really crazy span widths!
     if (TSU.Browser.IS_SAFARI()) {
@@ -116,7 +118,7 @@ export abstract class AtomView implements TimedView {
     return this._bbox;
   }
 
-  get bbox(): SVGRect {
+  get bbox(): TSU.Geom.Rect {
     if (!this._bbox) {
       this.refreshBBox();
     }
@@ -140,8 +142,8 @@ export abstract class AtomView implements TimedView {
 
   set y(y: number) {
     this.element.setAttribute("y", "" + y);
-    this.bbox.y = y;
     this.element.removeAttribute("dy");
+    this.bbox.y = y;
   }
 
   get width(): number {
@@ -160,19 +162,19 @@ export abstract class AtomView implements TimedView {
       this.element.setAttribute("dx", "" + dx);
     }
     this.xChanged = true;
-    this._bbox = null as unknown as SVGRect;
+    this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
   set dy(dy: number) {
     this.element.setAttribute("dy", "" + dy);
     this.yChanged = true;
-    this._bbox = null as unknown as SVGRect;
+    this._bbox = null as unknown as TSU.Geom.Rect;
     this.element.removeAttribute("y");
   }
 
-  get size(): TSV.Size {
+  get size(): TSU.Geom.Size {
     const bbox = this.bbox;
-    return new TSV.Size(bbox.width, bbox.height);
+    return new TSU.Geom.Size(bbox.width, bbox.height);
   }
 }
 

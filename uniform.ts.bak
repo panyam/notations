@@ -1,5 +1,4 @@
 import * as TSU from "@panyam/tsutils";
-import * as TSV from "@panyam/tsutils-ui";
 import { FlatAtom, Beat } from "notations";
 import { TimedView, AtomLayout } from "./Core";
 

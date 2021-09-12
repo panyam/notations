@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Carnatic, Literal, AtomType, Label, Note, Space, Syllable, FlatAtom } from "notations";
+import { Carnatic, Literal, AtomType, Note, Space, Syllable, FlatAtom } from "notations";
 import { AtomView, Embelishment, EmbelishmentDir } from "./Core";
 
 export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): AtomView {
@@ -21,7 +21,6 @@ export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): Atom
       throw new Error("Invalid atom type: " + atom.atom.type);
   }
   out.createElements(parent);
-  out.createEmbelishments();
   return out;
 }
 
@@ -93,16 +92,27 @@ abstract class LeafAtomView extends AtomView {
   rightSlot = new Slot(EmbelishmentDir.RIGHT, this);
   bottomSlot = new Slot(EmbelishmentDir.BOTTOM, this);
 
-  refreshLayout(): void {
-    // refresh layout of embelishments slots
-    this.leftSlot.refreshLayout();
-    this.topSlot.refreshLayout();
-    this.rightSlot.refreshLayout();
-    this.bottomSlot.refreshLayout();
+  // Spaces required before and after to accomodate for left and right slots
+  protected preSpacingSpan: SVGTSpanElement;
+  protected postSpacingSpan: SVGTSpanElement;
+  // Sometimes this.element may not be the root element if we need spacings
+  // the rootElement is the top of the chain
+  protected rootElement: SVGGraphicsElement;
+
+  abstract get glyphLabel(): string;
+
+  get needsLeftSpacing(): boolean {
+    return this.leftSlot.embelishments.length > 0;
   }
 
-  // Group and Order embelishments into left, top, right and bottom slots
-  createEmbelishments(): void {
+  get needsRightSpacing(): boolean {
+    return this.rightSlot.embelishments.length > 0 || this.flatAtom.atom.beforeRest;
+  }
+
+  /**
+   * Orders embelishments and creates their views.
+   */
+  orderEmbelishments(): void {
     const atom = this.flatAtom.atom;
     if (atom.type != AtomType.SYLLABLE && atom.type != AtomType.NOTE) {
       return;
@@ -144,23 +154,88 @@ abstract class LeafAtomView extends AtomView {
           break;
       }
     }
-    throw new Error("TBD");
   }
-}
 
-class SpaceView extends LeafAtomView {
   createElements(parent: SVGGraphicsElement): void {
-    const space = this.space;
+    // Create the glyph element first before anything
+    // this allows embelishments to get early access to this element
+    this.createGlyphElement(parent);
+
+    // Order embelishments (without creating any views)
+    this.orderEmbelishments();
+    const atom = this.flatAtom.atom;
+    if (this.needsLeftSpacing || this.needsRightSpacing) {
+      // create as 2 sub span elements
+      this.rootElement = TSU.DOM.createSVGNode("tspan", {
+        doc: document,
+        parent: parent,
+        attrs: {
+          depth: this.flatAtom.depth || 0,
+          atomid: atom.uuid,
+          id: "atomViewRoot" + atom.uuid,
+        },
+      });
+      if (this.needsLeftSpacing) {
+        this.preSpacingSpan = TSU.DOM.createSVGNode("tspan", {
+          doc: document,
+          parent: this.rootElement,
+          attrs: {
+            depth: this.flatAtom.depth || 0,
+            atomid: atom.uuid,
+            id: "preSpacing" + atom.uuid,
+          },
+          text: "  ",
+        });
+      }
+
+      // move the element into the parent
+      this.moveGlyphToRoot();
+
+      if (this.needsRightSpacing) {
+        this.postSpacingSpan = TSU.DOM.createSVGNode("tspan", {
+          doc: document,
+          parent: this.rootElement,
+          attrs: {
+            depth: this.flatAtom.depth || 0,
+            atomid: atom.uuid,
+            id: "postSpacing" + atom.uuid,
+          },
+          text: atom.beforeRest ? " - " : "  ",
+        });
+      }
+    }
+  }
+
+  protected moveGlyphToRoot(): void {
+    this.rootElement.appendChild(this.element);
+  }
+
+  protected createGlyphElement(parent: SVGGraphicsElement): void {
+    const atom = this.flatAtom.atom;
     this.element = TSU.DOM.createSVGNode("tspan", {
       doc: document,
       parent: parent,
       attrs: {
         depth: this.flatAtom.depth || 0,
-        atomid: space.uuid,
-        id: "atom" + space.uuid,
+        atomid: atom.uuid,
+        id: "atom" + atom.uuid,
       },
-      text: (space.isSilent ? " " : ",") + (space.beforeRest ? " - " : " "),
+      text: this.glyphLabel + " ", // + (note.beforeRest ? " - " : " "),
     });
+  }
+
+  refreshLayout(): void {
+    // refresh layout of embelishments slots
+    this.leftSlot.refreshLayout();
+    this.topSlot.refreshLayout();
+    this.rightSlot.refreshLayout();
+    this.bottomSlot.refreshLayout();
+  }
+}
+
+class SpaceView extends LeafAtomView {
+  get glyphLabel(): string {
+    return this.space.isSilent ? " " : ",";
   }
 
   get space(): Space {
@@ -168,73 +243,37 @@ class SpaceView extends LeafAtomView {
   }
 }
 
-class LiteralView extends LeafAtomView {
-  preTSpans = [] as SVGTSpanElement[];
-  postTSpans = [] as SVGTSpanElement[];
-
-  get lit(): Literal {
-    return this.flatAtom.atom as Literal;
+class NoteView extends LeafAtomView {
+  protected shiftElement: SVGTSpanElement;
+  get glyphLabel(): string {
+    return this.note.value;
   }
 
-  createElements(parent: SVGGraphicsElement): void {
-    const lit = this.lit;
-    if (lit.beforeRest) {
-      // create as 2 sub span elements
-      const parentTSpan = TSU.DOM.createSVGNode("tspan", {
+  protected createGlyphElement(parent: SVGGraphicsElement): void {
+    super.createGlyphElement(parent);
+    if (this.note.shift == true || this.note.shift != 0) {
+      this.shiftElement = TSU.DOM.createSVGNode("tspan", {
         doc: document,
         parent: parent,
         attrs: {
           depth: this.flatAtom.depth || 0,
-          atomid: lit.uuid,
-          id: "atom" + lit.uuid,
+          atomid: this.note.uuid,
+          id: "noteShift" + this.note.uuid,
+          "baseline-shift": "sub",
         },
-      });
-      this.element = TSU.DOM.createSVGNode("tspan", {
-        doc: document,
-        parent: parentTSpan,
-        attrs: {
-          depth: this.flatAtom.depth || 0,
-          atomid: lit.uuid,
-          id: "atom" + lit.uuid,
-        },
-        text: lit.value + " ", // + (note.beforeRest ? " - " : " "),
-      });
-      // Create the rest marker
-      // TODO - add to list of "post elements"
-      this.postTSpans.push(
-        TSU.DOM.createSVGNode("tspan", {
-          doc: document,
-          parent: parentTSpan,
-          attrs: {
-            depth: this.flatAtom.depth || 0,
-            atomid: lit.uuid,
-            id: "atom" + lit.uuid,
-          },
-          text: "- ",
-        }),
-      );
-    } else {
-      this.element = TSU.DOM.createSVGNode("tspan", {
-        doc: document,
-        parent: parent,
-        attrs: {
-          depth: this.flatAtom.depth || 0,
-          atomid: lit.uuid,
-          id: "atom" + lit.uuid,
-        },
-        text: lit.value + " ",
+        text: (this.note.shift == true ? "*" : this.note.shift) + " ",
       });
     }
   }
-}
 
-class NoteView extends LiteralView {
-  get note(): Note {
-    return this.flatAtom.atom as Note;
+  protected moveGlyphToRoot(): void {
+    super.moveGlyphToRoot();
+    if (this.shiftElement) {
+      this.rootElement.appendChild(this.shiftElement);
+    }
   }
 
-  createElements(parent: SVGGraphicsElement): void {
-    super.createElements(parent);
+  orderEmbelishments(): void {
     const note = this.note;
     // create the embelishments if needed
     if (note.octave > 0) {
@@ -242,10 +281,19 @@ class NoteView extends LiteralView {
     } else if (this.note.octave < 0) {
       this.bottomSlot.push(new OctaveIndicator(this));
     }
+    super.orderEmbelishments();
+  }
+
+  get note(): Note {
+    return this.flatAtom.atom as Note;
   }
 }
 
-class SyllableView extends LiteralView {
+class SyllableView extends LeafAtomView {
+  get glyphLabel(): string {
+    return this.syllable.value;
+  }
+
   get syllable(): Syllable {
     return this.flatAtom.atom as Syllable;
   }
@@ -257,45 +305,6 @@ class SyllableView extends LiteralView {
 export class AtomViewEmbelishment extends Embelishment {
   constructor(public readonly atomView: AtomView) {
     super();
-  }
-}
-
-/**
- * Very simple embelishments where just a text is shown either left, top, right
- * or bottom.
- */
-export class LabelEmbelishment extends AtomViewEmbelishment {
-  labelElem: SVGTextElement;
-
-  constructor(public readonly label: string, public readonly atomView: AtomView) {
-    super(atomView);
-    const rootElem = this.atomView.embRoot();
-    this.labelElem = TSU.DOM.createSVGNode("text", {
-      doc: document,
-      parent: rootElem,
-      text: label,
-      attrs: {
-        source: "atom" + this.atomView.flatAtom.atom.uuid,
-      },
-    });
-  }
-
-  refreshBBox(): SVGRect {
-    this._bbox = this.labelElem.getBBox();
-    return super.refreshBBox();
-  }
-
-  refreshLayout(): void {
-    const out = this.atomView.bbox;
-    const emb = this.labelElem;
-    if (emb) {
-      /*
-      const bb2 = emb.getBBox();
-      const gX = out.x + (out.width - bb2.width) / 2;
-      const gY = this.noteView.note.octave > 0 ? out.y - bb2.height : out.y + out.height + this.dotRadius;
-      emb.setAttribute("transform", "translate(" + gX + "," + gY + ")");
-      */
-    }
   }
 }
 
@@ -335,9 +344,8 @@ class OctaveIndicator extends AtomViewEmbelishment {
     }
   }
 
-  refreshBBox(): SVGRect {
-    this._bbox = this.dotsElem.getBBox();
-    return super.refreshBBox();
+  refreshBBox(): TSU.Geom.Rect {
+    return this.dotsElem.getBBox();
   }
 
   refreshLayout(): void {
@@ -353,18 +361,94 @@ class OctaveIndicator extends AtomViewEmbelishment {
 }
 
 ////////// Carnatic embelishments
+export class LabelEmbelishment extends AtomViewEmbelishment {
+  labelElem: SVGTextElement;
+  constructor(public readonly label: string, public readonly atomView: AtomView) {
+    super(atomView);
+    const rootElem = this.atomView.embRoot();
+    this.labelElem = TSU.DOM.createSVGNode("text", {
+      doc: document,
+      parent: rootElem,
+      text: label,
+      attrs: {
+        source: "atom" + this.atomView.flatAtom.atom.uuid,
+      },
+    });
+  }
 
-export class Kampitham extends AtomViewEmbelishment {}
-export class Nokku extends AtomViewEmbelishment {}
-export class Prathyagatham extends AtomViewEmbelishment {}
-export class Spuritham extends AtomViewEmbelishment {}
-export class Raavi extends AtomViewEmbelishment {}
-export class Kandippu extends AtomViewEmbelishment {}
-export class Vaali extends AtomViewEmbelishment {}
-export class Odukkal extends AtomViewEmbelishment {}
-export class Orikkai extends AtomViewEmbelishment {}
+  refreshBBox(): TSU.Geom.Rect {
+    return this.labelElem.getBBox();
+  }
+
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    if (x != null) {
+      this.labelElem.setAttribute("x", "" + x);
+    }
+    if (y != null) {
+      this.labelElem.setAttribute("y", "" + y);
+    }
+    return true;
+  }
+
+  refreshLayout(): void {
+    // const out = this.atomView.bbox;
+    // const emb = this.bbox;
+    // this.x = out.x + (out.width - emb.width) / 2;
+  }
+}
+
+export class Kampitham extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("~", atomView);
+  }
+}
+
+export class Nokku extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("w", atomView);
+  }
+}
+
+export class Prathyagatham extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("∵", atomView);
+  }
+}
+export class Spuritham extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("∴", atomView);
+  }
+}
+export class Raavi extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("^", atomView);
+  }
+}
+export class Kandippu extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("✓", atomView);
+  }
+}
+
+export class Vaali extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("⌒", atomView);
+  }
+}
+export class Odukkal extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("x", atomView);
+  }
+}
+export class Orikkai extends LabelEmbelishment {
+  constructor(public readonly atomView: AtomView) {
+    super("γ", atomView);
+  }
+}
+
 export class Jaaru extends AtomViewEmbelishment {
   constructor(public readonly jaaru: Carnatic.Jaaru, public readonly atomView: AtomView) {
     super(atomView);
+    // TODO - Create the "fancier" view
   }
 }
