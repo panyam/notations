@@ -16,7 +16,7 @@ export abstract class Embelishment {
   protected _bbox: TSU.Geom.Rect;
 
   refreshLayout(): void {
-    throw new Error("Implement this");
+    // throw new Error("Implement this");
   }
 
   protected refreshBBox(): TSU.Geom.Rect {

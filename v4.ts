@@ -37,6 +37,10 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     return this.entity!;
   }
 
+  protected updateViewsFromEntity(_previous: TSU.Nullable<Notation> = null): void {
+    this.beatViews = new Map<number, BeatView>();
+  }
+
   viewForBeat(beat: Beat): BeatView {
     let curr = this.beatViews.get(beat.uuid) || null;
     if (curr == null) {

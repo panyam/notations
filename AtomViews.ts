@@ -372,6 +372,7 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
       text: label,
       attrs: {
         source: "atom" + this.atomView.flatAtom.atom.uuid,
+        "dominant-baseline": "hanging",
       },
     });
   }
