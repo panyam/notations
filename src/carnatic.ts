@@ -86,7 +86,7 @@ export function parseEmbelishment(value: string): [any, boolean] {
   } else if (value == "x") {
     return [new Gamaka(GamakaType.Odukkal), true];
   } else if (value == "γ" || value == "Y") {
-    return [new Gamaka(GamakaType.Aahaatam_Kandippu), true];
+    return [new Gamaka(GamakaType.Orikkai), true];
   }
   throw new Error("Invalid carnatic embelishment: " + value);
   // return null;

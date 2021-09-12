@@ -693,10 +693,10 @@ describe("Parser Tests", () => {
               value: "N",
               embs: [
                 {
-                  type: "Kandippu",
+                  type: "Orikkai",
                 },
                 {
-                  type: "Kandippu",
+                  type: "Orikkai",
                 },
               ],
             },
