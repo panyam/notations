@@ -306,7 +306,10 @@ export class BeatLayout {
     }
   }
 
+  // Spacing between each role in a single row
   roleSpacing = 10;
+
+  // Spacing between each row (a row can consist of multiple roles).
   rowSpacing = 20;
   layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
     // Instead of starting currLayoutLine at 0 - it should start at the line of the
