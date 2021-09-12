@@ -618,8 +618,7 @@ describe("Parser Tests", () => {
                   type: "Kampitham",
                 },
                 {
-                  type: "IrakkaJaaru",
-                  ascending: false,
+                  type: "Odukkal",
                 },
                 {
                   type: "Nokku",
@@ -646,8 +645,7 @@ describe("Parser Tests", () => {
               value: "M",
               embs: [
                 {
-                  type: "IrakkaJaaru",
-                  ascending: false,
+                  type: "Odukkal",
                 },
                 {
                   type: "Nokku",

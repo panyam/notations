@@ -84,7 +84,7 @@ export function parseEmbelishment(value: string): [any, boolean] {
     value = value.substring(0, value.length - 1);
     return [new Jaaru(false, value.length > 0 ? new Note(value) : null), true];
   } else if (value == "x") {
-    return [new Jaaru(false), true];
+    return [new Gamaka(GamakaType.Odukkal), true];
   } else if (value == "γ" || value == "Y") {
     return [new Gamaka(GamakaType.Aahaatam_Kandippu), true];
   }
