@@ -448,8 +448,26 @@ export class Orikkai extends LabelEmbelishment {
 }
 
 export class Jaaru extends AtomViewEmbelishment {
+  pathElem: SVGPathElement;
   constructor(public readonly jaaru: Carnatic.Jaaru, public readonly atomView: AtomView) {
     super(atomView);
     // TODO - Create the "fancier" view
+    // for now represent this with just a slant line (like a slash)
+    const rootElem = this.atomView.embRoot();
+    this.pathElem = TSU.DOM.createSVGNode("path", {
+      doc: document,
+      parent: rootElem,
+      attrs: {
+        source: "atom" + this.atomView.flatAtom.atom.uuid,
+        stroke: "black",
+      },
+    });
+  }
+
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    const newX = x == null ? this.x : x;
+    const newY = y == null ? this.y : y;
+    this.pathElem.setAttribute("d", `M ${newX} ${newY} l -5 ${this.jaaru.ascending ? 5 : -5}`);
+    return true;
   }
 }
