@@ -8,16 +8,12 @@ export enum EmbelishmentDir {
   BOTTOM,
 }
 
-export abstract class Embelishment {
+class Rectangular {
   xChanged = true;
   yChanged = true;
   widthChanged = true;
   heightChanged = true;
   protected _bbox: TSU.Geom.Rect;
-
-  refreshLayout(): void {
-    // throw new Error("Implement this");
-  }
 
   protected refreshBBox(): TSU.Geom.Rect {
     return new TSU.Geom.Rect(0, 0, 0, 0);
@@ -62,6 +58,12 @@ export abstract class Embelishment {
   }
 }
 
+export abstract class Embelishment extends Rectangular {
+  refreshLayout(): void {
+    // throw new Error("Implement this");
+  }
+}
+
 export interface TimedView {
   readonly viewId: number;
   x: number;
@@ -79,9 +81,7 @@ export abstract class AtomView implements TimedView {
    * Creates views needed for this AtomView.
    */
   abstract createElements(parent: SVGGraphicsElement): void;
-  refreshLayout(): void {
-    // TODO
-  }
+  abstract refreshLayout(): void;
 
   xChanged = true;
   yChanged = true;
@@ -102,25 +102,25 @@ export abstract class AtomView implements TimedView {
   }
 
   refreshBBox(): TSU.Geom.Rect {
-    this._bbox = this.element.getBBox();
+    const bbox = this.element.getBBox();
     // Due to safari bug which returns really crazy span widths!
     if (TSU.Browser.IS_SAFARI()) {
       const clientRect = this.element.getClientRects()[0];
       if (clientRect) {
         const parentClientRect = this.element.parentElement?.getBoundingClientRect();
-        this._bbox.x = this._bbox.x + clientRect.x - (parentClientRect?.x || 0);
-        // this._bbox.y = clientRect.y; //  - (parentClientRect?.y || 0);
-        this._bbox.width = clientRect.width;
-        this._bbox.height = clientRect.height;
+        bbox.x = bbox.x + clientRect.x - (parentClientRect?.x || 0);
+        // bbox.y = clientRect.y; //  - (parentClientRect?.y || 0);
+        bbox.width = clientRect.width;
+        bbox.height = clientRect.height;
       }
     }
     this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
-    return this._bbox;
+    return bbox;
   }
 
   get bbox(): TSU.Geom.Rect {
     if (!this._bbox) {
-      this.refreshBBox();
+      this._bbox = this.refreshBBox();
     }
     return this._bbox;
   }
