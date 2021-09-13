@@ -15,8 +15,7 @@ interface BeatViewDelegate {
 export interface BeatView {
   readonly beat: Beat;
   readonly needsLayout: boolean;
-  readonly minHeight: number;
-  readonly minWidth: number;
+  readonly minSize: TSU.Geom.Size;
   x: number;
   y: number;
   width: number;
@@ -339,7 +338,7 @@ export class BeatLayout {
               beatView.refreshLayout();
               currX += beatView.width;
             }
-            maxHeight = Math.max(maxHeight, beatView.minHeight);
+            maxHeight = Math.max(maxHeight, beatView.minSize.height);
           }
           currY += maxHeight;
           currY += this.roleSpacing;
@@ -421,9 +420,9 @@ export class BeatColumn {
     this._maxWidth = 0;
     for (const beat of this.beats) {
       const beatView = beatViewDelegate.viewForBeat(beat);
-      const minWidth = beatView.minWidth;
-      if (minWidth > this._maxWidth) {
-        this._maxWidth = minWidth;
+      const minSize = beatView.minSize;
+      if (minSize.width > this._maxWidth) {
+        this._maxWidth = minSize.width;
       }
     }
     return this._maxWidth;
