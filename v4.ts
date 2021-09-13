@@ -223,18 +223,30 @@ class TextBeatView extends Shape implements BeatView {
   needsLayout = true;
   private _embelishments: Embelishment[];
   private atomViews: AtomView[] = [];
+  groupElement: SVGGElement;
   rootElement: SVGTextElement;
   constructor(public readonly beat: Beat, rootElement: Element, public readonly cycle: Cycle, config?: any) {
     super();
     this.atomSpacing = 5;
-    this.rootElement = TSU.DOM.createSVGNode("text", {
+    this.groupElement = TSU.DOM.createSVGNode("g", {
       parent: rootElement,
+      attrs: {
+        beatId: beat.uuid,
+        id: "beatGroup" + beat.uuid,
+        roleName: beat.role.name,
+        layoutLine: beat.layoutLine,
+        layoutColumn: beat.layoutColumn,
+        beatIndex: beat.index,
+      },
+    });
+    this.rootElement = TSU.DOM.createSVGNode("text", {
+      parent: this.groupElement,
       attrs: {
         class: "roleAtomsText",
         // y: "0%",
         style: "dominant-baseline: hanging",
         beatId: beat.uuid,
-        id: "beat" + beat.uuid,
+        id: "beatText" + beat.uuid,
         roleName: beat.role.name,
         layoutLine: beat.layoutLine,
         layoutColumn: beat.layoutColumn,
@@ -302,10 +314,23 @@ class TextBeatView extends Shape implements BeatView {
     }
     if (this.widthChanged) {
       // All our atoms have to be laid out between startX and endX
-      this.atomViews.forEach((av, index) => {
-        av.dx = this.atomSpacing;
-      });
-
+      const USE_EXPLICIT_SPACING = true;
+      if (USE_EXPLICIT_SPACING) {
+        // old way of doing where we just set dx between atom views
+        // this worked when atomviews were single glyphs. But
+        // as atomViews can be complex (eg with accents and pre/post
+        // spaces etc) explicitly setting x/y may be important
+        let currX = this.x;
+        this.atomViews.forEach((av, index) => {
+          av.x = currX;
+          av.y = this.y;
+          currX += this.atomSpacing + av.bbox.width;
+        });
+      } else {
+        this.atomViews.forEach((av, index) => {
+          av.dx = this.atomSpacing;
+        });
+      }
       this.reset();
     }
     // Since atom views would havechagned position need to reposition embelishments
@@ -318,12 +343,14 @@ class TextBeatView extends Shape implements BeatView {
     this.needsLayout = false;
   }
 
-  get minWidth(): number {
-    return this.atomViews.reduce((total, view) => total + view.width, 0) + this.atomSpacing * this.atomViews.length;
-  }
-
-  get minHeight(): number {
-    return this.atomViews.reduce((total, view) => Math.max(total, view.height), 0);
+  get minSize(): TSU.Geom.Size {
+    let totalWidth = 0;
+    let maxHeight = 0;
+    this.atomViews.forEach((av, index) => {
+      totalWidth += av.bbox.width + this.atomSpacing;
+      maxHeight = Math.max(maxHeight, av.bbox.height);
+    });
+    return new TSU.Geom.Size(totalWidth, maxHeight);
   }
 
   get embelishments(): Embelishment[] {
