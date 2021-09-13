@@ -13,7 +13,7 @@ import {
   Note,
   Literal,
 } from "notations";
-import { Embelishment, AtomView } from "./Core";
+import { Embelishment, AtomView, Shape } from "./Core";
 import { createAtomView } from "./AtomViews";
 import { BeatStartLines, BeatEndLines } from "./Embelishments";
 const MarkdownIt = require("markdown-it");
@@ -218,13 +218,14 @@ export class LineView extends TSV.EntityView<Line> {
   rowSpacing = 10;
 }
 
-class TextBeatView implements BeatView {
+class TextBeatView extends Shape implements BeatView {
   protected atomSpacing: number;
   needsLayout = true;
   private _embelishments: Embelishment[];
   private atomViews: AtomView[] = [];
   rootElement: SVGTextElement;
   constructor(public readonly beat: Beat, rootElement: Element, public readonly cycle: Cycle, config?: any) {
+    super();
     this.atomSpacing = 5;
     this.rootElement = TSU.DOM.createSVGNode("text", {
       parent: rootElement,
@@ -261,51 +262,13 @@ class TextBeatView implements BeatView {
 
     this.setStyles(config || {});
 
-    this._bbox = this.rootElement.getBBox();
+    this._bbox = this.refreshBBox();
     this._width = -1;
   }
-
-  protected _bbox: SVGRect;
 
   // Custom settable width different bbox.width
   // <ve implies using evaled width
   protected _width: number;
-  xChanged = true;
-  yChanged = true;
-  widthChanged = true;
-  heightChanged = true;
-
-  get bbox(): SVGRect {
-    if (!this._bbox) {
-      this._bbox = this.rootElement.getBBox();
-    }
-    return this._bbox;
-  }
-
-  get x(): number {
-    return this.bbox.x;
-  }
-
-  set x(x: number) {
-    // remove the dx attribute
-    if (x != this.bbox.x) {
-      this.bbox.x = x;
-      this.xChanged = true;
-    }
-  }
-
-  get y(): number {
-    return this.bbox.y;
-  }
-
-  set y(y: number) {
-    // remove the dx attribute
-    if (y != this.bbox.y) {
-      this.bbox.y = y;
-      this.yChanged = true;
-    }
-  }
-
   get width(): number {
     return this._width < 0 ? this.bbox.width : this._width;
   }
@@ -317,8 +280,12 @@ class TextBeatView implements BeatView {
     }
   }
 
-  get height(): number {
-    return this.bbox.height;
+  refreshBBox(): TSU.Geom.Rect {
+    return TSU.Geom.Rect.from(this.rootElement.getBBox());
+  }
+
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    return true;
   }
 
   setStyles(config: any): void {
@@ -339,7 +306,7 @@ class TextBeatView implements BeatView {
         av.dx = this.atomSpacing;
       });
 
-      this._bbox = null as unknown as SVGRect;
+      this.reset();
     }
     // Since atom views would havechagned position need to reposition embelishments
     this.atomViews.forEach((av, index) => {

@@ -51,7 +51,7 @@ export abstract class Shape {
 
   set x(x: number) {
     // Implement this
-    if (this.updatePosition(x, null)) {
+    if (x != this.bbox.x && this.updatePosition(x, null)) {
       this.xChanged = true;
       this.bbox.x = x;
     }
@@ -63,7 +63,7 @@ export abstract class Shape {
 
   set y(y: number) {
     // Implement this
-    if (this.updatePosition(null, y)) {
+    if (y != this.bbox.y && this.updatePosition(null, y)) {
       this.bbox.y = y;
       this.yChanged = true;
     }
