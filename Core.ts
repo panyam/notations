@@ -18,7 +18,7 @@ export abstract class Shape {
   protected _bbox: TSU.Geom.Rect;
 
   protected abstract refreshBBox(): TSU.Geom.Rect;
-  protected abstract updatePosition(x: null | number, y: null | number): boolean;
+  protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
 
   reset(): void {
     this.xChanged = true;
@@ -28,13 +28,11 @@ export abstract class Shape {
     this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
-  moveTo(x: number | null, y: number | null): boolean {
-    if (this.updatePosition(x, y)) {
-      if (x != null) this.bbox.x = x;
-      if (y != null) this.bbox.y = y;
-      return true;
-    }
-    return false;
+  moveTo(x: number | null, y: number | null): [number | null, number | null] {
+    [x, y] = this.updatePosition(x, y);
+    if (x != null) this.bbox.x = x;
+    if (y != null) this.bbox.y = y;
+    return [x, y];
   }
 
   get bbox(): TSU.Geom.Rect {
@@ -45,16 +43,26 @@ export abstract class Shape {
     return this._bbox;
   }
 
+  protected xyUpdated(x: number | null, y: number | null): void {
+    if (x != null) {
+      this.xChanged = true;
+      this.bbox.x = x;
+    }
+    if (y != null) {
+      this.yChanged = true;
+      this.bbox.y = y;
+    }
+  }
+
   get x(): number {
     return this.bbox.x;
   }
 
   set x(x: number) {
-    // Implement this
-    if (x != this.bbox.x && this.updatePosition(x, null)) {
-      this.xChanged = true;
-      this.bbox.x = x;
-    }
+    // if (x != this.bbox.x) {
+    const [nx, ny] = this.updatePosition(x, null);
+    this.xyUpdated(nx, ny);
+    // }
   }
 
   get y(): number {
@@ -62,11 +70,10 @@ export abstract class Shape {
   }
 
   set y(y: number) {
-    // Implement this
-    if (y != this.bbox.y && this.updatePosition(null, y)) {
-      this.bbox.y = y;
-      this.yChanged = true;
-    }
+    // if (y != this.bbox.y) {
+    const [nx, ny] = this.updatePosition(null, y);
+    this.xyUpdated(nx, ny);
+    // }
   }
 
   get width(): number {
@@ -117,7 +124,7 @@ class ElementShape extends Shape {
     return bbox;
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     if (x != null) {
       this.element.removeAttribute("dx");
       this.element.setAttribute("x", "" + x);
@@ -126,7 +133,7 @@ class ElementShape extends Shape {
       this.element.removeAttribute("dy");
       this.element.setAttribute("y", "" + y);
     }
-    return true;
+    return [x, y];
   }
 }
 
@@ -161,11 +168,12 @@ export abstract class AtomView extends Shape implements TimedView {
     super();
   }
 
+  abstract get minSize(): TSU.Geom.Size;
   protected refreshBBox(): TSU.Geom.Rect {
     return this.glyph.bbox;
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     return this.glyph.moveTo(x, y);
   }
 

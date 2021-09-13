@@ -24,76 +24,13 @@ export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): Atom
   return out;
 }
 
-class Slot {
-  currentOffset = -2;
-  embelishments: Embelishment[] = [];
-
-  constructor(public readonly dir: EmbelishmentDir, public atomView: LeafAtomView) {
-    //
-  }
-
-  clear(): void {
-    this.currentOffset = -2;
-    this.embelishments = [];
-  }
-
-  refreshLayout(): void {
-    const bbox = this.atomView.glyph.bbox;
-    // Initialise current offset
-    switch (this.dir) {
-      case EmbelishmentDir.LEFT:
-        this.currentOffset = bbox.x - 2;
-        break;
-      case EmbelishmentDir.TOP:
-        this.currentOffset = bbox.y - 2;
-        break;
-      case EmbelishmentDir.RIGHT:
-        this.currentOffset = bbox.x + bbox.width + 2;
-        break;
-      case EmbelishmentDir.BOTTOM:
-        this.currentOffset = bbox.y + bbox.height + 4;
-        break;
-    }
-
-    for (const emb of this.embelishments) {
-      const bb = emb.bbox;
-      switch (this.dir) {
-        case EmbelishmentDir.LEFT:
-          emb.x = this.currentOffset - bb.width;
-          this.currentOffset = emb.x;
-          break;
-        case EmbelishmentDir.TOP:
-          emb.x = bbox.x + (bbox.width - bb.width) / 2;
-          emb.y = this.currentOffset - bb.height;
-          this.currentOffset = emb.y;
-          break;
-        case EmbelishmentDir.RIGHT:
-          emb.x = this.currentOffset;
-          this.currentOffset = emb.x + bb.width;
-          break;
-        case EmbelishmentDir.BOTTOM:
-          emb.x = bbox.x + (bbox.width - bb.width) / 2;
-          emb.y = this.currentOffset;
-          this.currentOffset = emb.y + bb.height;
-          break;
-      }
-      emb.refreshLayout();
-    }
-  }
-
-  push(embelishment: Embelishment): void {
-    this.embelishments.push(embelishment);
-  }
-}
-
 abstract class LeafAtomView extends AtomView {
-  leftSlot = new Slot(EmbelishmentDir.LEFT, this);
-  topSlot = new Slot(EmbelishmentDir.TOP, this);
-  rightSlot = new Slot(EmbelishmentDir.RIGHT, this);
-  bottomSlot = new Slot(EmbelishmentDir.BOTTOM, this);
+  leftSlot: Embelishment[] = [];
+  topSlot: Embelishment[] = [];
+  rightSlot: Embelishment[] = [];
+  bottomSlot: Embelishment[] = [];
 
   // Spaces required before and after to accomodate for left and right slots
-  protected preSpacingSpan: SVGTSpanElement;
   protected postSpacingSpan: SVGTSpanElement;
   // Sometimes this.element may not be the root element if we need spacings
   // the rootElement is the top of the chain
@@ -103,21 +40,85 @@ abstract class LeafAtomView extends AtomView {
 
   // With LeafAtomViews unlike AtomViews, our bbox is the union of all views we manage
   protected refreshBBox(): TSU.Geom.Rect {
-    // const out = new TSU.Geom.Rect(this.glyph.bbox);
-    // out.union(this.leftSlot.bbox);
     return this.glyph.bbox;
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
-    return this.glyph.moveTo(x, y);
+  get minSize(): TSU.Geom.Size {
+    const out = TSU.Geom.Rect.from(this.glyph.bbox);
+    const totalWidth =
+      this.leftSlot.reduce((a, b) => a + b.bbox.width, 0) +
+      this.rightSlot.reduce((a, b) => a + b.bbox.width, 0) +
+      this.leftSlot.length + // Padding of 1
+      this.rightSlot.length; // Padding of 1
+    const totalHeight =
+      this.topSlot.reduce((a, b) => a + b.bbox.height, 0) + this.bottomSlot.reduce((a, b) => a + b.bbox.height, 0);
+    out.width += totalWidth;
+    out.height += totalHeight;
+    if (this.postSpacingSpan) out.width += this.postSpacingSpan.getBBox().width;
+    return out; // this.glyph.bbox;
   }
 
-  get needsLeftSpacing(): boolean {
-    return this.leftSlot.embelishments.length > 0;
+  currX = 0;
+  currY = 0;
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+    // set the glyphs Y first so we can layout others
+    if (y != null) {
+      this.glyph.moveTo(null, y);
+      this.currY = y;
+    }
+
+    // now layout leftSlots
+    if (x != null) {
+      this.currX = x;
+      // place left embelishments
+      for (const emb of this.leftSlot) {
+        emb.x = x;
+        x += emb.bbox.width + 1;
+      }
+
+      // now place the glyph
+      this.glyph.x = x;
+      x += this.glyph.bbox.width;
+
+      // And right embelishments
+      for (const emb of this.rightSlot) {
+        emb.x = x;
+        x += emb.bbox.width + 1;
+      }
+
+      // now the spacing span
+      if (this.postSpacingSpan) {
+        this.postSpacingSpan.setAttribute("x", "" + x);
+      }
+    }
+
+    // layout top and bottom if x or y has changed
+    if (x != null || y != null) {
+      const gbbox = this.glyph.bbox;
+
+      // top embelishments
+      let y = gbbox.y - 1;
+      for (const emb of this.topSlot) {
+        const bb = emb.bbox;
+        emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
+        emb.y = y - bb.height;
+        y = emb.y;
+      }
+
+      // bottom embelishments
+      y = gbbox.y + gbbox.height + 2;
+      for (const emb of this.bottomSlot) {
+        const bb = emb.bbox;
+        emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
+        emb.y = y;
+        y = emb.y + bb.height;
+      }
+    }
+    return [this.currX, this.currY];
   }
 
   get needsRightSpacing(): boolean {
-    return this.rightSlot.embelishments.length > 0 || this.flatAtom.atom.beforeRest;
+    return this.rightSlot.length > 0 || this.flatAtom.atom.beforeRest;
   }
 
   /**
@@ -175,7 +176,7 @@ abstract class LeafAtomView extends AtomView {
     // Order embelishments (without creating any views)
     this.orderEmbelishments();
     const atom = this.flatAtom.atom;
-    if (this.needsLeftSpacing || this.needsRightSpacing) {
+    if (this.needsRightSpacing) {
       // create as 2 sub span elements
       this.rootElement = TSU.DOM.createSVGNode("tspan", {
         doc: document,
@@ -186,18 +187,6 @@ abstract class LeafAtomView extends AtomView {
           id: "atomViewRoot" + atom.uuid,
         },
       });
-      if (this.needsLeftSpacing) {
-        this.preSpacingSpan = TSU.DOM.createSVGNode("tspan", {
-          doc: document,
-          parent: this.rootElement,
-          attrs: {
-            depth: this.flatAtom.depth || 0,
-            atomid: atom.uuid,
-            id: "preSpacing" + atom.uuid,
-          },
-          text: "  ",
-        });
-      }
 
       // move the element into the parent
       this.moveGlyphToRoot();
@@ -239,10 +228,6 @@ abstract class LeafAtomView extends AtomView {
 
   refreshLayout(): void {
     // refresh layout of embelishments slots
-    this.leftSlot.refreshLayout();
-    this.topSlot.refreshLayout();
-    this.rightSlot.refreshLayout();
-    this.bottomSlot.refreshLayout();
   }
 }
 
@@ -322,8 +307,8 @@ export abstract class AtomViewEmbelishment extends Embelishment {
 }
 
 class OctaveIndicator extends AtomViewEmbelishment {
-  dotRadius = 1.5;
-  dotSpacing = 3;
+  dotRadius = 1;
+  dotSpacing = 2.5;
   dotsElem: SVGGElement;
 
   constructor(public readonly noteView: NoteView) {
@@ -361,11 +346,11 @@ class OctaveIndicator extends AtomViewEmbelishment {
     return TSU.Geom.Rect.from(this.dotsElem.getBBox());
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     if (x == null) x = this.bbox.x;
     if (y == null) y = this.bbox.y;
     this.dotsElem.setAttribute("transform", "translate(" + x + "," + y + ")");
-    return true;
+    return [x, y];
   }
 }
 
@@ -390,14 +375,14 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
     return TSU.Geom.Rect.from(this.labelElem.getBBox());
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     if (x != null) {
       this.labelElem.setAttribute("x", "" + x);
     }
     if (y != null) {
       this.labelElem.setAttribute("y", "" + y);
     }
-    return true;
+    return [x, y];
   }
 }
 
@@ -463,18 +448,36 @@ export class Jaaru extends AtomViewEmbelishment {
       attrs: {
         source: "atom" + this.atomView.flatAtom.atom.uuid,
         stroke: "black",
+        fill: "transparent",
+        d: this.pathAttribute(),
       },
     });
+  }
+
+  pathAttribute(x = 0): string {
+    const avbbox = this.atomView.bbox;
+    let y2 = 0;
+    const h2 = avbbox.height / 2;
+    const x2 = x + h2;
+    let y = avbbox.y;
+    if (this.jaaru.ascending) {
+      y = avbbox.y + avbbox.height;
+      y2 = y - h2;
+    } else {
+      y -= h2;
+      y2 = y + h2;
+    }
+    return [`M ${x} ${y}`, `Q ${x2} ${y} ${x2} ${y2}`].join(" ");
   }
 
   protected refreshBBox(): TSU.Geom.Rect {
     return TSU.Geom.Rect.from(this.pathElem.getBBox());
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     const newX = x == null ? this.x : x;
-    const newY = y == null ? this.y : y;
-    this.pathElem.setAttribute("d", `M ${newX} ${newY} l -5 ${this.jaaru.ascending ? 5 : -5}`);
-    return true;
+    this.pathElem.setAttribute("d", this.pathAttribute(newX));
+    this.reset();
+    return [x, null];
   }
 }

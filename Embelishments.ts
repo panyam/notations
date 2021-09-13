@@ -34,8 +34,8 @@ export class BeatStartLines extends Embelishment {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
-  protected updatePosition(): boolean {
-    return true;
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+    return [x, y];
   }
 }
 
@@ -66,8 +66,8 @@ export class BeatEndLines extends Embelishment {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
-  protected updatePosition(): boolean {
-    return true;
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+    return [x, y];
   }
 
   barSpacing = 15;

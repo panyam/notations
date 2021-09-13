@@ -296,8 +296,8 @@ class TextBeatView extends Shape implements BeatView {
     return TSU.Geom.Rect.from(this.rootElement.getBBox());
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
-    return true;
+  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+    return [x, y];
   }
 
   setStyles(config: any): void {
@@ -314,29 +314,19 @@ class TextBeatView extends Shape implements BeatView {
     }
     if (this.widthChanged) {
       // All our atoms have to be laid out between startX and endX
-      const USE_EXPLICIT_SPACING = true;
-      if (USE_EXPLICIT_SPACING) {
-        // old way of doing where we just set dx between atom views
-        // this worked when atomviews were single glyphs. But
-        // as atomViews can be complex (eg with accents and pre/post
-        // spaces etc) explicitly setting x/y may be important
-        let currX = this.x;
-        this.atomViews.forEach((av, index) => {
-          av.x = currX;
-          av.y = this.y;
-          currX += this.atomSpacing + av.bbox.width;
-        });
-      } else {
-        this.atomViews.forEach((av, index) => {
-          av.dx = this.atomSpacing;
-        });
-      }
+      // old way of doing where we just set dx between atom views
+      // this worked when atomviews were single glyphs. But
+      // as atomViews can be complex (eg with accents and pre/post
+      // spaces etc) explicitly setting x/y may be important
+      let currX = this.x;
+      this.atomViews.forEach((av, index) => {
+        av.moveTo(currX, this.y);
+        currX += this.atomSpacing + av.minSize.width;
+      });
       this.reset();
     }
     // Since atom views would havechagned position need to reposition embelishments
-    this.atomViews.forEach((av, index) => {
-      av.refreshLayout();
-    });
+    // this.atomViews.forEach((av, index) => { av.refreshLayout(); });
     for (const e of this.embelishments) e.refreshLayout();
     this.xChanged = this.yChanged = false;
     this.widthChanged = this.heightChanged = false;
@@ -347,8 +337,9 @@ class TextBeatView extends Shape implements BeatView {
     let totalWidth = 0;
     let maxHeight = 0;
     this.atomViews.forEach((av, index) => {
-      totalWidth += av.bbox.width + this.atomSpacing;
-      maxHeight = Math.max(maxHeight, av.bbox.height);
+      const ms = av.minSize;
+      totalWidth += ms.width + this.atomSpacing;
+      maxHeight = Math.max(maxHeight, ms.height);
     });
     return new TSU.Geom.Size(totalWidth, maxHeight);
   }
