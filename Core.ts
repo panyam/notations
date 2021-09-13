@@ -8,19 +8,33 @@ export enum EmbelishmentDir {
   BOTTOM,
 }
 
-class Rectangular {
+export abstract class Shape {
+  private static idCounter = 0;
+  readonly shapeId: number = Shape.idCounter++;
   xChanged = true;
   yChanged = true;
   widthChanged = true;
   heightChanged = true;
   protected _bbox: TSU.Geom.Rect;
 
-  protected refreshBBox(): TSU.Geom.Rect {
-    return new TSU.Geom.Rect(0, 0, 0, 0);
+  protected abstract refreshBBox(): TSU.Geom.Rect;
+  protected abstract updatePosition(x: null | number, y: null | number): boolean;
+
+  reset(): void {
+    this.xChanged = true;
+    this.yChanged = true;
+    this.widthChanged = true;
+    this.heightChanged = true;
+    this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
-  protected updatePosition(x: null | number, y: null | number): boolean {
-    return true;
+  moveTo(x: number | null, y: number | null): boolean {
+    if (this.updatePosition(x, y)) {
+      if (x != null) this.bbox.x = x;
+      if (y != null) this.bbox.y = y;
+      return true;
+    }
+    return false;
   }
 
   get bbox(): TSU.Geom.Rect {
@@ -56,53 +70,33 @@ class Rectangular {
   get height(): number {
     return this.bbox.height;
   }
+
+  /*
+  get size(): TSU.Geom.Size {
+    const bbox = this.bbox;
+    return new TSU.Geom.Size(bbox.width, bbox.height);
+  }
+  */
 }
 
-export abstract class Embelishment extends Rectangular {
+export abstract class Embelishment extends Shape {
   refreshLayout(): void {
     // throw new Error("Implement this");
   }
 }
 
 export interface TimedView {
-  readonly viewId: number;
   x: number;
   readonly bbox: TSU.Geom.BBox;
 }
 
-export abstract class AtomView implements TimedView {
-  element: SVGGraphicsElement;
-  depth = 0;
-  roleIndex = 0;
-
-  constructor(public flatAtom: FlatAtom) {}
-
-  /**
-   * Creates views needed for this AtomView.
-   */
-  abstract createElements(parent: SVGGraphicsElement): void;
-  abstract refreshLayout(): void;
-
-  xChanged = true;
-  yChanged = true;
-  widthChanged = true;
-  heightChanged = true;
-  protected _bbox: TSU.Geom.Rect;
-
-  get viewId(): number {
-    return this.flatAtom.uuid;
+class ElementShape extends Shape {
+  constructor(public readonly element: SVGGraphicsElement) {
+    super();
   }
 
-  embRoot(): SVGGraphicsElement {
-    let rootElem = this.element.parentElement as any as SVGGraphicsElement;
-    while (rootElem && (rootElem.tagName == "tspan" || rootElem.tagName == "text")) {
-      rootElem = rootElem.parentElement as any as SVGGraphicsElement;
-    }
-    return rootElem;
-  }
-
-  refreshBBox(): TSU.Geom.Rect {
-    const bbox = this.element.getBBox();
+  protected refreshBBox(): TSU.Geom.Rect {
+    const bbox = TSU.Geom.Rect.from(this.element.getBBox());
     // Due to safari bug which returns really crazy span widths!
     if (TSU.Browser.IS_SAFARI()) {
       const clientRect = this.element.getClientRects()[0];
@@ -114,46 +108,23 @@ export abstract class AtomView implements TimedView {
         bbox.height = clientRect.height;
       }
     }
-    this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
     return bbox;
   }
 
-  get bbox(): TSU.Geom.Rect {
-    if (!this._bbox) {
-      this._bbox = this.refreshBBox();
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    if (x != null) {
+      this.element.removeAttribute("dx");
+      this.element.setAttribute("x", "" + x);
     }
-    return this._bbox;
+    if (y != null) {
+      this.element.removeAttribute("dy");
+      this.element.setAttribute("y", "" + y);
+    }
+    return true;
   }
+}
 
-  get x(): number {
-    return this.bbox.x;
-  }
-
-  set x(x: number) {
-    // remove the dx attribute
-    this.element.removeAttribute("dx");
-    this.element.setAttribute("x", "" + x);
-    this.bbox.x = x;
-  }
-
-  get y(): number {
-    return this.bbox.y;
-  }
-
-  set y(y: number) {
-    this.element.setAttribute("y", "" + y);
-    this.element.removeAttribute("dy");
-    this.bbox.y = y;
-  }
-
-  get width(): number {
-    return this.bbox.width;
-  }
-
-  get height(): number {
-    return this.bbox.height;
-  }
-
+export class GlyphShape extends ElementShape {
   set dx(dx: number) {
     this.element.removeAttribute("x");
     if (dx == 0) {
@@ -161,20 +132,57 @@ export abstract class AtomView implements TimedView {
     } else {
       this.element.setAttribute("dx", "" + dx);
     }
-    this.xChanged = true;
-    this._bbox = null as unknown as TSU.Geom.Rect;
+    this.reset();
   }
 
   set dy(dy: number) {
-    this.element.setAttribute("dy", "" + dy);
-    this.yChanged = true;
-    this._bbox = null as unknown as TSU.Geom.Rect;
     this.element.removeAttribute("y");
+    if (dy == 0) {
+      this.element.removeAttribute("dy");
+    } else {
+      this.element.setAttribute("dy", "" + dy);
+    }
+    this.reset();
+  }
+}
+
+export abstract class AtomView extends Shape implements TimedView {
+  glyph: GlyphShape;
+  depth = 0;
+  roleIndex = 0;
+
+  constructor(public flatAtom: FlatAtom) {
+    super();
   }
 
-  get size(): TSU.Geom.Size {
-    const bbox = this.bbox;
-    return new TSU.Geom.Size(bbox.width, bbox.height);
+  protected refreshBBox(): TSU.Geom.Rect {
+    return this.glyph.bbox;
+  }
+
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    return this.glyph.moveTo(x, y);
+  }
+
+  set dx(dx: number) {
+    this.glyph.dx = dx;
+  }
+
+  /**
+   * Creates views needed for this AtomView.
+   */
+  abstract createElements(parent: SVGGraphicsElement): void;
+  abstract refreshLayout(): void;
+
+  get viewId(): number {
+    return this.flatAtom.uuid;
+  }
+
+  embRoot(): SVGGraphicsElement {
+    let rootElem = this.glyph.element.parentElement as any as SVGGraphicsElement;
+    while (rootElem && (rootElem.tagName == "tspan" || rootElem.tagName == "text")) {
+      rootElem = rootElem.parentElement as any as SVGGraphicsElement;
+    }
+    return rootElem;
   }
 }
 

@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Carnatic, Literal, AtomType, Note, Space, Syllable, FlatAtom } from "notations";
-import { AtomView, Embelishment, EmbelishmentDir } from "./Core";
+import { GlyphShape, AtomView, Embelishment, EmbelishmentDir } from "./Core";
 
 export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): AtomView {
   let out: AtomView;
@@ -38,7 +38,7 @@ class Slot {
   }
 
   refreshLayout(): void {
-    const bbox = this.atomView.element.getBBox();
+    const bbox = this.atomView.glyph.bbox;
     // Initialise current offset
     switch (this.dir) {
       case EmbelishmentDir.LEFT:
@@ -100,6 +100,17 @@ abstract class LeafAtomView extends AtomView {
   protected rootElement: SVGGraphicsElement;
 
   abstract get glyphLabel(): string;
+
+  // With LeafAtomViews unlike AtomViews, our bbox is the union of all views we manage
+  protected refreshBBox(): TSU.Geom.Rect {
+    // const out = new TSU.Geom.Rect(this.glyph.bbox);
+    // out.union(this.leftSlot.bbox);
+    return this.glyph.bbox;
+  }
+
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    return this.glyph.moveTo(x, y);
+  }
 
   get needsLeftSpacing(): boolean {
     return this.leftSlot.embelishments.length > 0;
@@ -207,21 +218,23 @@ abstract class LeafAtomView extends AtomView {
   }
 
   protected moveGlyphToRoot(): void {
-    this.rootElement.appendChild(this.element);
+    this.rootElement.appendChild(this.glyph.element);
   }
 
   protected createGlyphElement(parent: SVGGraphicsElement): void {
     const atom = this.flatAtom.atom;
-    this.element = TSU.DOM.createSVGNode("tspan", {
-      doc: document,
-      parent: parent,
-      attrs: {
-        depth: this.flatAtom.depth || 0,
-        atomid: atom.uuid,
-        id: "atom" + atom.uuid,
-      },
-      text: this.glyphLabel + " ", // + (note.beforeRest ? " - " : " "),
-    });
+    this.glyph = new GlyphShape(
+      TSU.DOM.createSVGNode("tspan", {
+        doc: document,
+        parent: parent,
+        attrs: {
+          depth: this.flatAtom.depth || 0,
+          atomid: atom.uuid,
+          id: "atom" + atom.uuid,
+        },
+        text: this.glyphLabel + " ", // + (note.beforeRest ? " - " : " "),
+      }),
+    );
   }
 
   refreshLayout(): void {
@@ -302,7 +315,7 @@ class SyllableView extends LeafAtomView {
 /**
  * Embelishments specifically "around" a single atom view.
  */
-export class AtomViewEmbelishment extends Embelishment {
+export abstract class AtomViewEmbelishment extends Embelishment {
   constructor(public readonly atomView: AtomView) {
     super();
   }
@@ -345,18 +358,14 @@ class OctaveIndicator extends AtomViewEmbelishment {
   }
 
   refreshBBox(): TSU.Geom.Rect {
-    return this.dotsElem.getBBox();
+    return TSU.Geom.Rect.from(this.dotsElem.getBBox());
   }
 
-  refreshLayout(): void {
-    // Cache this
-    // const out = this.noteView.element.getBBox();
-    const emb = this.dotsElem;
-    if (emb) {
-      const gX = this.bbox.x;
-      const gY = this.bbox.y; // this.noteView.note.octave > 0 ? out.y - bb2.height : out.y + out.height + this.dotRadius;
-      emb.setAttribute("transform", "translate(" + gX + "," + gY + ")");
-    }
+  protected updatePosition(x: null | number, y: null | number): boolean {
+    if (x == null) x = this.bbox.x;
+    if (y == null) y = this.bbox.y;
+    this.dotsElem.setAttribute("transform", "translate(" + x + "," + y + ")");
+    return true;
   }
 }
 
@@ -378,7 +387,7 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
   }
 
   refreshBBox(): TSU.Geom.Rect {
-    return this.labelElem.getBBox();
+    return TSU.Geom.Rect.from(this.labelElem.getBBox());
   }
 
   protected updatePosition(x: null | number, y: null | number): boolean {
@@ -389,12 +398,6 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
       this.labelElem.setAttribute("y", "" + y);
     }
     return true;
-  }
-
-  refreshLayout(): void {
-    // const out = this.atomView.bbox;
-    // const emb = this.bbox;
-    // this.x = out.x + (out.width - emb.width) / 2;
   }
 }
 
@@ -462,6 +465,10 @@ export class Jaaru extends AtomViewEmbelishment {
         stroke: "black",
       },
     });
+  }
+
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.Geom.Rect.from(this.pathElem.getBBox());
   }
 
   protected updatePosition(x: null | number, y: null | number): boolean {

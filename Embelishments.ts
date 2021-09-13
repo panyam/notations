@@ -29,6 +29,14 @@ export class BeatStartLines extends Embelishment {
     line.setAttribute("y1", "" + this.source.y);
     line.setAttribute("y2", "" + (this.source.y + this.source.height));
   }
+
+  protected refreshBBox(): TSU.Geom.Rect {
+    return new TSU.Geom.Rect(0, 0, 0, 0);
+  }
+
+  protected updatePosition(): boolean {
+    return true;
+  }
 }
 
 export class BeatEndLines extends Embelishment {
@@ -52,6 +60,14 @@ export class BeatEndLines extends Embelishment {
         }),
       );
     }
+  }
+
+  protected refreshBBox(): TSU.Geom.Rect {
+    return new TSU.Geom.Rect(0, 0, 0, 0);
+  }
+
+  protected updatePosition(): boolean {
+    return true;
   }
 
   barSpacing = 15;
