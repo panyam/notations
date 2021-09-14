@@ -122,7 +122,7 @@ export abstract class LayoutParamCommand extends Command {}
 /**
  * Saves the current layout with the given name.
  * Typically users can change layout params (currently cycle, APB and line layout)
- * with the \cycle, \layout and \aksharasPerBeat commands.  Each time these are
+ * with the \cycle, \layout and \beatDuration commands.  Each time these are
  * changed, the current layout params is set to null.   So the next time layout
  * params are needed we look at saved layout params and search by by the unique
  * combination of cycle, apb and line layout.  This prevetns users from creating
@@ -223,19 +223,19 @@ export class SetCycle extends LayoutParamCommand {
   }
 }
 
-export class SetAPB extends LayoutParamCommand {
+export class SetBeatDuration extends LayoutParamCommand {
   validateParams(): void {
     if (this.params.length != 1 || typeof this.params[0].value !== "number") {
-      throw new Error("aksharasPerBeat command must contain one number");
+      throw new Error("beatDuration command must contain one number");
     }
   }
 
-  get aksharasPerBeat(): number {
+  get beatDuration(): number {
     return this.params[0].value;
   }
 
   applyToNotation(notation: Notation): void {
-    notation.currentAPB = this.aksharasPerBeat;
+    notation.currentAPB = this.beatDuration;
     notation.resetLayoutParams();
   }
 }

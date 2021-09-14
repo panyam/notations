@@ -240,7 +240,7 @@ describe("Parser Tests", () => {
   test("Test Duplicate Roles", () => {
     testV4(
       `
-        \\aksharasPerBeat(4)
+        \\beatDuration(4)
         \\role("sw", notes = true)
         \\role("sh")
 
@@ -256,7 +256,7 @@ describe("Parser Tests", () => {
 
       [
         {
-          name: "SetAPB",
+          name: "SetBeatDuration",
           index: 0,
           params: [{ key: null, value: 4 }],
         },

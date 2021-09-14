@@ -410,17 +410,17 @@ describe("LayoutParam Tests", () => {
   test("Creation", () => {
     const lp = new LayoutParams();
     expect(lp.cycle).toEqual(Cycle.DEFAULT);
-    expect(lp.aksharasPerBeat).toEqual(1);
+    expect(lp.beatDuration).toEqual(1);
     expect(lp.lineBreaks).toEqual([lp.cycle.beatCount]);
   });
 
   test("Creation with configs", () => {
     const lp = new LayoutParams({
-      aksharasPerBeat: 4,
+      beatDuration: 4,
       lineBreaks: [3, 2, 1],
     });
     expect(lp.cycle).toEqual(Cycle.DEFAULT);
-    expect(lp.aksharasPerBeat).toEqual(4);
+    expect(lp.beatDuration).toEqual(4);
     expect(lp.lineBreaks).toEqual([3, 2, 1]);
     expect(lp.totalLayoutDuration).toEqual(ONE.timesNum(24));
   });

@@ -150,10 +150,10 @@ describe("Testing Applying Commands after Parsing", () => {
     expect(() =>
       testV4(
         String.raw`
-        \aksharasPerBeat("hello")
+        \beatDuration("hello")
         `,
       ),
-    ).toThrowError("aksharasPerBeat command must contain one number");
+    ).toThrowError("beatDuration command must contain one number");
     expect(() =>
       testV4(
         String.raw`
@@ -332,14 +332,14 @@ describe("Testing Applying Commands after Parsing", () => {
         \role("Sh")
         \cycle("|,,,,|,,|,,|")
         \breaks(4,2,2)
-        \aksharasPerBeat(2)
+        \beatDuration(2)
 
         Sw: s r g m p , 
 
         \layout("test")
         Sh: a b c d e , 
 
-        \aksharasPerBeat(2)
+        \beatDuration(2)
         Sw: s. n d p m ,
 
         r"Some Raw Content"

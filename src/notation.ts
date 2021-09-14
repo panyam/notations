@@ -254,7 +254,7 @@ export class Notation extends Entity {
       } else {
         // copy named LPs attributes into our locals
         this.currentCycle = lp.cycle;
-        this.currentAPB = lp.aksharasPerBeat;
+        this.currentAPB = lp.beatDuration;
         this.currentBreaks = lp.lineBreaks;
       }
       this._layoutParams = lp;
@@ -266,7 +266,7 @@ export class Notation extends Entity {
   protected snapshotLayoutParams(): LayoutParams {
     return new LayoutParams({
       cycle: this.currentCycle,
-      aksharasPerBeat: this.currentAPB,
+      beatDuration: this.currentAPB,
       layout: this.currentBreaks,
     });
   }
@@ -279,7 +279,7 @@ export class Notation extends Entity {
     return (
       this._unnamedLayoutParams.find((lp) => {
         return (
-          lp.aksharasPerBeat == this.currentAPB &&
+          lp.beatDuration == this.currentAPB &&
           this.currentCycle.equals(lp.cycle) &&
           lp.lineBreaksEqual(this.currentBreaks)
         );

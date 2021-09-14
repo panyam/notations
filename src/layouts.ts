@@ -78,7 +78,7 @@ export class Beat {
     return true;
   }
 
-  ensureUniformSpaces(aksharasPerBeat = 1): void {
+  ensureUniformSpaces(slotsPerBeat = 1): void {
     let lcm = 1;
     let gcd = 0;
     this.atoms.forEach((a, index) => {
@@ -497,7 +497,7 @@ export class BeatsBuilder {
     const numBeats = this.beats.length;
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
     const nextCP: [CyclePosition, Fraction] = this.cycleIter.next().value;
-    const apb = this.layoutParams.aksharasPerBeat;
+    const apb = this.layoutParams.beatDuration;
     const newBeat = new Beat(
       lastBeat == null ? this.startIndex : lastBeat.index + 1,
       this.role,
@@ -555,7 +555,7 @@ export class BeatsBuilder {
 export class LayoutParams {
   private static counter = 0;
   readonly uuid = LayoutParams.counter++;
-  aksharasPerBeat: number;
+  beatDuration: number;
   cycle: Cycle;
   protected _lineBreaks: number[];
   private _rowStartOffsets: Fraction[];
@@ -567,7 +567,7 @@ export class LayoutParams {
 
   constructor(config?: any) {
     config = config || {};
-    this.aksharasPerBeat = config.aksharasPerBeat || 1;
+    this.beatDuration = config.beatDuration || 1;
     if ("cycle" in config) this.cycle = config.cycle;
     if (!this.cycle || this.cycle.duration.isZero) {
       this.cycle = Cycle.DEFAULT;
@@ -585,7 +585,7 @@ export class LayoutParams {
   equals(another: this): boolean {
     return (
       // super.equals(another) &&
-      this.aksharasPerBeat == another.aksharasPerBeat &&
+      this.beatDuration == another.beatDuration &&
       this.cycle.equals(another.cycle) &&
       this.lineBreaksEqual(another._lineBreaks)
     );
@@ -599,7 +599,7 @@ export class LayoutParams {
     return {
       // ...super.debugValue(),
       cycle: this.cycle?.debugValue(),
-      aksharasPerBeat: this.aksharasPerBeat,
+      beatDuration: this.beatDuration,
       lineBreaks: this._lineBreaks,
     };
   }
@@ -640,7 +640,7 @@ export class LayoutParams {
           let [pos, duration] = cursor.prev;
           for (let i = total; i < modIndex; i++) {
             [pos, duration] = cursor.prev;
-            offset = offset.plus(duration.timesNum(this.aksharasPerBeat));
+            offset = offset.plus(duration.timesNum(this.beatDuration));
           }
         }
         return [i, modIndex - total, offset];
@@ -678,7 +678,7 @@ export class LayoutParams {
 
   refreshLayout(): void {
     const cycleIter = this.cycle.iterateBeats();
-    const akb = this.aksharasPerBeat;
+    const akb = this.beatDuration;
     this._beatLayouts = this.lineBreaks.map((numBeats, index) => {
       const beats: [CyclePosition, Fraction][] = [];
       // see what the beat lengths are here
@@ -702,7 +702,7 @@ export class LayoutParams {
 
   /**
    * Returns the number of beats in each line based on the line layout
-   * after taking aksharasPerBeat into account.
+   * after taking beatDuration into account.
    */
   get beatLayouts(): ReadonlyArray<ReadonlyArray<[CyclePosition, Fraction]>> {
     if (!this._beatLayouts || this._beatLayouts.length < this.lineBreaks.length) {

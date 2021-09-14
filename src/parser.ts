@@ -8,7 +8,7 @@ import {
   ApplyLayout,
   AddAtoms,
   SetCycle,
-  SetAPB,
+  SetBeatDuration,
   SetBreaks,
   ActivateRole,
   CreateRole,
@@ -374,8 +374,8 @@ export class Parser {
       return new CreateRole(params);
     } else if (lName == "layout") {
       return new ApplyLayout(params);
-    } else if (lName == "aksharasperbeat") {
-      return new SetAPB(params);
+    } else if (lName == "beatduration") {
+      return new SetBeatDuration(params);
     } else if (lName == "breaks") {
       return new SetBreaks(params);
     } else if (lName == "cycle") {
