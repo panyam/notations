@@ -34,7 +34,7 @@ export function loadV4Notation(
         const roleBeats = [] as Beat[][];
         beatsByLineRole.set(line.uuid, roleBeats);
 
-        const lineOffset = line.offset.divbyNum(layoutParams.aksharasPerBeat);
+        const lineOffset = line.offset.divbyNum(layoutParams.beatDuration);
         for (const role of line.roles) {
           const bb = new BeatsBuilder(role, layoutParams, lineOffset);
           bb.addAtoms(...role.atoms);
@@ -42,7 +42,7 @@ export function loadV4Notation(
 
           // Add these to the beat layout too
           for (const beat of bb.beats) {
-            beat.ensureUniformSpaces(layoutParams.aksharasPerBeat);
+            beat.ensureUniformSpaces(layoutParams.beatDuration);
             beatLayout.addBeat(beat);
           }
         }
