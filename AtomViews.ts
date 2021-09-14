@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Carnatic, Literal, AtomType, Note, Space, Syllable, FlatAtom } from "notations";
-import { GlyphShape, AtomView, Embelishment, EmbelishmentDir } from "./Core";
+import { ElementShape, AtomView, Embelishment, EmbelishmentDir } from "./Core";
 
 export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): AtomView {
   let out: AtomView;
@@ -34,7 +34,7 @@ abstract class LeafAtomView extends AtomView {
   protected postSpacingSpan: SVGTSpanElement;
   // Sometimes this.element may not be the root element if we need spacings
   // the rootElement is the top of the chain
-  protected rootElement: SVGGraphicsElement;
+  protected rootShape: ElementShape;
 
   abstract get glyphLabel(): string;
 
@@ -44,7 +44,7 @@ abstract class LeafAtomView extends AtomView {
   }
 
   get minSize(): TSU.Geom.Size {
-    const out = TSU.Geom.Rect.from(this.glyph.bbox);
+    const out = TSU.Geom.Rect.from((this.rootShape || this.glyph).bbox);
     const totalWidth =
       this.leftSlot.reduce((a, b) => a + b.bbox.width, 0) +
       this.rightSlot.reduce((a, b) => a + b.bbox.width, 0) +
@@ -77,8 +77,10 @@ abstract class LeafAtomView extends AtomView {
       }
 
       // now place the glyph
-      this.glyph.x = x;
-      x += this.glyph.bbox.width;
+      const glyphRoot = this.rootShape || this.glyph;
+      glyphRoot.x = x;
+      x += glyphRoot.bbox.width;
+      if (this.rootShape) this.glyph.reset();
 
       // And right embelishments
       for (const emb of this.rightSlot) {
@@ -87,9 +89,7 @@ abstract class LeafAtomView extends AtomView {
       }
 
       // now the spacing span
-      if (this.postSpacingSpan) {
-        this.postSpacingSpan.setAttribute("x", "" + x);
-      }
+      // if (this.postSpacingSpan) { this.postSpacingSpan.setAttribute("x", "" + x); }
     }
 
     // layout top and bottom if x or y has changed
@@ -115,10 +115,6 @@ abstract class LeafAtomView extends AtomView {
       }
     }
     return [this.currX, this.currY];
-  }
-
-  get needsRightSpacing(): boolean {
-    return this.rightSlot.length > 0 || this.flatAtom.atom.beforeRest;
   }
 
   /**
@@ -168,51 +164,66 @@ abstract class LeafAtomView extends AtomView {
     }
   }
 
+  needsRootElement(): boolean {
+    return this.rightSlot.length > 0 || this.flatAtom.atom.beforeRest;
+  }
+
   createElements(parent: SVGGraphicsElement): void {
     // Create the glyph element first before anything
     // this allows embelishments to get early access to this element
-    this.createGlyphElement(parent);
+    if (this.needsRootElement()) {
+      this.createGlyphRoot(parent);
+    }
+    this.createGlyphElement(this.rootShape?.element || parent);
 
     // Order embelishments (without creating any views)
     this.orderEmbelishments();
-    const atom = this.flatAtom.atom;
-    if (this.needsRightSpacing) {
+    if (this.needsRootElement()) {
       // create as 2 sub span elements
-      this.rootElement = TSU.DOM.createSVGNode("tspan", {
+      if (!this.rootShape) {
+        this.createGlyphRoot(parent);
+        // move the element into the parent
+        this.moveGlyphToRoot();
+      }
+
+      this.createPostSpacingElement();
+    }
+  }
+
+  protected createGlyphRoot(parent: SVGGraphicsElement): void {
+    this.rootShape = new ElementShape(
+      TSU.DOM.createSVGNode("tspan", {
         doc: document,
         parent: parent,
         attrs: {
           depth: this.flatAtom.depth || 0,
-          atomid: atom.uuid,
-          id: "atomViewRoot" + atom.uuid,
+          atomid: this.flatAtom.atom.uuid,
+          id: "atomViewRoot" + this.flatAtom.atom.uuid,
         },
-      });
+      }),
+    );
+  }
 
-      // move the element into the parent
-      this.moveGlyphToRoot();
-
-      if (this.needsRightSpacing) {
-        this.postSpacingSpan = TSU.DOM.createSVGNode("tspan", {
-          doc: document,
-          parent: this.rootElement,
-          attrs: {
-            depth: this.flatAtom.depth || 0,
-            atomid: atom.uuid,
-            id: "postSpacing" + atom.uuid,
-          },
-          text: atom.beforeRest ? " - " : "  ",
-        });
-      }
-    }
+  protected createPostSpacingElement(): void {
+    this.postSpacingSpan = TSU.DOM.createSVGNode("tspan", {
+      doc: document,
+      parent: this.rootShape.element,
+      attrs: {
+        depth: this.flatAtom.depth || 0,
+        atomid: this.flatAtom.atom.uuid,
+        id: "postSpacing" + this.flatAtom.atom.uuid,
+      },
+      text: this.flatAtom.atom.beforeRest ? " - " : "  ",
+    });
   }
 
   protected moveGlyphToRoot(): void {
-    this.rootElement.appendChild(this.glyph.element);
+    this.rootShape.element.appendChild(this.glyph.element);
   }
 
   protected createGlyphElement(parent: SVGGraphicsElement): void {
     const atom = this.flatAtom.atom;
-    this.glyph = new GlyphShape(
+    this.glyph = new ElementShape(
       TSU.DOM.createSVGNode("tspan", {
         doc: document,
         parent: parent,
@@ -221,7 +232,7 @@ abstract class LeafAtomView extends AtomView {
           atomid: atom.uuid,
           id: "atom" + atom.uuid,
         },
-        text: this.glyphLabel + " ", // + (note.beforeRest ? " - " : " "),
+        text: this.glyphLabel, // + (note.beforeRest ? " - " : " "),
       }),
     );
   }
@@ -247,12 +258,16 @@ class NoteView extends LeafAtomView {
     return this.note.value;
   }
 
+  needsRootElement(): boolean {
+    return this.note.shift == true || this.note.shift != 0 || super.needsRootElement();
+  }
+
   protected createGlyphElement(parent: SVGGraphicsElement): void {
     super.createGlyphElement(parent);
     if (this.note.shift == true || this.note.shift != 0) {
       this.shiftElement = TSU.DOM.createSVGNode("tspan", {
         doc: document,
-        parent: parent,
+        parent: this.rootShape.element,
         attrs: {
           depth: this.flatAtom.depth || 0,
           atomid: this.note.uuid,
@@ -267,7 +282,7 @@ class NoteView extends LeafAtomView {
   protected moveGlyphToRoot(): void {
     super.moveGlyphToRoot();
     if (this.shiftElement) {
-      this.rootElement.appendChild(this.shiftElement);
+      this.rootShape.element.appendChild(this.shiftElement);
     }
   }
 

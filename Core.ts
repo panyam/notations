@@ -103,7 +103,7 @@ export interface TimedView {
   readonly bbox: TSU.Geom.BBox;
 }
 
-class ElementShape extends Shape {
+export class ElementShape extends Shape {
   constructor(public readonly element: SVGGraphicsElement) {
     super();
   }
@@ -137,30 +137,8 @@ class ElementShape extends Shape {
   }
 }
 
-export class GlyphShape extends ElementShape {
-  set dx(dx: number) {
-    this.element.removeAttribute("x");
-    if (dx == 0) {
-      this.element.removeAttribute("dx");
-    } else {
-      this.element.setAttribute("dx", "" + dx);
-    }
-    this.reset();
-  }
-
-  set dy(dy: number) {
-    this.element.removeAttribute("y");
-    if (dy == 0) {
-      this.element.removeAttribute("dy");
-    } else {
-      this.element.setAttribute("dy", "" + dy);
-    }
-    this.reset();
-  }
-}
-
 export abstract class AtomView extends Shape implements TimedView {
-  glyph: GlyphShape;
+  glyph: ElementShape;
   depth = 0;
   roleIndex = 0;
 
@@ -175,10 +153,6 @@ export abstract class AtomView extends Shape implements TimedView {
 
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     return this.glyph.moveTo(x, y);
-  }
-
-  set dx(dx: number) {
-    this.glyph.dx = dx;
   }
 
   /**
