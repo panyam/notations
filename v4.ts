@@ -29,6 +29,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
   beatsByLineRole = new Map<number, Beat[][]>();
   beatLayouts = new Map<number, BeatLayout>();
   currentSVGElement: SVGSVGElement | null = null;
+  tableElement: HTMLTableElement;
 
   // Returns the beat view for a given beat
   beatViews = new Map<number, BeatView>();
@@ -56,12 +57,56 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
     this.rootElement.appendChild(elem);
   }
 
-  public newRoot(parent: Element): SVGSVGElement {
-    return TSU.DOM.createSVGNode("svg", {
-      parent: parent,
+  loadChildViews(): void {
+    super.loadChildViews();
+    this.tableElement = TSU.DOM.createNode("table", {
+      parent: this.rootElement,
       attrs: {
-        width: "100%",
-        style: "margin-bottom: 20px",
+        class: "notationsContentRootTable",
+      },
+    }) as HTMLTableElement;
+  }
+
+  public addNewRow(id: string, prefix: string, withAnnotation = true): [HTMLElement, HTMLElement] {
+    const tr = TSU.DOM.createNode("tr", {
+      parent: this.tableElement, // parent,
+      attrs: {
+        class: prefix + "Row",
+        id: prefix + "Row" + id,
+      },
+    });
+    let td1: HTMLElement | null = null;
+    if (withAnnotation) {
+      td1 = TSU.DOM.createNode("td", {
+        parent: tr,
+        attrs: {
+          class: prefix + "AnnotationCell",
+          id: prefix + "Annotation" + id,
+        },
+      }) as HTMLElement;
+    }
+    const td2 = TSU.DOM.createNode("td", {
+      parent: tr,
+      attrs: {
+        class: prefix + "ContentCell",
+        id: prefix + "Content" + id,
+        colspan: withAnnotation ? 1 : 2,
+      },
+    }) as HTMLElement;
+    return [td1!, td2];
+  }
+
+  public newLineRoot(parent: Element, line: Line): SVGSVGElement {
+    const [td1, td2] = this.addNewRow(line.uuid + "", "line");
+    // Hacky solution to "line headings"
+    if (line.marginText) {
+      td1.innerHTML = line.marginText;
+    }
+    return TSU.DOM.createSVGNode("svg", {
+      parent: td2, // parent
+      attrs: {
+        style: "margin-bottom: 10px",
+        class: "lineRootSVG",
       },
     }) as SVGSVGElement;
   }
@@ -73,7 +118,7 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
         this.rootElement.appendChild(TSU.DOM.createNode("br"));
       }
       const layoutParams = this.notation.layoutParamsForLine(line) || null;
-      const svgElem = this.newRoot(this.rootElement);
+      const svgElem = this.newLineRoot(this.tableElement, line);
       lineView = new LineView(svgElem, line, {
         layoutParams: layoutParams,
       } as any);
@@ -143,7 +188,8 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
   }
 
   renderBlock(raw: RawBlock): void {
-    const div = this.rootElement.appendChild(TSU.DOM.createNode("div"));
+    const [, td2] = this.addNewRow(raw.uuid + "", "rawBlock", false);
+    const div = td2.appendChild(TSU.DOM.createNode("div"));
     if (raw.contentType == "metadata") {
       // we have a metadata block
       const meta = this.notation.metadata.get(raw.content);
@@ -189,7 +235,7 @@ export class LineView extends TSV.EntityView<Line> {
   wrapToSize(): void {
     const bbox = (this.gElem as SVGSVGElement).getBBox();
     // set the size of the svg
-    this.setSize(4 + bbox.width, 4 + bbox.height);
+    this.setSize(4 + bbox.width, 15 + bbox.height);
     this.gElem.setAttribute("transform", `translate(${4 - bbox.x}, ${4 - bbox.y})`);
   }
 

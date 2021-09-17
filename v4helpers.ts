@@ -63,7 +63,7 @@ export function renderV4Notation(
   config: any = {},
 ): G.ParseError[] {
   const [notation, beatsByLineRole, beatLayouts, errors] = loadV4Notation(codeText, config);
-  rootElement.innerHTML = "";
+  // rootElement.innerHTML = "";
   notationView.entity = notation;
   notationView.beatsByLineRole = beatsByLineRole;
   notationView.beatLayouts = beatLayouts;
