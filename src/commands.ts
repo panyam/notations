@@ -95,12 +95,17 @@ export class CreateLine extends Command {
     // TODO - how do we consider offsets in line create
     const line = notation.newLine();
     line.offset = this.offset;
+    line.marginText = this.marginText;
   }
 
   get offset(): TSU.Num.Fraction {
     let offset = this.getParam("offset") || TSU.Num.Fraction.ZERO;
     if (typeof offset === "number") offset = new TSU.Num.Fraction(offset);
     return offset;
+  }
+
+  get marginText(): string {
+    return this.getParam("marginText") || "";
   }
 }
 

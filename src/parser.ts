@@ -184,6 +184,11 @@ const [parser, itemGraph] = G.newParser(
         token.value = token.value.substring(0, token.value.length - 1);
         return token;
       },
+      toLineAnnotation: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+        // skip the initial "!"
+        token.value = token.value.substring(1);
+        return token;
+      },
       toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);

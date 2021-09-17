@@ -729,7 +729,11 @@ export class Line extends Entity {
   // before or after the cycle this line's atoms start at.
   offset: Fraction = ZERO;
   roles: Role[] = [];
-  // layoutParams: LayoutParams | null = null;
+
+  // This is a very hacky solution to doing left side pre-margin text typically found
+  // in notations - eg line X of a pallavi has this.  This makes vertical space less wasteful
+  // A better solution is inter-beat annotation but it is very complex and ambiguous for now
+  marginText = "";
 
   get isEmpty(): boolean {
     for (const r of this.roles) if (!r.isEmpty) return false;
