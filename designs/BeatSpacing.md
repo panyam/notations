@@ -66,3 +66,22 @@ Though the layout has changed (by changing beat layout param) the notation sourc
 ```
 S R G G M P D
 ```
+
+because all spaces have been omitted from the layout and hence all notes are treated with equal duration.
+
+Similarly a correct but "unappealing/undesirable" rendering of the same could be:
+
+```
+S , , , R , G ,         G , , , , , , , M , , , P , D , 
+```
+
+where we make each note be appended by spaces so that each the duration of note (+ its spaces) is the lowest common multiple of all durations in the beat.  Currently we do this.
+
+## Goals
+
+Our intra-beat layout ignores two factors:
+
+1. Need to minimize the number of spaces in a beat
+2. To take advantage of number of "slots" a beat can have and thus the "grouping" bars over a group of notes.
+
+In this proposal we will address both of these.
