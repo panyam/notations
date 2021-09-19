@@ -105,6 +105,11 @@ export class CreateLine extends Command {
   }
 
   get marginText(): string {
+    if (this.params.length > 0) {
+      if (this.params[0].key == null && typeof this.params[0].value === "string") {
+        return this.params[0].value.trim();
+      }
+    }
     return this.getParam("marginText") || "";
   }
 }
