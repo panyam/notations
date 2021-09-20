@@ -114,9 +114,6 @@ export class NotationView extends TSV.EntityView<Notation> implements BeatViewDe
   ensureLineView(line: Line): LineView {
     let lineView = this.getLineView(line);
     if (lineView == null) {
-      if (this.lineViews.length > 0) {
-        this.rootElement.appendChild(TSU.DOM.createNode("br"));
-      }
       const layoutParams = this.notation.layoutParamsForLine(line) || null;
       const svgElem = this.newLineRoot(this.tableElement, line);
       lineView = new LineView(svgElem, line, {
