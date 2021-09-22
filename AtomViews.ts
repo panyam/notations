@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Carnatic, Literal, AtomType, Note, Space, Syllable, FlatAtom } from "notations";
-import { ElementShape, AtomView, Embelishment, EmbelishmentDir } from "./Core";
+import { ElementShape, AtomView, Embelishment  } from "./Core";
 
 export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): AtomView {
   let out: AtomView;

@@ -1,13 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { LayoutParams, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
 
-export enum EmbelishmentDir {
-  LEFT,
-  TOP,
-  RIGHT,
-  BOTTOM,
-}
-
 export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
@@ -98,11 +91,6 @@ export abstract class Embelishment extends Shape {
   }
 }
 
-export interface TimedView {
-  x: number;
-  readonly bbox: TSU.Geom.BBox;
-}
-
 export class ElementShape extends Shape {
   constructor(public readonly element: SVGGraphicsElement) {
     super();
@@ -137,7 +125,7 @@ export class ElementShape extends Shape {
   }
 }
 
-export abstract class AtomView extends Shape implements TimedView {
+export abstract class AtomView extends Shape {
   glyph: ElementShape;
   depth = 0;
   roleIndex = 0;
