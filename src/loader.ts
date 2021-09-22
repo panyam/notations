@@ -1,6 +1,9 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
-import { Notation, Parser, Line, BeatLayout, Beat, BeatsBuilder } from "../";
+import { Line } from "./core";
+import { BeatLayout, Beat, BeatsBuilder } from "./layouts";
+import { Parser } from "./parser";
+import { Notation } from "./notation";
 
 export function load(
   codeText: string,
