@@ -2,8 +2,8 @@ import * as TSU from "@panyam/tsutils";
 import { Cycle, AtomType, Syllable, Note, Literal } from "../core";
 import { BeatView as BeatViewBase, Beat } from "../layouts";
 import { AtomView, Embelishment, Shape } from "../shapes";
-import { createAtomView } from "./AtomViews";
-import { BeatStartLines, BeatEndLines } from "./Embelishments";
+import { createAtomView } from "./atomviews";
+import { BeatStartLines, BeatEndLines } from "./embelishments";
 
 export class BeatView extends Shape implements BeatViewBase {
   protected atomSpacing: number;
