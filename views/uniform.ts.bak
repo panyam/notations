@@ -1,0 +1,134 @@
+import * as TSU from "@panyam/tsutils";
+import { FlatAtom, Beat } from "notations";
+import { TimedView, AtomLayout } from "./Core";
+
+type Fraction = TSU.Num.Fraction;
+
+interface AtomView extends TimedView {
+  flatAtom: FlatAtom;
+  refreshLayout(): void;
+}
+
+class TimeSlot {
+  protected _x = 0;
+  protected paddingLeft = 0;
+  protected paddingRight = 0;
+  protected _maxWidth = 0;
+  views: AtomView[] = [];
+  constructor(public readonly offset: Fraction) {}
+
+  get x(): number {
+    return this._x;
+  }
+
+  set x(val: number) {
+    this._x = val;
+    const childX = val + this.paddingLeft;
+    for (const view of this.views) view.x = childX;
+  }
+
+  get maxWidth(): number {
+    return this._maxWidth + this.paddingLeft + this.paddingRight;
+  }
+
+  setPadding(left: number, right: number): void {
+    if (left >= 0) {
+      this.paddingLeft = left;
+    }
+    if (right >= 0) {
+      this.paddingRight = right;
+    }
+  }
+
+  add(atomView: AtomView): boolean {
+    // TODO - Should we check if this atom was already added?
+    this.views.push(atomView);
+
+    // Calculate its x coord -
+    // if (atomView.width > maxWidth)
+
+    // here we need to do a couple of things
+    // first set the X value of the atomview if it is not already set
+    // second update the max width of this column based on the new
+    // addition so all time slots "after" this can be adjusted
+    if (atomView.x != this.x) atomView.x = this.x + this.paddingLeft;
+    if (this._maxWidth < atomView.bbox.width) {
+      this._maxWidth = atomView.bbox.width;
+      return true;
+    }
+    return false;
+  }
+}
+
+export class UniformAtomLayout extends AtomLayout {
+  atomSpacing = 2;
+  protected timeSlots: TimeSlot[] = [];
+
+  addAtomView(atomView: AtomView, beat: Beat): void {
+    // When we add atom what happens?  Couple of options:
+    //
+    // We can enforce the constraint that:
+    //
+    // atomView1.x >= atomView2.x if a1.time >= a2.time
+
+    // An atom's offset alone (+ layout params) should be enough to tell us
+    // a couple of things:
+    // 1. Which "row" in the layout Line it falls into
+    // 2. What is the offset into the timeSlots it falls into
+    const [slot, index] = this.getTimeSlot(beat.offset);
+    if (slot.add(atomView)) {
+      // our gap between time slots is -
+      // TSn.x = TS[n - 1].x + TS[n - 1].width + atomSpacing + beatSpacing (n == start of new beat)
+      let prevTS = slot;
+      for (let i = index + 1; i < this.timeSlots.length; i++) {
+        const currTS = this.timeSlots[i];
+        currTS.x = prevTS.x + prevTS.maxWidth + this.atomSpacing * 3;
+        prevTS = currTS;
+      }
+    }
+    // Add atom's embelishments
+    atomView.refreshLayout();
+    // embelishments.forEach((emb) => this.embelishments.push(emb));
+  }
+
+  /**
+   * Find the slot in time of all AtomViews that are placed here.
+   * If a slot is not found it is created and returned.
+   */
+  getTimeSlot(time: Fraction): [TimeSlot, number] {
+    let l = 0,
+      r = this.timeSlots.length - 1;
+
+    // Special case if we are trying to append at the end instead of inserting
+    const ts = this.timeSlots[r] || null;
+    if (ts != null && ts.offset.equals(time)) return [ts, r];
+    if (ts == null || ts.offset.isLT(time)) {
+      // append new TS and return
+      const newTS = new TimeSlot(time);
+      if (ts != null) {
+        newTS.x = ts.x + ts.maxWidth + this.atomSpacing;
+      }
+      this.timeSlots.push(newTS);
+      return [newTS, r + 1];
+    }
+
+    while (l <= r) {
+      const m = l + ((r - l) >> 1);
+      const ts = this.timeSlots[m];
+      if (ts.offset.equals(time)) {
+        return [ts, m];
+      }
+      if (ts.offset.isLT(time)) {
+        l = m + 1;
+      } else {
+        r = m - 1;
+      }
+    }
+    // l is our point of insert?
+    const newTS = new TimeSlot(time);
+    const prevTS = this.timeSlots[l];
+    newTS.x = prevTS.x + prevTS.maxWidth + this.atomSpacing;
+    this.timeSlots.splice(l, 0, newTS);
+    return [newTS, l];
+  }
+}
