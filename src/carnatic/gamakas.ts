@@ -1,4 +1,4 @@
-import { Note } from "./core";
+import { Note } from "../core";
 
 export enum GamakaType {
   // Kampitam (~)
@@ -49,7 +49,7 @@ export class Gamaka {
   }
 }
 
-export class Jaaru extends Gamaka {
+export class JaaruGamaka extends Gamaka {
   constructor(public readonly ascending = true, public readonly startingNote: null | Note = null) {
     super(ascending ? GamakaType.Jaaru_Eetra : GamakaType.Jaaru_Irakka);
   }
@@ -79,10 +79,10 @@ export function parseEmbelishment(value: string): [any, boolean] {
     return [new Gamaka(GamakaType.Aahaatam_Kandippu), true];
   } else if (value.endsWith("/")) {
     value = value.substring(0, value.length - 1).trim();
-    return [new Jaaru(true, value.length > 0 ? new Note(value) : null), true];
+    return [new JaaruGamaka(true, value.length > 0 ? new Note(value) : null), true];
   } else if (value.endsWith("\\")) {
     value = value.substring(0, value.length - 1);
-    return [new Jaaru(false, value.length > 0 ? new Note(value) : null), true];
+    return [new JaaruGamaka(false, value.length > 0 ? new Note(value) : null), true];
   } else if (value == "x") {
     return [new Gamaka(GamakaType.Odukkal), true];
   } else if (value == "γ" || value == "Y") {

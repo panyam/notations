@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { LayoutParams, Beat, BeatsBuilder, FlatAtom, Role, Atom } from "notations";
+import { FlatAtom } from "./iterators";
 
 /**
  * Base class of all renderable objects for caching things like bounding boxes etc.
