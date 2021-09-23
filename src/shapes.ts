@@ -9,12 +9,17 @@ import { FlatAtom } from "./iterators";
 export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
-  xChanged = true;
-  yChanged = true;
-  widthChanged = true;
-  heightChanged = true;
+  needsLayout = true;
+  protected xChanged = true;
+  protected yChanged = true;
+  protected widthChanged = true;
+  protected heightChanged = true;
   protected _bbox: TSU.Geom.Rect;
 
+  /**
+   * refreshBBox is called by the Shape when it knows the bbox it is tracking
+   * cannot be trusted and has to be refreshed by calling native methods.
+   */
   protected abstract refreshBBox(): TSU.Geom.Rect;
   protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
 
@@ -41,13 +46,19 @@ export abstract class Shape {
     return this._bbox;
   }
 
+  /**
+   * Called internally when x or y has changed and if any flags need to be updated
+   * indicating a layout refresh.
+   */
   protected xyUpdated(x: number | null, y: number | null): void {
     if (x != null) {
       this.xChanged = true;
+      this.needsLayout = true;
       this.bbox.x = x;
     }
     if (y != null) {
       this.yChanged = true;
+      this.needsLayout = true;
       this.bbox.y = y;
     }
   }
@@ -57,10 +68,8 @@ export abstract class Shape {
   }
 
   set x(x: number) {
-    // if (x != this.bbox.x) {
     const [nx, ny] = this.updatePosition(x, null);
     this.xyUpdated(nx, ny);
-    // }
   }
 
   get y(): number {
@@ -88,13 +97,20 @@ export abstract class Shape {
     return new TSU.Geom.Size(bbox.width, bbox.height);
   }
   */
-}
 
-export abstract class Embelishment extends Shape {
+  /**
+   * This is called when bounds or other properties of a shape have changed to
+   * give the shape an opportunity to layout the children.  For shapes
+   * with no children this is a no-op.  It is expected the Shape will keep track
+   * of all changes so it can apply them all in in one go in this method - A
+   * form of "commit"ing the layout transaction.
+   */
   refreshLayout(): void {
     // throw new Error("Implement this");
   }
 }
+
+export abstract class Embelishment extends Shape {}
 
 export class ElementShape extends Shape {
   constructor(public readonly element: SVGGraphicsElement) {
@@ -134,6 +150,14 @@ export abstract class AtomView extends Shape {
   glyph: ElementShape;
   depth = 0;
   roleIndex = 0;
+
+  // LayoutMetrics for the AtomView so all atomviews laid out on the
+  // same baseline will show up aligned vertically
+  baseline: number;
+  ascent: number;
+  descent: number;
+  capHeight: number;
+  leading: number;
 
   constructor(public flatAtom: FlatAtom) {
     super();
