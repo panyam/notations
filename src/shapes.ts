@@ -10,11 +10,63 @@ export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
   needsLayout = true;
+  /*
   protected xChanged = true;
   protected yChanged = true;
   protected widthChanged = true;
   protected heightChanged = true;
+  */
   protected _bbox: TSU.Geom.Rect;
+  protected parentShape: Shape | null = null;
+  children: Shape[] = [];
+
+  /**
+   * Add a child shape.
+   */
+  addShape(child: Shape, index = -1): void {
+    // Orphan it first
+    child.removeFromParent();
+
+    // Then add it
+    if (index >= 0) {
+      this.children.splice(index, 0, child);
+    } else {
+      this.children.push(child);
+    }
+    child.parentShape = this;
+  }
+
+  /**
+   * Remove a child from our children list if it exists.
+   */
+  removeShape(child: Shape): void {
+    const index = this.children.indexOf(child);
+    if (index >= 0) {
+      this.children.splice(index, 1);
+    }
+    child.parentShape = null;
+  }
+
+  /**
+   * Remove ourselves from our parent.
+   */
+  removeFromParent(): void {
+    if (this.parentShape) {
+      this.parentShape.removeShape(this);
+    }
+  }
+
+  /**
+   * Returns the unioned bounding box of all child shapes.
+   */
+  protected childrenBBox(): TSU.Geom.Rect | null {
+    let bbox: TSU.Geom.Rect | null = null;
+    for (let i = this.children.length - 1; i >= 0; i--) {
+      if (bbox == null) bbox = TSU.Geom.Rect.from(this.children[i].bbox);
+      else bbox = bbox.union(this.children[i].bbox);
+    }
+    return bbox;
+  }
 
   /**
    * refreshBBox is called by the Shape when it knows the bbox it is tracking
@@ -22,26 +74,52 @@ export abstract class Shape {
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
   protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
+  protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
+    // By default sizes CANNOT be updated unless overridden
+    return [null, null];
+  }
 
-  reset(): void {
+  resetBBox(): void {
+    /*
     this.xChanged = true;
     this.yChanged = true;
     this.widthChanged = true;
     this.heightChanged = true;
+    */
+    this.needsLayout = true;
     this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
-  moveTo(x: number | null, y: number | null): [number | null, number | null] {
+  /**
+   * Sets the x or y coordinate of this shape in coordinate system within its
+   * parent.
+   */
+  setPosition(x: number | null, y: number | null): [number | null, number | null] {
     [x, y] = this.updatePosition(x, y);
     if (x != null) this.bbox.x = x;
     if (y != null) this.bbox.y = y;
     return [x, y];
   }
 
+  /**
+   * Sets the size of this shape in coordinate system within its
+   * parent.
+   */
+  setSize(w: number | null, h: number | null): [number | null, number | null] {
+    [w, h] = this.updateSize(w, h);
+    if (w != null) this.bbox.width = w;
+    if (h != null) this.bbox.height = h;
+    return [w, h];
+  }
+
+  /**
+   * Gets the bounding box of this shape in the coordinate system within
+   * the parent.
+   */
   get bbox(): TSU.Geom.Rect {
     if (!this._bbox) {
-      this._bbox = this.refreshBBox();
-      this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
+      this._bbox = this.refreshBBox().union(this.childrenBBox());
+      // this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
     }
     return this._bbox;
   }
@@ -50,53 +128,76 @@ export abstract class Shape {
    * Called internally when x or y has changed and if any flags need to be updated
    * indicating a layout refresh.
    */
-  protected xyUpdated(x: number | null, y: number | null): void {
+  protected boundsUpdated(x: number | null, y: number | null, w: number | null, h: number | null): void {
     if (x != null) {
-      this.xChanged = true;
+      // this.xChanged = true;
       this.needsLayout = true;
       this.bbox.x = x;
     }
     if (y != null) {
-      this.yChanged = true;
+      // this.yChanged = true;
       this.needsLayout = true;
       this.bbox.y = y;
     }
+    if (w != null) {
+      // this.widthChanged = true;
+      this.needsLayout = true;
+      this.bbox.width = w;
+    }
+    if (h != null) {
+      // this.heightChanged = true;
+      this.needsLayout = true;
+      this.bbox.height = h;
+    }
   }
 
+  /**
+   * Gets the x coordinate within the parent's coordinate system.
+   */
   get x(): number {
     return this.bbox.x;
   }
 
+  /**
+   * Sets the x coordinate within the parent's coordinate system.
+   */
   set x(x: number) {
     const [nx, ny] = this.updatePosition(x, null);
-    this.xyUpdated(nx, ny);
+    this.boundsUpdated(nx, ny, null, null);
   }
 
+  /**
+   * Gets the y coordinate within the parent's coordinate system.
+   */
   get y(): number {
     return this.bbox.y;
   }
 
+  /**
+   * Sets the y coordinate within the parent's coordinate system.
+   */
   set y(y: number) {
-    // if (y != this.bbox.y) {
     const [nx, ny] = this.updatePosition(null, y);
-    this.xyUpdated(nx, ny);
-    // }
+    this.boundsUpdated(nx, ny, null, null);
   }
 
   get width(): number {
     return this.bbox.width;
   }
 
+  set width(w: number) {
+    const [nw, nh] = this.updateSize(w, null);
+    this.boundsUpdated(null, null, nw, nh);
+  }
+
   get height(): number {
     return this.bbox.height;
   }
 
-  /*
-  get size(): TSU.Geom.Size {
-    const bbox = this.bbox;
-    return new TSU.Geom.Size(bbox.width, bbox.height);
+  set height(h: number) {
+    const [nw, nh] = this.updateSize(null, h);
+    this.boundsUpdated(null, null, nw, nh);
   }
-  */
 
   /**
    * This is called when bounds or other properties of a shape have changed to
@@ -144,6 +245,10 @@ export class ElementShape extends Shape {
     }
     return [x, y];
   }
+
+  protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
+    return [w, h];
+  }
 }
 
 export abstract class AtomView extends Shape {
@@ -169,7 +274,7 @@ export abstract class AtomView extends Shape {
   }
 
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
-    return this.glyph.moveTo(x, y);
+    return this.glyph.setPosition(x, y);
   }
 
   /**

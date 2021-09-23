@@ -54,9 +54,11 @@ export abstract class LeafAtomView extends AtomView {
   currX = 0;
   currY = 0;
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+    // TODO - move this code out to refreshLayout?
+
     // set the glyphs Y first so we can layout others
     if (y != null) {
-      this.glyph.moveTo(null, y);
+      this.glyph.setPosition(null, y);
       this.currY = y;
     }
 
@@ -73,7 +75,7 @@ export abstract class LeafAtomView extends AtomView {
       const glyphRoot = this.rootShape || this.glyph;
       glyphRoot.x = x;
       x += glyphRoot.bbox.width;
-      if (this.rootShape) this.glyph.reset();
+      if (this.rootShape) this.glyph.resetBBox();
 
       // And right embelishments
       for (const emb of this.rightSlot) {
@@ -107,7 +109,14 @@ export abstract class LeafAtomView extends AtomView {
         y = emb.y + bb.height;
       }
     }
+    // reset our BBox since we forced a layout
+    // this.resetBBox();
     return [this.currX, this.currY];
+  }
+
+  protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {
+    slot.push(emb);
+    this.addShape(emb);
   }
 
   /**
@@ -123,35 +132,35 @@ export abstract class LeafAtomView extends AtomView {
     for (const emb of lit.embelishments) {
       switch (emb.type) {
         case GamakaType.Kampitham:
-          this.topSlot.push(new Kampitham(this));
+          this.addEmbelishment(this.topSlot, new Kampitham(this));
           break;
         case GamakaType.Nokku:
-          this.topSlot.push(new Nokku(this));
+          this.addEmbelishment(this.topSlot, new Nokku(this));
           break;
         case GamakaType.Spuritham:
-          this.topSlot.push(new Spuritham(this));
+          this.addEmbelishment(this.topSlot, new Spuritham(this));
           break;
         case GamakaType.Prathyagatham:
-          this.topSlot.push(new Prathyagatham(this));
+          this.addEmbelishment(this.topSlot, new Prathyagatham(this));
           break;
         case GamakaType.Orikkai:
-          this.topSlot.push(new Orikkai(this));
+          this.addEmbelishment(this.topSlot, new Orikkai(this));
           break;
         case GamakaType.Odukkal:
-          this.topSlot.push(new Odukkal(this));
+          this.addEmbelishment(this.topSlot, new Odukkal(this));
           break;
         case GamakaType.Aahaatam_Raavi:
-          this.topSlot.push(new Raavi(this));
+          this.addEmbelishment(this.topSlot, new Raavi(this));
           break;
         case GamakaType.Aahaatam_Kandippu:
-          this.topSlot.push(new Kandippu(this));
+          this.addEmbelishment(this.topSlot, new Kandippu(this));
           break;
         case GamakaType.Vaali:
-          this.topSlot.push(new Vaali(this));
+          this.addEmbelishment(this.topSlot, new Vaali(this));
           break;
         case GamakaType.Jaaru_Eetra:
         case GamakaType.Jaaru_Irakka:
-          this.leftSlot.push(new Jaaru(emb, this));
+          this.addEmbelishment(this.leftSlot, new Jaaru(emb, this));
           break;
       }
     }

@@ -12,7 +12,6 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "module": "ES2020",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "outDir": "lib/esm",
@@ -23,6 +22,7 @@
     "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
+    "module": "ES2020",
     "target": "es5"
   },
   "include": [

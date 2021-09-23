@@ -75,11 +75,12 @@ export class BeatView extends Shape implements BeatViewBase {
   set width(value: number) {
     if (this._width != value) {
       this._width = value;
-      this.widthChanged = true;
+      // this.widthChanged = true;
     }
   }
 
   refreshBBox(): TSU.Geom.Rect {
+    // TODO - This should be the union of all atomview BBoxes.
     return TSU.Geom.Rect.from(this.textElement.getBBox());
   }
 
@@ -93,13 +94,13 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshLayout(): void {
-    if (this.xChanged) {
+    // if (this.xChanged) {
       this.textElement.setAttribute("x", this.x + "");
-    }
-    if (this.yChanged) {
+    // }
+    // if (this.yChanged) {
       this.textElement.setAttribute("y", this.y + "");
-    }
-    if (this.widthChanged) {
+    // }
+    // if (this.widthChanged) {
       // All our atoms have to be laid out between startX and endX
       // old way of doing where we just set dx between atom views
       // this worked when atomviews were single glyphs. But
@@ -107,16 +108,16 @@ export class BeatView extends Shape implements BeatViewBase {
       // spaces etc) explicitly setting x/y may be important
       let currX = this.x;
       this.atomViews.forEach((av, index) => {
-        av.moveTo(currX, this.y);
+        av.setPosition(currX, this.y);
         currX += this.atomSpacing + av.minSize.width;
       });
-      this.reset();
-    }
+      this.resetBBox();
+    // }
     // Since atom views would havechagned position need to reposition embelishments
     // this.atomViews.forEach((av, index) => { av.refreshLayout(); });
     for (const e of this.embelishments) e.refreshLayout();
-    this.xChanged = this.yChanged = false;
-    this.widthChanged = this.heightChanged = false;
+    // this.xChanged = this.yChanged = false;
+    // this.widthChanged = this.heightChanged = false;
     this.needsLayout = false;
   }
 

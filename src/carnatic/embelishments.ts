@@ -266,7 +266,7 @@ export class Jaaru extends AtomViewEmbelishment {
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     const newX = x == null ? this.x : x;
     this.pathElem.setAttribute("d", this.pathAttribute(newX));
-    this.reset();
+    this.resetBBox();
     return [x, null];
   }
 }
