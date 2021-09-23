@@ -39,6 +39,19 @@ describe("Entity Tests", () => {
     expect(parent.getMetadata("hello")).toBe("world");
   });
 
+  test("Children", () => {
+    class Ent extends Entity {
+      _children: Entity[] = [];
+      children(): Entity[] {
+        return this._children;
+      }
+    }
+    const parent = new Ent();
+    const child = new Entity();
+    parent.setChildAt(0, child);
+    expect(parent.indexOfChild(child)).toBe(0);
+  });
+
   test("Metadata", () => {
     const parent = new Entity();
     parent.metadata["hello"] = 5;
@@ -275,6 +288,7 @@ describe("Line tests", () => {
     expect(l.type).toBe("Line");
     const l2 = l.clone();
     expect(l.equals(l2)).toBe(true);
+    expect(l.duration.num).toBe(0);
   });
 });
 
@@ -318,6 +332,11 @@ describe("Atom tests", () => {
     expect(new Note("ga", THREE, 5).octave).toBe(5);
     expect(new Note("ga", THREE, 5).shift).toBe(0);
     expect(new Note("ga", THREE, 5, 2).shift).toBe(2);
+    const s = new Syllable("aaa");
+    expect(Syllable.fromLit(s)).toBe(s);
+
+    const n = new Note("ga", THREE);
+    expect(Note.fromLit(n)).toBe(n);
   });
 
   test("Group Creation", () => {

@@ -11,7 +11,7 @@ export class BeatView extends Shape implements BeatViewBase {
   private _embelishments: Embelishment[];
   private atomViews: AtomView[] = [];
   groupElement: SVGGElement;
-  rootElement: SVGTextElement;
+  textElement: SVGTextElement;
   constructor(public readonly beat: Beat, rootElement: Element, public readonly cycle: Cycle, config?: any) {
     super();
     this.atomSpacing = 5;
@@ -26,7 +26,7 @@ export class BeatView extends Shape implements BeatViewBase {
         beatIndex: beat.index,
       },
     });
-    this.rootElement = TSU.DOM.createSVGNode("text", {
+    this.textElement = TSU.DOM.createSVGNode("text", {
       parent: this.groupElement,
       attrs: {
         class: "roleAtomsText",
@@ -54,7 +54,7 @@ export class BeatView extends Shape implements BeatViewBase {
         // carry over rest info
         flatAtom.atom.beforeRest = lit.beforeRest;
       }
-      const atomView = createAtomView(this.rootElement, flatAtom);
+      const atomView = createAtomView(this.textElement, flatAtom);
       atomView.depth = flatAtom.depth;
       this.atomViews.push(atomView);
     }
@@ -80,7 +80,7 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshBBox(): TSU.Geom.Rect {
-    return TSU.Geom.Rect.from(this.rootElement.getBBox());
+    return TSU.Geom.Rect.from(this.textElement.getBBox());
   }
 
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
@@ -94,10 +94,10 @@ export class BeatView extends Shape implements BeatViewBase {
 
   refreshLayout(): void {
     if (this.xChanged) {
-      this.rootElement.setAttribute("x", this.x + "");
+      this.textElement.setAttribute("x", this.x + "");
     }
     if (this.yChanged) {
-      this.rootElement.setAttribute("y", this.y + "");
+      this.textElement.setAttribute("y", this.y + "");
     }
     if (this.widthChanged) {
       // All our atoms have to be laid out between startX and endX
@@ -135,7 +135,8 @@ export class BeatView extends Shape implements BeatViewBase {
     if (!this._embelishments) {
       this._embelishments = [];
       const beat = this.beat;
-      const rootElement = this.rootElement.parentElement as any as SVGGraphicsElement;
+      // TODO - Should this be the group's parent element?
+      const rootElement = this.textElement.parentElement as any as SVGGraphicsElement;
       if (beat.beatIndex == 0 && beat.barIndex == 0 && beat.instance == 0) {
         // first beat in bar - Do a BarStart
         const emb = new BeatStartLines(this, rootElement);

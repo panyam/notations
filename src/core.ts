@@ -157,52 +157,6 @@ export abstract class Atom extends TimedEntity {
   set duration(d: Fraction) {
     this._duration = d;
   }
-
-  static expandAtoms(atoms: Atom[], offset = 0, length = -1, numGroups = -1): Atom[] {
-    const out: Atom[] = [];
-
-    if (length < 0) length = atoms.length;
-    if (length > numGroups) {
-      throw new Error("numGroups MUST be greater than length");
-    }
-    let remaining = numGroups - length;
-    const spacePerAtom = Math.floor(remaining / length);
-    for (let i = 0; i < length; i++) {
-      const atom = atoms[offset++];
-      out.push(atom);
-      const numSpaces = i == length - 1 ? remaining : spacePerAtom;
-      for (let j = 0; j < numSpaces; j++) {
-        out.push(new Space());
-      }
-      remaining -= spacePerAtom;
-    }
-    return out;
-  }
-}
-
-export class Label extends Atom {
-  content: string;
-  constructor(content: string, duration = ZERO) {
-    super(duration);
-    this.content = content;
-  }
-
-  debugValue(): any {
-    return { ...super.debugValue(), content: this.content };
-  }
-
-  toString(): string {
-    return `Space(${this.duration}-${this.content})`;
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another.content = this.content;
-  }
-
-  equals(another: this): boolean {
-    return super.equals(another) && this.content == another.content;
-  }
 }
 
 export abstract class LeafAtom extends Atom {
