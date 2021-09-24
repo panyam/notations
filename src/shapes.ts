@@ -21,8 +21,10 @@ export abstract class Shape {
    * Eg a circle's x and y coordinates are its center point and not the top left corner
    * These "main" coordinates are referred as control coordinates.
    */
-  protected _controlX: number | null = null;
-  protected _controlY: number | null = null;
+  protected _x: number | null = null;
+  protected _y: number | null = null;
+  protected _width: number | null = null;
+  protected _height: number | null = null;
   protected _bbox: TSU.Geom.Rect;
   protected parentShape: Shape | null = null;
   children: Shape[] = [];

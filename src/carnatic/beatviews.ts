@@ -94,24 +94,31 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshLayout(): void {
-    // if (this.xChanged) {
+    const absolutePositioning = false;
+    if (absolutePositioning) {
+      // if (this.xChanged) {
       this.textElement.setAttribute("x", this.x + "");
-    // }
-    // if (this.yChanged) {
+      // }
+      // if (this.yChanged) {
       this.textElement.setAttribute("y", this.y + "");
+      //
+    } else {
+      this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
+    }
     // }
     // if (this.widthChanged) {
-      // All our atoms have to be laid out between startX and endX
-      // old way of doing where we just set dx between atom views
-      // this worked when atomviews were single glyphs. But
-      // as atomViews can be complex (eg with accents and pre/post
-      // spaces etc) explicitly setting x/y may be important
-      let currX = this.x;
-      this.atomViews.forEach((av, index) => {
-        av.setPosition(currX, this.y);
-        currX += this.atomSpacing + av.minSize.width;
-      });
-      this.resetBBox();
+    // All our atoms have to be laid out between startX and endX
+    // old way of doing where we just set dx between atom views
+    // this worked when atomviews were single glyphs. But
+    // as atomViews can be complex (eg with accents and pre/post
+    // spaces etc) explicitly setting x/y may be important
+    let currX = absolutePositioning ? this.x : 0;
+    const currY = absolutePositioning ? this.y : null;
+    this.atomViews.forEach((av, index) => {
+      av.setPosition(currX, currY);
+      currX += this.atomSpacing + av.minSize.width;
+    });
+    this.resetBBox();
     // }
     // Since atom views would havechagned position need to reposition embelishments
     // this.atomViews.forEach((av, index) => { av.refreshLayout(); });
