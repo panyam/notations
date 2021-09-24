@@ -16,6 +16,13 @@ export abstract class Shape {
   protected widthChanged = true;
   protected heightChanged = true;
   */
+  /**
+   * Note that x and y coordinates are not always the x and y coordinates of the bounding box.
+   * Eg a circle's x and y coordinates are its center point and not the top left corner
+   * These "main" coordinates are referred as control coordinates.
+   */
+  protected _controlX: number | null = null;
+  protected _controlY: number | null = null;
   protected _bbox: TSU.Geom.Rect;
   protected parentShape: Shape | null = null;
   children: Shape[] = [];
@@ -73,6 +80,12 @@ export abstract class Shape {
    * cannot be trusted and has to be refreshed by calling native methods.
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
+  /**
+   * By default the control point is just the top left corner.
+   */
+  protected updateControlPosition(x: null | number, y: null | number): [number | null, number | null] {
+    return this.updatePosition(x, y);
+  }
   protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
   protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
     // By default sizes CANNOT be updated unless overridden
@@ -132,11 +145,15 @@ export abstract class Shape {
     if (x != null) {
       // this.xChanged = true;
       this.needsLayout = true;
+      // control point would change and need to be re evaluated
+      this._controlX = null;
       this.bbox.x = x;
     }
     if (y != null) {
       // this.yChanged = true;
       this.needsLayout = true;
+      // control point would change and need to be re evaluated
+      this._controlY = null;
       this.bbox.y = y;
     }
     if (w != null) {
@@ -149,6 +166,38 @@ export abstract class Shape {
       this.needsLayout = true;
       this.bbox.height = h;
     }
+  }
+
+  /**
+   * Gets the control point's x coordinate within the parent's coordinate system.
+   */
+  get controlX(): number {
+    if (this._controlX != null) return this._controlX;
+    return this.bbox.x;
+  }
+
+  /**
+   * Sets the x coordinate within the parent's coordinate system.
+   */
+  set controlX(x: number) {
+    const [nx, ny] = this.updateControlPosition(x, null);
+    this.boundsUpdated(nx, ny, null, null);
+  }
+
+  /**
+   * Gets the control point's y coordinate within the parent's coordinate system.
+   */
+  get controlY(): number {
+    if (this._controlY != null) return this._controlY;
+    return this.bbox.y;
+  }
+
+  /**
+   * Sets the y coordinate within the parent's coordinate system.
+   */
+  set controlY(y: number) {
+    const [nx, ny] = this.updateControlPosition(null, y);
+    this.boundsUpdated(nx, ny, null, null);
   }
 
   /**
@@ -198,7 +247,9 @@ export abstract class Shape {
     const [nw, nh] = this.updateSize(null, h);
     this.boundsUpdated(null, null, nw, nh);
   }
+}
 
+export abstract class Embelishment extends Shape {
   /**
    * This is called when bounds or other properties of a shape have changed to
    * give the shape an opportunity to layout the children.  For shapes
@@ -210,8 +261,6 @@ export abstract class Shape {
     // throw new Error("Implement this");
   }
 }
-
-export abstract class Embelishment extends Shape {}
 
 export class ElementShape extends Shape {
   constructor(public readonly element: SVGGraphicsElement) {
@@ -268,7 +317,16 @@ export abstract class AtomView extends Shape {
     super();
   }
 
+  /**
+   * Creates views needed for this AtomView.
+   */
+  abstract createElements(parent: SVGGraphicsElement): void;
+  abstract refreshLayout(): void;
   abstract get minSize(): TSU.Geom.Size;
+
+  /**
+   * By default the glyph's bbox is our bbox.
+   */
   protected refreshBBox(): TSU.Geom.Rect {
     return this.glyph.bbox;
   }
@@ -276,12 +334,6 @@ export abstract class AtomView extends Shape {
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     return this.glyph.setPosition(x, y);
   }
-
-  /**
-   * Creates views needed for this AtomView.
-   */
-  abstract createElements(parent: SVGGraphicsElement): void;
-  abstract refreshLayout(): void;
 
   get viewId(): number {
     return this.flatAtom.uuid;
