@@ -82,12 +82,6 @@ export abstract class Shape {
    * cannot be trusted and has to be refreshed by calling native methods.
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
-  /**
-   * By default the control point is just the top left corner.
-   */
-  protected updateControlPosition(x: null | number, y: null | number): [number | null, number | null] {
-    return this.updatePosition(x, y);
-  }
   protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
   protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
     // By default sizes CANNOT be updated unless overridden
@@ -147,15 +141,11 @@ export abstract class Shape {
     if (x != null) {
       // this.xChanged = true;
       this.needsLayout = true;
-      // control point would change and need to be re evaluated
-      this._controlX = null;
       this.bbox.x = x;
     }
     if (y != null) {
       // this.yChanged = true;
       this.needsLayout = true;
-      // control point would change and need to be re evaluated
-      this._controlY = null;
       this.bbox.y = y;
     }
     if (w != null) {
@@ -168,38 +158,6 @@ export abstract class Shape {
       this.needsLayout = true;
       this.bbox.height = h;
     }
-  }
-
-  /**
-   * Gets the control point's x coordinate within the parent's coordinate system.
-   */
-  get controlX(): number {
-    if (this._controlX != null) return this._controlX;
-    return this.bbox.x;
-  }
-
-  /**
-   * Sets the x coordinate within the parent's coordinate system.
-   */
-  set controlX(x: number) {
-    const [nx, ny] = this.updateControlPosition(x, null);
-    this.boundsUpdated(nx, ny, null, null);
-  }
-
-  /**
-   * Gets the control point's y coordinate within the parent's coordinate system.
-   */
-  get controlY(): number {
-    if (this._controlY != null) return this._controlY;
-    return this.bbox.y;
-  }
-
-  /**
-   * Sets the y coordinate within the parent's coordinate system.
-   */
-  set controlY(y: number) {
-    const [nx, ny] = this.updateControlPosition(null, y);
-    this.boundsUpdated(nx, ny, null, null);
   }
 
   /**
