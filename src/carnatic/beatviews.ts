@@ -78,6 +78,16 @@ export class BeatView extends Shape implements BeatViewBase {
     return [x, y, w, h];
   }
 
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    // this.layoutAtomViews();
+    return [x, y, w, h];
+  }
+
   setStyles(config: any): void {
     if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
     this.needsLayout = true;
