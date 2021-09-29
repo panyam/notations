@@ -78,16 +78,6 @@ export class BeatView extends Shape implements BeatViewBase {
     return [x, y, w, h];
   }
 
-  protected updateBounds(
-    x: null | number,
-    y: null | number,
-    w: null | number,
-    h: null | number,
-  ): [number | null, number | null, number | null, number | null] {
-    // this.layoutAtomViews();
-    return [x, y, w, h];
-  }
-
   setStyles(config: any): void {
     if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
     this.needsLayout = true;
@@ -106,7 +96,7 @@ export class BeatView extends Shape implements BeatViewBase {
     // as atomViews can be complex (eg with accents and pre/post
     // spaces etc) explicitly setting x/y may be important
     let currX = 0;
-    const currY = null; // this.y; //  + 10;
+    const currY = 10; // null; // this.y; //  + 10;
     this.atomViews.forEach((av, index) => {
       av.setBounds(currX, currY, null, null);
       currX += this.atomSpacing + av.minSize.width;

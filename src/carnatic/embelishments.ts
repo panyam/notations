@@ -189,7 +189,7 @@ export class BeatEndLines extends Embelishment {
   refreshLayout(): void {
     // At this point it is possible that we are starting a bar but
     // there are no atoms in the bar
-    this.setBounds(this.source.x + this.source.width + this.barSpacing, this.source.y, null, this.source.height);
+    this.setBounds(this.source.width + this.barSpacing, 0, null, this.source.height);
   }
 
   protected updateBounds(
