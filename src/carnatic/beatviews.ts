@@ -60,7 +60,6 @@ export class BeatView extends Shape implements BeatViewBase {
     }
 
     this.setStyles(config || {});
-
     this._bbox = this.refreshBBox();
     this._width = -1;
   }
@@ -81,11 +80,21 @@ export class BeatView extends Shape implements BeatViewBase {
 
   refreshBBox(): TSU.Geom.Rect {
     // TODO - This should be the union of all atomview BBoxes.
-    return TSU.Geom.Rect.from(this.textElement.getBBox());
+    return TSU.Geom.Rect.from(this.groupElement.getBBox());
   }
 
   protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
     return [x, y];
+  }
+
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    // this.layoutAtomViews();
+    return [x, y, w, h];
   }
 
   setStyles(config: any): void {
@@ -94,37 +103,25 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshLayout(): void {
-    const absolutePositioning = false;
-    if (absolutePositioning) {
-      // if (this.xChanged) {
-      this.textElement.setAttribute("x", this.x + "");
-      // }
-      // if (this.yChanged) {
-      this.textElement.setAttribute("y", this.y + "");
-      //
-    } else {
-      this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
-    }
-    // }
+    this.layoutAtomViews();
+  }
+
+  protected layoutAtomViews(): void {
+    this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
     // if (this.widthChanged) {
     // All our atoms have to be laid out between startX and endX
     // old way of doing where we just set dx between atom views
     // this worked when atomviews were single glyphs. But
     // as atomViews can be complex (eg with accents and pre/post
     // spaces etc) explicitly setting x/y may be important
-    let currX = absolutePositioning ? this.x : 0;
-    const currY = absolutePositioning ? this.y : null;
+    let currX = 0;
+    const currY = null; // this.y; //  + 10;
     this.atomViews.forEach((av, index) => {
       av.setPosition(currX, currY);
       currX += this.atomSpacing + av.minSize.width;
     });
     this.resetBBox();
-    // }
-    // Since atom views would havechagned position need to reposition embelishments
-    // this.atomViews.forEach((av, index) => { av.refreshLayout(); });
     for (const e of this.embelishments) e.refreshLayout();
-    // this.xChanged = this.yChanged = false;
-    // this.widthChanged = this.heightChanged = false;
     this.needsLayout = false;
   }
 
