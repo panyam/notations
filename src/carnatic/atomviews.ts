@@ -51,36 +51,39 @@ export abstract class LeafAtomView extends AtomView {
     return out; // this.glyph.bbox;
   }
 
-  currX = 0;
-  currY = 0;
-  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
     // TODO - move this code out to refreshLayout?
 
     // set the glyphs Y first so we can layout others
     if (y != null) {
-      this.glyph.setPosition(null, y);
-      this.currY = y;
+      this.glyph.setBounds(null, y, null, null);
     }
 
     // now layout leftSlots
-    if (x != null) {
-      this.currX = x;
+    let currX = x;
+    let currY = y;
+    if (currX != null) {
       // place left embelishments
       for (const emb of this.leftSlot) {
-        emb.x = x;
-        x += emb.bbox.width + 1;
+        emb.x = currX;
+        currX += emb.bbox.width + 1;
       }
 
       // now place the glyph
       const glyphRoot = this.rootShape || this.glyph;
-      glyphRoot.x = x;
-      x += glyphRoot.bbox.width;
+      glyphRoot.x = currX;
+      currX += glyphRoot.bbox.width;
       if (this.rootShape) this.glyph.resetBBox();
 
       // And right embelishments
       for (const emb of this.rightSlot) {
-        emb.x = x;
-        x += emb.bbox.width + 1;
+        emb.x = currX;
+        currX += emb.bbox.width + 1;
       }
 
       // now the spacing span
@@ -88,30 +91,32 @@ export abstract class LeafAtomView extends AtomView {
     }
 
     // layout top and bottom if x or y has changed
-    if (x != null || y != null) {
+    if (currX != null || currY != null) {
       const gbbox = this.glyph.bbox;
 
       // top embelishments
-      let y = gbbox.y - 1;
+      currY = gbbox.y - 1;
       for (const emb of this.topSlot) {
         const bb = emb.bbox;
         emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
-        emb.y = y - bb.height;
-        y = emb.y;
+        emb.y = currY - bb.height;
+        currY = emb.y;
       }
 
       // bottom embelishments
-      y = gbbox.y + gbbox.height + 2;
+      currY = gbbox.y + gbbox.height + 2;
       for (const emb of this.bottomSlot) {
         const bb = emb.bbox;
         emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
-        emb.y = y;
-        y = emb.y + bb.height;
+        emb.y = currY;
+        currY = emb.y + bb.height;
       }
     }
     // reset our BBox since we forced a layout
     // this.resetBBox();
-    return [this.currX, this.currY];
+    // For now width and height are not manually specifiable so even if it was
+    // manually set, tell the parent to "unset" it with NaNs
+    return [x, y, NaN, NaN];
   }
 
   protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {

@@ -285,8 +285,8 @@ export class BeatLayout {
           // this *must* be in xForOffsets as it would have been calculated by a previous bcol
           TSU.assert(offset.toString() in xForOffsets, "Cannot find x for given offset");
           currX = xForOffsets[offset.toString()];
-          bcol.setX(currX, beatViewDelegate);
         }
+        bcol.setX(currX, beatViewDelegate);
         const endOffset = offset.plus(bcol.duration).factorized;
         xForOffsets[endOffset.toString()] = Math.max(
           xForOffsets[endOffset.toString()] || 0,
@@ -323,6 +323,7 @@ export class BeatLayout {
       for (let currRole = 0; currRole < currBeats.length; currRole++) {
         let currBeat: Beat | null = currBeats[currRole];
         if (currBeat) {
+          const temp = currBeat;
           const numBeatsInRow = lp.lineBreaks[currBeat.layoutLine];
           let maxHeight = 0;
           let currX = 0;
@@ -340,6 +341,18 @@ export class BeatLayout {
             }
             maxHeight = Math.max(maxHeight, beatView.minSize.height);
           }
+
+          currBeat = temp;
+          for (
+            let i = currBeat.layoutColumn;
+            i < numBeatsInRow && currBeat;
+            i++, currBeat = currBeat.nextBeat, numDone++
+          ) {
+            const beatView = beatViewDelegate.viewForBeat(currBeat);
+            beatView.height = maxHeight;
+          }
+          // Should line heights be "fixed"?
+          // Set height of all views in this row to same height and Y
           currY += maxHeight;
           currY += this.roleSpacing;
         }
@@ -400,6 +413,7 @@ export class BeatColumn {
       const beatView = beatViewDelegate.viewForBeat(beat);
       beatView.x = val + this.paddingLeft;
       beatView.width = this._maxWidth;
+      console.log("ID, Setting x, y: ", beatView.beat.index, (beatView as any)._x, (beatView as any)._width);
     }
   }
 

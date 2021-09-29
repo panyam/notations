@@ -82,11 +82,12 @@ export abstract class Shape {
    * cannot be trusted and has to be refreshed by calling native methods.
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
-  protected abstract updatePosition(x: null | number, y: null | number): [number | null, number | null];
-  protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
-    // By default sizes CANNOT be updated unless overridden
-    return [null, null];
-  }
+  protected abstract updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null];
 
   resetBBox(): void {
     /*
@@ -102,23 +103,76 @@ export abstract class Shape {
   /**
    * Sets the x or y coordinate of this shape in coordinate system within its
    * parent.
+   *
+   * Note that null and NaN are valid values and mean the following:
+   * null - Dont change the value.  Passed to "ignore" effects.
+   * NaN - Ensure the value is set to null so that the bounding box specific coord is used going forward.
    */
-  setPosition(x: number | null, y: number | null): [number | null, number | null] {
-    [x, y] = this.updatePosition(x, y);
-    if (x != null) this.bbox.x = x;
-    if (y != null) this.bbox.y = y;
-    return [x, y];
-  }
-
-  /**
-   * Sets the size of this shape in coordinate system within its
-   * parent.
-   */
-  setSize(w: number | null, h: number | null): [number | null, number | null] {
-    [w, h] = this.updateSize(w, h);
-    if (w != null) this.bbox.width = w;
-    if (h != null) this.bbox.height = h;
-    return [w, h];
+  setBounds(
+    x: number | null,
+    y: number | null,
+    w: number | null,
+    h: number | null,
+  ): [number | null, number | null, number | null, number | null] {
+    if (x != null) {
+      if (isNaN(x)) {
+        this._x = null;
+      } else {
+        this._x = x;
+      }
+    }
+    if (y != null) {
+      if (isNaN(y)) {
+        this._y = null;
+      } else {
+        this._y = y;
+      }
+    }
+    if (w != null) {
+      if (isNaN(w)) {
+        this._width = null;
+      } else {
+        this._width = w;
+      }
+    }
+    if (h != null) {
+      if (isNaN(h)) {
+        this._height = null;
+      } else {
+        this._height = h;
+      }
+    }
+    const [nx, ny, nw, nh] = this.updateBounds(x, y, w, h);
+    if (nx != null) {
+      if (isNaN(nx)) {
+        this._x = null;
+      } else {
+        this._x = nx;
+      }
+    }
+    if (ny != null) {
+      if (isNaN(ny)) {
+        this._y = null;
+      } else {
+        this._y = ny;
+      }
+    }
+    if (nw != null) {
+      if (isNaN(nw)) {
+        this._width = null;
+      } else {
+        this._width = nw;
+      }
+    }
+    if (nh != null) {
+      if (isNaN(nh)) {
+        this._height = null;
+      } else {
+        this._height = nh;
+      }
+    }
+    // this.resetBBox();
+    return [nx, ny, nw, nh];
   }
 
   /**
@@ -164,48 +218,51 @@ export abstract class Shape {
    * Gets the x coordinate within the parent's coordinate system.
    */
   get x(): number {
+    if (this._x != null) return this._x;
     return this.bbox.x;
   }
 
   /**
    * Sets the x coordinate within the parent's coordinate system.
    */
-  set x(x: number) {
-    const [nx, ny] = this.updatePosition(x, null);
-    this.boundsUpdated(nx, ny, null, null);
+  set x(x: number | null) {
+    // Here a manual x is being set - how does this interfere with the bounding box?
+    // We should _x to the new value to indicate a manual value was set.
+    // and reset bbox so that based on this x a new bbox may need to be calculated
+    this.setBounds(x == null ? NaN : x, null, null, null);
   }
 
   /**
    * Gets the y coordinate within the parent's coordinate system.
    */
   get y(): number {
+    if (this._y != null) return this._y;
     return this.bbox.y;
   }
 
   /**
    * Sets the y coordinate within the parent's coordinate system.
    */
-  set y(y: number) {
-    const [nx, ny] = this.updatePosition(null, y);
-    this.boundsUpdated(nx, ny, null, null);
+  set y(y: number | null) {
+    this.setBounds(null, y == null ? NaN : y, null, null);
   }
 
   get width(): number {
+    if (this._width != null) return this._width;
     return this.bbox.width;
   }
 
-  set width(w: number) {
-    const [nw, nh] = this.updateSize(w, null);
-    this.boundsUpdated(null, null, nw, nh);
+  set width(w: number | null) {
+    this.setBounds(null, null, w == null ? NaN : w, null);
   }
 
   get height(): number {
+    if (this._height != null) return this._height;
     return this.bbox.height;
   }
 
-  set height(h: number) {
-    const [nw, nh] = this.updateSize(null, h);
-    this.boundsUpdated(null, null, nw, nh);
+  set height(h: number | null) {
+    this.setBounds(null, null, null, h == null ? NaN : h);
   }
 }
 
@@ -243,7 +300,12 @@ export class ElementShape extends Shape {
     return bbox;
   }
 
-  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
     if (x != null) {
       this.element.removeAttribute("dx");
       this.element.setAttribute("x", "" + x);
@@ -252,11 +314,7 @@ export class ElementShape extends Shape {
       this.element.removeAttribute("dy");
       this.element.setAttribute("y", "" + y);
     }
-    return [x, y];
-  }
-
-  protected updateSize(w: null | number, h: null | number): [number | null, number | null] {
-    return [w, h];
+    return [x, y, w, h];
   }
 }
 
@@ -291,8 +349,13 @@ export abstract class AtomView extends Shape {
     return this.glyph.bbox;
   }
 
-  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
-    return this.glyph.setPosition(x, y);
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    return this.glyph.setBounds(x, y, w, h);
   }
 
   get viewId(): number {
