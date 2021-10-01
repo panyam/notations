@@ -31,56 +31,60 @@ export abstract class LeafAtomView extends AtomView {
 
   abstract get glyphLabel(): string;
 
-  // With LeafAtomViews unlike AtomViews, our bbox is the union of all views we manage
-  protected refreshBBox(): TSU.Geom.Rect {
-    return this.glyph.bbox;
-  }
-
   get minSize(): TSU.Geom.Size {
-    const out = TSU.Geom.Rect.from((this.rootShape || this.glyph).bbox);
+    const out = { ...(this.rootShape || this.glyph).minSize };
     const totalWidth =
-      this.leftSlot.reduce((a, b) => a + b.bbox.width, 0) +
-      this.rightSlot.reduce((a, b) => a + b.bbox.width, 0) +
+      this.leftSlot.reduce((a, b) => a + b.minSize.width, 0) +
+      this.rightSlot.reduce((a, b) => a + b.minSize.width, 0) +
       this.leftSlot.length + // Padding of 1
       this.rightSlot.length; // Padding of 1
     const totalHeight =
-      this.topSlot.reduce((a, b) => a + b.bbox.height, 0) + this.bottomSlot.reduce((a, b) => a + b.bbox.height, 0);
+      this.topSlot.reduce((a, b) => a + b.minSize.height, 0) +
+      this.bottomSlot.reduce((a, b) => a + b.minSize.height, 0);
     out.width += totalWidth;
     out.height += totalHeight;
     if (this.postSpacingSpan) out.width += this.postSpacingSpan.getBBox().width;
-    return out; // this.glyph.bbox;
+    return out;
   }
 
-  currX = 0;
-  currY = 0;
-  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
-    // TODO - move this code out to refreshLayout?
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    return [x, y, NaN, NaN];
+  }
 
+  refreshLayout(): void {
+    // TODO - move this code out to refreshLayout?
     // set the glyphs Y first so we can layout others
-    if (y != null) {
-      this.glyph.setPosition(null, y);
-      this.currY = y;
-    }
+    const x = this.x;
+    const y = this.y;
+    this.glyph.setBounds(null, y, null, null, true);
 
     // now layout leftSlots
-    if (x != null) {
-      this.currX = x;
+    let currX = x;
+    let currY = y;
+    if (currX != null) {
       // place left embelishments
       for (const emb of this.leftSlot) {
-        emb.x = x;
-        x += emb.bbox.width + 1;
+        emb.x = currX;
+        emb.refreshLayout();
+        currX += emb.minSize.width + 1;
       }
 
       // now place the glyph
       const glyphRoot = this.rootShape || this.glyph;
-      glyphRoot.x = x;
-      x += glyphRoot.bbox.width;
-      if (this.rootShape) this.glyph.resetBBox();
+      glyphRoot.x = currX;
+      currX += glyphRoot.minSize.width;
+      glyphRoot.refreshLayout();
 
       // And right embelishments
       for (const emb of this.rightSlot) {
-        emb.x = x;
-        x += emb.bbox.width + 1;
+        emb.x = currX;
+        emb.refreshLayout();
+        currX += emb.minSize.width + 1;
       }
 
       // now the spacing span
@@ -88,30 +92,27 @@ export abstract class LeafAtomView extends AtomView {
     }
 
     // layout top and bottom if x or y has changed
-    if (x != null || y != null) {
-      const gbbox = this.glyph.bbox;
+    if (currX != null || currY != null) {
+      const gminSize = this.glyph.minSize;
 
       // top embelishments
-      let y = gbbox.y - 1;
+      const glyphX = this.glyph.x;
+      const glyphY = this.glyph.y;
+      currY = glyphY - 1;
       for (const emb of this.topSlot) {
-        const bb = emb.bbox;
-        emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
-        emb.y = y - bb.height;
-        y = emb.y;
+        const bb = emb.minSize;
+        emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY - bb.height, null, null, true);
+        currY = emb.y;
       }
 
       // bottom embelishments
-      y = gbbox.y + gbbox.height + 2;
+      currY = glyphY + gminSize.height + 2;
       for (const emb of this.bottomSlot) {
-        const bb = emb.bbox;
-        emb.x = gbbox.x + (gbbox.width - bb.width) / 2;
-        emb.y = y;
-        y = emb.y + bb.height;
+        const bb = emb.minSize;
+        emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY, null, null, true);
+        currY = emb.y + bb.height;
       }
     }
-    // reset our BBox since we forced a layout
-    // this.resetBBox();
-    return [this.currX, this.currY];
   }
 
   protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {
@@ -237,10 +238,6 @@ export abstract class LeafAtomView extends AtomView {
         text: this.glyphLabel, // + (note.beforeRest ? " - " : " "),
       }),
     );
-  }
-
-  refreshLayout(): void {
-    // refresh layout of embelishments slots
   }
 }
 

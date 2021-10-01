@@ -60,31 +60,10 @@ export class BeatView extends Shape implements BeatViewBase {
     }
 
     this.setStyles(config || {});
-    this._bbox = this.refreshBBox();
-    this._width = -1;
   }
 
-  // Custom settable width different bbox.width
-  // <ve implies using evaled width
-  protected _width: number;
-  get width(): number {
-    return this._width < 0 ? this.bbox.width : this._width;
-  }
-
-  set width(value: number) {
-    if (this._width != value) {
-      this._width = value;
-      // this.widthChanged = true;
-    }
-  }
-
-  refreshBBox(): TSU.Geom.Rect {
-    // TODO - This should be the union of all atomview BBoxes.
-    return TSU.Geom.Rect.from(this.groupElement.getBBox());
-  }
-
-  protected updatePosition(x: null | number, y: null | number): [number | null, number | null] {
-    return [x, y];
+  protected refreshMinSize(): TSU.Geom.Size {
+    return TSU.DOM.svgBBox(this.groupElement);
   }
 
   protected updateBounds(
@@ -93,7 +72,6 @@ export class BeatView extends Shape implements BeatViewBase {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    // this.layoutAtomViews();
     return [x, y, w, h];
   }
 
@@ -103,10 +81,6 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshLayout(): void {
-    this.layoutAtomViews();
-  }
-
-  protected layoutAtomViews(): void {
     this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
     // if (this.widthChanged) {
     // All our atoms have to be laid out between startX and endX
@@ -115,12 +89,12 @@ export class BeatView extends Shape implements BeatViewBase {
     // as atomViews can be complex (eg with accents and pre/post
     // spaces etc) explicitly setting x/y may be important
     let currX = 0;
-    const currY = null; // this.y; //  + 10;
+    const currY = 0; // null; // this.y; //  + 10;
     this.atomViews.forEach((av, index) => {
-      av.setPosition(currX, currY);
+      av.setBounds(currX, currY, null, null, true);
       currX += this.atomSpacing + av.minSize.width;
     });
-    this.resetBBox();
+    this.resetMinSize();
     for (const e of this.embelishments) e.refreshLayout();
     this.needsLayout = false;
   }
