@@ -9,13 +9,6 @@ import { FlatAtom } from "./iterators";
 export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
-  needsLayout = true;
-  /*
-  protected xChanged = true;
-  protected yChanged = true;
-  protected widthChanged = true;
-  protected heightChanged = true;
-  */
   /**
    * Note that x and y coordinates are not always the x and y coordinates of the bounding box.
    * Eg a circle's x and y coordinates are its center point and not the top left corner
@@ -25,9 +18,22 @@ export abstract class Shape {
   protected _y: number | null = null;
   protected _width: number | null = null;
   protected _height: number | null = null;
-  protected _bbox: TSU.Geom.Rect;
+  // protected _bbox: TSU.Geom.Rect;
+  protected _minSize: TSU.Geom.Size;
   protected parentShape: Shape | null = null;
   children: Shape[] = [];
+
+  /**
+   * Sizes can have a minimum size.
+   * This is usually the size of the bounding box.
+   */
+  get minSize(): TSU.Geom.Size {
+    if (!this._minSize) {
+      this._minSize = this.refreshMinSize();
+      // this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
+    }
+    return this._minSize;
+  }
 
   /**
    * Add a child shape.
@@ -68,6 +74,7 @@ export abstract class Shape {
   /**
    * Returns the unioned bounding box of all child shapes.
    */
+  /*
   protected childrenBBox(): TSU.Geom.Rect | null {
     let bbox: TSU.Geom.Rect | null = null;
     for (let i = this.children.length - 1; i >= 0; i--) {
@@ -76,12 +83,14 @@ export abstract class Shape {
     }
     return bbox;
   }
+ */
 
   /**
    * refreshBBox is called by the Shape when it knows the bbox it is tracking
    * cannot be trusted and has to be refreshed by calling native methods.
    */
-  protected abstract refreshBBox(): TSU.Geom.Rect;
+  protected abstract refreshMinSize(): TSU.Geom.Size;
+  // protected abstract refreshBBox(): TSU.Geom.Rect;
   protected abstract updateBounds(
     x: null | number,
     y: null | number,
@@ -89,16 +98,14 @@ export abstract class Shape {
     h: null | number,
   ): [number | null, number | null, number | null, number | null];
 
+  resetMinSize(): void {
+    this._minSize = null as unknown as TSU.Geom.Size;
+  }
+  /*
   resetBBox(): void {
-    /*
-    this.xChanged = true;
-    this.yChanged = true;
-    this.widthChanged = true;
-    this.heightChanged = true;
-    */
-    this.needsLayout = true;
     this._bbox = null as unknown as TSU.Geom.Rect;
   }
+ */
 
   /**
    * Sets the x or y coordinate of this shape in coordinate system within its
@@ -113,6 +120,7 @@ export abstract class Shape {
     y: number | null,
     w: number | null,
     h: number | null,
+    applyLayout = false,
   ): [number | null, number | null, number | null, number | null] {
     if (x != null) {
       if (isNaN(x)) {
@@ -171,6 +179,7 @@ export abstract class Shape {
         this._height = nh;
       }
     }
+    if (applyLayout) this.refreshLayout();
     // this.resetBBox();
     return [nx, ny, nw, nh];
   }
@@ -179,47 +188,22 @@ export abstract class Shape {
    * Gets the bounding box of this shape in the coordinate system within
    * the parent.
    */
-  get bbox(): TSU.Geom.Rect {
+  /*
+  protected get bbox2(): TSU.Geom.Rect {
     if (!this._bbox) {
       this._bbox = this.refreshBBox().union(this.childrenBBox());
       // this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
     }
     return this._bbox;
   }
-
-  /**
-   * Called internally when x or y has changed and if any flags need to be updated
-   * indicating a layout refresh.
-   */
-  protected boundsUpdated(x: number | null, y: number | null, w: number | null, h: number | null): void {
-    if (x != null) {
-      // this.xChanged = true;
-      this.needsLayout = true;
-      this.bbox.x = x;
-    }
-    if (y != null) {
-      // this.yChanged = true;
-      this.needsLayout = true;
-      this.bbox.y = y;
-    }
-    if (w != null) {
-      // this.widthChanged = true;
-      this.needsLayout = true;
-      this.bbox.width = w;
-    }
-    if (h != null) {
-      // this.heightChanged = true;
-      this.needsLayout = true;
-      this.bbox.height = h;
-    }
-  }
+ */
 
   /**
    * Gets the x coordinate within the parent's coordinate system.
    */
   get x(): number {
     if (this._x != null) return this._x;
-    return this.bbox.x;
+    return 0; // this.bbox.x;
   }
 
   /**
@@ -237,7 +221,7 @@ export abstract class Shape {
    */
   get y(): number {
     if (this._y != null) return this._y;
-    return this.bbox.y;
+    return 0; // this.bbox.y;
   }
 
   /**
@@ -249,7 +233,7 @@ export abstract class Shape {
 
   get width(): number {
     if (this._width != null) return this._width;
-    return this.bbox.width;
+    return 0; // this.bbox.width;
   }
 
   set width(w: number | null) {
@@ -258,15 +242,13 @@ export abstract class Shape {
 
   get height(): number {
     if (this._height != null) return this._height;
-    return this.bbox.height;
+    return 0; // this.bbox.height;
   }
 
   set height(h: number | null) {
     this.setBounds(null, null, null, h == null ? NaN : h);
   }
-}
 
-export abstract class Embelishment extends Shape {
   /**
    * This is called when bounds or other properties of a shape have changed to
    * give the shape an opportunity to layout the children.  For shapes
@@ -279,25 +261,15 @@ export abstract class Embelishment extends Shape {
   }
 }
 
+export abstract class Embelishment extends Shape {}
+
 export class ElementShape extends Shape {
   constructor(public readonly element: SVGGraphicsElement) {
     super();
   }
 
-  protected refreshBBox(): TSU.Geom.Rect {
-    const bbox = TSU.Geom.Rect.from(this.element.getBBox());
-    // Due to safari bug which returns really crazy span widths!
-    if (TSU.Browser.IS_SAFARI()) {
-      const clientRect = this.element.getClientRects()[0];
-      if (clientRect) {
-        const parentClientRect = this.element.parentElement?.getBoundingClientRect();
-        bbox.x = bbox.x + clientRect.x - (parentClientRect?.x || 0);
-        // bbox.y = clientRect.y; //  - (parentClientRect?.y || 0);
-        bbox.width = clientRect.width;
-        bbox.height = clientRect.height;
-      }
-    }
-    return bbox;
+  protected refreshMinSize(): TSU.Geom.Size {
+    return TSU.DOM.svgBBox(this.element);
   }
 
   protected updateBounds(
@@ -306,15 +278,12 @@ export class ElementShape extends Shape {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    if (x != null) {
-      this.element.removeAttribute("dx");
-      this.element.setAttribute("x", "" + x);
-    }
-    if (y != null) {
-      this.element.removeAttribute("dy");
-      this.element.setAttribute("y", "" + y);
-    }
     return [x, y, w, h];
+  }
+
+  refreshLayout(): void {
+    this.element.setAttribute("x", "" + this.x);
+    this.element.setAttribute("y", "" + this.y);
   }
 }
 
@@ -340,13 +309,12 @@ export abstract class AtomView extends Shape {
    */
   abstract createElements(parent: SVGGraphicsElement): void;
   abstract refreshLayout(): void;
-  abstract get minSize(): TSU.Geom.Size;
 
   /**
    * By default the glyph's bbox is our bbox.
    */
-  protected refreshBBox(): TSU.Geom.Rect {
-    return this.glyph.bbox;
+  protected refreshMinSize(): TSU.Geom.Size {
+    return this.glyph.minSize;
   }
 
   protected updateBounds(

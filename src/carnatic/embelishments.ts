@@ -48,7 +48,7 @@ export class OctaveIndicator extends AtomViewEmbelishment {
     }
   }
 
-  refreshBBox(): TSU.Geom.Rect {
+  protected refreshMinSize(): TSU.Geom.Size {
     return TSU.Geom.Rect.from(this.dotsElem.getBBox());
   }
 
@@ -60,11 +60,14 @@ export class OctaveIndicator extends AtomViewEmbelishment {
   ): [number | null, number | null, number | null, number | null] {
     if (x == null) x = this.x;
     if (y == null) y = this.y;
-    this.dotsElem.setAttribute("transform", "translate(" + x + "," + y + ")");
     // cannot set w/h
-    this.bbox.x = x;
-    this.bbox.y = y;
+    // this.bbox.x = x;
+    // this.bbox.y = y;
     return [x, y, null, null];
+  }
+
+  refreshLayout(): void {
+    this.dotsElem.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
   }
 }
 
@@ -85,8 +88,8 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
     });
   }
 
-  refreshBBox(): TSU.Geom.Rect {
-    return TSU.Geom.Rect.from(this.labelElem.getBBox());
+  protected refreshMinSize(): TSU.Geom.Size {
+    return TSU.DOM.svgBBox(this.labelElem);
   }
 
   protected updateBounds(
@@ -95,14 +98,12 @@ export class LabelEmbelishment extends AtomViewEmbelishment {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    if (x != null) {
-      this.labelElem.setAttribute("x", "" + x);
-    }
-    if (y != null) {
-      this.labelElem.setAttribute("y", "" + y);
-    }
-    this.resetBBox();
     return [x, y, w, h];
+  }
+
+  refreshLayout(): void {
+    this.labelElem.setAttribute("x", "" + this.x);
+    this.labelElem.setAttribute("y", "" + this.y);
   }
 }
 
@@ -123,14 +124,19 @@ export class BeatStartLines extends Embelishment {
     });
   }
 
-  protected refreshBBox(): TSU.Geom.Rect {
+  protected refreshMinSize(): TSU.Geom.Size {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
   refreshLayout(): void {
-    // At this point it is possible that we are starting a bar but
-    // there are no atoms in the bar
-    this.setBounds(0 - this.barSpacing, 0, null, this.source.height);
+    const line = this.line;
+    const x = -this.barSpacing;
+    line.setAttribute("x1", "" + x);
+    line.setAttribute("x2", "" + x);
+    const y = 0;
+    const h = this.source.height;
+    line.setAttribute("y1", "" + y);
+    line.setAttribute("y2", "" + (y + h));
   }
 
   protected updateBounds(
@@ -139,17 +145,6 @@ export class BeatStartLines extends Embelishment {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    const line = this.line;
-    if (x != null) {
-      line.setAttribute("x1", "" + x);
-      line.setAttribute("x2", "" + x);
-    }
-    if (y != null || h != null) {
-      if (y == null) y = this.y;
-      if (h == null) h = this.height;
-      line.setAttribute("y1", "" + y);
-      line.setAttribute("y2", "" + (y + h));
-    }
     return [x, y, null, h];
   }
 }
@@ -177,7 +172,7 @@ export class BeatEndLines extends Embelishment {
     }
   }
 
-  protected refreshBBox(): TSU.Geom.Rect {
+  protected refreshMinSize(): TSU.Geom.Size {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
@@ -186,10 +181,22 @@ export class BeatEndLines extends Embelishment {
   }
 
   barSpacing = 15;
+
   refreshLayout(): void {
-    // At this point it is possible that we are starting a bar but
-    // there are no atoms in the bar
-    this.setBounds(this.source.width + this.barSpacing, 0, null, this.source.height);
+    const x = this.source.width + this.barSpacing;
+    const y = 0;
+    const h = this.source.height;
+    let currX = x;
+    for (const line of this.lines) {
+      const lx = "" + currX;
+      line.setAttribute("x1", lx);
+      line.setAttribute("x2", lx);
+      currX += 4;
+    }
+    for (const line of this.lines) {
+      line.setAttribute("y1", "" + y);
+      line.setAttribute("y2", "" + (y + h));
+    }
   }
 
   protected updateBounds(
@@ -198,24 +205,7 @@ export class BeatEndLines extends Embelishment {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    if (x != null) {
-      let currX = x;
-      for (const line of this.lines) {
-        const lx = "" + currX;
-        line.setAttribute("x1", lx);
-        line.setAttribute("x2", lx);
-        currX += 4;
-      }
-    }
-    if (y != null || h != null) {
-      if (y == null) y = this.y;
-      if (h == null) h = this.height;
-      for (const line of this.lines) {
-        line.setAttribute("y1", "" + y);
-        line.setAttribute("y2", "" + (y + h));
-      }
-    }
-    return [x, y, null, h];
+    return [null, null, null, null];
   }
 }
 
@@ -289,13 +279,13 @@ export class Jaaru extends AtomViewEmbelishment {
   }
 
   pathAttribute(x = 0): string {
-    const avbbox = this.atomView.bbox;
+    const avbbox = this.atomView.minSize;
     let y2 = 0;
     const h2 = avbbox.height / 2;
     const x2 = x + h2;
-    let y = avbbox.y;
+    let y = this.atomView.y;
     if (this.jaaru.ascending) {
-      y = avbbox.y + avbbox.height;
+      y += avbbox.height;
       y2 = y - h2;
     } else {
       y -= h2;
@@ -304,8 +294,8 @@ export class Jaaru extends AtomViewEmbelishment {
     return [`M ${x} ${y}`, `Q ${x2} ${y} ${x2} ${y2}`].join(" ");
   }
 
-  protected refreshBBox(): TSU.Geom.Rect {
-    return TSU.Geom.Rect.from(this.pathElem.getBBox());
+  protected refreshMinSize(): TSU.Geom.Size {
+    return TSU.DOM.svgBBox(this.pathElem);
   }
 
   protected updateBounds(
@@ -314,9 +304,10 @@ export class Jaaru extends AtomViewEmbelishment {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    const newX = x == null ? this.x : x;
-    this.pathElem.setAttribute("d", this.pathAttribute(newX));
-    this.resetBBox();
     return [x, null, null, null];
+  }
+
+  refreshLayout(): void {
+    this.pathElem.setAttribute("d", this.pathAttribute(this.x));
   }
 }

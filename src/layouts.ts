@@ -413,7 +413,7 @@ export class BeatColumn {
       const beatView = beatViewDelegate.viewForBeat(beat);
       beatView.x = val + this.paddingLeft;
       beatView.width = this._maxWidth;
-      console.log("ID, Setting x, y: ", beatView.beat.index, (beatView as any)._x, (beatView as any)._width);
+      // console.log("ID, Setting x, y: ", beatView.beat.index, (beatView as any)._x, (beatView as any)._width);
     }
   }
 

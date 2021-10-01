@@ -60,12 +60,11 @@ export class BeatView extends Shape implements BeatViewBase {
     }
 
     this.setStyles(config || {});
-    this._bbox = this.refreshBBox();
   }
 
-  refreshBBox(): TSU.Geom.Rect {
+  protected refreshMinSize(): TSU.Geom.Size {
     // TODO - This should be the union of all atomview BBoxes.
-    return TSU.Geom.Rect.from(this.groupElement.getBBox());
+    return TSU.DOM.svgBBox(this.groupElement);
   }
 
   protected updateBounds(
@@ -74,7 +73,6 @@ export class BeatView extends Shape implements BeatViewBase {
     w: null | number,
     h: null | number,
   ): [number | null, number | null, number | null, number | null] {
-    // this.layoutAtomViews();
     return [x, y, w, h];
   }
 
@@ -84,10 +82,6 @@ export class BeatView extends Shape implements BeatViewBase {
   }
 
   refreshLayout(): void {
-    this.layoutAtomViews();
-  }
-
-  protected layoutAtomViews(): void {
     this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
     // if (this.widthChanged) {
     // All our atoms have to be laid out between startX and endX
@@ -96,12 +90,12 @@ export class BeatView extends Shape implements BeatViewBase {
     // as atomViews can be complex (eg with accents and pre/post
     // spaces etc) explicitly setting x/y may be important
     let currX = 0;
-    const currY = 10; // null; // this.y; //  + 10;
+    const currY = 0; // null; // this.y; //  + 10;
     this.atomViews.forEach((av, index) => {
-      av.setBounds(currX, currY, null, null);
+      av.setBounds(currX, currY, null, null, true);
       currX += this.atomSpacing + av.minSize.width;
     });
-    this.resetBBox();
+    this.resetMinSize();
     for (const e of this.embelishments) e.refreshLayout();
     this.needsLayout = false;
   }
