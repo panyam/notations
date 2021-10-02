@@ -198,12 +198,27 @@ export abstract class Shape {
   }
  */
 
+  get hasX(): boolean {
+    return this._x != null && !isNaN(this._x);
+  }
+
+  get hasY(): boolean {
+    return this._y != null && !isNaN(this._y);
+  }
+
+  get hasWidth(): boolean {
+    return this._width != null && !isNaN(this._width);
+  }
+
+  get hasHeight(): boolean {
+    return this._height != null && !isNaN(this._height);
+  }
+
   /**
    * Gets the x coordinate within the parent's coordinate system.
    */
   get x(): number {
-    if (this._x != null) return this._x;
-    return 0; // this.bbox.x;
+    return this._x || 0;
   }
 
   /**
@@ -282,8 +297,8 @@ export class ElementShape extends Shape {
   }
 
   refreshLayout(): void {
-    this.element.setAttribute("x", "" + this.x);
-    this.element.setAttribute("y", "" + this.y);
+    if (this.hasX) this.element.setAttribute("x", "" + this._x);
+    if (this.hasY) this.element.setAttribute("y", "" + this._y);
   }
 }
 
