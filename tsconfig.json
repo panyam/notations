@@ -19,6 +19,7 @@
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
+    "inlineSources": true,
     "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,

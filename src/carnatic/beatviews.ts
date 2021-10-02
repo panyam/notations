@@ -62,8 +62,16 @@ export class BeatView extends Shape implements BeatViewBase {
     this.setStyles(config || {});
   }
 
+  // protected refreshMinSize(): TSU.Geom.Size { return TSU.DOM.svgBBox(this.groupElement); }
   protected refreshMinSize(): TSU.Geom.Size {
-    return TSU.DOM.svgBBox(this.groupElement);
+    let totalWidth = 0;
+    let maxHeight = 0;
+    this.atomViews.forEach((av, index) => {
+      const ms = av.minSize;
+      totalWidth += ms.width + this.atomSpacing;
+      maxHeight = Math.max(maxHeight, ms.height);
+    });
+    return new TSU.Geom.Size(totalWidth, maxHeight);
   }
 
   protected updateBounds(
@@ -97,17 +105,6 @@ export class BeatView extends Shape implements BeatViewBase {
     this.resetMinSize();
     for (const e of this.embelishments) e.refreshLayout();
     this.needsLayout = false;
-  }
-
-  get minSize(): TSU.Geom.Size {
-    let totalWidth = 0;
-    let maxHeight = 0;
-    this.atomViews.forEach((av, index) => {
-      const ms = av.minSize;
-      totalWidth += ms.width + this.atomSpacing;
-      maxHeight = Math.max(maxHeight, ms.height);
-    });
-    return new TSU.Geom.Size(totalWidth, maxHeight);
   }
 
   get embelishments(): Embelishment[] {

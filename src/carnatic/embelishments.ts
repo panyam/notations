@@ -49,7 +49,11 @@ export class OctaveIndicator extends AtomViewEmbelishment {
   }
 
   protected refreshMinSize(): TSU.Geom.Size {
-    return TSU.Geom.Rect.from(this.dotsElem.getBBox());
+    const numDots = Math.abs(this.note.octave);
+    return {
+      width: this.dotRadius * 2 * numDots + (numDots - 1) * this.dotSpacing,
+      height: this.dotRadius * 2,
+    };
   }
 
   protected updateBounds(

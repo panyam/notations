@@ -31,7 +31,7 @@ export abstract class LeafAtomView extends AtomView {
 
   abstract get glyphLabel(): string;
 
-  get minSize(): TSU.Geom.Size {
+  protected refreshMinSize(): TSU.Geom.Size {
     const out = { ...(this.rootShape || this.glyph).minSize };
     const totalWidth =
       this.leftSlot.reduce((a, b) => a + b.minSize.width, 0) +
@@ -76,9 +76,10 @@ export abstract class LeafAtomView extends AtomView {
 
       // now place the glyph
       const glyphRoot = this.rootShape || this.glyph;
+      console.log("Glyph Root: ", glyphRoot);
       glyphRoot.x = currX;
-      currX += glyphRoot.minSize.width;
       glyphRoot.refreshLayout();
+      currX += glyphRoot.minSize.width;
 
       // And right embelishments
       for (const emb of this.rightSlot) {
