@@ -43,7 +43,7 @@ export abstract class LeafAtomView extends AtomView {
       this.bottomSlot.reduce((a, b) => a + b.minSize.height, 0);
     out.width += totalWidth;
     out.height += totalHeight;
-    if (this.postSpacingSpan) out.width += this.postSpacingSpan.getBBox().width;
+    // if (this.postSpacingSpan) out.width += this.postSpacingSpan.getBBox().width;
     return out;
   }
 
