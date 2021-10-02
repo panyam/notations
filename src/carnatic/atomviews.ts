@@ -76,7 +76,6 @@ export abstract class LeafAtomView extends AtomView {
 
       // now place the glyph
       const glyphRoot = this.rootShape || this.glyph;
-      console.log("Glyph Root: ", glyphRoot);
       glyphRoot.x = currX;
       glyphRoot.refreshLayout();
       currX += glyphRoot.minSize.width;
@@ -87,9 +86,6 @@ export abstract class LeafAtomView extends AtomView {
         emb.refreshLayout();
         currX += emb.minSize.width + 1;
       }
-
-      // now the spacing span
-      // if (this.postSpacingSpan) { this.postSpacingSpan.setAttribute("x", "" + x); }
     }
 
     // layout top and bottom if x or y has changed
@@ -114,6 +110,7 @@ export abstract class LeafAtomView extends AtomView {
         currY = emb.y + bb.height;
       }
     }
+    this.resetMinSize();
   }
 
   protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {

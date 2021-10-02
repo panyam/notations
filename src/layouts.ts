@@ -413,7 +413,7 @@ export class BeatColumn {
       const beatView = beatViewDelegate.viewForBeat(beat);
       beatView.x = val + this.paddingLeft;
       beatView.width = this._maxWidth;
-      // console.log("ID, Setting x, y: ", beatView.beat.index, (beatView as any)._x, (beatView as any)._width);
+      console.log("ID, Setting x, width: ", beatView.beat.index, (beatView as any).x, (beatView as any).width);
     }
   }
 
@@ -434,6 +434,12 @@ export class BeatColumn {
     this._maxWidth = 0;
     for (const beat of this.beats) {
       const beatView = beatViewDelegate.viewForBeat(beat);
+      console.log(
+        "index, _minSize, refreshMinSize = ",
+        beatView.beat.index,
+        (beatView as any)._minSize,
+        (beatView as any).refreshMinSize(),
+      );
       const minSize = beatView.minSize;
       if (minSize.width > this._maxWidth) {
         this._maxWidth = minSize.width;

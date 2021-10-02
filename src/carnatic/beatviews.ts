@@ -104,7 +104,7 @@ export class BeatView extends Shape implements BeatViewBase {
     });
     this.resetMinSize();
     for (const e of this.embelishments) e.refreshLayout();
-    this.needsLayout = false;
+    this.resetMinSize();
   }
 
   get embelishments(): Embelishment[] {
