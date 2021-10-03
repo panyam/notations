@@ -1,6 +1,6 @@
 {
   "name": "notations",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "author": "Sriram Panyam",
   "description": "A package for modelling, parsing, laying out carnatic musical notation",
   "homepage": "https://github.com/panyam/notations#readme",
