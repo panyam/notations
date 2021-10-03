@@ -189,6 +189,7 @@ export abstract class LeafAtomView extends AtomView {
 
       this.createPostSpacingElement();
     }
+    this.resetMinSize();
   }
 
   protected createGlyphRoot(parent: SVGGraphicsElement): void {
