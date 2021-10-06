@@ -8,7 +8,7 @@ import { Notation } from "./notation";
 export function load(
   codeText: string,
   config: any = {},
-): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[]] {
+): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[], TSU.StringMap<number>] {
   const beatsByLineRole = new Map<number, Beat[][]>();
   const beatLayouts = new Map<number, BeatLayout>();
   const errors: G.ParseError[] = [];
@@ -51,9 +51,18 @@ export function load(
       }
     }
   }
+  const buildTime = performance.now();
   if (config.log) {
-    const buildTime = performance.now();
     console.log(`V4 Document, Parse Time: ${parseTime - startTime}ms, Build Time: ${buildTime - parseTime}ms`);
   }
-  return [notation, beatsByLineRole, beatLayouts, errors];
+  return [
+    notation,
+    beatsByLineRole,
+    beatLayouts,
+    errors,
+    {
+      parseTime: parseTime - startTime,
+      buildTime: buildTime - parseTime,
+    },
+  ];
 }
