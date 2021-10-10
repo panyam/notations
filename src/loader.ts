@@ -16,6 +16,7 @@ export function load(
   const notation = new Notation();
   const parser = new Parser();
   parser.parse(codeText);
+  errors.push(...parser.errors);
   const parseTime = performance.now();
   for (const cmd of parser.commands) cmd.applyToNotation(notation);
 

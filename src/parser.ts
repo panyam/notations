@@ -217,6 +217,7 @@ const [parser, itemGraph] = G.newParser(
  * all these snippets are related
  */
 export class Parser {
+  errors: TLEX.TokenizerError[] = [];
   readonly commands: Command[] = [];
   // readonly notation: Notation = new Notation();
   private runCommandFound = false;
@@ -397,9 +398,14 @@ export class Parser {
   }
 
   parse(input: string): any {
+    this.errors = [];
     const ptree = parser.parse(input, {
       tokenizerContext: this,
       ruleHandlers: this.ruleHandlers,
+      onTokenError: (err: TLEX.TokenizerError) => {
+        this.errors.push(err);
+        return true;
+      },
     });
     return ptree;
   }
