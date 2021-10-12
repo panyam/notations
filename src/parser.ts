@@ -144,6 +144,9 @@ const [parser, itemGraph] = G.newParser(
         const [emb, pre] = owner.parseEmbelishment(token.value);
         if (emb == null) {
           console.log("Skipping Embelishment: ", token.value);
+          owner.errors.push(
+            new TLEX.TokenizerError(token.start, 1 + token.end - token.start, "InvalidEmbelishment", token.value),
+          );
           return null;
         }
         token.value = emb;

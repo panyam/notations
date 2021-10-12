@@ -88,6 +88,6 @@ export function parseEmbelishment(value: string): [any, boolean] {
   } else if (value == "γ" || value == "Y") {
     return [new Gamaka(GamakaType.Orikkai), true];
   }
-  throw new Error("Invalid carnatic embelishment: " + value);
-  // return null;
+  // throw new Error("Invalid carnatic embelishment: " + value);
+  return [null, false];
 }
