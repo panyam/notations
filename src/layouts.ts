@@ -557,6 +557,7 @@ export class BeatsBuilder {
       TSU.assert(flatAtoms.length > 0, "Atleast one element should have been available here");
       // render the atoms now
       for (const flatAtom of flatAtoms) {
+        // console.log("Adding FA: ", flatAtom.debugValue(), flatAtom.atom);
         TSU.assert(currBeat.add(flatAtom), "Should return true as we are already using a duration iterator here");
         if (this.onAtomAdded) this.onAtomAdded(flatAtom, currBeat);
       }

@@ -64,7 +64,7 @@ export class AtomIterator {
     const out = this.peek();
     this.peeked = null;
     if (out != null) {
-      this.currOffset = this.currOffset.plus(out.duration);
+      this.currOffset = this.currOffset.plus(out.duration).factorized;
     }
     return out;
   }
@@ -96,7 +96,7 @@ export class AtomIterator {
           this.atomQueue.pushFront([
             child,
             nextDepth + 1,
-            nextDuration.times(child.duration).divby(group.totalChildDuration),
+            nextDuration.times(child.duration).divby(group.totalChildDuration).factorized,
           ]);
         }
       }
