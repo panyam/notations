@@ -120,17 +120,20 @@ export class BeatView extends Shape implements BeatViewBase {
       } else {
         const cycle = this.cycle;
         const bar = cycle.bars[beat.barIndex];
-        // TODO - ensure that we are in the last instance of this beat
-        // since for now we dont have a way of specifying kalai this wont fail
         if (beat.beatIndex == bar.beatCount - 1) {
-          if (beat.barIndex == cycle.bars.length - 1) {
-            // last beat in last bar so - do a thalam end (2 lines)
-            const emb = new BeatEndLines(this, rootElement, 2);
-            this._embelishments = [emb];
-          } else {
-            // end of a bar so single line end
-            const emb = new BeatEndLines(this, rootElement);
-            this._embelishments = [emb];
+          // It is important that we are not just looking at the last beat of the bar
+          // but also in the last "instance" of the beat in this bar to account for
+          // kalais
+          if (beat.instance == bar.beatCounts[beat.beatIndex] - 1) {
+            if (beat.barIndex == cycle.bars.length - 1) {
+              // last beat in last bar so - do a thalam end (2 lines)
+              const emb = new BeatEndLines(this, rootElement, 2);
+              this._embelishments = [emb];
+            } else {
+              // end of a bar so single line end
+              const emb = new BeatEndLines(this, rootElement);
+              this._embelishments = [emb];
+            }
           }
         }
       }
