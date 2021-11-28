@@ -1,24 +1,25 @@
 import * as TSU from "@panyam/tsutils";
 import { Note } from "../core";
 import { BeatView } from "../layouts";
-import { AtomView, Embelishment } from "../shapes";
+import { Embelishment } from "../shapes";
+import { LeafAtomView } from "./atomviews";
 import { JaaruGamaka } from "./gamakas";
 
 /**
  * Embelishments specifically "around" a single atom view.
  */
-export abstract class AtomViewEmbelishment extends Embelishment {
-  constructor(public readonly atomView: AtomView) {
+export abstract class LeafAtomViewEmbelishment extends Embelishment {
+  constructor(public readonly atomView: LeafAtomView) {
     super();
   }
 }
 
-export class OctaveIndicator extends AtomViewEmbelishment {
+export class OctaveIndicator extends LeafAtomViewEmbelishment {
   dotRadius = 1;
   dotSpacing = 2.5;
   dotsElem: SVGGElement;
 
-  constructor(public readonly noteView: AtomView, public readonly note: Note) {
+  constructor(public readonly noteView: LeafAtomView, public readonly note: Note) {
     super(noteView);
     const rootElem = this.noteView.embRoot();
     const numDots = Math.abs(note.octave);
@@ -76,9 +77,9 @@ export class OctaveIndicator extends AtomViewEmbelishment {
 }
 
 ////////// Carnatic embelishments
-export class LabelEmbelishment extends AtomViewEmbelishment {
+export class LabelEmbelishment extends LeafAtomViewEmbelishment {
   labelElem: SVGTextElement;
-  constructor(public readonly label: string, public readonly atomView: AtomView) {
+  constructor(public readonly label: string, public readonly atomView: LeafAtomView) {
     super(atomView);
     const rootElem = this.atomView.embRoot();
     this.labelElem = TSU.DOM.createSVGNode("text", {
@@ -215,57 +216,57 @@ export class BeatEndLines extends Embelishment {
 
 /// Carnatic Embelishments
 export class Kampitham extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("~", atomView);
   }
 }
 
 export class Nokku extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("w", atomView);
   }
 }
 
 export class Prathyagatham extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("∵", atomView);
   }
 }
 export class Spuritham extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("∴", atomView);
   }
 }
 export class Raavi extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("^", atomView);
   }
 }
 export class Kandippu extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("✓", atomView);
   }
 }
 
 export class Vaali extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("⌒", atomView);
   }
 }
 export class Odukkal extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("x", atomView);
   }
 }
 export class Orikkai extends LabelEmbelishment {
-  constructor(public readonly atomView: AtomView) {
+  constructor(public readonly atomView: LeafAtomView) {
     super("γ", atomView);
   }
 }
 
-export class Jaaru extends AtomViewEmbelishment {
+export class Jaaru extends LeafAtomViewEmbelishment {
   pathElem: SVGPathElement;
-  constructor(public readonly jaaru: JaaruGamaka, public readonly atomView: AtomView) {
+  constructor(public readonly jaaru: JaaruGamaka, public readonly atomView: LeafAtomView) {
     super(atomView);
     // TODO - Create the "fancier" view
     // for now represent this with just a slant line (like a slash)

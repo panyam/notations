@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Literal, AtomType, Note, Space, Syllable } from "../core";
-import { AtomView, Embelishment, ElementShape } from "../shapes";
+import { LeafAtomView as LeafAtomViewBase, Embelishment, ElementShape } from "../shapes";
 import { FlatAtom } from "../iterators";
 import {
   OctaveIndicator,
@@ -17,7 +17,7 @@ import {
 } from "./embelishments";
 import { GamakaType } from "./gamakas";
 
-export abstract class LeafAtomView extends AtomView {
+export abstract class LeafAtomView extends LeafAtomViewBase {
   leftSlot: Embelishment[] = [];
   topSlot: Embelishment[] = [];
   rightSlot: Embelishment[] = [];
@@ -240,8 +240,8 @@ export abstract class LeafAtomView extends AtomView {
   }
 }
 
-export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): AtomView {
-  let out: AtomView;
+export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): LeafAtomView {
+  let out: LeafAtomView;
   switch (atom.atom.type) {
     // Dealing with leaf atoms
     case AtomType.SPACE:

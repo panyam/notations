@@ -18,7 +18,6 @@ export abstract class Shape {
   protected _y: number | null = null;
   protected _width: number | null = null;
   protected _height: number | null = null;
-  // protected _bbox: TSU.Geom.Rect;
   protected _minSize: TSU.Geom.Size;
   protected parentShape: Shape | null = null;
   children: Shape[] = [];
@@ -30,7 +29,6 @@ export abstract class Shape {
   get minSize(): TSU.Geom.Size {
     if (!this._minSize) {
       this._minSize = this.refreshMinSize();
-      // this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
     }
     return this._minSize;
   }
@@ -72,25 +70,10 @@ export abstract class Shape {
   }
 
   /**
-   * Returns the unioned bounding box of all child shapes.
-   */
-  /*
-  protected childrenBBox(): TSU.Geom.Rect | null {
-    let bbox: TSU.Geom.Rect | null = null;
-    for (let i = this.children.length - 1; i >= 0; i--) {
-      if (bbox == null) bbox = TSU.Geom.Rect.from(this.children[i].bbox);
-      else bbox = bbox.union(this.children[i].bbox);
-    }
-    return bbox;
-  }
- */
-
-  /**
    * refreshBBox is called by the Shape when it knows the bbox it is tracking
    * cannot be trusted and has to be refreshed by calling native methods.
    */
   protected abstract refreshMinSize(): TSU.Geom.Size;
-  // protected abstract refreshBBox(): TSU.Geom.Rect;
   protected abstract updateBounds(
     x: null | number,
     y: null | number,
@@ -101,11 +84,6 @@ export abstract class Shape {
   resetMinSize(): void {
     this._minSize = null as unknown as TSU.Geom.Size;
   }
-  /*
-  resetBBox(): void {
-    this._bbox = null as unknown as TSU.Geom.Rect;
-  }
- */
 
   /**
    * Sets the x or y coordinate of this shape in coordinate system within its
@@ -183,20 +161,6 @@ export abstract class Shape {
     // this.resetBBox();
     return [nx, ny, nw, nh];
   }
-
-  /**
-   * Gets the bounding box of this shape in the coordinate system within
-   * the parent.
-   */
-  /*
-  protected get bbox2(): TSU.Geom.Rect {
-    if (!this._bbox) {
-      this._bbox = this.refreshBBox().union(this.childrenBBox());
-      // this.xChanged = this.yChanged = this.widthChanged = this.heightChanged = false;
-    }
-    return this._bbox;
-  }
- */
 
   get hasX(): boolean {
     return this._x != null && !isNaN(this._x);
@@ -303,7 +267,6 @@ export class ElementShape extends Shape {
 }
 
 export abstract class AtomView extends Shape {
-  glyph: ElementShape;
   depth = 0;
   roleIndex = 0;
 
@@ -315,15 +278,24 @@ export abstract class AtomView extends Shape {
   capHeight: number;
   leading: number;
 
+  abstract isLeaf(): boolean;
+}
+
+export abstract class LeafAtomView extends AtomView {
+  glyph: ElementShape;
+
   constructor(public flatAtom: FlatAtom) {
     super();
+  }
+
+  isLeaf(): boolean {
+    return true;
   }
 
   /**
    * Creates views needed for this AtomView.
    */
   abstract createElements(parent: SVGGraphicsElement): void;
-  abstract refreshLayout(): void;
 
   /**
    * By default the glyph's bbox is our bbox.
@@ -351,5 +323,89 @@ export abstract class AtomView extends Shape {
       rootElem = rootElem.parentElement as any as SVGGraphicsElement;
     }
     return rootElem;
+  }
+}
+
+/**
+ * An AtomViewGroup that contains a collection of AtomViews.
+ */
+export abstract class AtomViewGroup extends AtomView {
+  protected atomSpacing: number;
+  protected groupElement: SVGGElement;
+  protected atomViews: AtomView[] = [];
+  private _embelishments: Embelishment[];
+  needsLayout = true;
+  constructor(protected readonly rootElement: Element, config?: any) {
+    super();
+    this.atomSpacing = 5;
+    this.groupElement = TSU.DOM.createSVGNode("g", {
+      parent: rootElement,
+      attrs: this.getGroupElementAttrs(),
+    });
+
+    this.setStyles(config || {});
+  }
+
+  isLeaf(): boolean {
+    return false;
+  }
+
+  protected getGroupElementAttrs(): any {
+    return {};
+  }
+
+  protected refreshMinSize(): TSU.Geom.Size {
+    let totalWidth = 0;
+    let maxHeight = 0;
+    this.atomViews.forEach((av, index) => {
+      const ms = av.minSize;
+      totalWidth += ms.width + this.atomSpacing;
+      maxHeight = Math.max(maxHeight, ms.height);
+    });
+    return new TSU.Geom.Size(totalWidth, maxHeight);
+  }
+
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    return [x, y, w, h];
+  }
+
+  refreshLayout(): void {
+    this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
+    // if (this.widthChanged) {
+    // All our atoms have to be laid out between startX and endX
+    // old way of doing where we just set dx between atom views
+    // this worked when atomviews were single glyphs. But
+    // as atomViews can be complex (eg with accents and pre/post
+    // spaces etc) explicitly setting x/y may be important
+    let currX = 0;
+    const currY = 0; // null; // this.y; //  + 10;
+    this.atomViews.forEach((av, index) => {
+      av.setBounds(currX, currY, null, null, true);
+      currX += this.atomSpacing + av.minSize.width;
+    });
+    this.resetMinSize();
+    for (const e of this.embelishments) e.refreshLayout();
+    this.resetMinSize();
+  }
+
+  get embelishments(): Embelishment[] {
+    if (!this._embelishments) {
+      this._embelishments = this.createEmbelishments();
+    }
+    return this._embelishments;
+  }
+
+  protected createEmbelishments(): Embelishment[] {
+    return [];
+  }
+
+  setStyles(config: any): void {
+    if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
+    this.needsLayout = true;
   }
 }
