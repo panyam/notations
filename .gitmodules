@@ -1,0 +1,6 @@
+[submodule "sites/tutorial/themes/docsy"]
+	path = sites/tutorial/themes/docsy
+	url = https://github.com/google/docsy.git
+[submodule "sites/pages/themes/docsy"]
+	path = sites/pages/themes/docsy
+	url = https://github.com/google/docsy.git

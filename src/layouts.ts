@@ -5,8 +5,6 @@ import { AtomIterator, DurationIterator, FlatAtom } from "./iterators";
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 
-// export interface Embelishment { refreshLayout(): void; }
-
 interface BeatViewDelegate {
   // A way to create all beats for an entire Line in one go (instead of one by one)
   viewForBeat(beat: Beat): BeatView;
@@ -22,7 +20,6 @@ export interface BeatView {
   height: number;
   refreshLayout(): void;
   setStyles(config: any): void;
-  // readonly embelishments: Embelishment[];
 }
 
 export class Beat {
