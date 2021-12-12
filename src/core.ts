@@ -1,9 +1,15 @@
 import * as TSU from "@panyam/tsutils";
 
+/**
+ * Alias to TSU.Num.Fraction in tsutils.
+ */
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 
+/**
+ * A common Entity base class with support for unique IDs, copying, children and debug info.
+ */
 export class Entity {
   private static counter = 0;
   readonly uuid = Entity.counter++;
@@ -15,19 +21,34 @@ export class Entity {
     this.metadata = config.metadata || {};
   }
 
+  /**
+   * debugValue returns information about this entity to be printed during a debug.
+   * Usually overridden by children to add more debug info.
+   */
   debugValue(): any {
     if (Object.keys(this.metadata).length > 0) return { metadata: this.metadata, type: this.type };
     else return { type: this.type };
   }
 
+  /**
+   * Children of this entity.
+   */
   children(): Entity[] {
     return [];
   }
 
+  /**
+   * Property returning the count of child entities.
+   */
   get childCount(): number {
     return this.children().length;
   }
 
+  /**
+   * Adds a child entity at a given index.
+   * @param child   Child entity to be aded.
+   * @param index   Index where the child is to be inserted.  -1 to append at the end.
+   */
   addChild(child: Entity, index = -1): this {
     if (index < 0) {
       this.children().push(child);
@@ -37,10 +58,18 @@ export class Entity {
     return this;
   }
 
+  /**
+   * Returns the child at a given index.
+   */
   childAt(index: number): Entity {
     return this.children()[index];
   }
 
+  /**
+   * Returns the index of a given child entity.
+   *
+   * @return the index where child exists otherwise -1.
+   */
   indexOfChild(entity: Entity): number {
     let i = 0;
     for (const child of this.children()) {
@@ -79,11 +108,16 @@ export class Entity {
 
   /**
    * Returns the type of this Entity.
+   *
+   * Type properties are used to identify the class type of Entities.
    */
   get type(): unknown {
     return this.constructor.name;
   }
 
+  /**
+   * Simple string representation of this Entity.
+   */
   toString(): string {
     return `Entity(id = ${this.uuid})`;
   }
@@ -94,24 +128,46 @@ export class Entity {
     return true;
   }
 
+  /**
+   * All entities allow cloning in a way that is specific to the entity.
+   * This allows application level "copy/pasting" of entities.  Cloning
+   * is a two part process:
+   *
+   * * Creation of a new instance of the same type via this.newInstance()
+   * * Copying of data into the new instance.
+   *
+   * Both of these can be overridden.
+   */
   clone(): this {
     const out = this.newInstance();
     this.copyTo(out);
     return out;
   }
 
+  /**
+   * Copies information about this instance into another instance of the same type.
+   */
   copyTo(another: this): void {
     another.metadata = { ...this.metadata };
   }
 
+  /**
+   * First part of the cloning process where the instance is created.
+   */
   protected newInstance(): this {
     return new (this.constructor as any)();
   }
 }
 
+/**
+ * Music is all about timing!   TimedEntities are base of all entities that
+ * have a duration.
+ */
 export abstract class TimedEntity extends Entity {
-  // Duration of this entity in beats.
-  // By default entities durations are readonly
+  /**
+   * Duration of this entity in beats.
+   * By default entities durations are readonly
+   */
   abstract get duration(): Fraction;
 
   equals(another: this): boolean {
@@ -119,6 +175,10 @@ export abstract class TimedEntity extends Entity {
   }
 }
 
+/**
+ * AtomType enums are used to denote specific Atoms
+ * @enum
+ */
 export enum AtomType {
   NOTE = "Note",
   LITERAL = "Literal",
@@ -129,6 +189,9 @@ export enum AtomType {
   REST = "Rest",
 }
 
+/**
+ * Atoms are the base class of timed entities that can appear in a Notation.
+ */
 export abstract class Atom extends TimedEntity {
   protected _duration: Fraction;
   nextSibling: TSU.Nullable<Atom> = null;

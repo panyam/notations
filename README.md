@@ -19,9 +19,20 @@ npm install --save notations
 
 ```
 
-## Typescript Example
+## Example
 
+```
+import { NotationView } from notations;
 
-## Javascript Example
+const element = document.getElementById("mydiv");
+const notationView = new NotationView(element);
+notationView.add(new Note("Ga"), new Space(),
+                 new Note("Ga"), new Space(),
+                 new Note("Ri"), new Space(),
+                 new Note("Ri"), new Space(),
+                 new Note("Sa"), new Note("Sa"), 
+                 new Note("Ri"), new Note("Ri"), 
+                 new Note("Ga"), new Note("Ga"), 
+                 new Note("Ri"), new Note("Ri"));
+```
 
-(Coming Soon)

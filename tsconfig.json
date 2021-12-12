@@ -26,6 +26,12 @@
     "module": "ES2020",
     "target": "es5"
   },
+  "typedocOptions": {
+      "entryPoints": [
+        "./src/index.ts"
+      ],
+      "out": "docs"
+  },
   "include": [
     "./src/**/*.ts"
   ]
