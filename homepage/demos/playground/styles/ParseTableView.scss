@@ -1,0 +1,38 @@
+.parseTable {
+  color: white;
+}
+
+.symHeaderCell {
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.stateHeaderCell {
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.actionCell {
+  text-align: center;
+}
+
+.actionCell.multipleActions {
+  text-align: center;
+  color: yellow;
+  background-color: red;
+}
+
+.gotoActionCell {
+  text-align: center;
+}
+.shiftActionCell {
+  text-align: center;
+}
+.reduceActionCell {
+  text-align: center;
+}
+.acceptActionCell {
+  text-align: center;
+}

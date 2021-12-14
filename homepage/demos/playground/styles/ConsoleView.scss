@@ -1,0 +1,26 @@
+$consoleHeaderHeight: 30px;
+
+.consoleHeaderArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  height: $consoleHeaderHeight;
+  border: solid 1px green;
+}
+
+.consoleLogArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: $consoleHeaderHeight;
+  bottom: 0px;
+  border: solid 1px green;
+}
+
+.consoleLogItem {
+  color: white;
+  padding-bottom: 10px;
+}

@@ -1,8 +1,7 @@
 {
   "exclude": [
     "node_modules",
-    "lib",
-    "./src/**/*.spec.ts"
+    "dist"
   ],
   "compilerOptions": {
     "allowJs": false,
@@ -12,27 +11,21 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "lib": ["es2019", "es2015", "dom", "dom.Iterable"],
+    "module": "ES2020",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "outDir": "lib/esm",
+    "outDir": "../dist/demos/",
     "plugins": [ { "name": "typescript-tslint-plugin" } ],
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "inlineSources": true,
     "strict": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
-    "module": "ES2020",
     "target": "es5"
   },
-  "typedocOptions": {
-      "entryPoints": [
-        "./src/index.ts"
-      ],
-      "out": "./homepage/dist/docs"
-  },
   "include": [
-    "./src/**/*.ts"
+    "./**/*.ts"
   ]
 }

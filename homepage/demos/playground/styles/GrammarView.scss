@@ -1,0 +1,24 @@
+$grammarHeaderHeight: 30px;
+
+#grammarArea .grammarHeaderArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  height: $grammarHeaderHeight;
+}
+
+#grammarArea .grammarEditorArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: $grammarHeaderHeight;
+  bottom: 0px;
+}
+
+.parserTypeSelect {
+  width: unset;
+  display: unset;
+}

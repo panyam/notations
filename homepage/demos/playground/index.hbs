@@ -1,0 +1,35 @@
+
+{{#partial "header_tags" }}
+<title>Galore Playground</title>
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css" />
+{{/partial}}
+{{#partial "header_block" }}
+  <h2 style="overflow-x: auto"><span id = "scoreTitleHeading">Galore Playground</span></h2>
+{{/partial}}
+
+{{#partial "center_block" }}
+  <!--<div id = "headerBar"></div>-->
+  <div id = "desktopArea"></div>
+  <div id = "statusBar">Welcome!</div>
+{{/partial}}
+
+{{#partial "nav_buttons_block" }}
+{{/partial}}
+
+{{#partial "footer_block" }}
+  <div id = "inputArea" class = "windowChild">
+    <div class = "inputHeaderArea">
+      <button class = "parseButton">Parse</button>
+    </div>
+    <div class = "inputEditorArea"></div>
+  </div>
+  <div id = "ptableArea" class = "windowChild"></div>
+  <div id = "consoleArea" class = "windowChild">
+    <div class = "consoleHeaderArea">
+      <button class = "clearButton">Clear</button>
+    </div>
+    <div class = "consoleLogArea"></div>
+</div>
+{{/partial}}
+{{>basepage}}
