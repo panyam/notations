@@ -1,7 +1,7 @@
 
 ---
 title: "Welcome to Notations"
-linkTitle: "Documentation"
+linkTitle: "Tutorial"
 menu:
   main:
     weight: 20

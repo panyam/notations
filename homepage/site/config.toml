@@ -1,4 +1,5 @@
 baseURL = "/"
+publishDir = "../dist/homepage/"
 title = "Notations Homepage"
 
 enableRobotsTXT = true
