@@ -23,21 +23,21 @@ handlers:
   static_files: demos/\1
   upload: demos/(.*)
 
-## By default - goto "homepage" folder
+## By default - goto "site" folder
 - url: (/)?
-  static_files: homepage/index.html
-  upload: homepage/index.html
+  static_files: site/index.html
+  upload: site/index.html
 
 # To enable index.html on a directory, eg: 
 # https://galorium.appspot.com/blog/posts/my-first-post/
 - url: /(.*)/
-  static_files: homepage/\1/index.html
-  upload: homepage/(.*)/index.html
+  static_files: site/\1/index.html
+  upload: site/(.*)/index.html
 
 # All other non-folder files
 - url: /(.*)
-  static_files: homepage/\1
-  upload: homepage/(.*)
+  static_files: site/\1
+  upload: site/(.*)
 
 - url: /.*
   secure: always

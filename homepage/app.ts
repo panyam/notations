@@ -29,7 +29,6 @@ const app: express.Application = express();
 
 const copsHeader = [
   ["font-src", ["'self'", "https://fonts.gstatic.com/"]],
-  ["img-src", ["'self'", "https://www.fillmurray.com", "data:"]],
   [
     "script-src",
     ["'self'", "https://unpkg.com/ace-builds@1.4.12/src-noconflict/", "http://code.jquery.com/jquery-1.11.1.min.js"],
@@ -62,7 +61,7 @@ app.use(function (req, res, next) {
 // app.use("/blog", express.static(path.join(__dirname, "sites/blog")));
 // app.use("/docs", express.static(path.join(__dirname, "sites/docs")));
 app.use("/demos", express.static(path.join(__dirname, "demos")));
-app.use("/", express.static(path.join(__dirname, "homepage")));
+app.use("/", express.static(path.join(__dirname, "site")));
 
 /// Enable static sites for dev (and hence CORS)
 app.use((req, res, next) => {
@@ -71,7 +70,7 @@ app.use((req, res, next) => {
 });
 
 // Setup view/templating engine
-app.set("views", [path.join(__dirname, "src/views"), path.join(__dirname, "static/dist")]);
+app.set("views", [path.join(__dirname, "static/dist")]);
 app.set("view engine", "html");
 const hbs = exphbs.create({
   defaultLayout: "main",
