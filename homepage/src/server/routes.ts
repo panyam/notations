@@ -9,8 +9,8 @@ const wrapAsync =
 /* GET home page. */
 router.get("/", function (req: any, res: any, next: any) {
   const userID = req.session?.loggedInUser?.id || null;
-  res.render("homepage/index.html", {
-    title: "Homepage",
+  res.render("site/index.html", {
+    title: "Notations Homepage",
     h1: "Welcome",
     userId: userID,
   });
