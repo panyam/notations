@@ -1,0 +1,6 @@
+printf `<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; ...` 
+printf `... child-src %s; font-src %s ...`
+    (delimit .Site.Params.csp.childsrc " ")
+    (delimit .Site.Params.csp.fontsrc " ")
+    | safeHTML
+
