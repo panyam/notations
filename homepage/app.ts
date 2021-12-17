@@ -1,6 +1,7 @@
 // import createError from "http-errors";
 import express = require("express");
 import path = require("path");
+import bodyParser = require("body-parser");
 const session = require("express-session");
 const exphbs = require("express-handlebars");
 
@@ -27,7 +28,7 @@ function setupInheritance(engine: any): void {
 const app: express.Application = express();
 
 const copsHeader = [
-  ["font-src", ["'self'", "https://fonts.gstatic.com/"]],
+  ["font-src", ["'self'", "https://fonts.gstatic.com/", "*"]],
   [
     "script-src",
     [
@@ -42,6 +43,7 @@ const copsHeader = [
     [
       "http://localhost:3000",
       "'self'",
+      "'sha256-Az0bWf8jQdMaG6dzok4j+bqRkUraBGtPudz6j4NAYVU='",
       "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
       "http://code.jquery.com/jquery-3.5.1.min.js",
     ],
@@ -70,6 +72,8 @@ const copsHeader = [
       "https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css",
       // For blog
       "https://unpkg.com/modern-normalize@0.6.0/modern-normalize.css",
+      // Site
+      "https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v27.0.1/dist/font-face.css",
     ],
   ],
   ["frame-src", ["'self'"]],
@@ -84,16 +88,30 @@ app.use((req, res, next) => {
 });
 
 app.use(function (req, res, next) {
-  res.setHeader("Content-Security-Policy", copsHeader);
+  // res.setHeader("Content-Security-Policy", copsHeader);
+  res.setHeader("Content-Security-Policy-Report-Only", "default-src 'self'; report-uri /csp-violation-report/");
   next();
 });
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+// app.use(cookieParser());
+app.use(bodyParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use("/blog", express.static(path.join(__dirname, "sites/blog")));
 // app.use("/docs", express.static(path.join(__dirname, "sites/docs")));
 app.use("/demos", express.static(path.join(__dirname, "demos")));
+app.use("/docs/", express.static(path.join(__dirname, "docs")));
+app.use("/csp-violation-report/", function (req: any, res: any, next: any) {
+  console.log("Here ok: ", req.body);
+  res.sendStatus(200);
+});
 app.use("/", express.static(path.join(__dirname, "site")));
 
 // Setup view/templating engine
+/*
 app.set("views", [path.join(__dirname, "static/dist")]);
 app.set("view engine", "html");
 const hbs = exphbs.create({
@@ -105,13 +123,10 @@ const hbs = exphbs.create({
 });
 setupInheritance(hbs.handlebars);
 app.engine("html", hbs.engine);
+*/
 
 // And setup routes and error handlers
-
-const indexRouter = require("./src/server/routes");
-
-const ENV = app.get("env");
-
-app.use("/", indexRouter);
+// const indexRouter = require("./src/server/routes");
+// const ENV = app.get("env");
 
 module.exports = app;
