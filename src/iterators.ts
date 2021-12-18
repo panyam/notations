@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { TimedEntity, Atom, LeafAtom, Space, Group, AtomType } from "./";
+import { TimedEntity } from "./entity";
+import { Atom, LeafAtom, Space, Group, AtomType } from "./core";
 
 type Fraction = TSU.Num.Fraction;
 
@@ -7,14 +8,14 @@ export class FlatAtom extends TimedEntity {
   depth: number;
   duration: TSU.Num.Fraction;
   offset: TSU.Num.Fraction;
-  isContinuation: boolean;
+  // private isContinuation: boolean;
 
   constructor(public atom: LeafAtom, config: any = null) {
     super((config = config || {}));
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
-    this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
+    // this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
   }
 
   /**
@@ -36,11 +37,16 @@ export class FlatAtom extends TimedEntity {
       offset: this.offset.toString(),
       depth: this.depth,
     };
-    if (this.isContinuation) out.isContinuation = true;
+    // if (this.isContinuation) out.isContinuation = true;
     return out;
   }
 }
 
+/**
+ * A nested atom iterator that returns one atom at a time at the leaf-most level.
+ * If we have a Group (or nested Groups) only the leaf atoms are returned as if
+ * in an in order traversal thus ensuring time order of atoms.
+ */
 export class AtomIterator {
   private atomQueue = new TSU.Lists.List<[Atom, number, Fraction]>();
   private currOffset = TSU.Num.Fraction.ZERO;
@@ -123,6 +129,11 @@ export class AtomIterator {
   }
 }
 
+/**
+ * Duration Iterators take a tree of Atoms and return atoms in given windowed
+ * durations.  This also ensures that a leaf atom can be further split if it is
+ * larger than the required duration.
+ */
 export class DurationIterator {
   private atomIterator: AtomIterator;
   private spillOver: TSU.Nullable<FlatAtom> = null;

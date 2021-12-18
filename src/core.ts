@@ -1,4 +1,5 @@
 import * as TSU from "@panyam/tsutils";
+import { Entity, TimedEntity } from "./entity";
 
 /**
  * Alias to TSU.Num.Fraction in tsutils.
@@ -6,174 +7,6 @@ import * as TSU from "@panyam/tsutils";
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
-
-/**
- * A common Entity base class with support for unique IDs, copying, children and debug info.
- */
-export class Entity {
-  private static counter = 0;
-  readonly uuid = Entity.counter++;
-  metadata: TSU.StringMap<any>;
-  parent: TSU.Nullable<Entity> = null;
-
-  constructor(config: any = null) {
-    config = config || {};
-    this.metadata = config.metadata || {};
-  }
-
-  /**
-   * debugValue returns information about this entity to be printed during a debug.
-   * Usually overridden by children to add more debug info.
-   */
-  debugValue(): any {
-    if (Object.keys(this.metadata).length > 0) return { metadata: this.metadata, type: this.type };
-    else return { type: this.type };
-  }
-
-  /**
-   * Children of this entity.
-   */
-  children(): Entity[] {
-    return [];
-  }
-
-  /**
-   * Property returning the count of child entities.
-   */
-  get childCount(): number {
-    return this.children().length;
-  }
-
-  /**
-   * Adds a child entity at a given index.
-   * @param child   Child entity to be aded.
-   * @param index   Index where the child is to be inserted.  -1 to append at the end.
-   */
-  addChild(child: Entity, index = -1): this {
-    if (index < 0) {
-      this.children().push(child);
-    } else {
-      this.children().splice(index, 0, child);
-    }
-    return this;
-  }
-
-  /**
-   * Returns the child at a given index.
-   */
-  childAt(index: number): Entity {
-    return this.children()[index];
-  }
-
-  /**
-   * Returns the index of a given child entity.
-   *
-   * @return the index where child exists otherwise -1.
-   */
-  indexOfChild(entity: Entity): number {
-    let i = 0;
-    for (const child of this.children()) {
-      if (child == entity) return i;
-      i++;
-    }
-    return -1;
-  }
-
-  removeChildAt(index: number): Entity {
-    const children = this.children();
-    const out = children[index];
-    children.splice(index, 1);
-    return out;
-  }
-
-  setChildAt(index: number, entity: Entity): this {
-    this.children()[index] = entity;
-    return this;
-  }
-
-  setMetadata(key: string, value: any): this {
-    this.metadata[key] = value;
-    return this;
-  }
-
-  getMetadata(key: string, recurse = true): any {
-    if (key in this.metadata) {
-      return this.metadata[key];
-    }
-    if (recurse && this.parent) {
-      return this.parent.getMetadata(key);
-    }
-    return null;
-  }
-
-  /**
-   * Returns the type of this Entity.
-   *
-   * Type properties are used to identify the class type of Entities.
-   */
-  get type(): unknown {
-    return this.constructor.name;
-  }
-
-  /**
-   * Simple string representation of this Entity.
-   */
-  toString(): string {
-    return `Entity(id = ${this.uuid})`;
-  }
-
-  equals(another: this, expect = false): boolean {
-    if (this.type != another.type) return false;
-    // check metadata too
-    return true;
-  }
-
-  /**
-   * All entities allow cloning in a way that is specific to the entity.
-   * This allows application level "copy/pasting" of entities.  Cloning
-   * is a two part process:
-   *
-   * * Creation of a new instance of the same type via this.newInstance()
-   * * Copying of data into the new instance.
-   *
-   * Both of these can be overridden.
-   */
-  clone(): this {
-    const out = this.newInstance();
-    this.copyTo(out);
-    return out;
-  }
-
-  /**
-   * Copies information about this instance into another instance of the same type.
-   */
-  copyTo(another: this): void {
-    another.metadata = { ...this.metadata };
-  }
-
-  /**
-   * First part of the cloning process where the instance is created.
-   */
-  protected newInstance(): this {
-    return new (this.constructor as any)();
-  }
-}
-
-/**
- * Music is all about timing!   TimedEntities are base of all entities that
- * have a duration.
- */
-export abstract class TimedEntity extends Entity {
-  /**
-   * Duration of this entity in beats.
-   * By default entities durations are readonly
-   */
-  abstract get duration(): Fraction;
-
-  equals(another: this): boolean {
-    return super.equals(another) && this.duration.equals(another.duration);
-  }
-}
 
 /**
  * AtomType enums are used to denote specific Atoms
@@ -196,6 +29,11 @@ export abstract class Atom extends TimedEntity {
   protected _duration: Fraction;
   nextSibling: TSU.Nullable<Atom> = null;
   prevSibling: TSU.Nullable<Atom> = null;
+  // Which group does this Atom belong to
+  parentGroup: TSU.Nullable<Group> = null;
+
+  // Tells if this Atom is a "continuation" from a previous atom
+  isContinuation = false;
 
   constructor(duration = ONE) {
     super();
@@ -225,6 +63,25 @@ export abstract class Atom extends TimedEntity {
 export abstract class LeafAtom extends Atom {
   // Tells if this atom is followed by a rest
   beforeRest = false;
+
+  /**
+   * Splits this atom "before" a certain duration.  If this atom's duration is
+   * longer than the given duration then it is truncated to the given duration
+   * and a continuation space is returned.
+   */
+  splitBefore(duration: Fraction): TSU.Nullable<Atom> {
+    if (this.duration.cmp(duration) > 0) {
+      const spillOver = this.createSpilloverSpace(this.duration.minus(duration));
+      spillOver.isContinuation = true;
+      this.duration = duration;
+      return spillOver;
+    }
+    return null;
+  }
+
+  protected createSpilloverSpace(duration: Fraction): Space {
+    return new Space(duration);
+  }
 
   debugValue(): any {
     return this.beforeRest ? { ...super.debugValue(), beforeRest: true } : super.debugValue();
@@ -267,6 +124,12 @@ export class Space extends LeafAtom {
 
   equals(another: this): boolean {
     return super.equals(another) && this.isSilent == another.isSilent;
+  }
+
+  protected createSpilloverSpace(duration: Fraction): Space {
+    const out = super.createSpilloverSpace(duration);
+    out.isSilent = this.isSilent;
+    return out;
   }
 }
 
@@ -367,7 +230,7 @@ export class Group extends Atom {
    * atoms in this group.
    */
   durationIsMultiplier = false;
-  readonly atoms: TSU.Lists.ValueList<Atom> = new TSU.Lists.ValueList<Atom>();
+  readonly atoms = new TSU.Lists.ValueList<Atom>();
 
   constructor(duration = ONE, ...atoms: Atom[]) {
     super(duration);
@@ -392,6 +255,54 @@ export class Group extends Atom {
     return out;
   }
 
+  /**
+   * Splits this group into two parts such that first part (this group) fits within
+   * the given duration and everything else
+   * longer than the given duration then it is truncated to the given duration
+   * and a continuation space is returned.
+   */
+  splitAfter(requiredDuration: Fraction, targetGroup: TSU.Nullable<Group> = null): TSU.Nullable<Group> {
+    if (this.duration.isLTE(requiredDuration) || requiredDuration.isLTE(ZERO)) {
+      return targetGroup;
+    }
+    if (!targetGroup) {
+      targetGroup = new Group();
+      targetGroup.durationIsMultiplier = this.durationIsMultiplier;
+    }
+    // few options here
+    // delta = ourDuration - lastDuration
+    // if delta >= requiredDuration
+    // then just add last as is into the new group
+    //    Additionally if delta == requiredDuration we can stop and return here
+    // if delta < requiredDuration
+    // then it means we have removed "too much", so the moved entry needs to be
+    // "split" and only the second half is to be added into the out group
+    // but first half's duration will be truncated
+    while (true) {
+      const last = this.atoms.popBack();
+      const durWithoutLast = this.duration.minus(last.duration, true);
+      if (durWithoutLast.isGTE(requiredDuration)) {
+        targetGroup.insertAtomsAt(targetGroup.atoms.first, last);
+        if (durWithoutLast.equals(requiredDuration)) break;
+      } else {
+        // needs further splitting as "too much" was removed from the end
+        const minDur = requiredDuration.minus(durWithoutLast, true);
+        const spillOver =
+          last.type == AtomType.GROUP ? (last as Group).splitAfter(minDur) : (last as LeafAtom).splitBefore(minDur);
+        if (spillOver == null) {
+          throw new Error("Spill over cannot be null here");
+        }
+        spillOver.isContinuation = true;
+        // Add spill over to the target
+        targetGroup.insertAtomsAt(targetGroup.atoms.first, spillOver);
+
+        // and Add the removed item back
+        this.atoms.push(last);
+      }
+    }
+    return targetGroup;
+  }
+
   get totalChildDuration(): Fraction {
     let out = ZERO;
     this.atoms.forEach((atom) => (out = out.plus(atom.duration)));
@@ -409,6 +320,16 @@ export class Group extends Atom {
     this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
   }
 
+  /**
+   * Inserts atom before a given cursor atom.  If the cursor atom is null
+   * then the atoms are appended at the end.
+   */
+  insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, ...atoms: Atom[]): this {
+    if (beforeAtom == null) return this.addAtoms(...atoms);
+    throw new Error("Not implemented");
+    return this;
+  }
+
   addAtoms(...atoms: Atom[]): this {
     for (const atom of atoms) {
       if (atom.type == AtomType.REST) {
@@ -417,327 +338,14 @@ export class Group extends Atom {
           (last as LeafAtom).beforeRest = true;
         }
       } else {
-        atom.parent = this;
+        if (atom.parentGroup != null) {
+          throw new Error("Atom already added to another group - implement auto 'move'");
+        }
+        atom.parentGroup = this;
         this.atoms.add(atom);
       }
     }
     return this;
-  }
-}
-
-export type CyclePosition = [number, number, number];
-export type CycleIterator = Generator<[CyclePosition, Fraction]>;
-
-export class CycleCursor {
-  constructor(public readonly cycle: Cycle, public barIndex = 0, public beatIndex = 0, public instance = 0) {}
-
-  get next(): [CyclePosition, Fraction] {
-    const currBar = this.cycle.bars[this.barIndex];
-    const result: [CyclePosition, Fraction] = [
-      [this.barIndex, this.beatIndex, this.instance],
-      currBar.beatLengths[this.beatIndex],
-    ];
-    this.instance++;
-    if (!currBar.beatCounts[this.beatIndex] || this.instance >= currBar.beatCounts[this.beatIndex]) {
-      this.instance = 0;
-      this.beatIndex++;
-      if (this.beatIndex >= currBar.beatLengths.length) {
-        this.beatIndex = 0;
-        this.barIndex++;
-        if (this.barIndex >= this.cycle.bars.length) {
-          this.barIndex = 0;
-        }
-      }
-    }
-    return result;
-  }
-
-  get prev(): [CyclePosition, Fraction] {
-    const currBar = this.cycle.bars[this.barIndex];
-    const result: [CyclePosition, Fraction] = [
-      [this.barIndex, this.beatIndex, this.instance],
-      currBar.beatLengths[this.beatIndex],
-    ];
-    // TODO - result should be set *after* decrementing if we had already
-    // done a "next" before this otherwise user may have to do a prev twice
-    this.instance--;
-    if (this.instance < 0) {
-      this.beatIndex--;
-      if (this.beatIndex < 0) {
-        this.barIndex--;
-        if (this.barIndex < 0) {
-          this.barIndex = this.cycle.bars.length - 1;
-        }
-        this.beatIndex = this.cycle.bars[this.barIndex].beatCount - 1;
-      }
-      this.instance = (this.cycle.bars[this.barIndex].beatCounts[this.beatIndex] || 1) - 1;
-    }
-    return result;
-  }
-}
-
-export class Bar extends TimedEntity {
-  name: string;
-  // Length/Duration of each beat.
-  beatLengths: Fraction[] = [];
-
-  // How many times should a beat be repeated - the Kalai!
-  beatCounts: number[] = [];
-
-  constructor(config: any = null) {
-    super((config = config || {}));
-    this.name = config.name || "";
-    for (const bl of config.beatLengths || []) {
-      if (typeof bl === "number") {
-        this.beatLengths.push(TSU.Num.Frac(bl));
-      } else {
-        this.beatLengths.push(bl);
-      }
-    }
-    for (const bc of config.beatCounts || []) {
-      this.beatCounts.push(bc);
-    }
-    while (this.beatCounts.length < this.beatLengths.length) {
-      this.beatCounts.push(1);
-    }
-  }
-
-  debugValue(): any {
-    return { ...super.debugValue(), name: name, beatLengths: this.beatLengths };
-  }
-
-  equals(another: this): boolean {
-    if (!super.equals(another)) return false;
-    if (this.beatLengths.length != another.beatLengths.length) return false;
-    if (this.beatCounts.length != another.beatCounts.length) return false;
-    for (let i = 0; i < this.beatLengths.length; i++) {
-      if (!this.beatLengths[i].equals(another.beatLengths[i])) return false;
-    }
-    for (let i = 0; i < this.beatCounts.length; i++) {
-      if (this.beatCounts[i] != another.beatCounts[i]) return false;
-    }
-    return true;
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another.name = this.name;
-    another.beatLengths = [...this.beatLengths];
-    another.beatCounts = [...this.beatCounts];
-  }
-
-  get beatCount(): number {
-    return this.beatLengths.length;
-  }
-
-  get totalBeatCount(): number {
-    let out = 0;
-    for (let i = 0; i < this.beatLengths.length; i++) {
-      out += this.beatCounts[i] || 1;
-    }
-    return out;
-  }
-
-  /**
-   * Total duration (of time) across all beats in this bar.
-   */
-  get duration(): Fraction {
-    let total = ZERO;
-    for (let i = 0; i < this.beatLengths.length; i++) {
-      total = total.plus(this.beatLengths[i].timesNum(this.beatCounts[i] || 1));
-    }
-    return total;
-  }
-}
-
-// Describes the cycle pattern
-export class Cycle extends TimedEntity {
-  name: string;
-  bars: Bar[];
-
-  static readonly DEFAULT = new Cycle({
-    name: "Adi Thalam",
-    bars: [
-      new Bar({ name: "Laghu", beatLengths: [1, 1, 1, 1] }),
-      new Bar({ name: "Dhrutam", beatLengths: [1, 1] }),
-      new Bar({ name: "Dhrutam", beatLengths: [1, 1] }),
-    ],
-  });
-
-  constructor(config: null | { name?: string; bars?: Bar[] } = null) {
-    super((config = config || {}));
-    this.name = config.name || "";
-    this.bars = config.bars || [];
-  }
-
-  debugValue(): any {
-    return { ...super.debugValue(), name: name, bars: this.bars.map((p) => p.debugValue()) };
-  }
-
-  children(): Entity[] {
-    return this.bars;
-  }
-
-  equals(another: this): boolean {
-    if (!super.equals(another)) {
-      return false;
-    }
-    if (this.bars.length != another.bars.length) return false;
-    for (let i = 0; i < this.bars.length; i++) {
-      if (!this.bars[i].equals(another.bars[i])) return false;
-    }
-    return true;
-  }
-
-  /**
-   * Given a global beat index returns four values [cycle,bar,beat,instance] where:
-   *
-   * cycle        - The nth cycle in which the beat lies.  Since the global beat
-   *                index can be greater the number of beats in this cycle this
-   *                allows us to wrap around.  Similarly if beatindex is less than
-   *                0 then we can also go behind a cycle.
-   * bar          - The mth bar in the nth cycle which the offset exists
-   * beat         - The beat within the mth bar in the nth cycle where the
-   *                offset lies
-   * instance     - The beat instance where the offset lies.
-   * startOffset  - Offset of the beat at this global index.
-   */
-  getAtIndex(globalIndex: number): [number, CyclePosition, Fraction] {
-    let cycle = 0;
-    while (globalIndex < 0) {
-      globalIndex += this.totalBeatCount;
-      cycle--;
-    }
-    if (globalIndex >= this.totalBeatCount) {
-      cycle = Math.floor(globalIndex / this.totalBeatCount);
-    }
-    globalIndex = globalIndex % this.totalBeatCount;
-    let offset = ZERO;
-    for (let barIndex = 0; barIndex < this.bars.length; barIndex++) {
-      const bar = this.bars[barIndex];
-      if (globalIndex >= bar.totalBeatCount) {
-        globalIndex -= bar.totalBeatCount;
-        offset = offset.plus(bar.duration);
-      } else {
-        // this is the bar!
-        for (let beatIndex = 0; beatIndex < bar.beatCount; beatIndex++) {
-          const beatLength = bar.beatLengths[beatIndex];
-          const beatCount = bar.beatCounts[beatIndex] || 1;
-          if (globalIndex >= beatCount) {
-            globalIndex -= beatCount;
-            offset = offset.plus(beatLength.timesNum(beatCount));
-          } else {
-            // this is it
-            const instance = globalIndex;
-            return [cycle, [barIndex, beatIndex, instance], offset.plus(beatLength.timesNum(instance))];
-          }
-        }
-      }
-    }
-    throw new Error("Should not be here!");
-  }
-
-  /**
-   * Given a global offset returns five values [cycle, bar,beat,instance,offset] where:
-   *
-   * cycle        - The nth cycle in which the beat lies.  Since the global offset can be
-   *                greater the duration of the cycle this allows us to wrap around.
-   *                Similarly if globalOffset is less than 0 then we can also go behind a cycle.
-   * bar          - The mth bar in the nth cycle which the offset exists
-   * beat         - The beat within the mth bar in the nth cycle where the offset lies
-   * instance     - The beat instance where the offset lies.
-   * startOffset  - The note offset within the beat where the global offset lies.
-   * globalIndex  - The beat index within the entire cycle and not just within the bar.
-   */
-  getPosition(globalOffset: Fraction): [number, CyclePosition, Fraction, number] {
-    const duration = this.duration;
-    let cycleNum = 0;
-    if (globalOffset.isLT(ZERO)) {
-      while (globalOffset.isLT(ZERO)) {
-        cycleNum--;
-        globalOffset = globalOffset.plus(duration);
-      }
-    } else if (globalOffset.isGTE(duration)) {
-      const realOffset = globalOffset.mod(duration);
-      globalOffset = globalOffset.minus(realOffset).divby(duration);
-      TSU.assert(globalOffset.isWhole);
-      cycleNum = globalOffset.floor;
-      globalOffset = realOffset;
-    }
-
-    // here globalOffset is positive and >= 0 and < this.duration
-    let globalIndex = 0;
-    for (let barIndex = 0; barIndex < this.bars.length; barIndex++) {
-      const bar = this.bars[barIndex];
-      const barDuration = bar.duration;
-      if (globalOffset.isGTE(barDuration)) {
-        globalOffset = globalOffset.minus(barDuration);
-      } else {
-        // this is the bar!
-        for (let beatIndex = 0; beatIndex < bar.beatCount; beatIndex++) {
-          const beatLength = bar.beatLengths[beatIndex];
-          const beatCount = bar.beatCounts[beatIndex] || 1;
-          for (let instance = 0; instance < beatCount; instance++, globalIndex++) {
-            if (globalOffset.isGTE(beatLength)) {
-              globalOffset = globalOffset.minus(beatLength);
-            } else {
-              // this is it
-              return [cycleNum, [barIndex, beatIndex, instance], globalOffset, globalIndex];
-            }
-          }
-        }
-      }
-      globalIndex += bar.totalBeatCount;
-    }
-
-    throw new Error("Should not be here!");
-  }
-
-  *iterateBeats(startBar = 0, startBeat = 0, startInstance = 0): CycleIterator {
-    let barIndex = startBar;
-    let beatIndex = startBeat;
-    let instanceIndex = startInstance;
-    while (true) {
-      const currBar = this.bars[barIndex];
-      yield [[barIndex, beatIndex, instanceIndex], currBar.beatLengths[beatIndex]];
-      instanceIndex++;
-      if (!currBar.beatCounts[beatIndex] || instanceIndex >= currBar.beatCounts[beatIndex]) {
-        instanceIndex = 0;
-        beatIndex++;
-        if (beatIndex >= currBar.beatLengths.length) {
-          beatIndex = 0;
-          barIndex++;
-          if (barIndex >= this.bars.length) {
-            barIndex = 0;
-          }
-        }
-      }
-    }
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    another.name = this.name;
-    another.bars = this.bars.map((x) => x.clone());
-  }
-
-  get beatCount(): number {
-    let out = 0;
-    for (const bar of this.bars) out += bar.beatCount;
-    return out;
-  }
-
-  get totalBeatCount(): number {
-    let out = 0;
-    for (const bar of this.bars) out += bar.totalBeatCount;
-    return out;
-  }
-
-  /**
-   * Total duration (of time) across all bars in this cycle.
-   */
-  get duration(): Fraction {
-    return this.bars.reduce((x, y) => x.plus(y.duration), ZERO);
   }
 }
 
@@ -748,8 +356,9 @@ export class Line extends Entity {
   roles: Role[] = [];
 
   // This is a very hacky solution to doing left side pre-margin text typically found
-  // in notations - eg line X of a pallavi has this.  This makes vertical space less wasteful
-  // A better solution is inter-beat annotation but it is very complex and ambiguous for now
+  // in notations - eg line X of a pallavi has this.  This makes vertical space less
+  // wasteful
+  // A better solution is inter-beat annotation but it is very complex for now
   marginText = "";
 
   get isEmpty(): boolean {

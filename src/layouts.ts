@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { Line, Atom, CycleIterator, Space, Role, Cycle, CyclePosition, CycleCursor } from "./";
+import { Line, Atom, Space, Role } from "./";
+import { CycleIterator, Cycle, CyclePosition, CycleCursor } from "./cycle";
 import { AtomIterator, DurationIterator, FlatAtom } from "./iterators";
 
 type Fraction = TSU.Num.Fraction;

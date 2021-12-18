@@ -1,7 +1,8 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, AtomType, Syllable, Note, Literal } from "../core";
+import { Cycle } from "../cycle";
+import { AtomType, Syllable, Note, Literal } from "../core";
 import { BeatView as BeatViewBase, Beat } from "../layouts";
-import { AtomView, Embelishment, AtomViewGroup } from "../shapes";
+import { Embelishment, AtomViewGroup } from "../shapes";
 import { createAtomView } from "./atomviews";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 

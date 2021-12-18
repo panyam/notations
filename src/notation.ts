@@ -1,5 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Entity, Line } from "./core";
+import { Entity } from "./entity";
+import { Cycle } from "./cycle";
+import { Line } from "./core";
 import { LayoutParams } from "./layouts";
 
 export class RoleDef {
