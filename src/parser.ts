@@ -241,8 +241,7 @@ export class Parser {
       }
     },
     newGroup: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const out = new Group(TWO, ...children[1].value);
-      out.durationIsMultiplier = true;
+      const out = new Group(...children[1].value).setDuration(TWO, true);
       return out;
     },
     litWithCaret: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
@@ -298,9 +297,10 @@ export class Parser {
       if (typeof dur === "number") {
         dur = ONE.timesNum(dur);
       }
-      leaf.duration = dur;
       if (leaf.type == AtomType.GROUP) {
-        (leaf as Group).durationIsMultiplier = true;
+        (leaf as Group).setDuration(dur, true);
+      } else {
+        leaf.duration = dur;
       }
       return leaf;
     },

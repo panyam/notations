@@ -35,7 +35,7 @@ describe("AtomIterator Tests", () => {
   });
 
   test("With Groups", () => {
-    const atoms = [new Note("a"), new Group(ONE, new Note("b"), new Space(TWO)), new Note("c")];
+    const atoms = [new Note("a"), new Group(new Note("b"), new Space(TWO)), new Note("c")];
     const ai = new AtomIterator(...atoms);
     let peeked = ai.next();
     expect(peeked?.atom?.debugValue()).toEqual(new Note("a").debugValue());
@@ -67,12 +67,11 @@ describe("AtomIterator Tests", () => {
       new Note("a"),
       // Offset = 1
       new Group(
-        FIVE,
         // Offset = 1
         new Note("b"),
         // Offset = 8 / 3
         new Space(TWO),
-      ),
+      ).setDuration(FIVE),
       // Offset = 6
       new Note("c"),
     ];
@@ -81,7 +80,6 @@ describe("AtomIterator Tests", () => {
       new Note("d", THREE),
       // Offset = 3
       new Group(
-        ONE,
         // Offset = 3
         new Note("e"),
         // Offset = 5 / 3

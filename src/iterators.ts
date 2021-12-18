@@ -4,6 +4,8 @@ import { Atom, LeafAtom, Space, Group, AtomType } from "./core";
 
 type Fraction = TSU.Num.Fraction;
 
+type FlatAtom2 = [atom: Atom, duration: TSU.Num.Fraction, offset: TSU.Num.Fraction];
+
 export class FlatAtom extends TimedEntity {
   depth: number;
   duration: TSU.Num.Fraction;

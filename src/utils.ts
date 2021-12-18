@@ -115,7 +115,7 @@ export function parseSyllable(value: string): Atom {
     }
   }
   if (notes.length == 1) return notes[0];
-  return new Group(ONE, ...notes);
+  return new Group(...notes);
 }
 
 export function parseProperty(line: string): [string, string] {

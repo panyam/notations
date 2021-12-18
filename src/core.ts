@@ -53,7 +53,7 @@ export abstract class Atom extends TimedEntity {
 
   copyTo(another: this): void {
     super.copyTo(another);
-    another.duration = new TSU.Num.Fraction(this.duration.num, this.duration.den);
+    another._duration = new TSU.Num.Fraction(this.duration.num, this.duration.den);
   }
 
   get duration(): Fraction {
@@ -237,9 +237,20 @@ export class Group extends Atom {
   durationIsMultiplier = false;
   readonly atoms = new TSU.Lists.ValueList<Atom>();
 
-  constructor(duration = ONE, ...atoms: Atom[]) {
-    super(duration);
+  constructor(...atoms: Atom[]) {
+    super(ONE);
     this.addAtoms(...atoms);
+  }
+
+  equals(another: this, expect = false): boolean {
+    if (!super.equals(another)) return false;
+    return this.atoms.equals(another.atoms, (a1, a2) => a1.equals(a2));
+  }
+
+  copyTo(another: this): void {
+    super.copyTo(another);
+    another.durationIsMultiplier = this.durationIsMultiplier;
+    this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
   }
 
   get duration(): Fraction {
@@ -250,9 +261,17 @@ export class Group extends Atom {
     }
   }
 
-  set duration(d: Fraction) {
-    this._duration = d;
+  setDurationAsMultiplier(asMultiplier = true): this {
+    this.durationIsMultiplier = asMultiplier;
+    return this;
   }
+
+  setDuration(d: Fraction, asMultiplier = false): this {
+    this._duration = d;
+    this.durationIsMultiplier = asMultiplier;
+    return this;
+  }
+  // set duration(d: Fraction) { this._duration = d; }
 
   debugValue(): any {
     const out = { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
@@ -312,17 +331,6 @@ export class Group extends Atom {
     let out = ZERO;
     this.atoms.forEach((atom) => (out = out.plus(atom.duration)));
     return out;
-  }
-
-  /** Entities can have children and thus siblings and parents. */
-  equals(another: this, expect = false): boolean {
-    if (!super.equals(another)) return false;
-    return this.atoms.equals(another.atoms, (a1, a2) => a1.equals(a2));
-  }
-
-  copyTo(another: this): void {
-    super.copyTo(another);
-    this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
   }
 
   /**

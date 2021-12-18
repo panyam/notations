@@ -28,7 +28,7 @@ describe("Beat Tests", () => {
 describe("BeatsBuilder", () => {
   test("Create beats from BeatsBuilder", () => {
     const l = new Line();
-    const g1 = new Group(ONE, new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
+    const g1 = new Group(new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
     g1.durationIsMultiplier = true;
     const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
     l.addAtoms("test", true, ...atoms);
@@ -270,8 +270,7 @@ describe("BeatsBuilder", () => {
 
   test("Create beats from groups", () => {
     const l = new Line();
-    const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
-    g1.durationIsMultiplier = true;
+    const g1 = new Group(new Note("Pa", ONE), new Note("Ma", ONE)).setDuration(TWO, true);
     const atoms = [new Note("P", ONE), g1];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
@@ -327,8 +326,7 @@ describe("BeatsBuilder", () => {
 
   test("Test uniform spacing", () => {
     const l = new Line();
-    const g1 = new Group(TWO, new Note("Pa", ONE), new Note("Ma", ONE));
-    g1.durationIsMultiplier = true;
+    const g1 = new Group(new Note("Pa", ONE), new Note("Ma", ONE)).setDuration(TWO, true);
     const atoms = [new Note("P", ONE), g1];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;

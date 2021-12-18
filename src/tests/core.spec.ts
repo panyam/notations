@@ -9,6 +9,7 @@ const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 const TWO = ONE.timesNum(2);
 const THREE = ONE.timesNum(3);
+const FOUR = ONE.timesNum(4);
 const FIVE = ONE.timesNum(5);
 const TEN = ONE.timesNum(10);
 
@@ -343,7 +344,7 @@ describe("Atom tests", () => {
 
   test("Group Creation", () => {
     const notes = [new Syllable("aaa"), new Space(THREE, true), new Note("ga", THREE)];
-    const g = new Group(FIVE, ...notes);
+    const g = new Group(...notes).setDuration(FIVE);
     expect(g.type).toBe(AtomType.GROUP);
 
     let child = g.atoms.first;
@@ -361,7 +362,7 @@ describe("Atom tests", () => {
   });
 });
 
-describe("Atom tests", () => {
+describe("Atom Copy tests", () => {
   test("Note Copy", () => {
     const n = new Note("a", TSU.Num.Frac(3, 5), 4, 6);
     expect(n.parentGroup).toBe(null);
@@ -397,27 +398,27 @@ describe("Atom tests", () => {
 
   test("Group", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
-    const g = new Group(ONE, ...atoms);
+    const g = new Group(...atoms);
     expect(g.atoms.size).toBe(3);
     expect(g.totalChildDuration).toEqual(TSU.Num.Frac(4));
   });
 
   test("Group 2", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
-    const g = new Group(ONE, ...atoms);
+    const g = new Group(...atoms);
     expect(g.atoms.size).toBe(3);
     expect(g.totalChildDuration).toEqual(TSU.Num.Frac(4));
 
     const atoms2 = [new Space(TWO), new Syllable("Ga"), new Note("a")];
-    const g2 = new Group(TWO, ...atoms2);
+    const g2 = new Group(...atoms2);
 
-    const p = new Group(THREE, g, g2);
+    const p = new Group(g, g2).setDuration(THREE);
     expect(g2.totalChildDuration).toEqual(TSU.Num.Frac(4));
   });
 
   test("Group Cloning", () => {
     const atoms = [new Space(TWO), new Syllable("Ga"), new Note("a")];
-    const g = new Group(TWO, ...atoms);
+    const g = new Group(...atoms).setDuration(TWO);
     const g2 = g.clone();
     expect(g2.duration).toEqual(g.duration);
     expect(g2.atoms.size).toBe(g.atoms.size);
@@ -444,5 +445,24 @@ describe("LayoutParam Tests", () => {
     expect(lp.beatDuration).toEqual(4);
     expect(lp.lineBreaks).toEqual([3, 2, 1]);
     expect(lp.totalLayoutDuration).toEqual(ONE.timesNum(24));
+  });
+});
+
+describe("Atom Splitting Tests", () => {
+  test("Leaf Splitting", () => {
+    const l1 = new Space(TWO);
+    expect(l1.isContinuation).toBe(false);
+    expect(l1.isContinuation).toBe(false);
+    expect(l1.splitBefore(TWO.times(Frac(3, 2)))).toBe(null); // split at 3 - no spill over
+    expect(l1.splitBefore(TWO)).toBe(null); // split at exactly 2 - no spill over
+    const l3 = l1.splitBefore(TWO.times(Frac(3, 4), true)); // split at 1.5
+    expect(l3?.type).toBe(AtomType.SPACE);
+    expect(l3?.isContinuation).toBe(true);
+    expect(l3?.duration).toEqual(Frac(1, 2));
+  });
+
+  test("Group Splitting with just atoms at atom boundary", () => {
+    const atoms = [new Space(ONE), new Space(TWO), new Space(THREE), new Space(FOUR)];
+    const g = new Group(...atoms).setDuration(ONE, true);
   });
 });

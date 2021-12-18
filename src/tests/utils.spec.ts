@@ -94,7 +94,6 @@ describe("Utils Tests", () => {
     expect(
       atom.equals(
         new Group(
-          ONE,
           new Syllable("S"),
           new Space(ONE, true),
           new Syllable("N"),
