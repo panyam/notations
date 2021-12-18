@@ -1,9 +1,9 @@
 import * as TSU from "@panyam/tsutils";
-import { Cycle, Line, LeafAtom, Role, Space, Syllable, Group, Note, Bar } from "../core";
-import { LayoutParams, BeatsBuilder, Beat, BeatView, BeatColumn } from "../layouts";
+import { Cycle, Bar } from "../cycle";
+import { Line, Group, Note } from "../core";
+import { LayoutParams, BeatsBuilder, Beat } from "../layouts";
 import { FlatAtom } from "../iterators";
 
-const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 const TWO = ONE.timesNum(2);
 const THREE = ONE.timesNum(3);

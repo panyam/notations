@@ -8,14 +8,14 @@ export class FlatAtom extends TimedEntity {
   depth: number;
   duration: TSU.Num.Fraction;
   offset: TSU.Num.Fraction;
-  // private isContinuation: boolean;
+  private isContinuation: boolean;
 
   constructor(public atom: LeafAtom, config: any = null) {
     super((config = config || {}));
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
-    // this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
+    this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
   }
 
   /**
@@ -37,7 +37,7 @@ export class FlatAtom extends TimedEntity {
       offset: this.offset.toString(),
       depth: this.depth,
     };
-    // if (this.isContinuation) out.isContinuation = true;
+    if (this.isContinuation) out.isContinuation = true;
     return out;
   }
 }

@@ -41,9 +41,14 @@ export abstract class Atom extends TimedEntity {
   }
 
   debugValue(): any {
-    return this.duration.isOne
-      ? super.debugValue()
-      : { ...super.debugValue(), duration: this.duration.factorized.toString() };
+    const out = super.debugValue();
+    if (!this.duration.isOne) {
+      out.duration = this.duration.factorized.toString();
+    }
+    if (this.isContinuation) {
+      out.isContinuation = true;
+    }
+    return out;
   }
 
   copyTo(another: this): void {

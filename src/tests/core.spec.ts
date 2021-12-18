@@ -1,5 +1,7 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Entity, Line, Cycle, Bar, Syllable, Space, Group, Note } from "../core";
+import { Entity } from "../entity";
+import { Cycle, Bar } from "../cycle";
+import { AtomType, Line, Syllable, Space, Group, Note } from "../core";
 import { LayoutParams } from "../layouts";
 
 const Frac = TSU.Num.Frac;
@@ -32,13 +34,6 @@ const TEST_CYCLE1 = new Cycle({
 });
 
 describe("Entity Tests", () => {
-  test("Creation", () => {
-    const parent = new Entity();
-    expect(parent.getMetadata("hello")).toBeNull();
-    parent.setMetadata("hello", "world");
-    expect(parent.getMetadata("hello")).toBe("world");
-  });
-
   test("Children", () => {
     class Ent extends Entity {
       _children: Entity[] = [];
@@ -52,8 +47,14 @@ describe("Entity Tests", () => {
     expect(parent.indexOfChild(child)).toBe(0);
   });
 
+  /*
   test("Metadata", () => {
-    const parent = new Entity();
+    let parent = new Entity();
+    expect(parent.getMetadata("hello")).toBeNull();
+    parent.setMetadata("hello", "world");
+    expect(parent.getMetadata("hello")).toBe("world");
+
+    parent = new Entity();
     parent.metadata["hello"] = 5;
     const child = new Entity();
     child.parent = parent;
@@ -61,6 +62,7 @@ describe("Entity Tests", () => {
     expect(child.getMetadata("hello", false)).toBe(null);
     expect(child.getMetadata("hello")).toBe(5);
   });
+  */
 });
 
 describe("Cycle tests", () => {
@@ -284,7 +286,7 @@ describe("Cycle tests", () => {
 describe("Line tests", () => {
   test("copy", () => {
     const l = new Line();
-    expect(l.parent).toBe(null);
+    // expect(l.parent).toBe(null);
     expect(l.type).toBe("Line");
     const l2 = l.clone();
     expect(l.equals(l2)).toBe(true);
@@ -346,7 +348,7 @@ describe("Atom tests", () => {
 
     let child = g.atoms.first;
     for (let i = 0; i < 3; i++, child = child!.nextSibling) {
-      expect(child?.parent).toBe(g);
+      expect(child?.parentGroup).toBe(g);
       // if (i > 0)
       expect(child?.prevSibling).toBe(notes[i - 1] || null);
       // if (i < 2)
@@ -362,7 +364,7 @@ describe("Atom tests", () => {
 describe("Atom tests", () => {
   test("Note Copy", () => {
     const n = new Note("a", TSU.Num.Frac(3, 5), 4, 6);
-    expect(n.parent).toBe(null);
+    expect(n.parentGroup).toBe(null);
     const n2 = n.clone();
     expect(n.value).toBe(n2.value);
     expect(n.duration).toEqual(n2.duration);
@@ -383,7 +385,7 @@ describe("Atom tests", () => {
 
   test("Syllable Copy", () => {
     const n = new Syllable("a", TSU.Num.Frac(3, 5));
-    expect(n.parent).toBe(null);
+    expect(n.parentGroup).toBe(null);
     const n2 = n.clone();
     expect(n.value).toBe(n2.value);
     expect(n.duration).toEqual(n2.duration);
