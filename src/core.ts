@@ -70,11 +70,11 @@ export abstract class LeafAtom extends Atom {
   beforeRest = false;
 
   /**
-   * Splits this atom "before" a certain duration.  If this atom's duration is
+   * Splits this atom at a certain duration.  If this atom's duration is
    * longer than the given duration then it is truncated to the given duration
    * and a continuation space is returned.
    */
-  splitBefore(duration: Fraction): TSU.Nullable<Atom> {
+  splitAt(duration: Fraction): TSU.Nullable<Atom> {
     if (this.duration.cmp(duration) > 0) {
       const spillOver = this.createSpilloverSpace(this.duration.minus(duration));
       spillOver.isContinuation = true;
@@ -285,7 +285,7 @@ export class Group extends Atom {
    * longer than the given duration then it is truncated to the given duration
    * and a continuation space is returned.
    */
-  splitAfter(requiredDuration: Fraction, targetGroup: TSU.Nullable<Group> = null): TSU.Nullable<Group> {
+  splitAt(requiredDuration: Fraction, targetGroup: TSU.Nullable<Group> = null): TSU.Nullable<Group> {
     if (this.duration.isLTE(requiredDuration) || requiredDuration.isLTE(ZERO)) {
       return targetGroup;
     }
@@ -303,16 +303,20 @@ export class Group extends Atom {
     // "split" and only the second half is to be added into the out group
     // but first half's duration will be truncated
     while (true) {
+      const durWithLast = this.duration;
       const last = this.atoms.popBack();
-      const durWithoutLast = this.duration.minus(last.duration, true);
+      last.parentGroup = null;
+      const durWithoutLast = this.duration;
+      // console.log("WithoutLast: ", durWithoutLast, "Required Duration: ", requiredDuration, "last: ", last);
       if (durWithoutLast.isGTE(requiredDuration)) {
         targetGroup.insertAtomsAt(targetGroup.atoms.first, last);
         if (durWithoutLast.equals(requiredDuration)) break;
       } else {
         // needs further splitting as "too much" was removed from the end
-        const minDur = requiredDuration.minus(durWithoutLast, true);
+        const minDur = last.duration.minus(durWithLast.minus(requiredDuration), true);
+        // console.log("MinDur: ", minDur);
         const spillOver =
-          last.type == AtomType.GROUP ? (last as Group).splitAfter(minDur) : (last as LeafAtom).splitBefore(minDur);
+          last.type == AtomType.GROUP ? (last as Group).splitAt(minDur) : (last as LeafAtom).splitAt(minDur);
         if (spillOver == null) {
           throw new Error("Spill over cannot be null here");
         }
@@ -321,7 +325,11 @@ export class Group extends Atom {
         targetGroup.insertAtomsAt(targetGroup.atoms.first, spillOver);
 
         // and Add the removed item back
-        this.atoms.push(last);
+        // console.log("Last after split: ", last);
+        this.atoms.pushBack(last);
+
+        // There can be no more breaks!
+        break;
       }
     }
     return targetGroup;
@@ -338,24 +346,38 @@ export class Group extends Atom {
    * then the atoms are appended at the end.
    */
   insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, ...atoms: Atom[]): this {
-    if (beforeAtom == null) return this.addAtoms(...atoms);
-    throw new Error("Not implemented");
-    return this;
-  }
-
-  addAtoms(...atoms: Atom[]): this {
+    // First form a chain of the given atoms
     for (const atom of atoms) {
+      if (atom.parentGroup != null) {
+        if (atom.parentGroup != this) {
+          throw new Error("Atom belongs to another parent.  Remove it first");
+        }
+        atom.parentGroup.removeAtoms(atom);
+      }
       if (atom.type == AtomType.REST) {
         const last = this.atoms.last;
         if (last && last.type != AtomType.GROUP && last.type != AtomType.LABEL) {
           (last as LeafAtom).beforeRest = true;
         }
       } else {
-        if (atom.parentGroup != null) {
-          throw new Error("Atom already added to another group - implement auto 'move'");
-        }
         atom.parentGroup = this;
-        this.atoms.add(atom);
+        this.atoms.add(atom, beforeAtom);
+      }
+    }
+    return this;
+  }
+
+  addAtoms(...atoms: Atom[]): this {
+    return this.insertAtomsAt(null, ...atoms);
+  }
+
+  removeAtoms(...atoms: Atom[]): this {
+    for (const atom of atoms) {
+      if (atom.parentGroup == this) {
+        this.atoms.remove(atom);
+        atom.parentGroup = null;
+      } else if (atom.parentGroup != null) {
+        throw new Error("Atom cannot be removed as it does not belong to this group");
       }
     }
     return this;
