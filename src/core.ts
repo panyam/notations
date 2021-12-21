@@ -40,6 +40,8 @@ export abstract class Atom extends TimedEntity {
     this._duration = duration || ONE;
   }
 
+  abstract splitAt(requiredDuration: Fraction): TSU.Nullable<Atom>;
+
   debugValue(): any {
     const out = super.debugValue();
     if (!this.duration.isOne) {
@@ -238,8 +240,8 @@ export class Group extends Atom {
   readonly atoms = new TSU.Lists.ValueList<Atom>();
 
   constructor(...atoms: Atom[]) {
-    super(ONE);
-    this.addAtoms(...atoms);
+    super(atoms.length == 0 ? ZERO : ONE);
+    this.addAtoms(false, ...atoms);
   }
 
   equals(another: this, expect = false): boolean {
@@ -275,6 +277,8 @@ export class Group extends Atom {
 
   debugValue(): any {
     const out = { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
+    // out.duration = this._duration.factorized.toString();
+    // out.realDuration = this.duration.factorized.toString();
     if (this.durationIsMultiplier) out.durationIsMultiplier = true;
     return out;
   }
@@ -285,52 +289,73 @@ export class Group extends Atom {
    * longer than the given duration then it is truncated to the given duration
    * and a continuation space is returned.
    */
-  splitAt(requiredDuration: Fraction, targetGroup: TSU.Nullable<Group> = null): TSU.Nullable<Group> {
+  splitAt(requiredDuration: Fraction): TSU.Nullable<Group> {
     if (this.duration.isLTE(requiredDuration) || requiredDuration.isLTE(ZERO)) {
-      return targetGroup;
+      return null;
     }
-    if (!targetGroup) {
-      targetGroup = new Group();
-      targetGroup.durationIsMultiplier = this.durationIsMultiplier;
+    const targetGroup = new Group();
+    if (this.durationIsMultiplier) {
+      targetGroup.durationIsMultiplier = true;
+      targetGroup._duration = this._duration;
     }
-    // few options here
-    // delta = ourDuration - lastDuration
-    // if delta >= requiredDuration
-    // then just add last as is into the new group
-    //    Additionally if delta == requiredDuration we can stop and return here
-    // if delta < requiredDuration
-    // then it means we have removed "too much", so the moved entry needs to be
-    // "split" and only the second half is to be added into the out group
-    // but first half's duration will be truncated
-    while (true) {
-      const durWithLast = this.duration;
-      const last = this.atoms.popBack();
-      last.parentGroup = null;
-      const durWithoutLast = this.duration;
-      // console.log("WithoutLast: ", durWithoutLast, "Required Duration: ", requiredDuration, "last: ", last);
-      if (durWithoutLast.isGTE(requiredDuration)) {
-        targetGroup.insertAtomsAt(targetGroup.atoms.first, last);
-        if (durWithoutLast.equals(requiredDuration)) break;
+
+    let remainingDur = this.duration;
+    const totalChildDuration = this.totalChildDuration;
+    const durationFactor = this.durationIsMultiplier
+      ? ONE.divby(this._duration)
+      : this._duration.divby(totalChildDuration, true);
+    while (remainingDur.isGT(requiredDuration) && this.atoms.last) {
+      const lastChild = this.atoms.last;
+      // Child's duration is absolute in its own "system"
+      // Its duration within the parent (this) group's frame of reference depends
+      // on whether the parent's duration is absolute or as a multiplier
+      //
+      // realChildDuration = case (group.durationIsMultiper) {
+      //  | true  => child.duration / this._duration
+      //  | false => child.duration * this._duration / total child duration
+      //  }
+      const childDuration = lastChild.duration.times(durationFactor);
+      const newDuration = remainingDur.minus(childDuration);
+      if (newDuration.isGTE(requiredDuration)) {
+        // remove ourselves and add to target
+        // in both cases duration will be adjusted if need be
+        this.removeAtoms(true, lastChild);
+        targetGroup.insertAtomsAt(targetGroup.atoms.first, true, lastChild);
+        if (newDuration.equals(requiredDuration)) {
+          // we have reached the end so return
+          return targetGroup;
+        }
       } else {
-        // needs further splitting as "too much" was removed from the end
-        const minDur = last.duration.minus(durWithLast.minus(requiredDuration), true);
-        // console.log("MinDur: ", minDur);
-        const spillOver =
-          last.type == AtomType.GROUP ? (last as Group).splitAt(minDur) : (last as LeafAtom).splitAt(minDur);
+        // our scenario is now this:
+        //
+        // totalParentDuration = 10
+        // required = 8
+        // lastChildDuration (relative to parent) is 5
+        //
+        // durWithoutLast = 10 - 5
+        // newRequired = requiredDur - durWithoutLast = 3
+        //
+        // However 3 is a duration in the parent's frame of reference
+        // this has to be converted back to the child's FoR
+        const newRequiredDur = requiredDuration.minus(newDuration, true).divby(durationFactor, true);
+        // console.log( "newRequiredDur: ", newRequiredDur, "requiedDur: ", requiredDuration, "remainingDur: ", remainingDur,);
+        // then the last item needs to be split, and by how much?
+        const spillOver = lastChild.splitAt(newRequiredDur);
         if (spillOver == null) {
           throw new Error("Spill over cannot be null here");
         }
+        if (!this.durationIsMultiplier) {
+          // Our own duration has also now changed
+          this._duration = requiredDuration;
+        } else {
+          if (this._duration.isZero) throw new Error("How can this be?");
+        }
         spillOver.isContinuation = true;
         // Add spill over to the target
-        targetGroup.insertAtomsAt(targetGroup.atoms.first, spillOver);
-
-        // and Add the removed item back
-        // console.log("Last after split: ", last);
-        this.atoms.pushBack(last);
-
-        // There can be no more breaks!
-        break;
+        targetGroup.insertAtomsAt(targetGroup.atoms.first, true, spillOver);
+        return targetGroup;
       }
+      remainingDur = newDuration;
     }
     return targetGroup;
   }
@@ -345,14 +370,16 @@ export class Group extends Atom {
    * Inserts atom before a given cursor atom.  If the cursor atom is null
    * then the atoms are appended at the end.
    */
-  insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, ...atoms: Atom[]): this {
+  insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, adjustDuration = false, ...atoms: Atom[]): this {
+    adjustDuration = adjustDuration && !this.durationIsMultiplier;
+    const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
     // First form a chain of the given atoms
     for (const atom of atoms) {
       if (atom.parentGroup != null) {
         if (atom.parentGroup != this) {
           throw new Error("Atom belongs to another parent.  Remove it first");
         }
-        atom.parentGroup.removeAtoms(atom);
+        atom.parentGroup.removeAtoms(false, atom);
       }
       if (atom.type == AtomType.REST) {
         const last = this.atoms.last;
@@ -364,20 +391,51 @@ export class Group extends Atom {
         this.atoms.add(atom, beforeAtom);
       }
     }
+    if (adjustDuration) {
+      if (this._duration.isZero) {
+        if (this.durationIsMultiplier) throw new Error("How can this be?");
+        this._duration = this.totalChildDuration;
+      } else {
+        const scaleFactor = this.totalChildDuration.divby(oldChildDuration);
+        this._duration = this._duration.times(scaleFactor, true);
+      }
+    }
     return this;
   }
 
-  addAtoms(...atoms: Atom[]): this {
-    return this.insertAtomsAt(null, ...atoms);
+  /**
+   * Adds atoms to the end of our atom list.
+   */
+  addAtoms(adjustDuration = false, ...atoms: Atom[]): this {
+    return this.insertAtomsAt(null, adjustDuration, ...atoms);
   }
 
-  removeAtoms(...atoms: Atom[]): this {
+  /**
+   * Removes atoms from our child list.
+   *
+   * @param   adjustDuration  If the duration is not a multiplier then it might
+   *                          sometimes be useful to automatically adjust the duration
+   *                          to accomodate the removal of the given atom.
+   * @param   atoms           List of atoms to remove from this list.
+   */
+  removeAtoms(adjustDuration = false, ...atoms: Atom[]): this {
+    adjustDuration = adjustDuration && !this.durationIsMultiplier;
+    const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
     for (const atom of atoms) {
       if (atom.parentGroup == this) {
         this.atoms.remove(atom);
         atom.parentGroup = null;
       } else if (atom.parentGroup != null) {
         throw new Error("Atom cannot be removed as it does not belong to this group");
+      }
+    }
+    if (adjustDuration) {
+      if (this._duration.isZero) {
+        if (this.durationIsMultiplier) throw new Error("How can this be?");
+        this._duration = this.totalChildDuration;
+      } else {
+        const scaleFactor = this.totalChildDuration.divby(oldChildDuration);
+        this._duration = this._duration.times(scaleFactor, true);
       }
     }
     return this;

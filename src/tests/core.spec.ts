@@ -187,13 +187,30 @@ describe("Group Tests", () => {
     expect(a3.parentGroup).toBe(null);
     expect(a4.parentGroup).toBe(null);
     const g = new Group().setDuration(ONE, true);
-    g.insertAtomsAt(null, a2, a4);
+    g.insertAtomsAt(null, true, a2, a4);
     expect(a2.parentGroup).toBe(g);
     expect(a4.parentGroup).toBe(g);
     expect(g.atoms.size).toBe(2);
-    g.insertAtomsAt(a2, a1);
+    g.insertAtomsAt(a2, true, a1);
     expect(g.atoms.size).toBe(3);
     expect(a1.parentGroup).toBe(g);
+  });
+
+  test("Group insertAtomsAt and removeAtoms with duration adjustments", () => {
+    const g = new Group();
+    const a1 = new Space(ONE);
+    const a2 = new Space(TWO);
+    const a3 = new Space(THREE);
+    const a4 = new Space(FOUR);
+    g.addAtoms(true, a1);
+    expect(g.duration).toEqual(ONE);
+    g.addAtoms(true, a2);
+    g.addAtoms(true, a3);
+    expect(g.duration).toEqual(SIX);
+    g.addAtoms(true, a4);
+    expect(g.duration).toEqual(Frac(10));
+    g.removeAtoms(true, a3);
+    expect(g.duration).toEqual(Frac(7));
   });
 
   test("Group Splitting with just atoms at atom boundary", () => {
@@ -215,7 +232,7 @@ describe("Group Tests", () => {
     expect(g.splitAt(FOUR.timesNum(5))).toBe(null);
 
     // split at 6 - last 2 2-length spaces should be split out
-    const g2 = g.splitAt(THREE.timesNum(2));
+    const g2 = g.splitAt(THREE.timesNum(2)) as Group;
     expect(g2?.atoms.size).toBe(2);
     expect(g2?.atoms.first).toBe(atoms[3]);
     expect(g2?.atoms.last).toBe(atoms[4]);
@@ -227,7 +244,7 @@ describe("Group Tests", () => {
     expect(g.splitAt(FOUR.timesNum(5))).toBe(null);
 
     // split at 6 - last 4 length space should be split out
-    const g2 = g.splitAt(FIVE);
+    const g2 = g.splitAt(FIVE) as Group;
     expect(g.atoms.size).toBe(3);
     expect(g.atoms.last).toBe(atoms[2]);
     expect(atoms[2].duration).toEqual(TWO);
@@ -237,18 +254,49 @@ describe("Group Tests", () => {
     expect(g2?.atoms.last).toBe(atoms[3]);
   });
 
+  test("Group Splitting with fixed duration", () => {
+    const a1 = [new Space(ONE), new Space(ONE), new Space(ONE)];
+    const g1 = new Group(...a1).setDuration(THREE);
+    const g2 = g1.splitAt(TWO) as Group;
+    expect(g1.atoms.size).toBe(2);
+    expect(g1.atoms.first).toBe(a1[0]);
+    expect(g1.atoms.last).toBe(a1[1]);
+    expect(g2.atoms.size).toBe(1);
+    expect(g2.atoms.first).toBe(a1[2]);
+  });
+
   test("Group Splitting with sub group being split", () => {
     const a3 = [new Space(ONE), new Space(ONE), new Space(ONE)];
     const g3 = new Group(...a3).setDuration(THREE);
+
     const a2 = [new Space(ONE), new Space(TWO), g3];
     const g2 = new Group(...a2).setDuration(TWO, true);
-    const atoms = [new Space(TWO), new Space(TWO), g2, new Space(TWO), new Space(TWO)];
-    const g = new Group(...atoms).setDuration(ONE, true);
-    expect(g2.duration.factorized).toEqual(Frac(3));
-    expect(g.duration.factorized).toEqual(Frac(11));
 
-    const g4 = g.splitAt(SIX);
-    expect(g.atoms.size).toBe(3);
-    expect(g4?.atoms.size).toBe(3);
+    const g = new Group(g2).setDuration(ONE, true);
+    expect(g2.duration.factorized).toEqual(Frac(3));
+    expect(g.duration.factorized).toEqual(Frac(3));
+
+    /**
+     *  [ 2 * [  1 2 3 * [ 1 1 1 ] ] ]
+     *
+     * Splitting at 2 should give us:
+     *
+     *  [ 2 * [ 1 2 [ 1 ] ] ] , [ [ 2 * [ 1 1 ] ] ]
+     */
+    // console.log("G Before: ", JSON.stringify(g.debugValue(), null, 2));
+    const g4 = g.splitAt(TWO) as Group;
+    // console.log("G: ", JSON.stringify(g.debugValue(), null, 2));
+    // console.log("G4: ", JSON.stringify(g4.debugValue(), null, 2));
+    expect(g.atoms.size).toBe(1);
+    expect(g.atoms.last).toBe(g2);
+    expect(g2.duration.factorized).toEqual(TWO);
+    expect(g4?.atoms.size).toBe(1);
+
+    const g5 = g4?.atoms.first as Group;
+    expect(g5.atoms.size).toBe(1);
+    expect(g5.isContinuation).toBe(true);
+    expect(g5.duration.factorized).toEqual(ONE);
+    expect((g5 as any)._duration.factorized).toEqual(TWO);
+    // console.log("G5: ", JSON.stringify(g5.debugValue(), null, 2));
   });
 });
