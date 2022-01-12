@@ -19,10 +19,7 @@
     "@panyam/tsutils": "^0.0.58",
     "ace-builds": "^1.4.13",
     "notations": "file:../..",
-    "golden-layout": "^2.4.0",
-    "uuid": "^8.3.2",
-    "uuid-v4-validator": "^2.0.0",
-    "uuidv4": "^6.2.12"
+    "golden-layout": "^2.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
