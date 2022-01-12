@@ -3,10 +3,10 @@ import "./styles/composer.scss";
 import * as GL from "golden-layout";
 import { InputView } from "./InputView";
 import { ConsoleView } from "./ConsoleView";
-import { ParseTableView } from "./ParseTableView";
+import { NotationView } from "./NotationView";
 import * as configs from "./configs";
 
-const LAYOUT_STATE_KEY = "galorium:savedState";
+const LAYOUT_STATE_KEY = "notation-playground:savedState:1";
 
 /**
  * The app that drives the viewer and the editor.
@@ -14,7 +14,7 @@ const LAYOUT_STATE_KEY = "galorium:savedState";
 export class App {
   inputView: InputView;
   consoleView: ConsoleView;
-  parseTableView: ParseTableView;
+  notationView: NotationView;
   eventHub: TSU.Events.EventHub;
 
   constructor() {
@@ -23,19 +23,18 @@ export class App {
     const grammarAreaDiv = document.querySelector("#grammarArea") as HTMLElement;
     const normalizedGrammarAreaDiv = document.querySelector("#normalizedGrammarArea") as HTMLElement;
     const inputAreaDiv = document.querySelector("#inputArea") as HTMLElement;
-    const ptreeAreaDiv = document.querySelector("#ptreeArea") as HTMLElement;
-    const ptableAreaDiv = document.querySelector("#ptableArea") as HTMLElement;
+    const outputAreaDiv = document.querySelector("#outputArea") as HTMLElement;
     const consoleAreaDiv = document.querySelector("#consoleArea") as HTMLElement;
 
     this.inputView = new InputView(inputAreaDiv, this);
     this.consoleView = new ConsoleView(consoleAreaDiv, this);
-    this.parseTableView = new ParseTableView(ptableAreaDiv, this);
+    this.notationView = new NotationView(outputAreaDiv, this);
 
     const savedState = localStorage.getItem(LAYOUT_STATE_KEY);
     let inputContents = "";
     const myLayout = new GL.GoldenLayout(
-      configs.defaultGLConfig,
-      // savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
+      // configs.defaultGLConfig,
+      savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
       desktopDiv,
     );
     const resizeObserver = new ResizeObserver(() => {
@@ -46,9 +45,9 @@ export class App {
       const elem = container.getElement();
       elem.appendChild(inputAreaDiv);
     });
-    myLayout.registerComponent("ptableArea", (container, componentState) => {
+    myLayout.registerComponent("outputArea", (container, componentState) => {
       const elem = container.getElement();
-      elem.appendChild(ptableAreaDiv);
+      elem.appendChild(outputAreaDiv);
     });
     myLayout.registerComponent("consoleArea", (container, componentState) => {
       const elem = container.getElement();

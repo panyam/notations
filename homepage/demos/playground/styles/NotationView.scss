@@ -1,0 +1,35 @@
+.lineRow {
+  border: none;
+}
+
+.lineAnnotationCell {
+  padding: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  vertical-align: top;
+}
+
+.lineContentCell {
+  padding: 0px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  // border-bottom: solid 1px gray;
+}
+
+.rawBlockRow {
+  border: none;
+}
+
+.rawBlockContentCell {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.lineRootSVG {
+}
+
+.notationsContentRootTable {
+  border-top: solid 1px gray;
+  width: unset;
+}
