@@ -27,59 +27,65 @@ function setupInheritance(engine: any): void {
 // Create a new express app instance
 const app: express.Application = express();
 
-const copsHeader = [
-  ["font-src", ["'self'", "https://fonts.gstatic.com/", "*"]],
+const copsHeader =
   [
-    "script-src",
+    ["default-src", ["'self'"]],
+    ["img-src", ["'self'", "data:"]],
+    ["font-src", ["'self'", "https://fonts.gstatic.com/", "*"]],
     [
-      "http://localhost:3000",
-      "'self'",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-      "http://code.jquery.com/jquery-3.5.1.min.js",
+      "script-src",
+      [
+        "http://localhost:3000/*",
+        "'self'",
+        "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
+        "http://code.jquery.com/jquery-3.5.1.min.js",
+      ],
     ],
-  ],
-  [
-    "script-src-elem",
     [
-      "http://localhost:3000",
-      "'self'",
-      "'sha256-Az0bWf8jQdMaG6dzok4j+bqRkUraBGtPudz6j4NAYVU='",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-      "http://code.jquery.com/jquery-3.5.1.min.js",
+      "script-src-elem",
+      [
+        "http://localhost:3000",
+        "'self'",
+        "'sha256-Az0bWf8jQdMaG6dzok4j+bqRkUraBGtPudz6j4NAYVU='",
+        "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
+        "http://code.jquery.com/jquery-3.5.1.min.js",
+        "https://unpkg.com/ace-builds@1.4.12/src-noconflict/theme-monokai.js",
+      ],
     ],
-  ],
-  /*
-  [
-    "style-src-elem",
     [
-      // For blog
-      "'self'",
-      "https://unpkg.com/modern-normalize@0.6.0/modern-normalize.css",
+      "style-src-elem",
+      [
+        // For blog
+        "'self'",
+        "'unsafe-inline'",
+        "https://unpkg.com/modern-normalize@0.6.0/modern-normalize.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-base.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css",
+      ],
     ],
-  ],
-  */
-  [
-    "style-src",
     [
-      "'self'",
-      "'unsafe-inline'",
-      "https://fonts.googleapis.com/icon",
-      "https://fonts.googleapis.com/css",
-      "https://fonts.googleapis.com/css2",
-      "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
-      "https://golden-layout.com/files/latest/css/goldenlayout-base.css",
-      "https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css",
-      "https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css",
-      // For blog
-      "https://unpkg.com/modern-normalize@0.6.0/modern-normalize.css",
-      // Site
-      "https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v27.0.1/dist/font-face.css",
+      "style-src",
+      [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com/icon",
+        "https://fonts.googleapis.com/css",
+        "https://fonts.googleapis.com/css2",
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-base.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css",
+        "https://golden-layout.com/files/latest/css/goldenlayout-light-theme.css",
+        // For blog
+        "https://unpkg.com/modern-normalize@0.6.0/modern-normalize.css",
+        // Site
+        "https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v27.0.1/dist/font-face.css",
+      ],
     ],
-  ],
-  ["frame-src", ["'self'"]],
-]
-  .map((entry) => [entry[0] + " " + (entry[1] as string[]).map((v) => `${v}`).join(" ")])
-  .join(" ; ");
+    ["frame-src", ["'self'"]],
+  ]
+    .map((entry) => [entry[0] + " " + (entry[1] as string[]).map((v) => `${v}`).join(" ")])
+    .join(" ; ") + " ; report-uri /csp-violation-report/";
 
 /// Enable static sites for dev (and hence CORS)
 app.use((req, res, next) => {
@@ -88,8 +94,8 @@ app.use((req, res, next) => {
 });
 
 app.use(function (req, res, next) {
-  // res.setHeader("Content-Security-Policy", copsHeader);
-  res.setHeader("Content-Security-Policy-Report-Only", "default-src 'self'; report-uri /csp-violation-report/");
+  // res.setHeader("Content-Security-Policy-Report-Only", "default-src 'self'; ");
+  res.setHeader("Content-Security-Policy", copsHeader);
   next();
 });
 
@@ -98,6 +104,16 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
 app.use(bodyParser());
 app.use(bodyParser.json());
+app.use(
+  bodyParser.json({
+    type: "application/json",
+  }),
+);
+app.use(
+  bodyParser.json({
+    type: "application/csp-report",
+  }),
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use("/blog", express.static(path.join(__dirname, "sites/blog")));
@@ -105,7 +121,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/demos", express.static(path.join(__dirname, "demos")));
 app.use("/docs/", express.static(path.join(__dirname, "docs")));
 app.use("/csp-violation-report/", function (req: any, res: any, next: any) {
-  console.log("Here ok: ", req.body);
+  console.log("Here ok: ", req.method, req.body);
   res.sendStatus(200);
 });
 app.use("/", express.static(path.join(__dirname, "site")));
