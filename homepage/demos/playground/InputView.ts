@@ -105,7 +105,9 @@ export class InputView {
       errors.forEach((err) => this.logError(err));
       this.codeEditor.session.setAnnotations(this.annotations);
     } else {
-      this.app.eventHub.emit(events.InputParsed, this, [notation, beatsByLineRole, beatLayouts]);
+      this.app.eventHub.emit(events.InputParsed, this, [
+        notation, beatsByLineRole, beatLayouts
+      ]);
     }
   }
 

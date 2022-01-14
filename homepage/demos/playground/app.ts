@@ -5,6 +5,7 @@ import { InputView } from "./InputView";
 import { ConsoleView } from "./ConsoleView";
 import { NotationView } from "./NotationView";
 import * as configs from "./configs";
+import * as events from "./events";
 
 const LAYOUT_STATE_KEY = "notation-playground:savedState:1";
 
@@ -60,6 +61,14 @@ export class App {
     });
     myLayout.init();
 
+    this.eventHub?.on(events.InputParsed, (evt) => {
+      console.log("Ok here, evt: ", evt);
+      const [notation, beatsByLineRole, beatLayouts] = evt.payload;
+      this.notationView.notation = notation;
+      this.notationView.beatsByLineRole = beatsByLineRole;
+      this.notationView.beatLayouts = beatLayouts;
+      this.notationView.refreshLayout();
+    });
     this.inputView.setContents(inputContents);
   }
 }

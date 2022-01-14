@@ -71,6 +71,7 @@ export class NotationView {
   headerElement: HTMLDivElement;
   notation: N.Notation;
   lineViews: LineView[] = [];
+  // Mapping from line id -> list of beats in each of its roles
   beatsByLineRole = new Map<number, N.Beat[][]>();
   beatLayouts = new Map<number, N.BeatLayout>();
   currentSVGElement: SVGSVGElement | null = null;
@@ -79,15 +80,6 @@ export class NotationView {
 
   constructor(public readonly rootElement: HTMLElement, public readonly app: App, public readonly config?: any) {
     this.loadChildViews();
-  }
-
-  loadChildViews(): void {
-    this.tableElement = TSU.DOM.createNode("table", {
-      parent: this.rootElement,
-      attrs: {
-        class: "notationsContentRootTable",
-      },
-    }) as HTMLTableElement;
   }
 
   refresh(): void {
@@ -103,6 +95,15 @@ export class NotationView {
       this.beatViews.set(beat.uuid, curr);
     }
     return curr;
+  }
+
+  loadChildViews(): void {
+    this.tableElement = TSU.DOM.createNode("table", {
+      parent: this.rootElement,
+      attrs: {
+        class: "notationsContentRootTable",
+      },
+    }) as HTMLTableElement;
   }
 
   public addNewRow(id: string, prefix: string, withAnnotation = true): [HTMLElement, HTMLElement] {
