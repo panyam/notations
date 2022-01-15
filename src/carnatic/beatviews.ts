@@ -16,6 +16,12 @@ export class BeatView extends AtomViewGroup implements BeatViewBase {
     config?: any,
   ) {
     super(rootElement);
+    this.groupElement.setAttribute("beatId", "" + beat.uuid);
+    this.groupElement.setAttribute("id", "" + beat.uuid);
+    this.groupElement.setAttribute("roleName", beat.role.name);
+    this.groupElement.setAttribute("layoutLine", "" + beat.layoutLine);
+    this.groupElement.setAttribute("layoutColumn", "" + beat.layoutColumn);
+    this.groupElement.setAttribute("beatIndex", "" + beat.index);
     this.textElement = TSU.DOM.createSVGNode("text", {
       parent: this.groupElement,
       attrs: {
@@ -48,18 +54,6 @@ export class BeatView extends AtomViewGroup implements BeatViewBase {
       atomView.depth = flatAtom.depth;
       this.atomViews.push(atomView);
     }
-  }
-
-  protected getGroupElementAttrs(): any {
-    const beat = this.beat;
-    return {
-      beatId: beat.uuid,
-      id: "beatGroup" + beat.uuid,
-      roleName: beat.role.name,
-      layoutLine: beat.layoutLine,
-      layoutColumn: beat.layoutColumn,
-      beatIndex: beat.index,
-    };
   }
 
   protected createEmbelishments(): Embelishment[] {

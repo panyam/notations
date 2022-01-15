@@ -340,7 +340,6 @@ export abstract class AtomViewGroup extends AtomView {
     this.atomSpacing = 5;
     this.groupElement = TSU.DOM.createSVGNode("g", {
       parent: rootElement,
-      attrs: this.getGroupElementAttrs(),
     });
 
     this.setStyles(config || {});
@@ -348,10 +347,6 @@ export abstract class AtomViewGroup extends AtomView {
 
   isLeaf(): boolean {
     return false;
-  }
-
-  protected getGroupElementAttrs(): any {
-    return {};
   }
 
   protected refreshMinSize(): TSU.Geom.Size {
