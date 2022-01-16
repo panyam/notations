@@ -349,6 +349,14 @@ export abstract class AtomViewGroup extends AtomView {
     return false;
   }
 
+  addAtomViews(...atomViews: AtomView[]): this {
+    for (const atomView of atomViews) {
+      this.atomViews.push(atomView);
+    }
+    this.resetMinSize();
+    return this;
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     let totalWidth = 0;
     let maxHeight = 0;
