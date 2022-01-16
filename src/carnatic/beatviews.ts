@@ -52,7 +52,7 @@ export class BeatView extends AtomViewGroup implements BeatViewBase {
       }
       const atomView = createAtomView(this.textElement, flatAtom);
       atomView.depth = flatAtom.depth;
-      this.atomViews.push(atomView);
+      this.addAtomViews(atomView);
     }
   }
 
