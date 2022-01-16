@@ -284,10 +284,10 @@ export class Group extends Atom {
   }
 
   /**
-   * Splits this group into two parts such that first part (this group) fits within
-   * the given duration and everything else
-   * longer than the given duration then it is truncated to the given duration
-   * and a continuation space is returned.
+   * Splits this group into two parts such that first part (this group)
+   * fits within the given duration and everything else longer than the
+   * given duration then it is truncated to the given duration and a
+   * continuation space is returned.
    */
   splitAt(requiredDuration: Fraction): TSU.Nullable<Group> {
     if (this.duration.isLTE(requiredDuration) || requiredDuration.isLTE(ZERO)) {
