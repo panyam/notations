@@ -2,7 +2,6 @@ import "./styles/NotationView.scss";
 
 const MarkdownIt = require("markdown-it");
 import * as TSU from "@panyam/tsutils";
-import { App } from "./app";
 import * as events from "./events";
 import * as N from "notations";
 
@@ -15,12 +14,7 @@ export class LineView {
   beatLayout: N.BeatLayout;
   gElem: SVGGElement;
 
-  constructor(
-    public readonly rootElement: SVGSVGElement,
-    public readonly app: App,
-    public line: N.Line,
-    public readonly config?: any,
-  ) {
+  constructor(public readonly rootElement: SVGSVGElement, public line: N.Line, public readonly config?: any) {
     this.loadChildViews();
   }
 
@@ -78,7 +72,7 @@ export class NotationView {
   tableElement: HTMLTableElement;
   beatViews = new Map<number, N.BeatView>();
 
-  constructor(public readonly rootElement: HTMLElement, public readonly app: App, public readonly config?: any) {
+  constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
     this.loadChildViews();
   }
 
@@ -155,7 +149,7 @@ export class NotationView {
     if (lineView == null) {
       const layoutParams = this.notation.layoutParamsForLine(line) || null;
       const svgElem = this.newLineRoot(this.tableElement, line);
-      lineView = new LineView(svgElem, this.app, line, {
+      lineView = new LineView(svgElem, line, {
         layoutParams: layoutParams,
       } as any);
       if (!line.isEmpty) {

@@ -30,7 +30,7 @@ export class App {
 
     this.inputView = new InputView(inputAreaDiv, this);
     this.consoleView = new ConsoleView(consoleAreaDiv, this);
-    this.notationView = new NotationView(outputAreaDiv, this);
+    this.notationView = new NotationView(outputAreaDiv);
 
     const savedState = localStorage.getItem(LAYOUT_STATE_KEY);
     const myLayout = new GL.GoldenLayout(
@@ -57,7 +57,7 @@ export class App {
     myLayout.on("stateChanged", function () {
       var state = JSON.stringify(myLayout.toConfig());
       localStorage.setItem(LAYOUT_STATE_KEY, state);
-      console.log("Saving State: ", state);
+      // console.log("Saving State: ", state);
     });
     myLayout.init();
 
