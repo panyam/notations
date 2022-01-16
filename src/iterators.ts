@@ -131,6 +131,71 @@ export class AtomIterator {
   }
 }
 
+export class WindowIterator {
+  private atomQueue = new TSU.Lists.List<Atom>();
+  private currOffset = TSU.Num.Fraction.ZERO;
+  private peeked: TSU.Nullable<Atom> = null;
+
+  constructor(...atoms: Atom[]) {
+    this.push(...atoms);
+  }
+
+  /**
+   * Push atoms to be flattened and served by this iterator.
+   */
+  push(...atoms: Atom[]): this {
+    for (const atom of atoms) {
+      this.atomQueue.add(atom);
+    }
+    return this;
+  }
+
+  next(): TSU.Nullable<Atom> {
+    const out = this.peek();
+    this.peeked = null;
+    if (out != null) {
+      this.currOffset = this.currOffset.plus(out.duration).factorized;
+    }
+    return out;
+  }
+
+  peek(): TSU.Nullable<Atom> {
+    if (this.peeked == null && this.hasMore) {
+      this.peeked = this.atomQueue.popFront();
+    }
+    return this.peeked;
+  }
+
+  get hasMore(): boolean {
+    return !this.atomQueue.isEmpty;
+  }
+
+  /**
+   * Gets the atoms to cover the given duration.
+   *
+   * If the number of atoms left in the iterator is 0 then an empty list
+   * is returned.  Otherwise the duration of atoms returned will cover
+   * the given duration even if padding with Space atoms is necessary.
+   */
+  get(duration: TSU.Num.Fraction): [Atom[], boolean] {
+    const out: Atom[] = [];
+    let remaining = duration;
+    while (remaining.isGTNum(0) && this.hasMore) {
+      const next = this.next();
+      TSU.assert(next != null, "Next cannot be null here");
+      out.push(next);
+      const spillOver = next.splitAt(remaining);
+      remaining = remaining.minus(next.duration);
+      if (spillOver != null) {
+        // push the spill over to the front of the queue to be
+        // picked up on the next "get" call
+        this.atomQueue.pushFront(spillOver);
+      }
+    }
+    return [out, remaining.isZero];
+  }
+}
+
 /**
  * Duration Iterators take a tree of Atoms and return atoms in given windowed
  * durations.  This also ensures that a leaf atom can be further split if it is
