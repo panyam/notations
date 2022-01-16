@@ -64,7 +64,7 @@ export class InputView {
       name: "saveDocument",
       bindKey: { win: "Ctrl-s", mac: "Command-s" },
       exec: (editor: ace.Ace.Editor) => {
-        alert("TODO - Saving Input");
+        this.app.eventHub.emit(events.InputSaved, this, this.codeEditor.getValue());
       },
     });
     this.codeEditor.commands.addCommand({

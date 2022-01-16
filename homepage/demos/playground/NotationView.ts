@@ -37,8 +37,8 @@ export class LineView {
   wrapToSize(): void {
     const bbox = (this.gElem as SVGSVGElement).getBBox();
     // set the size of the svg
-    this.rootElement.setAttribute("width", "" + 4 + bbox.width);
-    this.rootElement.setAttribute("height", "" + 15 + bbox.height);
+    this.rootElement.setAttribute("width", "" + (4 + bbox.width));
+    this.rootElement.setAttribute("height", "" + (15 + bbox.height));
     this.gElem.setAttribute("transform", `translate(${4 - bbox.x}, ${4 - bbox.y})`);
   }
 
@@ -176,6 +176,16 @@ export class NotationView {
 
   get currentLineView(): LineView {
     return this.lineViews[this.lineViews.length - 1];
+  }
+
+  clear(): void {
+    this.lineViews = [];
+    // Mapping from line id -> list of beats in each of its roles
+    this.beatsByLineRole = new Map<number, N.Beat[][]>();
+    this.beatLayouts = new Map<number, N.BeatLayout>();
+    this.currentSVGElement = null;
+    this.tableElement.innerHTML = "";
+    this.beatViews = new Map<number, N.BeatView>();
   }
 
   /**

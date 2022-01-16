@@ -8,6 +8,7 @@ import * as configs from "./configs";
 import * as events from "./events";
 
 const LAYOUT_STATE_KEY = "notation-playground:savedState:1";
+const INPUT_DOC_KEY = "notation-playground:savedContents:1";
 
 /**
  * The app that drives the viewer and the editor.
@@ -32,7 +33,6 @@ export class App {
     this.notationView = new NotationView(outputAreaDiv, this);
 
     const savedState = localStorage.getItem(LAYOUT_STATE_KEY);
-    let inputContents = "";
     const myLayout = new GL.GoldenLayout(
       // configs.defaultGLConfig,
       savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
@@ -64,11 +64,17 @@ export class App {
     this.eventHub?.on(events.InputParsed, (evt) => {
       console.log("Ok here, evt: ", evt);
       const [notation, beatsByLineRole, beatLayouts] = evt.payload;
+      this.notationView.clear();
       this.notationView.notation = notation;
       this.notationView.beatsByLineRole = beatsByLineRole;
       this.notationView.beatLayouts = beatLayouts;
       this.notationView.refreshLayout();
     });
+    const inputContents = localStorage.getItem(INPUT_DOC_KEY) || "";
     this.inputView.setContents(inputContents);
+    this.eventHub?.on(events.InputSaved, (evt) => {
+      const INPUT_DOC_KEY = "notation-playground:savedContents:1";
+      localStorage.setItem(INPUT_DOC_KEY, evt.payload);
+    });
   }
 }
