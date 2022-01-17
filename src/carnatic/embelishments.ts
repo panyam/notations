@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Note } from "../core";
-import { BeatView } from "../layouts";
+import { BeatView } from "../beats";
 import { Embelishment } from "../shapes";
 import { LeafAtomView } from "./atomviews";
 import { JaaruGamaka } from "./gamakas";
@@ -29,7 +29,7 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
       attrs: {
         width: this.dotRadius * 2 * numDots + (numDots - 1) * this.dotSpacing,
         height: this.dotRadius * 2,
-        source: "atom" + this.noteView.flatAtom.atom.uuid,
+        source: "atom" + this.noteView.leafAtom.uuid,
       },
     });
     let cx = 0;
@@ -87,7 +87,7 @@ export class LabelEmbelishment extends LeafAtomViewEmbelishment {
       parent: rootElem,
       text: label,
       attrs: {
-        source: "atom" + this.atomView.flatAtom.atom.uuid,
+        source: "atom" + this.atomView.leafAtom.uuid,
         "dominant-baseline": "hanging",
       },
     });
@@ -275,7 +275,7 @@ export class Jaaru extends LeafAtomViewEmbelishment {
       doc: document,
       parent: rootElem,
       attrs: {
-        source: "atom" + this.atomView.flatAtom.atom.uuid,
+        source: "atom" + this.atomView.leafAtom.uuid,
         stroke: "black",
         fill: "transparent",
         d: this.pathAttribute(),

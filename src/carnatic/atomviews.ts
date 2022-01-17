@@ -1,7 +1,12 @@
 import * as TSU from "@panyam/tsutils";
-import { Literal, AtomType, Note, Space, Syllable } from "../core";
-import { LeafAtomView as LeafAtomViewBase, Embelishment, ElementShape } from "../shapes";
-import { FlatAtom } from "../iterators";
+import { Atom, Group, Literal, AtomType, Note, Space, Syllable } from "../core";
+import {
+  LeafAtomView as LeafAtomViewBase,
+  GroupView as GroupViewBase,
+  AtomView,
+  Embelishment,
+  ElementShape,
+} from "../shapes";
 import {
   OctaveIndicator,
   Kampitham,
@@ -17,22 +22,30 @@ import {
 } from "./embelishments";
 import { GamakaType } from "./gamakas";
 
+export class GroupView extends GroupViewBase {
+  createAtomView(atom: Atom): AtomView {
+    return createAtomView(this.groupElement, atom, this.defaultToNotes, 0.7);
+  }
+}
+
 export abstract class LeafAtomView extends LeafAtomViewBase {
   leftSlot: Embelishment[] = [];
   topSlot: Embelishment[] = [];
   rightSlot: Embelishment[] = [];
   bottomSlot: Embelishment[] = [];
+  glyph: ElementShape;
 
   // Spaces required before and after to accomodate for left and right slots
   protected postSpacingSpan: SVGTSpanElement;
   // Sometimes this.element may not be the root element if we need spacings
   // the rootElement is the top of the chain
-  protected rootShape: ElementShape;
+  protected rootGroup: ElementShape;
+  protected rootText: ElementShape;
 
   abstract get glyphLabel(): string;
 
   protected refreshMinSize(): TSU.Geom.Size {
-    const out = { ...(this.rootShape || this.glyph).minSize };
+    const out = { ...this.rootText.minSize };
     const totalWidth =
       this.leftSlot.reduce((a, b) => a + b.minSize.width, 0) +
       this.rightSlot.reduce((a, b) => a + b.minSize.width, 0) +
@@ -56,61 +69,65 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
     return [x, y, NaN, NaN];
   }
 
-  refreshLayout(): void {
-    // TODO - move this code out to refreshLayout?
-    // set the glyphs Y first so we can layout others
-    const x = this.x;
-    const y = this.y;
-    this.glyph.setBounds(null, y, null, null, true);
+  protected layoutElements(): void {
+    // Lays out all the child elements locally
+    const textSize = this.rootText.minSize;
+    // assume text is at 0,0 and lay things around it
 
     // now layout leftSlots
-    let currX = x;
-    let currY = y;
-    if (currX != null) {
-      // place left embelishments
-      for (const emb of this.leftSlot) {
-        emb.x = currX;
-        emb.refreshLayout();
-        currX += emb.minSize.width + 1;
-      }
+    let currX = 0;
+    let currY = 0;
+    // place left embelishments
+    for (const emb of this.leftSlot) {
+      emb.x = currX;
+      emb.refreshLayout();
+      currX += emb.minSize.width + 1;
+    }
 
-      // now place the glyph
-      const glyphRoot = this.rootShape || this.glyph;
-      glyphRoot.x = currX;
-      glyphRoot.refreshLayout();
-      currX += glyphRoot.minSize.width;
+    // now place the text
+    const textX = currX;
+    this.rootText.x = currX;
+    this.rootText.refreshLayout();
 
-      // And right embelishments
-      for (const emb of this.rightSlot) {
-        emb.x = currX;
-        emb.refreshLayout();
-        currX += emb.minSize.width + 1;
-      }
+    // And right embelishments
+    currX += this.rootText.minSize.width;
+    for (const emb of this.rightSlot) {
+      emb.x = currX;
+      emb.refreshLayout();
+      currX += emb.minSize.width + 1;
     }
 
     // layout top and bottom if x or y has changed
-    if (currX != null || currY != null) {
-      const gminSize = this.glyph.minSize;
+    const gminSize = this.glyph.minSize;
 
-      // top embelishments
-      const glyphX = this.glyph.x;
-      const glyphY = this.glyph.y;
-      currY = glyphY - 1;
-      for (const emb of this.topSlot) {
-        const bb = emb.minSize;
-        emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY - bb.height, null, null, true);
-        currY = emb.y;
-      }
+    // top embelishments
+    const glyphX = textX + this.glyph.x;
+    let glyphY = this.glyph.y;
+    if (!TSU.Browser.IS_SAFARI()) {
+      glyphY += 3;
+    }
+    currY = glyphY - 1 - this.glyph.minSize.height;
+    for (const emb of this.topSlot) {
+      const bb = emb.minSize;
+      emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY - bb.height, null, null, true);
+      currY = emb.y;
+    }
 
-      // bottom embelishments
-      currY = glyphY + gminSize.height + 2;
-      for (const emb of this.bottomSlot) {
-        const bb = emb.minSize;
-        emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY, null, null, true);
-        currY = emb.y + bb.height;
-      }
+    // bottom embelishments
+    currY = glyphY + gminSize.height + 2;
+    for (const emb of this.bottomSlot) {
+      const bb = emb.minSize;
+      emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY, null, null, true);
+      currY = emb.y + bb.height;
     }
     this.resetMinSize();
+  }
+
+  refreshLayout(): void {
+    // TODO - move this code out to refreshLayout?
+    // set the glyphs Y first so we can layout others
+    this.layoutElements();
+    this.rootGroup.element.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
   }
 
   protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {
@@ -122,7 +139,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
    * Orders embelishments and creates their views.
    */
   orderEmbelishments(): void {
-    const atom = this.flatAtom.atom;
+    const atom = this.leafAtom;
     if (atom.type != AtomType.SYLLABLE && atom.type != AtomType.NOTE) {
       return;
     }
@@ -165,110 +182,90 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
     }
   }
 
+  embRoot(): SVGGraphicsElement {
+    return this.rootGroup.element;
+  }
+
   needsRootElement(): boolean {
-    return this.rightSlot.length > 0 || this.flatAtom.atom.beforeRest;
+    return true; // this.rightSlot.length > 0 || this.leafAtom.beforeRest;
   }
 
   createElements(parent: SVGGraphicsElement): void {
     // Create the glyph element first before anything
     // this allows embelishments to get early access to this element
-    if (this.needsRootElement()) {
-      this.createGlyphRoot(parent);
-    }
-    this.createGlyphElement(this.rootShape?.element || parent);
-
+    this.createGlyphRoot(parent);
+    this.createGlyphElement();
     // Order embelishments (without creating any views)
     this.orderEmbelishments();
-    if (this.needsRootElement()) {
-      // create as 2 sub span elements
-      if (!this.rootShape) {
-        this.createGlyphRoot(parent);
-        // move the element into the parent
-        this.moveGlyphToRoot();
-      }
-
-      this.createPostSpacingElement();
-    }
+    this.createPostSpacingElement();
     this.resetMinSize();
   }
 
   protected createGlyphRoot(parent: SVGGraphicsElement): void {
-    this.rootShape = new ElementShape(
-      TSU.DOM.createSVGNode("tspan", {
+    this.rootGroup = new ElementShape(
+      TSU.DOM.createSVGNode("g", {
         doc: document,
         parent: parent,
         attrs: {
-          depth: this.flatAtom.depth || 0,
-          atomid: this.flatAtom.atom.uuid,
-          id: "atomViewRoot" + this.flatAtom.atom.uuid,
+          atomid: this.leafAtom.uuid,
+          class: "atomViewRootGroup",
+          id: "atomViewRootGroup" + this.leafAtom.uuid,
+        },
+      }),
+    );
+    this.rootText = new ElementShape(
+      TSU.DOM.createSVGNode("text", {
+        doc: document,
+        parent: this.rootGroup.element,
+        attrs: {
+          atomid: this.leafAtom.uuid,
+          class: "atomViewTextRoot",
+          id: "atomViewTextRoot" + this.leafAtom.uuid,
         },
       }),
     );
   }
 
-  protected createPostSpacingElement(): void {
-    this.postSpacingSpan = TSU.DOM.createSVGNode("tspan", {
-      doc: document,
-      parent: this.rootShape.element,
-      attrs: {
-        depth: this.flatAtom.depth || 0,
-        atomid: this.flatAtom.atom.uuid,
-        id: "postSpacing" + this.flatAtom.atom.uuid,
-      },
-      text: this.flatAtom.atom.beforeRest ? " - " : "  ",
-    });
-  }
-
-  protected moveGlyphToRoot(): void {
-    this.rootShape.element.appendChild(this.glyph.element);
-  }
-
-  protected createGlyphElement(parent: SVGGraphicsElement): void {
-    const atom = this.flatAtom.atom;
+  protected createGlyphElement(): void {
+    const atom = this.leafAtom;
     this.glyph = new ElementShape(
       TSU.DOM.createSVGNode("tspan", {
         doc: document,
-        parent: parent,
+        parent: this.rootText.element,
         attrs: {
-          depth: this.flatAtom.depth || 0,
           atomid: atom.uuid,
-          id: "atom" + atom.uuid,
+          id: "atomGlyph" + atom.uuid,
         },
         text: this.glyphLabel, // + (note.beforeRest ? " - " : " "),
       }),
     );
   }
-}
 
-export function createAtomView(parent: SVGGraphicsElement, atom: FlatAtom): LeafAtomView {
-  let out: LeafAtomView;
-  switch (atom.atom.type) {
-    // Dealing with leaf atoms
-    case AtomType.SPACE:
-      out = new SpaceView(atom);
-      break;
-    case AtomType.SYLLABLE:
-      out = new SyllableView(atom);
-      break;
-    case AtomType.NOTE:
-      out = new NoteView(atom);
-      break;
-    default:
-      // We should never get a group as we are iterating
-      // at leaf atom levels
-      throw new Error("Invalid atom type: " + atom.atom.type);
+  protected createPostSpacingElement(): void {
+    if (this.leafAtom.beforeRest) {
+      this.postSpacingSpan = TSU.DOM.createSVGNode("tspan", {
+        doc: document,
+        parent: this.rootText.element,
+        attrs: {
+          atomid: this.leafAtom.uuid,
+          id: "postSpacing" + this.leafAtom.uuid,
+        },
+        text: this.leafAtom.beforeRest ? " - " : "  ",
+      });
+    }
   }
-  out.createElements(parent);
-  return out;
 }
 
 class SpaceView extends LeafAtomView {
   get glyphLabel(): string {
-    return this.space.isSilent ? " " : ",";
+    if (this.space.isSilent) return " ";
+    if (this.space.duration.isOne) return ",";
+    if (this.space.duration.cmpNum(2) == 0) return ";";
+    return "_";
   }
 
   get space(): Space {
-    return this.flatAtom.atom as Space;
+    return this.leafAtom as Space;
   }
 }
 
@@ -279,18 +276,18 @@ class NoteView extends LeafAtomView {
   }
 
   needsRootElement(): boolean {
-    return this.note.shift == true || this.note.shift != 0 || super.needsRootElement();
+    return true; // this.note.shift == true || this.note.shift != 0 || super.needsRootElement();
   }
 
-  protected createGlyphElement(parent: SVGGraphicsElement): void {
-    super.createGlyphElement(parent);
+  protected createGlyphElement(): void {
+    super.createGlyphElement();
     if (this.note.shift == true || this.note.shift != 0) {
       this.shiftElement = TSU.DOM.createSVGNode("tspan", {
         doc: document,
-        parent: this.rootShape.element,
+        parent: this.rootText.element,
         attrs: {
-          depth: this.flatAtom.depth || 0,
           atomid: this.note.uuid,
+          class: "noteShiftTSpan",
           id: "noteShift" + this.note.uuid,
           "baseline-shift": "sub",
         },
@@ -300,9 +297,9 @@ class NoteView extends LeafAtomView {
   }
 
   protected moveGlyphToRoot(): void {
-    super.moveGlyphToRoot();
+    // super.moveGlyphToRoot();
     if (this.shiftElement) {
-      this.rootShape.element.appendChild(this.shiftElement);
+      this.rootGroup.element.appendChild(this.shiftElement);
     }
   }
 
@@ -318,7 +315,7 @@ class NoteView extends LeafAtomView {
   }
 
   get note(): Note {
-    return this.flatAtom.atom as Note;
+    return this.leafAtom as Note;
   }
 }
 
@@ -328,6 +325,47 @@ class SyllableView extends LeafAtomView {
   }
 
   get syllable(): Syllable {
-    return this.flatAtom.atom as Syllable;
+    return this.leafAtom as Syllable;
   }
+}
+
+export function createAtomView(
+  parent: SVGGraphicsElement,
+  atom: Atom,
+  litDefaultsToNote = false,
+  groupViewScale = 1.0,
+): AtomView {
+  let out: AtomView;
+  switch (atom.type) {
+    // Dealing with leaf atoms
+    case AtomType.SPACE:
+      out = new SpaceView(atom as Space);
+      break;
+    case AtomType.SYLLABLE:
+      out = new SyllableView(atom as Syllable);
+      break;
+    case AtomType.NOTE:
+      out = new NoteView(atom as Note);
+      break;
+    case AtomType.LITERAL:
+      if (litDefaultsToNote) {
+        const lit = Note.fromLit(atom as Note);
+        out = new NoteView(lit);
+      } else {
+        const lit = Syllable.fromLit(atom as Syllable);
+        out = new SyllableView(lit);
+      }
+      break;
+    case AtomType.GROUP:
+      out = new GroupView(atom as Group);
+      (out as GroupView).defaultToNotes = litDefaultsToNote;
+      (out as GroupView).scaleFactor = groupViewScale;
+      break;
+    default:
+      // We should never get a group as we are iterating
+      // at leaf atom levels
+      throw new Error("Invalid atom type: " + atom.type);
+  }
+  out.createElements(parent);
+  return out;
 }

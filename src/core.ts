@@ -177,6 +177,7 @@ export class Syllable extends Literal {
     if (lit.type == AtomType.SYLLABLE) return lit as Syllable;
     const out = new Syllable(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
+    out.beforeRest = lit.beforeRest;
     return out;
   }
 
@@ -206,6 +207,7 @@ export class Note extends Literal {
     if (lit.type == AtomType.NOTE) return lit as Note;
     const out = new Note(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
+    out.beforeRest = lit.beforeRest;
     return out;
   }
 

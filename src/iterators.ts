@@ -154,7 +154,7 @@ export class WindowIterator {
     const out = this.peek();
     this.peeked = null;
     if (out != null) {
-      this.currOffset = this.currOffset.plus(out.duration).factorized;
+      this.currOffset = this.currOffset.plus(out.duration, true);
     }
     return out;
   }

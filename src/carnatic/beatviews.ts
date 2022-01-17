@@ -1,66 +1,49 @@
 import * as TSU from "@panyam/tsutils";
+import { AtomType } from "../core";
 import { Cycle } from "../cycle";
-import { AtomType, Syllable, Note, Literal } from "../core";
-import { BeatView as BeatViewBase, Beat } from "../layouts";
-import { Embelishment, AtomViewGroup } from "../shapes";
+import { BeatView as BeatViewBase, Beat } from "../beats";
+import { AtomView, GroupView, Embelishment, ElementShape } from "../shapes";
 import { createAtomView } from "./atomviews";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 
-export class BeatView extends AtomViewGroup implements BeatViewBase {
-  textElement: SVGTextElement;
-
+export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase {
+  atomView: AtomView;
+  needsLayout = true;
   constructor(
     public readonly beat: Beat,
-    public readonly rootElement: Element,
+    public readonly rootElement: SVGGraphicsElement,
     public readonly cycle: Cycle,
     config?: any,
   ) {
-    super(rootElement);
-    this.groupElement.setAttribute("beatId", "" + beat.uuid);
-    this.groupElement.setAttribute("id", "" + beat.uuid);
-    this.groupElement.setAttribute("roleName", beat.role.name);
-    this.groupElement.setAttribute("layoutLine", "" + beat.layoutLine);
-    this.groupElement.setAttribute("layoutColumn", "" + beat.layoutColumn);
-    this.groupElement.setAttribute("beatIndex", "" + beat.index);
-    this.textElement = TSU.DOM.createSVGNode("text", {
-      parent: this.groupElement,
-      attrs: {
-        class: "roleAtomsText",
-        // y: "0%",
-        style: "dominant-baseline: hanging",
-        beatId: beat.uuid,
-        id: "beatText" + beat.uuid,
-        roleName: beat.role.name,
-        layoutLine: beat.layoutLine,
-        layoutColumn: beat.layoutColumn,
-        beatIndex: beat.index,
-      },
-    }) as SVGTextElement;
+    super(
+      TSU.DOM.createSVGNode("g", {
+        parent: rootElement,
+        attrs: {
+          class: "beatView",
+          beatId: "" + beat.uuid,
+          id: "" + beat.uuid,
+          roleName: beat.role.name,
+          layoutLine: "" + beat.layoutLine,
+          layoutColumn: "" + beat.layoutColumn,
+          beatIndex: "" + beat.index,
+        },
+      }),
+    );
+    this.atomView = createAtomView(this.element, beat.atom, beat.role.defaultToNotes);
+    this.atomView.refreshLayout();
+  }
 
-    // create the children
-    for (const flatAtom of beat.atoms) {
-      if (flatAtom.atom.type == AtomType.LITERAL) {
-        const lit = flatAtom.atom as Literal;
-        // convert to note or syllable here
-        if (beat.role.defaultToNotes) {
-          flatAtom.atom = Note.fromLit(lit);
-        } else {
-          flatAtom.atom = Syllable.fromLit(lit);
-        }
-        // carry over rest info
-        flatAtom.atom.beforeRest = lit.beforeRest;
-      }
-      const atomView = createAtomView(this.textElement, flatAtom);
-      atomView.depth = flatAtom.depth;
-      this.addAtomViews(atomView);
-    }
+  refreshLayout(): void {
+    const newX = this.hasX ? this._x : 0;
+    const newY = this.hasY ? this._y : 0;
+    this.element.setAttribute("transform", "translate(" + newX + "," + newY + ")");
   }
 
   protected createEmbelishments(): Embelishment[] {
     let embelishments: Embelishment[] = [];
     const beat = this.beat;
     // TODO - Should this be the group's parent element?
-    const rootElement = this.textElement.parentElement as any as SVGGraphicsElement;
+    const rootElement = this.element;
     if (beat.beatIndex == 0 && beat.barIndex == 0 && beat.instance == 0) {
       // first beat in bar - Do a BarStart
       const emb = new BeatStartLines(this, rootElement);
@@ -86,5 +69,9 @@ export class BeatView extends AtomViewGroup implements BeatViewBase {
       }
     }
     return embelishments;
+  }
+
+  setStyles(config: any): void {
+    this.needsLayout = true;
   }
 }

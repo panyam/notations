@@ -1,6 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import { Cycle, Line, Note, Bar } from "../";
-import { BeatLayout, LayoutParams, BeatsBuilder, Beat } from "../layouts";
+import { BeatsBuilder, Beat } from "../oldbeats";
+import { BeatLayout } from "../beats";
+import { LayoutParams } from "../layouts";
 
 const Frac = TSU.Num.Frac;
 const ZERO = TSU.Num.Fraction.ZERO;

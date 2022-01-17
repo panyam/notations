@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import { Line } from "./core";
-import { BeatLayout, Beat, BeatsBuilder } from "./layouts";
+import { BeatLayout, Beat, BeatsBuilder } from "./beats";
 import { Parser } from "./parser";
 import { Notation } from "./notation";
 
@@ -45,7 +45,7 @@ export function load(
 
           // Add these to the beat layout too
           for (const beat of bb.beats) {
-            beat.ensureUniformSpaces(layoutParams.beatDuration);
+            // beat.ensureUniformSpaces(layoutParams.beatDuration);
             beatLayout.addBeat(beat);
           }
         }

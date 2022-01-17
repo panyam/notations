@@ -1,10 +1,11 @@
 import * as TSU from "@panyam/tsutils";
-import { FlatAtom } from "./iterators";
+import { Atom, LeafAtom, Group } from "./core";
 
 /**
  * Base class of all renderable objects for caching things like bounding boxes etc.
  * We do this since a lot of the property setters dont change bounding boxes but
- * bounding box reads are a bit slow in general.
+ * bounding box reads are a bit slow in general.  This also allows us to test
+ * layouts, positioning etc without having to worry about implementation details.
  */
 export abstract class Shape {
   private static idCounter = 0;
@@ -242,8 +243,8 @@ export abstract class Shape {
 
 export abstract class Embelishment extends Shape {}
 
-export class ElementShape extends Shape {
-  constructor(public readonly element: SVGGraphicsElement) {
+export class ElementShape<T extends SVGGraphicsElement = SVGGraphicsElement> extends Shape {
+  constructor(public readonly element: T) {
     super();
   }
 
@@ -279,12 +280,15 @@ export abstract class AtomView extends Shape {
   leading: number;
 
   abstract isLeaf(): boolean;
+
+  /**
+   * Creates views needed for this AtomView.
+   */
+  abstract createElements(parent: SVGGraphicsElement): void;
 }
 
 export abstract class LeafAtomView extends AtomView {
-  glyph: ElementShape;
-
-  constructor(public flatAtom: FlatAtom) {
+  constructor(public leafAtom: LeafAtom) {
     super();
   }
 
@@ -292,31 +296,11 @@ export abstract class LeafAtomView extends AtomView {
     return true;
   }
 
-  /**
-   * Creates views needed for this AtomView.
-   */
-  abstract createElements(parent: SVGGraphicsElement): void;
-
-  /**
-   * By default the glyph's bbox is our bbox.
-   */
-  protected refreshMinSize(): TSU.Geom.Size {
-    return this.glyph.minSize;
-  }
-
-  protected updateBounds(
-    x: null | number,
-    y: null | number,
-    w: null | number,
-    h: null | number,
-  ): [number | null, number | null, number | null, number | null] {
-    return this.glyph.setBounds(x, y, w, h);
-  }
-
   get viewId(): number {
-    return this.flatAtom.uuid;
+    return this.leafAtom.uuid;
   }
 
+  /*
   embRoot(): SVGGraphicsElement {
     let rootElem = this.glyph.element.parentElement as any as SVGGraphicsElement;
     while (rootElem && (rootElem.tagName == "tspan" || rootElem.tagName == "text")) {
@@ -324,37 +308,48 @@ export abstract class LeafAtomView extends AtomView {
     }
     return rootElem;
   }
+  */
 }
 
 /**
- * An AtomViewGroup that contains a collection of AtomViews.
+ * An GroupView that contains a collection of AtomViews.
  */
-export abstract class AtomViewGroup extends AtomView {
+export abstract class GroupView extends AtomView {
   protected atomSpacing: number;
   protected groupElement: SVGGElement;
   protected atomViews: AtomView[] = [];
   private _embelishments: Embelishment[];
+  defaultToNotes = true;
   needsLayout = true;
-  constructor(protected readonly rootElement: Element, config?: any) {
+  scaleFactor = 1.0;
+  constructor(public group: Group, config?: any) {
     super();
     this.atomSpacing = 5;
+    this.setStyles(config || {});
+  }
+
+  /**
+   * Creates views needed for this AtomView.
+   */
+  createElements(parent: SVGGraphicsElement): void {
     this.groupElement = TSU.DOM.createSVGNode("g", {
-      parent: rootElement,
+      parent: parent,
+      attrs: {
+        class: "groupViewRoot",
+        id: "groupViewRoot" + this.group.uuid,
+      },
     });
 
-    this.setStyles(config || {});
+    // now create child atom views for each atom in this Group
+    for (const atom of this.group.atoms.values()) {
+      const atomView = this.createAtomView(atom);
+      this.atomViews.push(atomView);
+    }
+    this.resetMinSize();
   }
 
   isLeaf(): boolean {
     return false;
-  }
-
-  addAtomViews(...atomViews: AtomView[]): this {
-    for (const atomView of atomViews) {
-      this.atomViews.push(atomView);
-    }
-    this.resetMinSize();
-    return this;
   }
 
   protected refreshMinSize(): TSU.Geom.Size {
@@ -365,8 +360,10 @@ export abstract class AtomViewGroup extends AtomView {
       totalWidth += ms.width + this.atomSpacing;
       maxHeight = Math.max(maxHeight, ms.height);
     });
-    return new TSU.Geom.Size(totalWidth, maxHeight);
+    return new TSU.Geom.Size(totalWidth * this.scaleFactor, maxHeight * this.scaleFactor);
   }
+
+  abstract createAtomView(atom: Atom): AtomView;
 
   protected updateBounds(
     x: null | number,
@@ -378,7 +375,11 @@ export abstract class AtomViewGroup extends AtomView {
   }
 
   refreshLayout(): void {
-    this.groupElement.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
+    let transform = "translate(" + this.x + "," + this.y + ")";
+    if (this.scaleFactor < 1) {
+      transform += " scale(" + this.scaleFactor + ")";
+    }
+    this.groupElement.setAttribute("transform", transform);
     // if (this.widthChanged) {
     // All our atoms have to be laid out between startX and endX
     // old way of doing where we just set dx between atom views

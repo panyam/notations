@@ -23,7 +23,8 @@ export class LineView {
     this.gElem = TSU.DOM.createSVGNode("g", {
       parent: this.rootElement,
       attrs: {
-        id: "gElem" + this.line.uuid,
+        class: "lineRoot",
+        id: "lineRoot" + this.line.uuid,
       },
     }) as SVGGElement;
   }
