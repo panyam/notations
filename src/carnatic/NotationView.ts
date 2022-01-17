@@ -2,86 +2,31 @@ import "./styles/NotationView.scss";
 
 const MarkdownIt = require("markdown-it");
 import * as TSU from "@panyam/tsutils";
-import * as events from "./events";
-import * as N from "notations";
-
-export class LineView {
-  // roleStates: RoleState[];
-  // For each line a mapping of its Atoms in each role grouped by Beat for layout
-  beatsByLineRole: N.Beat[][];
-  // The beat layout associated with the layout params of this Line
-  // at this point beats have already been added to the right columns
-  beatLayout: N.BeatLayout;
-  gElem: SVGGElement;
-
-  constructor(public readonly rootElement: SVGSVGElement, public line: N.Line, public readonly config?: any) {
-    this.loadChildViews();
-  }
-
-  protected loadChildViews(): void {
-    // create the gElem for wrapping and adjusting to size
-    this.gElem = TSU.DOM.createSVGNode("g", {
-      parent: this.rootElement,
-      attrs: {
-        class: "lineRoot",
-        id: "lineRoot" + this.line.uuid,
-      },
-    }) as SVGGElement;
-  }
-
-  wrapToSize(): void {
-    const bbox = (this.gElem as SVGSVGElement).getBBox();
-    // set the size of the svg
-    this.rootElement.setAttribute("width", "" + (4 + bbox.width));
-    this.rootElement.setAttribute("height", "" + (15 + bbox.height));
-    this.gElem.setAttribute("transform", `translate(${4 - bbox.x}, ${4 - bbox.y})`);
-  }
-
-  get prefSize(): TSU.Geom.Size {
-    const bbox = this.rootElement.getBBox();
-    // return new TSU.Geom.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
-    return new TSU.Geom.Size(4 + bbox.width, 4 + bbox.height);
-  }
-
-  beatViews = new Map<number, N.BeatView>();
-  viewForBeat(beat: N.Beat): N.BeatView {
-    if (!this.beatViews.has(beat.uuid)) {
-      // how to get the bar and beat index for a given beat in a given row?
-      const b = new N.Carnatic.BeatView(beat, this.gElem, this.beatLayout.layoutParams.cycle);
-      // Check if this needs bar start/end lines?
-      this.beatViews.set(beat.uuid, b);
-      return b;
-    }
-    return this.beatViews.get(beat.uuid)!;
-  }
-
-  // Space between two roles (within the same row)
-  roleSpacing = 20;
-
-  // Vertical space between two rows (of multiple roles)
-  rowSpacing = 10;
-}
+import { LineView } from "./LineView";
+import { Notation, RawBlock } from "../notation";
+import { Beat, BeatLayout, BeatView } from "../beats";
+import { Line } from "../core";
 
 export class NotationView {
   headerElement: HTMLDivElement;
-  notation: N.Notation;
+  notation: Notation;
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
-  beatsByLineRole = new Map<number, N.Beat[][]>();
-  beatLayouts = new Map<number, N.BeatLayout>();
+  beatsByLineRole = new Map<number, Beat[][]>();
+  beatLayouts = new Map<number, BeatLayout>();
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
-  beatViews = new Map<number, N.BeatView>();
+  beatViews = new Map<number, BeatView>();
 
   constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
     this.loadChildViews();
   }
 
   refresh(): void {
-    this.beatViews = new Map<number, N.BeatView>();
+    this.beatViews = new Map<number, BeatView>();
   }
 
-  viewForBeat(beat: N.Beat): N.BeatView {
+  viewForBeat(beat: Beat): BeatView {
     let curr = this.beatViews.get(beat.uuid) || null;
     if (curr == null) {
       // how to get the bar and beat index for a given beat in a given row?
@@ -130,7 +75,7 @@ export class NotationView {
     return [td1!, td2];
   }
 
-  public newLineRoot(parent: Element, line: N.Line): SVGSVGElement {
+  public newLineRoot(parent: Element, line: Line): SVGSVGElement {
     const [td1, td2] = this.addNewRow(line.uuid + "", "line");
     // Hacky solution to "line headings"
     if (line.marginText) {
@@ -145,7 +90,7 @@ export class NotationView {
     }) as SVGSVGElement;
   }
 
-  ensureLineView(line: N.Line): LineView {
+  ensureLineView(line: Line): LineView {
     let lineView = this.getLineView(line);
     if (lineView == null) {
       const layoutParams = this.notation.layoutParamsForLine(line) || null;
@@ -165,7 +110,7 @@ export class NotationView {
     return lineView;
   }
 
-  getLineView(line: N.Line): TSU.Nullable<LineView> {
+  getLineView(line: Line): TSU.Nullable<LineView> {
     return this.lineViews.find((l) => l.line == line) || null;
   }
 
@@ -176,11 +121,11 @@ export class NotationView {
   clear(): void {
     this.lineViews = [];
     // Mapping from line id -> list of beats in each of its roles
-    this.beatsByLineRole = new Map<number, N.Beat[][]>();
-    this.beatLayouts = new Map<number, N.BeatLayout>();
+    this.beatsByLineRole = new Map<number, Beat[][]>();
+    this.beatLayouts = new Map<number, BeatLayout>();
     this.currentSVGElement = null;
     this.tableElement.innerHTML = "";
-    this.beatViews = new Map<number, N.BeatView>();
+    this.beatViews = new Map<number, BeatView>();
   }
 
   /**
@@ -188,15 +133,15 @@ export class NotationView {
    * Key thing is here is an opportunity to perform any batch rendering as needed.
    */
   refreshLayout(): void {
-    const lines = [] as N.Line[];
+    const lines = [] as Line[];
     const lineViews = [] as LineView[];
     for (const block of this.notation.blocks) {
       if (block.type == "RawBlock") {
         // Add the markdown here
-        this.renderBlock(block as N.RawBlock);
+        this.renderBlock(block as RawBlock);
       } else {
-        lines.push(block as N.Line);
-        const lineView = this.renderLine(block as N.Line);
+        lines.push(block as Line);
+        const lineView = this.renderLine(block as Line);
         lineViews.push(lineView);
       }
     }
@@ -218,7 +163,7 @@ export class NotationView {
     }
   }
 
-  renderLine(line: N.Line): LineView {
+  renderLine(line: Line): LineView {
     const lineView = this.ensureLineView(line);
     // Layout the "rows" for this line - x has already been set by the
     // previous column spacing step
@@ -228,7 +173,7 @@ export class NotationView {
     return lineView;
   }
 
-  renderBlock(raw: N.RawBlock): void {
+  renderBlock(raw: RawBlock): void {
     const [, td2] = this.addNewRow(raw.uuid + "", "rawBlock", false);
     const div = td2.appendChild(TSU.DOM.createNode("div"));
     if (raw.contentType == "metadata") {
