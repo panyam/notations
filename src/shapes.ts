@@ -11,8 +11,10 @@ export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
   /**
-   * Note that x and y coordinates are not always the x and y coordinates of the bounding box.
-   * Eg a circle's x and y coordinates are its center point and not the top left corner
+   * Note that x and y coordinates are not always the x and y coordinates
+   * of the bounding box.
+   * Eg a circle's x and y coordinates are its center point and not the
+   * top left corner.
    * These "main" coordinates are referred as control coordinates.
    */
   protected _x: number | null = null;

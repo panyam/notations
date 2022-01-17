@@ -290,7 +290,7 @@ export class BeatLayout {
           currX = xForOffsets[offset.toString()];
         }
         bcol.setX(currX, beatViewDelegate);
-        const endOffset = offset.plus(bcol.duration).factorized;
+        const endOffset = offset.plus(bcol.duration, true);
         xForOffsets[endOffset.toString()] = Math.max(
           xForOffsets[endOffset.toString()] || 0,
           currX + colWidth + bcol.paddingLeft + bcol.paddingRight,
@@ -457,23 +457,6 @@ export class BeatColumn {
     // TODO - Should we check if this beat was already added?
     this.beats.push(beat);
     this.needsLayout = true;
-    /*
-    const beatView = this.viewForBeat(beat);
-    beatView.add(atomView);
-
-    const lineWidth = beatView.requiredWidth;
-    if (lineWidth > this._maxWidth) {
-      this._maxWidth = lineWidth;
-      return beatView;
-      // return true;
-    } else {
-      // Our width is already less than max width so apply layout
-      // on this line only - ie the "entire" beat column does not need
-      // an update.
-      beatView.layout();
-    }
-    return null;
-    */
   }
 }
 
@@ -517,7 +500,7 @@ export class BeatsBuilder {
     const newBeat = new Beat(
       lastBeat == null ? this.startIndex : lastBeat.index + 1,
       this.role,
-      lastBeat == null ? this.startOffset.minus(this.beatOffset).timesNum(apb).factorized : lastBeat.endOffset,
+      lastBeat == null ? this.startOffset.minus(this.beatOffset).timesNum(apb, true) : lastBeat.endOffset,
       nextCP[1].timesNum(apb),
       nextCP[0][0],
       nextCP[0][1],

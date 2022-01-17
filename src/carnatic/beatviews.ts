@@ -7,6 +7,7 @@ import { createAtomView } from "./atomviews";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 
 export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase {
+  private _embelishments: Embelishment[];
   atomView: AtomView;
   needsLayout = true;
   constructor(
@@ -37,13 +38,23 @@ export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase 
     const newX = this.hasX ? this._x : 0;
     const newY = this.hasY ? this._y : 0;
     this.element.setAttribute("transform", "translate(" + newX + "," + newY + ")");
+    this.resetMinSize();
+    for (const e of this.embelishments) e.refreshLayout();
+    this.resetMinSize();
+  }
+
+  get embelishments(): Embelishment[] {
+    if (!this._embelishments) {
+      this._embelishments = this.createEmbelishments();
+    }
+    return this._embelishments;
   }
 
   protected createEmbelishments(): Embelishment[] {
     let embelishments: Embelishment[] = [];
     const beat = this.beat;
     // TODO - Should this be the group's parent element?
-    const rootElement = this.element;
+    const rootElement = this.rootElement;
     if (beat.beatIndex == 0 && beat.barIndex == 0 && beat.instance == 0) {
       // first beat in bar - Do a BarStart
       const emb = new BeatStartLines(this, rootElement);

@@ -138,7 +138,7 @@ export class BeatStartLines extends Embelishment {
     const x = -this.barSpacing;
     line.setAttribute("x1", "" + x);
     line.setAttribute("x2", "" + x);
-    const y = 0;
+    const y = this.source.y;
     const h = this.source.height;
     line.setAttribute("y1", "" + y);
     line.setAttribute("y2", "" + (y + h));
