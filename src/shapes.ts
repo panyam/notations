@@ -21,9 +21,17 @@ export abstract class Shape {
   protected _y: number | null = null;
   protected _width: number | null = null;
   protected _height: number | null = null;
+  protected _bbox: TSU.Geom.Rect;
   protected _minSize: TSU.Geom.Size;
   protected parentShape: Shape | null = null;
   children: Shape[] = [];
+
+  get bbox(): TSU.Geom.Rect {
+    if (!this._bbox) {
+      this._bbox = this.refreshBBox();
+    }
+    return this._bbox;
+  }
 
   /**
    * Sizes can have a minimum size.
@@ -37,45 +45,10 @@ export abstract class Shape {
   }
 
   /**
-   * Add a child shape.
-   */
-  addShape(child: Shape, index = -1): void {
-    // Orphan it first
-    child.removeFromParent();
-
-    // Then add it
-    if (index >= 0) {
-      this.children.splice(index, 0, child);
-    } else {
-      this.children.push(child);
-    }
-    child.parentShape = this;
-  }
-
-  /**
-   * Remove a child from our children list if it exists.
-   */
-  removeShape(child: Shape): void {
-    const index = this.children.indexOf(child);
-    if (index >= 0) {
-      this.children.splice(index, 1);
-    }
-    child.parentShape = null;
-  }
-
-  /**
-   * Remove ourselves from our parent.
-   */
-  removeFromParent(): void {
-    if (this.parentShape) {
-      this.parentShape.removeShape(this);
-    }
-  }
-
-  /**
    * refreshBBox is called by the Shape when it knows the bbox it is tracking
    * cannot be trusted and has to be refreshed by calling native methods.
    */
+  protected abstract refreshBBox(): TSU.Geom.Rect;
   protected abstract refreshMinSize(): TSU.Geom.Size;
   protected abstract updateBounds(
     x: null | number,
@@ -84,8 +57,9 @@ export abstract class Shape {
     h: null | number,
   ): [number | null, number | null, number | null, number | null];
 
-  resetMinSize(): void {
+  invalidateBounds(): void {
     this._minSize = null as unknown as TSU.Geom.Size;
+    this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
   /**
@@ -250,6 +224,10 @@ export class ElementShape<T extends SVGGraphicsElement = SVGGraphicsElement> ext
     super();
   }
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.DOM.svgBBox(this.element);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     return TSU.DOM.svgBBox(this.element);
   }
@@ -347,11 +325,15 @@ export abstract class GroupView extends AtomView {
       const atomView = this.createAtomView(atom);
       this.atomViews.push(atomView);
     }
-    this.resetMinSize();
+    this.invalidateBounds();
   }
 
   isLeaf(): boolean {
     return false;
+  }
+
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.DOM.svgBBox(this.groupElement);
   }
 
   protected refreshMinSize(): TSU.Geom.Size {
@@ -394,9 +376,9 @@ export abstract class GroupView extends AtomView {
       av.setBounds(currX, currY, null, null, true);
       currX += this.atomSpacing + av.minSize.width;
     });
-    this.resetMinSize();
+    this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
-    this.resetMinSize();
+    this.invalidateBounds();
   }
 
   get embelishments(): Embelishment[] {

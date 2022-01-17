@@ -44,6 +44,10 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
 
   abstract get glyphLabel(): string;
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.DOM.svgBBox(this.rootGroup.element);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     const out = { ...this.rootText.minSize };
     const totalWidth =
@@ -120,7 +124,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
       emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY, null, null, true);
       currY = emb.y + bb.height;
     }
-    this.resetMinSize();
+    this.invalidateBounds();
   }
 
   refreshLayout(): void {
@@ -132,7 +136,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
 
   protected addEmbelishment(slot: Embelishment[], emb: Embelishment): void {
     slot.push(emb);
-    this.addShape(emb);
+    // this.addShape(emb);
   }
 
   /**
@@ -198,7 +202,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
     // Order embelishments (without creating any views)
     this.orderEmbelishments();
     this.createPostSpacingElement();
-    this.resetMinSize();
+    this.invalidateBounds();
   }
 
   protected createGlyphRoot(parent: SVGGraphicsElement): void {

@@ -49,6 +49,10 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
     }
   }
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.DOM.svgBBox(this.dotsElem);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     const numDots = Math.abs(this.note.octave);
     return {
@@ -93,6 +97,10 @@ export class LabelEmbelishment extends LeafAtomViewEmbelishment {
     });
   }
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return TSU.DOM.svgBBox(this.labelElem);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     return TSU.DOM.svgBBox(this.labelElem);
   }
@@ -129,17 +137,21 @@ export class BeatStartLines extends Embelishment {
     });
   }
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return new TSU.Geom.Rect(0, 0, 0, 0);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
 
   refreshLayout(): void {
     const line = this.line;
-    const x = -this.barSpacing;
+    const x = 0; // -this.barSpacing;
     line.setAttribute("x1", "" + x);
     line.setAttribute("x2", "" + x);
-    const y = this.source.y;
-    const h = this.source.height;
+    const y = this.source.y + this.source.bbox.y;
+    const h = this.source.bbox.height;
     line.setAttribute("y1", "" + y);
     line.setAttribute("y2", "" + (y + h));
   }
@@ -177,6 +189,10 @@ export class BeatEndLines extends Embelishment {
     }
   }
 
+  protected refreshBBox(): TSU.Geom.Rect {
+    return new TSU.Geom.Rect(0, 0, 0, 0);
+  }
+
   protected refreshMinSize(): TSU.Geom.Size {
     return new TSU.Geom.Rect(0, 0, 0, 0);
   }
@@ -188,9 +204,12 @@ export class BeatEndLines extends Embelishment {
   barSpacing = 15;
 
   refreshLayout(): void {
-    const x = this.source.width + this.barSpacing;
-    const y = 0;
-    const h = this.source.height;
+    // const x = this.source.width + this.barSpacing;
+    // const y = 0;
+    // const h = this.source.height;
+    const x = this.source.x + this.source.width + this.barSpacing;
+    const y = this.source.y + this.source.bbox.y;
+    const h = this.source.bbox.height;
     let currX = x;
     for (const line of this.lines) {
       const lx = "" + currX;
@@ -300,6 +319,10 @@ export class Jaaru extends LeafAtomViewEmbelishment {
   }
 
   protected refreshMinSize(): TSU.Geom.Size {
+    return TSU.DOM.svgBBox(this.pathElem);
+  }
+
+  protected refreshBBox(): TSU.Geom.Rect {
     return TSU.DOM.svgBBox(this.pathElem);
   }
 

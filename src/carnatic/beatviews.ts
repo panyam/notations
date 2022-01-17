@@ -38,9 +38,9 @@ export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase 
     const newX = this.hasX ? this._x : 0;
     const newY = this.hasY ? this._y : 0;
     this.element.setAttribute("transform", "translate(" + newX + "," + newY + ")");
-    this.resetMinSize();
+    this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
-    this.resetMinSize();
+    this.invalidateBounds();
   }
 
   get embelishments(): Embelishment[] {

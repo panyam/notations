@@ -17,6 +17,7 @@ export interface BeatView {
   readonly beat: Beat;
   readonly needsLayout: boolean;
   readonly minSize: TSU.Geom.Size;
+  readonly bbox: TSU.Geom.Rect;
   x: number;
   y: number;
   width: number;
@@ -329,7 +330,7 @@ export class BeatLayout {
           const temp = currBeat;
           const numBeatsInRow = lp.lineBreaks[currBeat.layoutLine];
           let maxHeight = 0;
-          let currX = 0;
+          let currX = 15;
           for (
             let i = currBeat.layoutColumn;
             i < numBeatsInRow && currBeat;
