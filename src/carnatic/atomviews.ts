@@ -106,11 +106,8 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
 
     // top embelishments
     const glyphX = textX + this.glyph.x;
-    let glyphY = this.glyph.y;
-    if (!TSU.Browser.IS_SAFARI()) {
-      glyphY += 3;
-    }
-    currY = glyphY - 1 - this.glyph.minSize.height;
+    const glyphY = this.glyph.y;
+    currY = glyphY - this.glyph.minSize.height + 5;
     for (const emb of this.topSlot) {
       const bb = emb.minSize;
       emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY - bb.height, null, null, true);
@@ -118,7 +115,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
     }
 
     // bottom embelishments
-    currY = glyphY + gminSize.height + 2;
+    currY = glyphY + 7;
     for (const emb of this.bottomSlot) {
       const bb = emb.minSize;
       emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY, null, null, true);

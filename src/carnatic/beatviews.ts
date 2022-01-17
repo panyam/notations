@@ -66,7 +66,7 @@ export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase 
         // It is important that we are not just looking at the last beat of the bar
         // but also in the last "instance" of the beat in this bar to account for
         // kalais
-        if (beat.instance == bar.beatCounts[beat.beatIndex] - 1) {
+        if (beat.instance == bar.instanceCount(beat.beatIndex) - 1) {
           if (beat.barIndex == cycle.bars.length - 1) {
             // last beat in last bar so - do a thalam end (2 lines)
             const emb = new BeatEndLines(this, rootElement, 2);

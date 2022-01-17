@@ -109,6 +109,15 @@ export class Bar extends TimedEntity {
     another.beatCounts = [...this.beatCounts];
   }
 
+  instanceCount(beatIndex: number): number {
+    if (beatIndex > this.beatCounts.length) {
+      // by default each beat has 1 instance?
+      return 1;
+    } else {
+      return this.beatCounts[beatIndex];
+    }
+  }
+
   get beatCount(): number {
     return this.beatLengths.length;
   }

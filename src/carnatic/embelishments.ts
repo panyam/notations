@@ -147,7 +147,7 @@ export class BeatStartLines extends Embelishment {
 
   refreshLayout(): void {
     const line = this.line;
-    const x = 0; // -this.barSpacing;
+    const x = this.source.x - this.barSpacing;
     line.setAttribute("x1", "" + x);
     line.setAttribute("x2", "" + x);
     const y = this.source.y + this.source.bbox.y;
@@ -303,7 +303,7 @@ export class Jaaru extends LeafAtomViewEmbelishment {
   }
 
   pathAttribute(x = 0): string {
-    const avbbox = this.atomView.minSize;
+    const avbbox = this.atomView.glyph.minSize;
     let y2 = 0;
     const h2 = avbbox.height / 2;
     const x2 = x + h2;
