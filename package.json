@@ -9,7 +9,8 @@
   "module": "./lib/esm/index.js",
   "types": "lib/cjs/index.d.ts",
   "files": [
-    "lib/"
+    "lib/",
+    "styles/"
   ],
   "repository": {
     "type": "git",

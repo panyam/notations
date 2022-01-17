@@ -1,9 +1,11 @@
 import * as TSU from "@panyam/tsutils";
 import "./styles/composer.scss";
+import "notations/styles/NotationView.scss";
 import * as GL from "golden-layout";
 import { InputView } from "./InputView";
 import { ConsoleView } from "./ConsoleView";
-import { NotationView } from "./NotationView";
+import * as N from "notations";
+const MarkdownIt = require("markdown-it");
 import * as configs from "./configs";
 import * as events from "./events";
 
@@ -16,7 +18,7 @@ const INPUT_DOC_KEY = "notation-playground:savedContents:1";
 export class App {
   inputView: InputView;
   consoleView: ConsoleView;
-  notationView: NotationView;
+  notationView: N.Carnatic.NotationView;
   eventHub: TSU.Events.EventHub;
 
   constructor() {
@@ -30,7 +32,14 @@ export class App {
 
     this.inputView = new InputView(inputAreaDiv, this);
     this.consoleView = new ConsoleView(consoleAreaDiv, this);
-    this.notationView = new NotationView(outputAreaDiv);
+    this.notationView = new N.Carnatic.NotationView(outputAreaDiv);
+    this.notationView.markdownParser = (contents: string) => {
+      const md = new MarkdownIt({
+        html: true,
+      });
+      const tokens = md.parse(contents.trim(), {});
+      return md.renderer.render(tokens, { langPrefix: "v4_" });
+    };
 
     const savedState = localStorage.getItem(LAYOUT_STATE_KEY);
     const myLayout = new GL.GoldenLayout(

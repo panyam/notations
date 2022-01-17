@@ -1,6 +1,3 @@
-import "./styles/NotationView.scss";
-
-const MarkdownIt = require("markdown-it");
 import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock } from "../notation";
@@ -17,6 +14,7 @@ export class NotationView {
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
   beatViews = new Map<number, BeatView>();
+  markdownParser: (contents: string) => string;
 
   constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
     this.loadChildViews();
@@ -184,12 +182,7 @@ export class NotationView {
         div.innerHTML = html;
       }
     } else {
-      const md = new MarkdownIt({
-        html: true,
-      });
-      const tokens = md.parse(raw.content.trim(), {});
-      const html = md.renderer.render(tokens, { langPrefix: "v4_" });
-      div.innerHTML = html;
+      div.innerHTML = this.markdownParser(raw.content.trim());
     }
     this.currentSVGElement = null;
   }
