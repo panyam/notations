@@ -98,48 +98,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 0,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                duration: "4/1",
+                durationIsMultiplier: true,
+                type: "Group",
+                atoms: [
+                  {
                     type: "Note",
                     value: "a",
                   },
-                  duration: "1/1",
-                  offset: "0/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "b",
                   },
-                  duration: "1/1",
-                  offset: "1/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "c",
                   },
-                  duration: "1/1",
-                  offset: "2/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "d",
                   },
-                  duration: "1/1",
-                  offset: "3/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -155,88 +136,45 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 1,
               beatIndex: 0,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                duration: "8/1",
+                durationIsMultiplier: true,
+                type: "Group",
+                atoms: [
+                  {
                     type: "Note",
                     value: "e",
                   },
-                  duration: "1/1",
-                  offset: "4/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "f",
                   },
-                  duration: "1/1",
-                  offset: "5/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "g",
                   },
-                  duration: "1/1",
-                  offset: "6/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "h",
                   },
-                  duration: "1/1",
-                  offset: "7/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "i",
                   },
-                  duration: "1/1",
-                  offset: "8/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "j",
                   },
-                  duration: "1/1",
-                  offset: "9/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "k",
                   },
-                  duration: "1/1",
-                  offset: "10/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "l",
                   },
-                  duration: "1/1",
-                  offset: "11/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -252,88 +190,45 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 1,
               beatIndex: 1,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "8/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "m",
                   },
-                  duration: "1/1",
-                  offset: "12/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "n",
                   },
-                  duration: "1/1",
-                  offset: "13/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "o",
                   },
-                  duration: "1/1",
-                  offset: "14/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "p",
                   },
-                  duration: "1/1",
-                  offset: "15/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "q",
                   },
-                  duration: "1/1",
-                  offset: "16/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "r",
                   },
-                  duration: "1/1",
-                  offset: "17/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "s",
                   },
-                  duration: "1/1",
-                  offset: "18/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "t",
                   },
-                  duration: "1/1",
-                  offset: "19/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -349,68 +244,37 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 2,
               beatIndex: 0,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "6/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "u",
                   },
-                  duration: "1/1",
-                  offset: "20/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "v",
                   },
-                  duration: "1/1",
-                  offset: "21/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "w",
                   },
-                  duration: "1/1",
-                  offset: "22/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "x",
                   },
-                  duration: "1/1",
-                  offset: "23/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "y",
                   },
-                  duration: "1/1",
-                  offset: "24/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "z",
                   },
-                  duration: "1/1",
-                  offset: "25/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -440,50 +304,26 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 3,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Space",
                     duration: "2/1",
                     isSilent: false,
                   },
-                  duration: "1/1",
-                  offset: "0/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
-                    type: "Space",
-                    isSilent: false,
-                  },
-                  duration: "1/1",
-                  offset: "-3/1",
-                  depth: 0,
-                  isContinuation: true,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "a",
                   },
-                  duration: "1/1",
-                  offset: "0/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "b",
                   },
-                  duration: "1/1",
-                  offset: "1/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
             {
               index: 7,
@@ -493,48 +333,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 3,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "o",
                   },
-                  duration: "1/1",
-                  offset: "14/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "p",
                   },
-                  duration: "1/1",
-                  offset: "15/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "q",
                   },
-                  duration: "1/1",
-                  offset: "16/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "r",
                   },
-                  duration: "1/1",
-                  offset: "17/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -550,48 +371,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 0,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "c",
                   },
-                  duration: "1/1",
-                  offset: "2/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "d",
                   },
-                  duration: "1/1",
-                  offset: "3/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "e",
                   },
-                  duration: "1/1",
-                  offset: "4/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "f",
                   },
-                  duration: "1/1",
-                  offset: "5/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
             {
               index: 8,
@@ -601,48 +403,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 0,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "s",
                   },
-                  duration: "1/1",
-                  offset: "18/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "t",
                   },
-                  duration: "1/1",
-                  offset: "19/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "u",
                   },
-                  duration: "1/1",
-                  offset: "20/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "v",
                   },
-                  duration: "1/1",
-                  offset: "21/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -658,48 +441,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 1,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "g",
                   },
-                  duration: "1/1",
-                  offset: "6/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "h",
                   },
-                  duration: "1/1",
-                  offset: "7/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "i",
                   },
-                  duration: "1/1",
-                  offset: "8/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "j",
                   },
-                  duration: "1/1",
-                  offset: "9/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
             {
               index: 9,
@@ -709,48 +473,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 1,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "w",
                   },
-                  duration: "1/1",
-                  offset: "22/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "x",
                   },
-                  duration: "1/1",
-                  offset: "23/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "y",
                   },
-                  duration: "1/1",
-                  offset: "24/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "z",
                   },
-                  duration: "1/1",
-                  offset: "25/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
@@ -766,48 +511,29 @@ describe("Complex BeatLayout Tests", () => {
               barIndex: 0,
               beatIndex: 2,
               instance: 0,
-              atoms: [
-                {
-                  type: "FlatAtom",
-                  atom: {
+              atom: {
+                type: "Group",
+                duration: "4/1",
+                durationIsMultiplier: true,
+                atoms: [
+                  {
                     type: "Note",
                     value: "k",
                   },
-                  duration: "1/1",
-                  offset: "10/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "l",
                   },
-                  duration: "1/1",
-                  offset: "11/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "m",
                   },
-                  duration: "1/1",
-                  offset: "12/1",
-                  depth: 0,
-                },
-                {
-                  type: "FlatAtom",
-                  atom: {
+                  {
                     type: "Note",
                     value: "n",
                   },
-                  duration: "1/1",
-                  offset: "13/1",
-                  depth: 0,
-                },
-              ],
+                ],
+              },
             },
           ],
         },
