@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 import * as TSU from "@panyam/tsutils";
-import { load } from "../loader";
+import { load, parse } from "../loader";
 
 function testV4(input: string, debug = false, expected: any = null): void {
-  const [notation] = load(input);
+  const [notation] = parse(input);
   if (debug || expected == null) {
     console.log("Result Notation: \n", JSON.stringify(notation.debugValue(), TSU.Misc.getCircularReplacer(), 2));
   }

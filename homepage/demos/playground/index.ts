@@ -7,4 +7,5 @@ document.addEventListener("DOMContentLoaded", () => {
   patchChromeAnchorBug();
   // const body = document.querySelector("body") as HTMLElement;
   const app = new App();
+  (window as any).app = app;
 });

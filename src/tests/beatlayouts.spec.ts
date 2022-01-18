@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Cycle, Line, Note, Bar } from "../";
-import { BeatsBuilder, Beat } from "../oldbeats";
+import { BeatsBuilder, Beat } from "../beats";
 import { BeatLayout } from "../beats";
 import { LayoutParams } from "../layouts";
 
@@ -63,7 +63,7 @@ function testLayouts(
   const bb = new BeatsBuilder(role, layoutParams, lineOffset.divbyNum(layoutParams.beatDuration));
   bb.addAtoms(...role.atoms);
   for (const beat of bb.beats) {
-    beat.ensureUniformSpaces(layoutParams.beatDuration);
+    beat.ensureUniformSpaces([], layoutParams.beatDuration);
     beatLayout.addBeat(beat);
   }
 

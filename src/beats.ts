@@ -271,10 +271,10 @@ export class BeatLayout {
     return out;
   }
 
-  readonly DEBUG = true;
+  readonly DEBUG = false;
   evalColumnSizes(beatViewDelegate: BeatViewDelegate): void {
-    // Do a bread first traversal of the beat columns so those with earlier offsets will be
-    // laidout and nudged so that later ones' offsets can be set only once.
+    // Do a bread first traversal of the beat columns so those with earlier offsets
+    // will be laid out and nudged so that later ones' offsets can be set only once.
     // TODO - should this be a priority queue - ie is there a need to sort these by
     // "larger" widths first?
     let queue: BeatColumn[] = [...this.startingColumns];

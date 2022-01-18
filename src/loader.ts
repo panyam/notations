@@ -5,20 +5,25 @@ import { BeatLayout, Beat, BeatsBuilder } from "./beats";
 import { Parser } from "./parser";
 import { Notation } from "./notation";
 
+export function parse(input: string): [Notation, G.ParseError[]] {
+  const notation = new Notation();
+  const parser = new Parser();
+  const errors: G.ParseError[] = [];
+  parser.parse(input);
+  errors.push(...parser.errors);
+  for (const cmd of parser.commands) cmd.applyToNotation(notation);
+  return [notation, errors];
+}
+
 export function load(
   codeText: string,
   config: any = {},
 ): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[], TSU.StringMap<number>] {
   const beatsByLineRole = new Map<number, Beat[][]>();
   const beatLayouts = new Map<number, BeatLayout>();
-  const errors: G.ParseError[] = [];
   const startTime = performance.now();
-  const notation = new Notation();
-  const parser = new Parser();
-  parser.parse(codeText);
-  errors.push(...parser.errors);
+  const [notation, errors] = parse(codeText);
   const parseTime = performance.now();
-  for (const cmd of parser.commands) cmd.applyToNotation(notation);
 
   // Create Line Beats
   for (const block of notation.blocks) {
