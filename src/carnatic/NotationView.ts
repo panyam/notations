@@ -173,15 +173,19 @@ export class NotationView {
 
   renderBlock(raw: RawBlock): void {
     const [, td2] = this.addNewRow(raw.uuid + "", "rawBlock", false);
-    const div = td2.appendChild(TSU.DOM.createNode("div"));
     if (raw.contentType == "metadata") {
       // we have a metadata block
       const meta = this.notation.metadata.get(raw.content);
       if (meta) {
-        const html = `<span class = "${meta.key.toLowerCase()}"><strong>${meta.key}</strong>: ${meta.value}</span>`;
-        div.innerHTML = html;
+        // For now ignore metadata with ":" in the key
+        if (meta.key.toLowerCase().indexOf(":") < 0) {
+          const div = td2.appendChild(TSU.DOM.createNode("div"));
+          const html = `<span class = "${meta.key.toLowerCase()}"><strong>${meta.key}</strong>: ${meta.value}</span>`;
+          div.innerHTML = html;
+        }
       }
     } else {
+      const div = td2.appendChild(TSU.DOM.createNode("div"));
       div.innerHTML = this.markdownParser(raw.content.trim());
     }
     this.currentSVGElement = null;
