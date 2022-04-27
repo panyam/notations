@@ -20,6 +20,7 @@ export enum AtomType {
   GROUP = "Group",
   LABEL = "Label",
   REST = "Rest",
+  MARKER = "Marker",
 }
 
 /**
@@ -92,6 +93,21 @@ export abstract class LeafAtom extends Atom {
 
   debugValue(): any {
     return this.beforeRest ? { ...super.debugValue(), beforeRest: true } : super.debugValue();
+  }
+}
+
+export class Marker extends LeafAtom {
+  // rests are zero length - why not just use 0 length silent spaces?
+  constructor(public text: string, public isBefore = true) {
+    super(ZERO);
+  }
+
+  debugValue(): any {
+    return { ...super.debugValue(), text: this.text, before: this.isBefore };
+  }
+
+  toString(): string {
+    return `Marker(${this.text}-${this.isBefore})`;
   }
 }
 

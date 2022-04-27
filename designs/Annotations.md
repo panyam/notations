@@ -36,7 +36,7 @@ First option has a "cleaner" syntax to denote "a string attaches to next or befo
 Here annotation is denoted by "<<" (or can we also consider ">>" for uniformity) the value is the (possibly multi-line or raw literal) string "1." (without quotes):
 
 ```
-"1."<< S r g m p d n s.
+"1.">> S r g m p d n s.
 ```
 
 this attaches the annotation to appear "before" "S".
@@ -64,7 +64,7 @@ Option 2 here is preferrable because annotations are really special case and sho
 Here annotation is denoted by ">>" the value is the (possibly multi-line or raw literal) string "1." (without quotes):
 
 ```
-s r g m p d n s. >>"s. n d p p m"
+s r g m p d n s. <<"s. n d p p m"
 ```
 
 Similar to the previous case we can have the s. n d p p m either in the same cell after the "s." or in a cell after the cell containing p d n s., eg:

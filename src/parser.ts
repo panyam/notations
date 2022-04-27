@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group } from "./core";
+import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group, Marker } from "./core";
 import { Command, CmdParam } from "./notation";
 import {
   RawEmbedding,
@@ -57,6 +57,10 @@ const [parser, itemGraph] = G.newParser(
     %token  EMBELISHMENT  /~[^\s]*/                 { toEmbelishment }
     %token  NUMBER        /-?\d+/                   { toNumber }
     %token  BOOLEAN       /true|false/              { toBoolean }
+    %token  POST_MARKER   /<<"(([^"\\\n]|\\.|\\\n)*)"/  { toMarker }
+    %token  POST_MARKER   /<<'(([^'\\\n]|\\.|\\\n)*)'/  { toMarker }
+    %token  PRE_MARKER   /"(([^"\\\n]|\\.|\\\n)*)">>/  { toMarker }
+    %token  PRE_MARKER   /'(([^'\\\n]|\\.|\\\n)*)'>>/  { toMarker }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
     %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
     %token  DOTS_IDENT    /(\.+)({IdentChar}+)/     { toOctavedNote   }
@@ -95,23 +99,16 @@ const [parser, itemGraph] = G.newParser(
 
     Atom -> Leaf ;
     Atom -> Duration  Leaf { applyDuration } ;
-    Leaf -> Space | Lit | Group | Rest ;
+    Leaf -> Space | Lit | Group | Rest | Marker ;
     Rest -> HYPHEN { newRest };
+    Marker -> PRE_MARKER
+          | POST_MARKER
+          ;
 
     Space -> COMMA { newSpace } 
           | SEMI_COLON { newDoubleSpace } 
           | UNDER_SCORE { newSilentSpace } 
           ;
-
-    /*
-    Lit -> DOTS_IDENT { litToAtom } 
-        | IDENT { litToAtom } 
-        | IDENT_DOTS { litToAtom } 
-        | STRING  { litToAtom }
-        | PRE_EMB Lit { litWithPreEmb }
-        // | Lit POST_EMB { litWithPostEmb }
-        ;
-    */
 
     /* - An alternative representation to support both pre and post embelishment operators.  */
      Lit -> Lit POST_EMB  { litWithPostEmb }
@@ -173,6 +170,19 @@ const [parser, itemGraph] = G.newParser(
       },
       toString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         token.value = token.value.substring(1, token.value.length - 1);
+        return token;
+      },
+      toMarker: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+        if (token.tag != "PRE_MARKER" && token.tag != "POST_MARKER") {
+          throw new Error("Invalid token for converting to note: " + token.tag);
+        }
+        const isBefore = token.tag == "PRE_MARKER";
+        const markerText = isBefore
+          ? token.value.substring(1, token.value.length - 3)
+          : token.value.substring(3, token.value.length - 1);
+        console.log("TokVal: ", token.value, token.positions);
+        console.log("Marker Text: ", markerText, isBefore);
+        token.value = new Marker(markerText, isBefore);
         return token;
       },
       toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
