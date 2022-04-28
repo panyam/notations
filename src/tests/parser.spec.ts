@@ -597,7 +597,7 @@ describe("Marker Tests", () => {
           {
             type: "Literal",
             value: "s",
-                duration: "3/4",
+            duration: "3/4",
             mbef: [
               {
                 type: "Marker",
@@ -628,7 +628,7 @@ describe("Marker Tests", () => {
           {
             type: "Literal",
             value: "p",
-                duration: "2/1",
+            duration: "2/1",
             maft: [
               {
                 type: "Marker",

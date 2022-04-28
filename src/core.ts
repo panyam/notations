@@ -90,6 +90,7 @@ export abstract class LeafAtom extends Atom {
       const spillOver = this.createSpilloverSpace(this.duration.minus(duration));
       spillOver.isContinuation = true;
       this.duration = duration;
+      // TODO - Here we need to move the markersAfter to the spill-over as it doesnt belong to this any more
       return spillOver;
     }
     return null;
