@@ -206,7 +206,7 @@ export class BeatLayout {
       } else {
         const endOffset = offset.plus(duration);
         // Find all columns "before" this and add this as a neighbour to those
-        // columsn before are such that their prev.offset + prev.duration == bcol.offset
+        // columns before are such that their prev.offset + prev.duration == bcol.offset
         for (const other of this.beatColumns.values()) {
           if (other.offset.plus(other.duration).equals(offset)) {
             // mark us as a successor of other
@@ -369,31 +369,6 @@ export class BeatLayout {
   }
 }
 
-export class BeatRow {
-  protected _y = 0;
-  protected _maxHeight = 0;
-  needsLayout = false;
-  rowSpacing = 5;
-  beats: Beat[] = [];
-  constructor(public readonly layoutLine: number, public rowIndex: number) {}
-
-  get y(): number {
-    return this._y;
-  }
-
-  set y(val: number) {
-    this._y = val;
-    this.needsLayout = true;
-  }
-
-  add(beat: Beat): void {
-    // Find line this view should be added to.
-    // TODO - Should we check if this beat was already added to either this row or another row?
-    this.beats.push(beat);
-    this.needsLayout = true;
-  }
-}
-
 export class BeatColumn {
   protected _x = 0;
   protected _maxWidth = 0;
@@ -487,36 +462,10 @@ export class BeatsBuilder {
     this.windowIter = new WindowIterator();
     this.beatOffset = beatOffset;
 
-    // evaluate the start beatindex - typically it would be 0 if things start at beginning
-    // of a cycle.  Butif the start offset is < 0 then the startIndex should also shift
-    // accordingly
+    // evaluate the start beatindex - typically it would be 0 if things start
+    // at beginning of a cycle.  But if the start offset is < 0 then the
+    // startIndex should also shift accordingly
     this.startIndex = index;
-  }
-
-  protected addBeat(): Beat {
-    const numBeats = this.beats.length;
-    const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
-    const nextCP: [CyclePosition, Fraction] = this.cycleIter.next().value;
-    const apb = this.layoutParams.beatDuration;
-    const newBeat = new Beat(
-      lastBeat == null ? this.startIndex : lastBeat.index + 1,
-      this.role,
-      lastBeat == null ? this.startOffset.minus(this.beatOffset).timesNum(apb, true) : lastBeat.endOffset,
-      nextCP[1].timesNum(apb),
-      nextCP[0][0],
-      nextCP[0][1],
-      nextCP[0][2],
-      lastBeat,
-      null,
-    );
-    if (lastBeat == null && this.beatOffset.isGT(ZERO)) {
-      // Add spaces to fill up empty beats
-      newBeat.add(new Space(this.beatOffset.timesNum(apb)));
-    }
-    if (lastBeat) lastBeat.nextBeat = newBeat;
-    this.beats.push(newBeat);
-    if (this.onBeatAdded) this.onBeatAdded(newBeat);
-    return newBeat;
   }
 
   addAtoms(...atoms: Atom[]): void {
@@ -550,5 +499,31 @@ export class BeatsBuilder {
         if (this.onBeatFilled) this.onBeatFilled(currBeat);
       }
     }
+  }
+
+  protected addBeat(): Beat {
+    const numBeats = this.beats.length;
+    const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
+    const nextCP: [CyclePosition, Fraction] = this.cycleIter.next().value;
+    const apb = this.layoutParams.beatDuration;
+    const newBeat = new Beat(
+      lastBeat == null ? this.startIndex : lastBeat.index + 1,
+      this.role,
+      lastBeat == null ? this.startOffset.minus(this.beatOffset).timesNum(apb, true) : lastBeat.endOffset,
+      nextCP[1].timesNum(apb),
+      nextCP[0][0],
+      nextCP[0][1],
+      nextCP[0][2],
+      lastBeat,
+      null,
+    );
+    if (lastBeat == null && this.beatOffset.isGT(ZERO)) {
+      // Add spaces to fill up empty beats
+      newBeat.add(new Space(this.beatOffset.timesNum(apb)));
+    }
+    if (lastBeat) lastBeat.nextBeat = newBeat;
+    this.beats.push(newBeat);
+    if (this.onBeatAdded) this.onBeatAdded(newBeat);
+    return newBeat;
   }
 }

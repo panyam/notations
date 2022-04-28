@@ -97,13 +97,13 @@ const [parser, itemGraph] = G.newParser(
     Atoms -> Atoms Atom { concatAtoms } ;
     Atoms -> { newArray } ;
 
-    Atom -> Leaf ;
     Atom -> Duration  Leaf { applyDuration } ;
-    Leaf -> Space | Lit | Group | Rest | Marker ;
-    Rest -> HYPHEN { newRest };
-    Marker -> PRE_MARKER
-          | POST_MARKER
+    Atom -> PRE_MARKER Atom { applyPreMarker }
+          | Atom POST_MARKER  { applyPostMarker }
           ;
+    Atom -> Leaf ;
+    Leaf -> Space | Lit | Group | Rest  ;
+    Rest -> HYPHEN { newRest };
 
     Space -> COMMA { newSpace } 
           | SEMI_COLON { newDoubleSpace } 
@@ -300,6 +300,25 @@ export class Parser {
     },
     newSilentSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       return new Space(ONE, true);
+    },
+    applyPreMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const marker = children[0].value as Marker;
+      const leaf = children[1].value as Atom;
+      console.log("marker, leaf: ", marker, leaf);
+      if (!leaf.markersBefore) {
+        leaf.markersBefore = [];
+      }
+      leaf.markersBefore.splice(0, 0, marker);
+      return leaf;
+    },
+    applyPostMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const leaf = children[0].value as Atom;
+      const marker = children[1].value as Marker;
+      if (!leaf.markersAfter) {
+        leaf.markersAfter = [];
+      }
+      leaf.markersAfter.push(marker);
+      return leaf;
     },
     applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       let dur = children[0].value as TSU.Num.Fraction | number;

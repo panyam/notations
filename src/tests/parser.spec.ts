@@ -589,26 +589,29 @@ describe("Parser Tests", () => {
 
 describe("Marker Tests", () => {
   test("Test Marker Parsing", () => {
-    testV4(`"Hello">> 'world'>>s r g m p <<'world'<<"Hello"`, true, [
+    testV4(`"Hello">> 'world'>>3/4 s r g m 2 p <<'world'<<"Hello"`, false, [
       {
         name: "AddAtoms",
         index: 0,
         atoms: [
           {
-            type: "Marker",
-            duration: "0/1",
-            text: "Hello",
-            before: true,
-          },
-          {
-            type: "Marker",
-            duration: "0/1",
-            text: "world",
-            before: true,
-          },
-          {
             type: "Literal",
             value: "s",
+                duration: "3/4",
+            mbef: [
+              {
+                type: "Marker",
+                // duration: "0/1",
+                text: "Hello",
+                before: true,
+              },
+              {
+                type: "Marker",
+                // duration: "0/1",
+                text: "world",
+                before: true,
+              },
+            ],
           },
           {
             type: "Literal",
@@ -625,18 +628,19 @@ describe("Marker Tests", () => {
           {
             type: "Literal",
             value: "p",
-          },
-          {
-            type: "Marker",
-            duration: "0/1",
-            text: "world",
-            before: false,
-          },
-          {
-            type: "Marker",
-            duration: "0/1",
-            text: "Hello",
-            before: false,
+                duration: "2/1",
+            maft: [
+              {
+                type: "Marker",
+                text: "world",
+                before: false,
+              },
+              {
+                type: "Marker",
+                text: "Hello",
+                before: false,
+              },
+            ],
           },
         ],
       },

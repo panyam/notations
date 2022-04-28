@@ -30,8 +30,8 @@ export function load(
     if (block.type == "Line") {
       const line = block as Line;
       // LP should exist by now
-      const layoutParams = notation.layoutParamsForLine(line) || null;
       if (!line.isEmpty) {
+        const layoutParams = notation.layoutParamsForLine(line) || null;
         // Probably because this is an empty line and AddAtoms was not called
         TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
         let beatLayout = beatLayouts.get(layoutParams.uuid) || null;

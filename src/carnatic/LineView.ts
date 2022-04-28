@@ -19,10 +19,6 @@ export class LineView {
   rowSpacing = 10;
 
   constructor(public readonly rootElement: SVGSVGElement, public line: Line, public readonly config?: any) {
-    this.loadChildViews();
-  }
-
-  protected loadChildViews(): void {
     // create the gElem for wrapping and adjusting to size
     this.gElem = TSU.DOM.createSVGNode("g", {
       parent: this.rootElement,

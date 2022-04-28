@@ -28,6 +28,8 @@ export enum AtomType {
  */
 export abstract class Atom extends TimedEntity {
   protected _duration: Fraction;
+  markersBefore: Marker[];
+  markersAfter: Marker[];
   nextSibling: TSU.Nullable<Atom> = null;
   prevSibling: TSU.Nullable<Atom> = null;
   // Which group does this Atom belong to
@@ -50,6 +52,12 @@ export abstract class Atom extends TimedEntity {
     }
     if (this.isContinuation) {
       out.isContinuation = true;
+    }
+    if ((this.markersBefore || []).length > 0) {
+      out.mbef = this.markersBefore.map((m) => m.debugValue());
+    }
+    if ((this.markersAfter || []).length > 0) {
+      out.maft = this.markersAfter.map((m) => m.debugValue());
     }
     return out;
   }
@@ -96,10 +104,10 @@ export abstract class LeafAtom extends Atom {
   }
 }
 
-export class Marker extends LeafAtom {
+export class Marker extends Entity {
   // rests are zero length - why not just use 0 length silent spaces?
   constructor(public text: string, public isBefore = true) {
-    super(ZERO);
+    super();
   }
 
   debugValue(): any {
@@ -466,9 +474,9 @@ export class Line extends Entity {
   offset: Fraction = ZERO;
   roles: Role[] = [];
 
-  // This is a very hacky solution to doing left side pre-margin text typically found
-  // in notations - eg line X of a pallavi has this.  This makes vertical space less
-  // wasteful
+  // This is a very hacky solution to doing left side pre-margin text typically
+  // found in notations - eg line X of a pallavi has this.  This makes vertical
+  // space less wasteful
   // A better solution is inter-beat annotation but it is very complex for now
   marginText = "";
 
@@ -481,7 +489,6 @@ export class Line extends Entity {
     const out = {
       ...super.debugValue(),
       roles: this.roles.map((r) => r.debugValue()),
-      // layoutParams: this.layoutParams?.uuid,
     };
     if (!this.offset.isZero) {
       out.offset = this.offset.toString();
