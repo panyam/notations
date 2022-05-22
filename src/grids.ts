@@ -66,7 +66,7 @@ export class GridView<T> {
     if (index < 0) {
       index = this.cols.length;
     }
-    const out = new GridCol<T>(index);
+    const out = new GridCol<T>(this, index);
     this.cols.splice(index, 0, out);
     for (let i = index + 1; i < this.cols.length; i++) {
       this.cols[i].index = i;
@@ -82,7 +82,7 @@ export class GridView<T> {
     if (index < 0) {
       index = this.rows.length;
     }
-    const out = new GridRow<T>(index);
+    const out = new GridRow<T>(this, index);
     this.rows.splice(index, 0, out);
     for (let i = index + 1; i < this.cols.length; i++) {
       this.rows[i].index = i;
@@ -113,7 +113,7 @@ export class GridRow<T> extends SparseArray<T> {
   paddingBottom = 15;
   values = new SparseArray<T>();
 
-  constructor(public index: number) {
+  constructor(public readonly grid: GridView<T>, public index: number) {
     super();
   }
 
@@ -146,7 +146,7 @@ export class GridCol<T> extends SparseArray<T> {
   paddingRight = 15;
   values = new SparseArray<T>();
 
-  constructor(public index: number) {
+  constructor(public readonly grid: GridView<T>, public index: number) {
     super();
   }
 
