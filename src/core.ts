@@ -106,7 +106,6 @@ export abstract class LeafAtom extends Atom {
 }
 
 export class Marker extends Entity {
-  // rests are zero length - why not just use 0 length silent spaces?
   constructor(public text: string, public isBefore = true) {
     super();
   }
