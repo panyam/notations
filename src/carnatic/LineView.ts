@@ -44,6 +44,10 @@ export class LineView {
   }
 
   beatViews = new Map<number, BeatView>();
+  /**
+   * This method is called by the BeatViewDelegate to create a BeatView for
+   * a beat.  Typically this is called when a layout is done by the BeatLayout.
+   */
   viewForBeat(beat: Beat): BeatView {
     if (!this.beatViews.has(beat.uuid)) {
       // how to get the bar and beat index for a given beat in a given row?

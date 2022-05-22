@@ -126,3 +126,11 @@ export class GridCol {
     }
   }
 }
+
+/**
+ * A sparse array type which is optimized for "holes" while not penalizing
+ * runs of values.
+ */
+export class SparseArray<T> {
+  runs: [number, T[]][] = [];
+}

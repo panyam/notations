@@ -246,6 +246,14 @@ export class BeatLayout {
     // Get the beat column at this index (and line) and add to it.
     const lp = this.layoutParams;
     const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
+
+    // We wnat to do something like this instead
+    /*
+    beatGrid.setValue(layoutLine, layoutColumn, beat);
+    beat.row = beatGrid.getColumn(layoutLine);
+    beat.col = beatGrid.getColumn(layoutColumn);
+    */
+
     const bcol = this.getBeatColumn(rowOffset, beat.duration);
 
     bcol.add(beat);
