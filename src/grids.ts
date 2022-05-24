@@ -28,6 +28,26 @@ export class SparseArray<T> {
   }
 }
 
+export interface GridCellView<T> {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  readonly needsLayout: boolean;
+  readonly minSize: TSU.Geom.Size;
+  readonly bbox: TSU.Geom.Rect;
+}
+
+/**
+ * Interface for a view for a given cell in the grid.
+ */
+export class GridCell<T> {
+  cellView: GridCellView<T>;
+  constructor(public gridRow: GridRow<T>, public gridCol: GridCol<T>, public value: T) {
+    //
+  }
+}
+
 /**
  * A generic way to host child views in a grid (very similar to gridbag layout)
  * This allows us to have a framework for hosting BeatViews instead of mucking
@@ -42,36 +62,18 @@ export class SparseArray<T> {
  */
 export class GridView<T> {
   rows: GridRow<T>[] = [];
-  cols: GridCol<T>[] = [];
+  viewForCell: (value: T) => GridCellView<T>;
 
-  setValue(row: number, col: number, value: T | null): T | null {
-    const gridCol = this.cols[col];
+  getValue(row: number, col: number): T | null {
     const gridRow = this.rows[row];
-    const oldRowVal = gridCol.valueAt(row);
     const oldColVal = gridRow.valueAt(col);
-    if (oldRowVal != oldColVal) {
-      // these *should* be the same object
-      throw new Error("Value in col and row should be the same");
-    }
-    gridCol.setAt(row, value);
-    gridRow.setAt(col, value);
-    return oldRowVal;
+    return oldColVal;
   }
 
-  /**
-   * Add a new column at the given index.
-   */
-  addColumn(insertBefore = -1): GridCol<T> {
-    let index = insertBefore;
-    if (index < 0) {
-      index = this.cols.length;
-    }
-    const out = new GridCol<T>(this, index);
-    this.cols.splice(index, 0, out);
-    for (let i = index + 1; i < this.cols.length; i++) {
-      this.cols[i].index = i;
-    }
-    return out;
+  setValue(row: number, col: number, value: T | null): T | null {
+    const oldVal = this.getValue(row, col);
+    this.rows[row].setAt(col, value);
+    return oldVal;
   }
 
   /**
@@ -91,13 +93,6 @@ export class GridView<T> {
   }
 
   /**
-   * Get the column at the given location.
-   */
-  getColumn(col: number): GridCol<T> | null {
-    return this.cols[col] || null;
-  }
-
-  /**
    * Get the row at the given location.
    */
   getRow(row: number): GridRow<T> | null {
@@ -111,7 +106,7 @@ export class GridRow<T> extends SparseArray<T> {
   needsLayout = false;
   paddingTop = 15;
   paddingBottom = 15;
-  values = new SparseArray<T>();
+  values = new SparseArray<GridCell<T>>();
 
   constructor(public readonly grid: GridView<T>, public index: number) {
     super();

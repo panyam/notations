@@ -3,6 +3,7 @@ import { Cycle, Bar } from "../cycle";
 import { Line, Group, Note } from "../core";
 import { LayoutParams } from "../layouts";
 import { BeatsBuilder, Beat } from "../beats";
+import { ensureUniformSpaces } from "../beatutils";
 
 const ONE = TSU.Num.Fraction.ONE;
 const TWO = ONE.timesNum(2);
@@ -286,7 +287,7 @@ describe("BeatsBuilder", () => {
     const lp = new LayoutParams({ cycle: c, beatDuration: 2 });
     const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces([], lp.beatDuration);
+      ensureUniformSpaces(beat.offset, [], lp.beatDuration);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
@@ -336,7 +337,7 @@ describe("BeatsBuilder", () => {
     const lp = new LayoutParams({ cycle: c, beatDuration: 2 });
     const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces([], lp.beatDuration);
+      ensureUniformSpaces(beat.offset, [], lp.beatDuration);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());
@@ -388,7 +389,7 @@ describe("BeatsBuilder", () => {
     const lp = new LayoutParams({ cycle: c, beatDuration: 6 });
     const bb = new BeatsBuilder(l.ensureRole("test", true), lp);
     bb.onBeatFilled = (beat: Beat) => {
-      beat.ensureUniformSpaces([], lp.beatDuration);
+      ensureUniformSpaces(beat.offset, [], lp.beatDuration);
     };
     bb.addAtoms(...atoms);
     const beats = bb.beats.map((b) => b.debugValue());

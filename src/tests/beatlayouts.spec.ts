@@ -3,15 +3,11 @@ import { Cycle, Line, Note, Bar } from "../";
 import { BeatsBuilder, Beat } from "../beats";
 import { BeatLayout } from "../beats";
 import { LayoutParams } from "../layouts";
+import { ensureUniformSpaces } from "../beatutils";
 
 const Frac = TSU.Num.Frac;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
-const TWO = ONE.timesNum(2);
-const THREE = ONE.timesNum(3);
-const FIVE = ONE.timesNum(5);
-const TEN = ONE.timesNum(10);
-const HALF = ONE.divbyNum(2);
 
 const TEST_CYCLE1 = new Cycle({
   bars: [
@@ -63,7 +59,7 @@ function testLayouts(
   const bb = new BeatsBuilder(role, layoutParams, lineOffset.divbyNum(layoutParams.beatDuration));
   bb.addAtoms(...role.atoms);
   for (const beat of bb.beats) {
-    beat.ensureUniformSpaces([], layoutParams.beatDuration);
+    ensureUniformSpaces(beat.offset, [], layoutParams.beatDuration);
     beatLayout.addBeat(beat);
   }
 
