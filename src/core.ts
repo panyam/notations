@@ -480,6 +480,13 @@ export class Line extends Entity {
   // A better solution is inter-beat annotation but it is very complex for now
   marginText = "";
 
+  indexOfRole(name: string): number {
+    for (let i = 0; i < this.roles.length; i++) {
+      if (this.roles[i].name == name) return i;
+    }
+    return -1;
+  }
+
   get isEmpty(): boolean {
     for (const r of this.roles) if (!r.isEmpty) return false;
     return true;
