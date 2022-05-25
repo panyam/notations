@@ -60,7 +60,25 @@ export class LayoutParams {
    * Returns the "location" of a beat within a layout.
    *
    * Lines are broken into beats of notes and those beats are aligned as per
-   * the specs in the LayoutParams (breaks).
+   * the specs in the LayoutParams (breaks).  For example if the breaks param
+   * stipulates [5, 5, 4] then we have 5 beats in the first 2 lines and 4 in
+   * the last line.
+   *
+   * If a line contains say 50 beats (B1 - B50), then it is laid out as:
+   *
+   *      C1  C2  C3  C4  C5
+   *    ---------------------
+   * L1 | B1  B2  B3  B4  B5
+   * L1 | B6  B7  B8  B9  B10
+   * L1 | B11 B12 B13 B14
+   * L2 | B15 B16 B17 B18 B19
+   * L2 | B20 B21 B22 B23 B24
+   * L2 | B25 B26 B27 B28
+   * L3 | B29 B30 B31 B32 B33
+   * L3 | B34 B35 B36 B37 B38
+   * L3 | B39 B40 B41 B42
+   * L4 | B43 B44 B45 B46 B47
+   * L4 | B48 B49 B50
    *
    * This methods returns the triple: [layoutLine, layoutColumn, rowOffset]
    * where
@@ -68,8 +86,11 @@ export class LayoutParams {
    *  layoutLine: The particular line in the layout break spec this index falls in.
    *              *Note*: Since lines can start with negative offsets, we can
    *              even return a layoutLine that is towards the end and then go
-   *              back to 0, eg 4, 0, 1, 2, 3, 4 ...
+   *              back to 0, eg 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 ...
+   *              (eg returns L1 or L2 ... Ln)
    *  layoutColumn: The column within the layoutLine line where this beat falls.
+   *                (eg C1 - C5 above - or depending on how many columns exist
+   *                in the particular layout line).
    *  rowOffset: The note offset of the beat from the start of the row/line
    *             (not from the start of the cycle).
    *
@@ -79,6 +100,8 @@ export class LayoutParams {
    *  To calculate the "real" line globally simply do:
    *
    *    realLine = [Math.floor(beatIndex / this.totalBeats) + layoutLine;
+   *
+   * Some examples here are (using B1-B50 above):
    */
   getBeatLocation(beat: {
     index: number;
@@ -92,12 +115,11 @@ export class LayoutParams {
       if (modIndex < total + this._lineBreaks[i]) {
         // TODO: What is the right offset here?
         let offset = ZERO;
-        const startBeat = beat;
         if (modIndex > total) {
           const cursor = new CycleCursor(this.cycle, beat.barIndex, beat.beatIndex, beat.instance);
-          let [pos, duration] = cursor.prev;
+          let [, duration] = cursor.prev;
           for (let i = total; i < modIndex; i++) {
-            [pos, duration] = cursor.prev;
+            [, duration] = cursor.prev;
             offset = offset.plus(duration.timesNum(this.beatDuration));
           }
         }
