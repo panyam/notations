@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import { Line } from "./core";
-import { BeatLayout, Beat, BeatsBuilder } from "./beats";
+import { GlobalBeatLayout } from "./beats";
 import { Parser } from "./parser";
 import { Notation } from "./notation";
 
@@ -18,43 +18,21 @@ export function parse(input: string): [Notation, G.ParseError[]] {
 export function load(
   codeText: string,
   config: any = {},
-): [Notation, Map<number, Beat[][]>, Map<number, BeatLayout>, G.ParseError[], TSU.StringMap<number>] {
-  const beatsByLineRole = new Map<number, Beat[][]>();
-  const beatLayouts = new Map<number, BeatLayout>();
+): [Notation, GlobalBeatLayout, G.ParseError[], TSU.StringMap<number>] {
+  const beatLayout = new GlobalBeatLayout();
   const startTime = performance.now();
   const [notation, errors] = parse(codeText);
   const parseTime = performance.now();
 
   // Create Line Beats
   for (const block of notation.blocks) {
-    if (block.type == "Line") {
+    if (block.type == "Line" && !(block as Line).isEmpty) {
       const line = block as Line;
       // LP should exist by now
-      if (!line.isEmpty) {
-        const layoutParams = notation.layoutParamsForLine(line) || null;
-        // Probably because this is an empty line and AddAtoms was not called
-        TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
-        let beatLayout = beatLayouts.get(layoutParams.uuid) || null;
-        if (beatLayout == null) {
-          beatLayout = new BeatLayout(layoutParams);
-          beatLayouts.set(layoutParams.uuid, beatLayout);
-        }
-        const roleBeats = [] as Beat[][];
-        beatsByLineRole.set(line.uuid, roleBeats);
-
-        const lineOffset = line.offset.divbyNum(layoutParams.beatDuration);
-        for (const role of line.roles) {
-          const bb = new BeatsBuilder(role, layoutParams, lineOffset);
-          bb.addAtoms(...role.atoms);
-          roleBeats.push(bb.beats);
-
-          // Add these to the beat layout too
-          for (const beat of bb.beats) {
-            // beat.ensureUniformSpaces(layoutParams.beatDuration);
-            beatLayout.addBeat(beat);
-          }
-        }
-      }
+      const layoutParams = notation.layoutParamsForLine(line) || null;
+      // Probably because this is an empty line and AddAtoms was not called
+      TSU.assert(layoutParams != null, "Layout params for a non empty line *SHOULD* exist");
+      beatLayout.addLine(line, layoutParams);
     }
   }
   const buildTime = performance.now();
@@ -63,8 +41,7 @@ export function load(
   }
   return [
     notation,
-    beatsByLineRole,
-    beatLayouts,
+    beatLayout,
     errors,
     {
       parseTime: parseTime - startTime,

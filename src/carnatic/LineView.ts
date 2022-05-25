@@ -1,15 +1,11 @@
 import * as TSU from "@panyam/tsutils";
-import { Beat, BeatLayout } from "../beats";
-import { BeatView } from "./beatviews";
+import { GridView } from "../grids";
 import { Line } from "../core";
 
 export class LineView {
-  // roleStates: RoleState[];
-  // For each line a mapping of its Atoms in each role grouped by Beat for layout
-  beatsByLineRole: Beat[][];
   // The beat layout associated with the layout params of this Line
   // at this point beats have already been added to the right columns
-  beatLayout: BeatLayout;
+  beatGridView: GridView;
   gElem: SVGGElement;
 
   // Space between two roles (within the same row)
@@ -41,21 +37,5 @@ export class LineView {
     const bbox = this.rootElement.getBBox();
     // return new TSU.Geom.Size(4 + bbox.width + bbox.x, 4 + bbox.y + bbox.height);
     return new TSU.Geom.Size(4 + bbox.width, 4 + bbox.height);
-  }
-
-  beatViews = new Map<number, BeatView>();
-  /**
-   * This method is called by the BeatViewDelegate to create a BeatView for
-   * a beat.  Typically this is called when a layout is done by the BeatLayout.
-   */
-  viewForBeat(beat: Beat): BeatView {
-    if (!this.beatViews.has(beat.uuid)) {
-      // how to get the bar and beat index for a given beat in a given row?
-      const b = new BeatView(beat, this.gElem, this.beatLayout.layoutParams.cycle);
-      // Check if this needs bar start/end lines?
-      this.beatViews.set(beat.uuid, b);
-      return b;
-    }
-    return this.beatViews.get(beat.uuid)!;
   }
 }

@@ -1,7 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock } from "../notation";
-import { Beat, BeatLayout, BeatView } from "../beats";
+import { Beat, GlobalBeatLayout } from "../beats";
+import { BeatView } from "./beatviews";
 import { Line } from "../core";
 
 export class NotationView {
@@ -9,11 +10,9 @@ export class NotationView {
   notation: Notation;
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
-  beatsByLineRole = new Map<number, Beat[][]>();
-  beatLayouts = new Map<number, BeatLayout>();
+  beatLayout: GlobalBeatLayout;
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
-  beatViews = new Map<number, BeatView>();
   markdownParser: (contents: string) => string;
 
   constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
@@ -22,17 +21,6 @@ export class NotationView {
 
   refresh(): void {
     this.beatViews = new Map<number, BeatView>();
-  }
-
-  viewForBeat(beat: Beat): BeatView {
-    let curr = this.beatViews.get(beat.uuid) || null;
-    if (curr == null) {
-      // how to get the bar and beat index for a given beat in a given row?
-      const lineView = this.ensureLineView(beat.role.line);
-      curr = lineView.viewForBeat(beat);
-      this.beatViews.set(beat.uuid, curr);
-    }
-    return curr;
   }
 
   loadChildViews(): void {
@@ -99,13 +87,27 @@ export class NotationView {
       if (!line.isEmpty) {
         // Probably because this is an empty line and AddAtoms was not called
         TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
-        const beatLayout = this.beatLayouts.get(layoutParams.uuid)!;
-        lineView.beatLayout = beatLayout;
+        lineView.beatGridView = this.beatLayout.getGridViewForLine(line.uuid);
+        lineView.beatGridView.getCellView = this.viewForBeat;
       }
-      lineView.beatsByLineRole = this.beatsByLineRole.get(line.uuid)!;
       this.lineViews.push(lineView);
     }
     return lineView;
+  }
+
+  beatViews = new Map<number, BeatView>();
+
+  viewForBeat(beat: Beat): BeatView {
+    let curr = this.beatViews.get(beat.uuid) || null;
+    if (curr == null) {
+      const line = beat.role.line;
+      // how to get the bar and beat index for a given beat in a given row?
+      const lineView = this.ensureLineView(line);
+      const lp = this.beatLayout.layoutParamsForLine.get(line.uuid);
+      curr = new BeatView(beat, lineView.gElem, lp!.cycle);
+      this.beatViews.set(beat.uuid, curr);
+    }
+    return curr as BeatView;
   }
 
   getLineView(line: Line): TSU.Nullable<LineView> {
@@ -119,8 +121,7 @@ export class NotationView {
   clear(): void {
     this.lineViews = [];
     // Mapping from line id -> list of beats in each of its roles
-    this.beatsByLineRole = new Map<number, Beat[][]>();
-    this.beatLayouts = new Map<number, BeatLayout>();
+    this.beatLayout = null;
     this.currentSVGElement = null;
     this.tableElement.innerHTML = "";
     this.beatViews = new Map<number, BeatView>();
@@ -139,36 +140,27 @@ export class NotationView {
         this.renderBlock(block as RawBlock);
       } else {
         lines.push(block as Line);
-        const lineView = this.renderLine(block as Line);
+        const lineView = this.ensureLineView(block as Line);
         lineViews.push(lineView);
       }
     }
 
-    // Eval column sizes all beat layouts
-    for (const bl of this.beatLayouts.values()) {
-      bl.evalColumnSizes(this);
+    const now = performance.now();
+    for (const lineView of lineViews) {
+      lineView.beatGridView.setUpdatedAt(now);
+    }
+
+    for (const lineView of lineViews) {
+      lineView.beatGridView.applyChanges();
+    }
+
+    for (const lineView of lineViews) {
+      lineView.wrapToSize();
     }
 
     // now that all spacing has been calculated
     // go through all
-    for (const beatView of this.beatViews.values()) {
-      beatView.refreshLayout();
-    }
-
-    // Set line view preferred sizes
-    for (const lineView of lineViews) {
-      lineView.wrapToSize();
-    }
-  }
-
-  renderLine(line: Line): LineView {
-    const lineView = this.ensureLineView(line);
-    // Layout the "rows" for this line - x has already been set by the
-    // previous column spacing step
-    if (!line.isEmpty) {
-      lineView.beatLayout.layoutBeatsForLine(line, lineView.beatsByLineRole, this);
-    }
-    return lineView;
+    // for (const beatView of this.beatViews.values()) { beatView.refreshLayout(); }
   }
 
   renderBlock(raw: RawBlock): void {

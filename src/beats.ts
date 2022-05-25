@@ -3,34 +3,19 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
+import { GridView, GridCell, GridCellView, AlignedCol } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 
-interface BeatViewDelegate {
-  // A way to create all beats for an entire Line in one go (instead of one by one)
-  viewForBeat(beat: Beat): BeatView;
-}
-
-export interface BeatView {
-  readonly beat: Beat;
-  readonly needsLayout: boolean;
-  readonly minSize: TSU.Geom.Size;
-  readonly bbox: TSU.Geom.Rect;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  refreshLayout(): void;
-  setStyles(config: any): void;
-}
+export type BeatView = GridCellView;
 
 export class Beat {
   private static idCounter = 0;
+  readonly uuid = Beat.idCounter++;
   layoutLine = -1;
   layoutColumn = -1;
-  readonly uuid = Beat.idCounter++;
   // Should this be as flat Atoms or should we keep it as atoms and breakdown
   // later?
   atom: Atom;
@@ -89,312 +74,6 @@ export class Beat {
   }
 }
 
-/**
- * Grouping of beats by their column based on the layout params.
- * The confusion is we have beats broken up and saved in columns
- * but we are loosing how a line is supposed to access it in its own way
- * we have beatsByRole for getting all beats for a role (in a line)
- * sequentially we have beatColumns for getting all beats in a particular
- * column across all lines and roles globally.
- *
- * What we want here is for a given line get all roles, their beats
- * in zipped way.  eg for a Line with 3 roles and say 10 beats each
- * (with the breaks of 4, 1) we need:
- *
- * R1 B1 R1 B2 R1 B3 R1 B4
- * R2 B1 R2 B2 R2 B3 R2 B4
- * R3 B1 R3 B2 R3 B3 R3 B4
- *
- * R1 B5
- * R2 B5
- * R3 B5
- *
- * R1 B6 R1 B7 R1 B8 R1 B9
- * R2 B6 R2 B7 R2 B8 R2 B9
- * R3 B6 R3 B7 R3 B8 R3 B9
- *
- * R1 B10
- * R2 B10
- * R3 B10
- *
- *
- * Here we have 5 distinct beat columns:
- *
- * 1: R1B1, R2B1, R3B1, R1B6, R2B6, R3B6,
- * 2: R1B2, R2B2, R3B2, R1B7, R2B7, R3B7,
- * 3: R1B3, R2B3, R3B3, R1B8, R2B8, R3B8,
- * 4: R1B4, R2B4, R3B4, R1B9, R2B9, R3B9,
- * 5: R1B5, R2B5, R3B5, R1B10, R2B10, R3B10,
- *
- */
-export class BeatLayout {
-  // beatColumns[i][j] returns all beats in a particular layoutLine and
-  // layoutColumn the purpose of beatColumns is to ensure horizontal alignment
-  // of beats in a single column
-  bcolNextList = new Map<string, Set<string>>();
-  beatColumns = new Map<string, BeatColumn>();
-  // bcolsStartingAt = new Map<string, BeatColumn[]>();
-  // bcolsEndingAt = new Map<string, BeatColumn[]>();
-  startingColumns: BeatColumn[] = [];
-
-  // Mapping from beat -> BeatColumn where it resides
-  columnForBeat = new Map<number, BeatColumn>();
-
-  constructor(public readonly layoutParams: LayoutParams) {}
-
-  /**
-   * Gets the beat column of a given duration at the given offset.
-   */
-  getBeatColumn(offset: Fraction, duration: Fraction): BeatColumn {
-    const key = BeatLayout.keyFor(offset, duration);
-    let bcol = this.beatColumns.get(key) || null;
-    if (!bcol) {
-      bcol = new BeatColumn(offset, duration);
-      this.beatColumns.set(key, bcol);
-      if (bcol.offset.isZero) {
-        // this is a "starting" column
-        this.startingColumns.push(bcol);
-      } else {
-        const endOffset = offset.plus(duration);
-        // Find all columns "before" this and add this as a neighbour to those
-        // columns before are such that their prev.offset + prev.duration == bcol.offset
-        for (const other of this.beatColumns.values()) {
-          if (other.offset.plus(other.duration).equals(offset)) {
-            // mark us as a successor of other
-            this.addSuccessor(other, bcol);
-          } else if (other.offset.equals(endOffset)) {
-            // mark other as a successor of us
-            this.addSuccessor(bcol, other);
-          }
-        }
-
-        // Similary find all columns who could "next" sets and add us to them
-      }
-    }
-    return bcol;
-  }
-
-  protected static keyFor(offset: Fraction, duration: Fraction): string {
-    return offset.factorized.toString() + ":" + duration.factorized.toString();
-  }
-
-  protected addSuccessor(prev: BeatColumn, next: BeatColumn): void {
-    TSU.assert(prev.offset.plus(prev.duration).equals(next.offset), "BeatColumns are not adjacent to each other");
-    const prevKey = BeatLayout.keyFor(prev.offset, prev.duration);
-    const nextKey = BeatLayout.keyFor(next.offset, next.duration);
-    let nextset = this.bcolNextList.get(prevKey) || null;
-    if (!nextset) {
-      nextset = new Set<string>();
-      this.bcolNextList.set(prevKey, nextset);
-    }
-    nextset.add(nextKey);
-  }
-
-  /**
-   * Adds the beat to this layout and returns the BeatColumn to which this beat was added.
-   */
-  addBeat(beat: Beat): BeatColumn {
-    // Get the beat column at this index (and line) and add to it.
-    const lp = this.layoutParams;
-    const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
-
-    // We wnat to do something like this instead
-    /*
-    beatGrid.setValue(layoutLine, layoutColumn, beat);
-    beat.row = beatGrid.getColumn(layoutLine);
-    beat.col = beatGrid.getColumn(layoutColumn);
-    */
-
-    const bcol = this.getBeatColumn(rowOffset, beat.duration);
-
-    bcol.add(beat);
-
-    // TODO: see if beat exists in another column
-    this.columnForBeat.set(beat.uuid, bcol);
-    beat.layoutLine = layoutLine;
-    beat.layoutColumn = layoutColumn;
-    return bcol;
-  }
-
-  /**
-   * Return all beat columns that start immediately after the given beat column.
-   */
-  neighborsOf(beatColumn: BeatColumn): BeatColumn[] {
-    const out: BeatColumn[] = [];
-    const endOffset = beatColumn.offset.plus(beatColumn.duration);
-    for (const other of this.beatColumns.values()) {
-      if (endOffset.equals(other.offset)) {
-        out.push(other);
-      }
-    }
-    return out;
-  }
-
-  readonly DEBUG = false;
-  evalColumnSizes(beatViewDelegate: BeatViewDelegate): void {
-    // Do a bread first traversal of the beat columns so those with earlier offsets
-    // will be laid out and nudged so that later ones' offsets can be set only once.
-    // TODO - should this be a priority queue - ie is there a need to sort these by
-    // "larger" widths first?
-    let queue: BeatColumn[] = [...this.startingColumns];
-    const xForOffsets: TSU.StringMap<number> = {};
-    while (queue.length > 0) {
-      const nextQueue: BeatColumn[] = [];
-      for (const bcol of queue) {
-        const offset = bcol.offset.factorized;
-        const colWidth = bcol.evalMaxWidth(beatViewDelegate);
-        let currX = 0;
-        if (!bcol.offset.isZero) {
-          // this *must* be in xForOffsets as it would have been calculated by a previous bcol
-          TSU.assert(offset.toString() in xForOffsets, "Cannot find x for given offset");
-          currX = xForOffsets[offset.toString()];
-        }
-        bcol.setX(currX, beatViewDelegate);
-        const endOffset = offset.plus(bcol.duration, true);
-        xForOffsets[endOffset.toString()] = Math.max(
-          xForOffsets[endOffset.toString()] || 0,
-          currX + colWidth + bcol.paddingLeft + bcol.paddingRight,
-        );
-        // add all neighbours here
-        // TODO - Use better lists of going through all beat cols
-        // Also ensure we are adding in sorted order and avoiding duplicates
-        for (const other of this.beatColumns.values()) {
-          if (endOffset.equals(other.offset)) {
-            nextQueue.push(other);
-          }
-        }
-      }
-      queue = nextQueue;
-    }
-  }
-
-  // Spacing between each role in a single row
-  roleSpacing = 10;
-
-  // Spacing between each row (a row can consist of multiple roles).
-  rowSpacing = 15;
-  layoutBeatsForLine(line: Line, allRoleBeats: Beat[][], beatViewDelegate: BeatViewDelegate): void {
-    // Instead of starting currLayoutLine at 0 - it should start at the line of the
-    // first beat being rendered
-    const lp = this.layoutParams;
-    const currBeats = line.roles.map((l, index) => allRoleBeats[index][0]) as (Beat | null)[];
-    let currY = this.roleSpacing;
-    let numDone = 0;
-    do {
-      numDone = 0;
-      // Lay one role at a time upto numBeatsInLine number of beats
-      for (let currRole = 0; currRole < currBeats.length; currRole++) {
-        let currBeat: Beat | null = currBeats[currRole];
-        if (currBeat) {
-          const temp = currBeat;
-          const numBeatsInRow = lp.lineBreaks[currBeat.layoutLine];
-          let maxHeight = 0;
-          let currX = 15;
-          for (
-            let i = currBeat.layoutColumn;
-            i < numBeatsInRow && currBeat;
-            i++, currBeat = currBeat.nextBeat, numDone++
-          ) {
-            const beatView = beatViewDelegate.viewForBeat(currBeat);
-            beatView.y = currY;
-            if (this.DEBUG) {
-              beatView.x = currX;
-              beatView.refreshLayout();
-              currX += beatView.width;
-            }
-            maxHeight = Math.max(maxHeight, beatView.minSize.height);
-          }
-
-          currBeat = temp;
-          for (
-            let i = currBeat.layoutColumn;
-            i < numBeatsInRow && currBeat;
-            i++, currBeat = currBeat.nextBeat, numDone++
-          ) {
-            const beatView = beatViewDelegate.viewForBeat(currBeat);
-            beatView.height = maxHeight;
-          }
-          // Should line heights be "fixed"?
-          // Set height of all views in this row to same height and Y
-          currY += maxHeight;
-          currY += this.roleSpacing;
-        }
-        currBeats[currRole] = currBeat;
-      }
-
-      // currLayoutLine = (currLayoutLine + 1) % lp.lineBreaks.length;
-      currY += this.rowSpacing;
-    } while (numDone > 0);
-  }
-}
-
-export class BeatColumn {
-  protected _x = 0;
-  protected _maxWidth = 0;
-  needsLayout = false;
-  atomSpacing = 5;
-  paddingLeft = 15;
-  paddingRight = 15;
-  beats: Beat[] = [];
-  constructor(public readonly offset: Fraction, public readonly duration: Fraction) {
-    offset = offset.factorized;
-    duration = duration.factorized;
-  }
-
-  get x(): number {
-    return this._x;
-  }
-
-  setX(val: number, beatViewDelegate: BeatViewDelegate): void {
-    this._x = val;
-    for (const beat of this.beats) {
-      const beatView = beatViewDelegate.viewForBeat(beat);
-      beatView.x = val + this.paddingLeft;
-      beatView.width = this._maxWidth;
-      // console.log("ID, Setting x, width: ", beatView.beat.index, (beatView as any).x, (beatView as any).width);
-    }
-  }
-
-  get maxWidth(): number {
-    return this._maxWidth + this.paddingLeft + this.paddingRight;
-  }
-
-  setPadding(left: number, right: number): void {
-    if (left >= 0) {
-      this.paddingLeft = left;
-    }
-    if (right >= 0) {
-      this.paddingRight = right;
-    }
-  }
-
-  evalMaxWidth(beatViewDelegate: BeatViewDelegate): number {
-    this._maxWidth = 0;
-    for (const beat of this.beats) {
-      const beatView = beatViewDelegate.viewForBeat(beat);
-      // console.log( "index, _minSize, refreshMinSize = ", beatView.beat.index, (beatView as any)._minSize, (beatView as any).refreshMinSize(),);
-      const minSize = beatView.minSize;
-      if (minSize.width > this._maxWidth) {
-        this._maxWidth = minSize.width;
-      }
-    }
-    return this._maxWidth;
-  }
-
-  /**
-   * Adds a new beat to this column.
-   * Returns true if the column's width has increased.  This is an indicator
-   * to the caller that a layout of all other views in this column is needed
-   * so the refresh can be scheduled at some time.
-   */
-  add(beat: Beat): void {
-    // Find line this view should be added to.
-    // TODO - Should we check if this beat was already added?
-    this.beats.push(beat);
-    this.needsLayout = true;
-  }
-}
-
 export class BeatsBuilder {
   // All atoms divided into beats
   readonly beats: Beat[] = [];
@@ -415,6 +94,7 @@ export class BeatsBuilder {
     public readonly role: Role,
     public readonly layoutParams: LayoutParams,
     public readonly startOffset: Fraction = ZERO,
+    ...atoms: Atom[]
   ) {
     const [, [bar, beat, instance], beatOffset, index] = layoutParams.cycle.getPosition(startOffset);
     this.cycleIter = layoutParams.cycle.iterateBeats(bar, beat, instance);
@@ -425,6 +105,7 @@ export class BeatsBuilder {
     // at beginning of a cycle.  But if the start offset is < 0 then the
     // startIndex should also shift accordingly
     this.startIndex = index;
+    this.addAtoms(...atoms);
   }
 
   addAtoms(...atoms: Atom[]): void {
@@ -484,5 +165,215 @@ export class BeatsBuilder {
     this.beats.push(newBeat);
     if (this.onBeatAdded) this.onBeatAdded(newBeat);
     return newBeat;
+  }
+}
+
+/**
+ * Grouping of beats by their column based on the layout params.
+ * The confusion is we have beats broken up and saved in columns
+ * but we are loosing how a line is supposed to access it in its own way
+ * we have beatsByRole for getting all beats for a role (in a line)
+ * sequentially we have beatColumns for getting all beats in a particular
+ * column across all lines and roles globally.
+ *
+ * What we want here is for a given line get all roles, their beats
+ * in zipped way.  eg for a Line with 3 roles and say 10 beats each
+ * (with the breaks of 4, 1) we need:
+ *
+ * R1 B1 R1 B2 R1 B3 R1 B4
+ * R2 B1 R2 B2 R2 B3 R2 B4
+ * R3 B1 R3 B2 R3 B3 R3 B4
+ *
+ * R1 B5
+ * R2 B5
+ * R3 B5
+ *
+ * R1 B6 R1 B7 R1 B8 R1 B9
+ * R2 B6 R2 B7 R2 B8 R2 B9
+ * R3 B6 R3 B7 R3 B8 R3 B9
+ *
+ * R1 B10
+ * R2 B10
+ * R3 B10
+ *
+ *
+ * Here we have 5 distinct beat columns:
+ *
+ * 1: R1B1, R2B1, R3B1, R1B6, R2B6, R3B6,
+ * 2: R1B2, R2B2, R3B2, R1B7, R2B7, R3B7,
+ * 3: R1B3, R2B3, R3B3, R1B8, R2B8, R3B8,
+ * 4: R1B4, R2B4, R3B4, R1B9, R2B9, R3B9,
+ * 5: R1B5, R2B5, R3B5, R1B10, R2B10, R3B10,
+ *
+ */
+export class BeatColDAG {
+  beatColumns = new Map<string, BeatColumn>();
+  ensureBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): [BeatColumn, boolean] {
+    const key = BeatColumn.keyFor(offset, endOffset, markerType);
+    let bcol = this.beatColumns.get(key) || null;
+    const newcreated = bcol == null;
+    if (!bcol) {
+      bcol = new BeatColumn(offset, endOffset, markerType);
+      this.beatColumns.set(key, bcol);
+    }
+    return [bcol, newcreated];
+  }
+
+  /**
+   * Gets the beat column of a given duration at the given offset.
+   */
+  getBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): BeatColumn {
+    const [bcol, newcreated] = this.ensureBeatColumn(offset, endOffset, markerType);
+    if (newcreated) {
+      if (markerType == 0) {
+        const [prevcol] = this.ensureBeatColumn(offset, endOffset, -1);
+        const [nextcol] = this.ensureBeatColumn(offset, endOffset, 1);
+        prevcol.gridCol.addSuccessor(bcol.gridCol);
+        bcol.gridCol.addSuccessor(nextcol.gridCol);
+        for (const other of this.beatColumns.values()) {
+          // only join the "marker" columns
+          if (other.markerType == -1 && endOffset.equals(other.offset)) {
+            // our next col is a preecessor of other
+            nextcol.gridCol.addSuccessor(other.gridCol);
+          } else if (other.markerType == 1 && other.endOffset.equals(offset)) {
+            // our prev col is a predecessor of other
+            other.gridCol.addSuccessor(prevcol.gridCol);
+          }
+        }
+      }
+    }
+    return bcol;
+  }
+}
+
+/**
+ * Manages the beat layouts for *all* lines in a notation.
+ */
+type LineId = number;
+type LPID = number;
+export class GlobalBeatLayout {
+  gridViewsForLine = new Map<LineId, GridView>();
+  layoutParamsForLine = new Map<LineId, LayoutParams>();
+  roleBeatsForLine = new Map<LineId, Beat[][]>();
+  beatColDAGsByLP = new Map<LPID, BeatColDAG>();
+
+  /**
+   * First lines are added to the BeatLayout object.
+   * This ensures that a line is broken down into beats and added
+   * into a dedicated GridView per line.
+   *
+   * A line must also be given the layout params by which the beat
+   * break down will happen.  This LayoutParams object does not have
+   * to be unique per line (this non-constraint allows to align
+   * beats across lines!).
+   */
+  addLine(line: Line, layoutParams: LayoutParams): GridView {
+    const gridView = this.getGridViewForLine(line.uuid);
+    this.layoutParamsForLine.set(line.uuid, layoutParams);
+    /*const roleBeats = */ this.lineToRoleBeats(line, layoutParams);
+    return gridView;
+  }
+
+  /**
+   * Get the GridView associated with a particular line.
+   */
+  getGridViewForLine(lineid: LineId): GridView {
+    let out = this.gridViewsForLine.get(lineid) || null;
+    if (!out) {
+      out = new GridView();
+      this.gridViewsForLine.set(lineid, out);
+    }
+    return out;
+  }
+
+  protected beatColDAGForLP(lpid: LPID): BeatColDAG {
+    let out = this.beatColDAGsByLP.get(lpid) || null;
+    if (!out) {
+      out = new BeatColDAG();
+      this.beatColDAGsByLP.set(lpid, out);
+    }
+    return out;
+  }
+
+  protected lineToRoleBeats(line: Line, lp: LayoutParams): Beat[][] {
+    const roleBeats = [] as Beat[][];
+    this.roleBeatsForLine.set(line.uuid, roleBeats);
+    const lineOffset = line.offset.divbyNum(lp.beatDuration);
+    for (const role of line.roles) {
+      const bb = new BeatsBuilder(role, lp, lineOffset, ...role.atoms);
+      roleBeats.push(bb.beats);
+
+      // Add these to the beat layout too
+      for (const beat of bb.beats) {
+        // beat.ensureUniformSpaces(layoutParams.beatDuration);
+        this.addBeat(beat);
+      }
+    }
+    return roleBeats;
+  }
+
+  /**
+   * Adds the beat to this layout and returns the BeatColumn to which
+   * this beat was added.
+   */
+  protected addBeat(beat: Beat): GridCell {
+    // Get the beat column at this index (and line) and add to it.
+    const line = beat.role.line;
+    const lp = this.layoutParamsForLine.get(line.uuid) as LayoutParams;
+    const beatColDAG = this.beatColDAGForLP(lp.uuid);
+    const gridView = this.getGridViewForLine(line.uuid) as GridView;
+    const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
+    const bcol = beatColDAG.getBeatColumn(rowOffset, beat.endOffset, 0);
+
+    // Since a beat's column has a "pre" and "post" col to, each
+    // beat has 3 columns for it
+    const roleIndex = beat.role.line.indexOfRole(beat.role.name);
+    const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
+    const realCol = layoutColumn * 3;
+
+    const gridRow = gridView.getRow(realRow);
+    let cell = gridRow.cellAt(realCol);
+    if (cell != null) {
+      // TODO - need to think about what to do when a cell exists
+      // should we just update cell contents?  but beats are fixed
+      // so replacing beats doesnt make sense - unless offset, dur
+      // role etc are all same (only atomlist and markers can change)
+      throw new Error("Cell should not have existed here");
+    }
+    cell = new GridCell(gridRow, realCol, beat);
+    cell.alignCol = bcol.gridCol;
+    gridRow.setCellAt(realCol, cell);
+    return cell;
+  }
+}
+
+export class BeatColumn {
+  atomSpacing = 5;
+  gridCol: AlignedCol;
+  readonly key: string;
+  constructor(
+    public readonly offset: Fraction,
+    public readonly endOffset: Fraction,
+    public readonly markerType: number,
+  ) {
+    offset = offset.factorized;
+    endOffset = endOffset.factorized;
+    this.key = BeatColumn.keyFor(offset, endOffset, markerType);
+  }
+
+  static keyFor(offset: Fraction, endOffset: Fraction, markerType = 0): string {
+    offset = offset.factorized;
+    endOffset = endOffset.factorized;
+    if (markerType < 0) {
+      // return the column for the marker "before" this col
+      // int his case only the "start offset" is needed and length doesnt matter
+      return ":" + offset.toString();
+    } else if (markerType > 0) {
+      // return the column for the marker "after" this col
+      // in this case only thd end offset matters
+      return endOffset.toString() + ":";
+    } else {
+      return offset.toString() + ":" + endOffset.toString();
+    }
   }
 }
