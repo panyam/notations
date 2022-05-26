@@ -180,8 +180,8 @@ const [parser, itemGraph] = G.newParser(
         const markerText = isBefore
           ? token.value.substring(1, token.value.length - 3)
           : token.value.substring(3, token.value.length - 1);
-        console.log("TokVal: ", token.value, token.positions);
-        console.log("Marker Text: ", markerText, isBefore);
+        // console.log("TokVal: ", token.value, token.positions);
+        // console.log("Marker Text: ", markerText, isBefore);
         token.value = new Marker(markerText, isBefore);
         return token;
       },
@@ -304,7 +304,7 @@ export class Parser {
     applyPreMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const marker = children[0].value as Marker;
       const leaf = children[1].value as Atom;
-      console.log("marker, leaf: ", marker, leaf);
+      // console.log("marker, leaf: ", marker, leaf);
       if (!leaf.markersBefore) {
         leaf.markersBefore = [];
       }

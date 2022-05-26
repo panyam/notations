@@ -330,20 +330,11 @@ export class GlobalBeatLayout {
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
     const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
     const realCol = layoutColumn * 3;
-
-    const gridRow = gridView.getRow(realRow);
-    let cell = gridRow.cellAt(realCol);
-    if (cell != null) {
-      // TODO - need to think about what to do when a cell exists
-      // should we just update cell contents?  but beats are fixed
-      // so replacing beats doesnt make sense - unless offset, dur
-      // role etc are all same (only atomlist and markers can change)
-      throw new Error("Cell should not have existed here");
-    }
-    cell = new GridCell(gridRow, realCol, beat);
-    cell.alignCol = bcol.gridCol;
-    gridRow.setCellAt(realCol, cell);
-    return cell;
+    return gridView.setValue(realRow, realCol, beat, () => {
+      const cell = new GridCell(gridView.getRow(realRow), realCol);
+      cell.alignCol = bcol.gridCol;
+      return cell;
+    });
   }
 }
 

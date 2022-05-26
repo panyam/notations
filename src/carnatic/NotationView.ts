@@ -10,7 +10,7 @@ export class NotationView {
   notation: Notation;
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
-  beatLayout: GlobalBeatLayout;
+  beatLayout: null | GlobalBeatLayout;
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
   markdownParser: (contents: string) => string;
@@ -87,7 +87,7 @@ export class NotationView {
       if (!line.isEmpty) {
         // Probably because this is an empty line and AddAtoms was not called
         TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
-        lineView.beatGridView = this.beatLayout.getGridViewForLine(line.uuid);
+        lineView.beatGridView = this.beatLayout!.getGridViewForLine(line.uuid);
         lineView.beatGridView.getCellView = this.viewForBeat;
       }
       this.lineViews.push(lineView);
@@ -103,7 +103,7 @@ export class NotationView {
       const line = beat.role.line;
       // how to get the bar and beat index for a given beat in a given row?
       const lineView = this.ensureLineView(line);
-      const lp = this.beatLayout.layoutParamsForLine.get(line.uuid);
+      const lp = this.beatLayout!.layoutParamsForLine.get(line.uuid);
       curr = new BeatView(beat, lineView.gElem, lp!.cycle);
       this.beatViews.set(beat.uuid, curr);
     }

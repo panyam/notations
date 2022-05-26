@@ -25,6 +25,7 @@
     "url": "https://github.com/panyam/notations/issues"
   },
   "dependencies": {
+    "@lume/kiwi": "^0.1.0",
     "@panyam/tsutils": "*",
     "galore": "*"
   },

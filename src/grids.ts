@@ -1,46 +1,105 @@
 import * as TSU from "@panyam/tsutils";
+import * as kiwi from "@lume/kiwi";
 
 /**
- * A sparse array type which is optimized for "holes" while not penalizing
- * runs of values.
+ * A generic way to host child views in a grid (very similar to gridbag layout)
+ * This allows us to have a framework for hosting BeatViews instead of mucking
+ * about with beat rows and beat columns etc.
+ *
+ * Grid "cells" can be referred by cell indexes.  Additionally we want our grid
+ * rows and columns to have names (like in Spreadsheets) so that even when rows
+ * and columns are inserted, though indexes may change, the "addresses" will
+ * be fixed and immovable.  This helps us do things like insert a new new column
+ * (say for markers) and not have to worry other columns index changes impacting
+ * us.
  */
-export class SparseArray<T> {
-  runs: [number, T[]][] = [];
+export class GridView {
+  private _lastUpdatedAt = 0;
+  private _lastSyncedAt = -1;
+  // cells = new SparseArray<SparseArray<GridCell>>();
+  rows: GridRow[] = [];
+  getCellView: (value: any) => GridCellView;
+  removeCellView: (cell: GridCellView) => void;
 
-  get length(): number {
-    let out = 0;
-    for (const [, vals] of this.runs) {
-      out += vals.length;
+  debugValue() {
+    return {
+      rows: this.rows.map((r) => r.debugValue()),
+      lastUpdatedAt: this.lastUpdatedAt,
+      lastSyncedAt: this.lastSyncedAt,
+    };
+  }
+
+  get lastSyncedAt() {
+    return this._lastSyncedAt;
+  }
+
+  get lastUpdatedAt() {
+    return this._lastUpdatedAt;
+  }
+
+  setUpdatedAt(val: number) {
+    this._lastUpdatedAt = val;
+  }
+
+  addRows(insertBefore = -1, numRows = 1): GridRow[] {
+    if (insertBefore < 0) {
+      insertBefore = this.rows.length;
+    }
+    const out = [];
+    for (let i = 0; i < numRows; i++) {
+      const newRow = new GridRow(this, insertBefore + i);
+      out.push(newRow);
+    }
+    this.rows.splice(insertBefore, 0, ...out);
+    for (let i = insertBefore + numRows; i < this.rows.length; i++) {
+      this.rows[i].rowIndex += numRows;
     }
     return out;
+  }
+
+  getRow(row: number): GridRow {
+    if (row >= this.rows.length) {
+      this.addRows(-1, 1 + row - this.rows.length);
+    }
+    return this.rows[row];
+  }
+
+  setValue(row: number, col: number, value: any, cellCreator?: () => GridCell): any {
+    const grow = this.getRow(row);
+    if (!cellCreator) {
+      cellCreator = () => {
+        return new GridCell(grow, col);
+      };
+    }
+    if (value == null) {
+      const out = grow.clearCellAt(col);
+      if (out != null) {
+        this.setCellCleared(out);
+      }
+      return out;
+    } else {
+      const cell = grow.cellAt(col, cellCreator) as GridCell;
+      const oldValue = cell.value;
+      cell.value = value;
+      return oldValue;
+    }
   }
 
   /**
-   * Returns the value at a given index.
-   * If the value does not exist an optional creator method can be passed
-   * to ensure that this value is also created and set at the given index
+   * Mark a cell as updated in this iteration so only these can
+   * be used in the calculation of layout changes.
    */
-  valueAt(index: number, creator?: () => any): any {
-    let out = null;
-    if (out == null && creator) {
-      // wasnt found
-      out = creator();
-      this.setAt(index, out);
-    }
-    return out;
+  updatedCells = {} as TSU.NumMap<GridCell>;
+  clearedCells = {} as TSU.NumMap<GridCell>;
+  setCellCleared(cell: GridCell) {
+    this.clearedCells[cell.uuid] = cell;
+  }
+  setCellUpdated(cell: GridCell) {
+    this.updatedCells[cell.uuid] = cell;
   }
 
-  setAt(index: number, ...values: (T | null)[]): this {
-    return this.splice(index, values.length, ...values);
-  }
-
-  removeAt(index: number, count = 1): this {
-    return this.splice(index, count);
-  }
-
-  splice(index: number, numToDelete: number, ...valuesToInsert: (T | null)[]) {
-    //
-    return this;
+  applyChanges(): void {
+    this._lastSyncedAt = this._lastUpdatedAt;
   }
 }
 
@@ -70,7 +129,16 @@ export class GridCell {
   alignRow: AlignedRow;
   alignCol: AlignedCol;
   cellView: GridCellView | null;
-  constructor(public gridRow: GridRow, public colIndex: number, public value: any = null) {}
+
+  // Variables that will be "solved for"
+  varCellX = new kiwi.Variable();
+  varCellY = new kiwi.Variable();
+  varCellWidth = new kiwi.Variable();
+  varCellHeight = new kiwi.Variable();
+
+  constructor(public gridRow: GridRow, public colIndex: number, public value: any = null) {
+    this.alignRow = gridRow.defaultAlignRow;
+  }
 
   get grid(): GridView {
     return this.gridRow.grid;
@@ -79,64 +147,20 @@ export class GridCell {
   get row(): number {
     return this.gridRow.rowIndex;
   }
-}
 
-/**
- * A generic way to host child views in a grid (very similar to gridbag layout)
- * This allows us to have a framework for hosting BeatViews instead of mucking
- * about with beat rows and beat columns etc.
- *
- * Grid "cells" can be referred by cell indexes.  Additionally we want our grid
- * rows and columns to have names (like in Spreadsheets) so that even when rows
- * and columns are inserted, though indexes may change, the "addresses" will
- * be fixed and immovable.  This helps us do things like insert a new new column
- * (say for markers) and not have to worry other columns index changes impacting
- * us.
- */
-export class GridView {
-  currentTime = 0;
-  // cells = new SparseArray<SparseArray<GridCell>>();
-  rows: GridRow[] = [];
-  getCellView: (value: any) => GridCellView;
-  removeCellView: (cell: GridCellView) => void;
-
-  addRows(insertBefore = -1, numRows = 1): GridRow[] {
-    if (insertBefore < 0) {
-      insertBefore = this.rows.length;
-      this.rows.push(new GridRow(this, this.rows.length));
-    }
-    const out = [];
-    for (let i = 0; i < numRows; i++) {
-      const newRow = new GridRow(this, insertBefore + i);
-      out.push(newRow);
-    }
-    this.rows.splice(insertBefore, 0, ...out);
-    for (let i = insertBefore + numRows; i < this.rows.length; i++) {
-      this.rows[i].rowIndex += numRows;
+  debugValue() {
+    const out = {
+      row: this.gridRow.rowIndex,
+      col: this.colIndex,
+      value: this.value,
+      y: this.alignRow.coordOffset,
+      h: this.alignRow.maxLength,
+    } as any;
+    if (this.alignCol) {
+      out.x = this.alignCol.coordOffset;
+      out.w = this.alignCol.maxLength;
     }
     return out;
-  }
-
-  ensureRows(count: number): this {
-    if (count > this.rows.length) {
-      this.addRows(-1, count - this.rows.length);
-    }
-    return this;
-  }
-
-  getRow(row: number): GridRow {
-    this.ensureRows(row + 1);
-    return this.rows[row];
-  }
-
-  setValue(row: number, col: number, value: any): any {
-    const grow = this.getRow(row);
-    const cell = grow.cellAt(col, () => {
-      return new GridCell(grow, col, null);
-    })!;
-    const oldValue = cell.value;
-    cell.value = value;
-    return oldValue;
   }
 }
 
@@ -144,6 +168,9 @@ export class GridView {
  * Represents a row of grid cells in a GridView
  */
 export class GridRow {
+  varRowX = new kiwi.Variable();
+  varRowHeight = new kiwi.Variable();
+
   cells: (null | GridCell)[] = [];
   // The default vertical alignment manager for all cells in this row
   defaultAlignRow = new AlignedRow();
@@ -154,30 +181,29 @@ export class GridRow {
     let out = this.cells[col] || null;
     if (!out && creator) {
       this.cells[col] = out = creator();
+      out.gridRow = this;
+      out.colIndex = col;
+      this.grid.setCellUpdated(out);
     }
     return out;
   }
 
-  setCellAt(col: number, newCell: null | GridCell): null | GridCell {
-    const cellRow = this.cells;
-    const oldCell = cellRow[col] || null;
-    if (newCell && newCell.grid != this.grid) {
-      throw new Error("Cells can only be moved within the same Grid.");
+  // Clears the cell at the given column.
+  // Note this is not the same as "removing" a cell.
+  // Removing a cell needs all cells to the "right" to be shifted left.
+  clearCellAt(col: number): GridCell | null {
+    const out = this.cells[col] || null;
+    if (out) {
+      this.cells[col] = null;
     }
-    cellRow[col] = newCell;
-    if (oldCell) {
-      this.grid.addCellEvent(oldCell, GridCellEvent.REMOVED);
-    }
-    if (newCell) {
-      if (newCell.gridRow != null) {
-        this.grid.addCellEvent(newCell, GridCellEvent.MOVED);
-      } else {
-        this.grid.addCellEvent(newCell, GridCellEvent.ADDED);
-      }
-      newCell.gridRow = this;
-      newCell.colIndex = col;
-    }
-    return oldCell || null;
+    return out;
+  }
+
+  debugValue() {
+    return {
+      row: this.rowIndex,
+      cells: this.cells.filter((c) => c).map((c) => c?.debugValue()),
+    };
   }
 }
 
@@ -192,6 +218,10 @@ export abstract class AlignedLine {
   // All the cells that belong in this column
   cells: GridCell[] = [];
   modifiedCells = new Set<number>();
+
+  // Variables that will be "solved for"
+  varOffset = new kiwi.Variable();
+  varLength = new kiwi.Variable();
 
   get coordOffset(): number {
     return this._coordOffset;

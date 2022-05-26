@@ -127,3 +127,48 @@ export function parseProperty(line: string): [string, string] {
   const value = bars[1];
   return [key, value];
 }
+
+/**
+ * NOT YET IMPLEMENTED
+ * A sparse array type which is optimized for "holes" while not penalizing
+ * runs of values.
+ */
+export class SparseArray<T> {
+  runs: [number, T[]][] = [];
+
+  get length(): number {
+    let out = 0;
+    for (const [, vals] of this.runs) {
+      out += vals.length;
+    }
+    return out;
+  }
+
+  /**
+   * Returns the value at a given index.
+   * If the value does not exist an optional creator method can be passed
+   * to ensure that this value is also created and set at the given index
+   */
+  valueAt(index: number, creator?: () => any): any {
+    let out = null;
+    if (out == null && creator) {
+      // wasnt found
+      out = creator();
+      this.setAt(index, out);
+    }
+    return out;
+  }
+
+  setAt(index: number, ...values: (T | null)[]): this {
+    return this.splice(index, values.length, ...values);
+  }
+
+  removeAt(index: number, count = 1): this {
+    return this.splice(index, count);
+  }
+
+  splice(index: number, numToDelete: number, ...valuesToInsert: (T | null)[]) {
+    //
+    return this;
+  }
+}
