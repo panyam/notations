@@ -3,7 +3,7 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
-import { GridView, GridCell, GridCellView, AlignedCol } from "./grids";
+import { GridView, GridCell, GridCellView, ColAlign } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -332,7 +332,7 @@ export class GlobalBeatLayout {
     const realCol = layoutColumn * 3;
     return gridView.setValue(realRow, realCol, beat, () => {
       const cell = new GridCell(gridView.getRow(realRow), realCol);
-      cell.alignCol = bcol.gridCol;
+      cell.colAlign = bcol.gridCol;
       return cell;
     });
   }
@@ -340,7 +340,7 @@ export class GlobalBeatLayout {
 
 export class BeatColumn {
   atomSpacing = 5;
-  gridCol: AlignedCol;
+  gridCol: ColAlign;
   readonly key: string;
   constructor(
     public readonly offset: Fraction,
