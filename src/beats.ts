@@ -3,7 +3,7 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
-import { GridModel, GridView, GridCell, GridCellView, ColAlign } from "./grids";
+import { GridModel, GridView, GridRow, GridCell, GridCellView, ColAlign } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -48,7 +48,6 @@ export class Beat {
   get endOffset(): Fraction {
     return this.offset.plus(this.duration);
   }
-
   get filled(): boolean {
     return this.remaining.isZero;
   }
@@ -294,16 +293,9 @@ export class GlobalBeatLayout {
     let out = this.gridViewsForLine.get(lineid) || null;
     if (!out) {
       out = new GridView(new GridModel());
-      out.gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, (event) => {
-        this.gridModelUpdated(out as GridView, event.payload);
-      });
       this.gridViewsForLine.set(lineid, out);
     }
     return out;
-  }
-
-  protected gridModelUpdated(gridView: GridView, events: TSU.Events.TEvent[]) {
-    // Here is an opportunity to layout the entire grid
   }
 
   protected beatColDAGForLP(lpid: LPID): BeatColDAG {
@@ -327,9 +319,9 @@ export class GlobalBeatLayout {
    */
   addLine(line: Line): void {
     const gridView = this.getGridViewForLine(line.uuid) as GridView;
-    gridView.gridModel.eventHub?.startBatchMode()
+    gridView.gridModel.eventHub?.startBatchMode();
     this.lineToRoleBeats(line, gridView);
-    gridView.gridModel.eventHub?.commitBatch()
+    gridView.gridModel.eventHub?.commitBatch();
   }
 
   protected lineToRoleBeats(line: Line, gridView: GridView): Beat[][] {
@@ -367,11 +359,9 @@ export class GlobalBeatLayout {
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
     const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
     const realCol = layoutColumn * 3;
-    return gridView.gridModel.setValue(realRow, realCol, beat, () => {
-      const gridRow = gridView.gridModel.getRow(realRow);
-      const cell = new GridCell(gridRow, realCol);
-      gridView.setColAlign(cell, bcol);
-      bcol.gridView = gridView;
+    return gridView.gridModel.setValue(realRow, realCol, beat, (gridRow: GridRow, col: number) => {
+      const cell = new GridCell(gridRow, col);
+      cell.colAlign = bcol;
       return cell;
     });
   }

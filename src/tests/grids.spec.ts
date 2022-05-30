@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { GridModel, GridCell, ColAlign } from "../grids";
+import { GridRow, GridView, GridModel, GridCellView, GridCell, ColAlign } from "../grids";
 
 function testGrid(debug: boolean, found: any, expected: any): void {
   if (debug) {
@@ -143,6 +143,58 @@ describe("Basic GridModel Tests", () => {
       ],
       lastUpdatedAt: 0,
       lastSyncedAt: -1,
+    });
+  });
+});
+
+describe("Basic GridView Tests", () => {
+  test("Test Layouts", () => {
+    const g = new GridModel();
+    const gv = new GridView(g);
+    const alcols = [] as ColAlign[];
+    for (let i = 1; i <= 5; i++) {
+      alcols[i] = new ColAlign();
+    }
+    const cellViews = {} as any;
+    const getCellView = (cell: GridCell): GridCellView => {
+      if (!(cell.location in cellViews)) {
+        cellViews[cell.location] = {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          minSize: { width: 10 * ("" + cell.value).length, height: 30 + cell.rowIndex },
+          needsLayout: false,
+        };
+      }
+      return cellViews[cell.location];
+    };
+    g.eventHub?.startBatchMode();
+    const cellCreator = (gridRow: GridRow, col: number) => {
+      const cell = new GridCell(gridRow, col);
+      cell.colAlign = alcols[col];
+      cell.rowAlign.getCellView = getCellView;
+      cell.colAlign.getCellView = getCellView;
+      return cell;
+    };
+    g.setValue(1, 1, 10.5, cellCreator);
+    g.setValue(2, 2, "Hello", cellCreator);
+    g.setValue(3, 3, "World", cellCreator);
+    g.setValue(4, 4, "testing", cellCreator);
+    g.setValue(5, 5, "30", cellCreator);
+    g.eventHub?.commitBatch();
+
+    testGrid(false, g, {
+      rows: [
+        { r: 0, cells: [] },
+        { r: 1, cells: [{ r: 1, c: 1, value: 10.5, y: 0, h: 61, x: 0, w: 70 }] },
+        { r: 2, cells: [{ r: 2, c: 2, value: "Hello", y: 61, h: 62, x: 0, w: 80 }] },
+        { r: 3, cells: [{ r: 3, c: 3, value: "World", y: 123, h: 63, x: 0, w: 80 }] },
+        { r: 4, cells: [{ r: 4, c: 4, value: "testing", y: 186, h: 64, x: 0, w: 100 }] },
+        { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 250, h: 65, x: 0, w: 60 }] },
+      ],
+      lastUpdatedAt: 0,
+      lastSyncedAt: 0,
     });
   });
 });

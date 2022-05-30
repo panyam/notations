@@ -2,16 +2,16 @@ import * as TSU from "@panyam/tsutils";
 // import * as kiwi from "@lume/kiwi";
 
 /**
- * A generic way to host child views in a grid (very similar to gridbag layout)
- * This allows us to have a framework for hosting BeatViews instead of mucking
- * about with beat rows and beat columns etc.
+ * A generic way to host child views in a grid (very similar to gridbag
+ * layout) This allows us to have a framework for hosting BeatViews instead
+ * of mucking about with beat rows and beat columns etc.
  *
- * Grid "cells" can be referred by cell indexes.  Additionally we want our grid
- * rows and columns to have names (like in Spreadsheets) so that even when rows
- * and columns are inserted, though indexes may change, the "addresses" will
- * be fixed and immovable.  This helps us do things like insert a new new column
- * (say for markers) and not have to worry other columns index changes impacting
- * us.
+ * Grid "cells" can be referred by cell indexes.  Additionally we want our
+ * grid rows and columns to have names (like in Spreadsheets) so that even
+ * when rows and columns are inserted, though indexes may change, the
+ * "addresses" will be fixed and immovable.  This helps us do things like
+ * insert a new new column (say for markers) and not have to worry other
+ * columns index changes impacting us.
  */
 export class GridModel extends TSU.Events.EventEmitter {
   private _lastUpdatedAt = 0;
@@ -25,7 +25,6 @@ export class GridModel extends TSU.Events.EventEmitter {
       lastUpdatedAt: this.lastUpdatedAt,
       lastSyncedAt: this.lastSyncedAt,
     } as any;
-    // if (Object.keys(this.events).length > 0) { out["events"] = this.events; }
     return out;
   }
 
@@ -45,32 +44,27 @@ export class GridModel extends TSU.Events.EventEmitter {
     this._lastUpdatedAt = val;
   }
 
-  addRows(insertBefore = -1, numRows = 1): GridRow[] {
+  addRows(insertBefore = -1, numRows = 1): this {
     if (insertBefore < 0) {
       insertBefore = this.rows.length;
     }
-    const out = [];
-    for (let i = 0; i < numRows; i++) {
+    let next = this.rows[insertBefore] || null;
+    let prev = this.rows[insertBefore - 1] || null;
+    for (let i = numRows - 1; i >= 0; i--) {
       const newRow = new GridRow(this, insertBefore + i);
-      out.push(newRow);
-      if (i > 0) {
-        // set the success nodes
-        out[i - 1].defaultRowAlign.addSuccessor(out[i].defaultRowAlign);
+      this.rows.splice(insertBefore, 0, newRow)
+      if (next != null) {
+        newRow.defaultRowAlign.addSuccessor(next.defaultRowAlign);
       }
-    }
-    this.rows.splice(insertBefore, 0, ...out);
-    // connect first "new" row to its predecessor
-    if (insertBefore > 0 && this.rows.length > 0) {
-      this.rows[insertBefore - 1].defaultRowAlign.addSuccessor(out[0].defaultRowAlign);
-    }
-    // connect last "new" row to its successor
-    if (insertBefore < this.rows.length) {
-      out[out.length - 1].defaultRowAlign.addSuccessor(this.rows[insertBefore].defaultRowAlign);
+      if (i == 0 && insertBefore > 0) {
+        prev.defaultRowAlign.addSuccessor(newRow.defaultRowAlign);
+      }
+      next = newRow;
     }
     for (let i = insertBefore + numRows; i < this.rows.length; i++) {
       this.rows[i].rowIndex += numRows;
     }
-    return out;
+    return this;
   }
 
   getRow(row: number): GridRow {
@@ -80,23 +74,26 @@ export class GridModel extends TSU.Events.EventEmitter {
     return this.rows[row];
   }
 
-  setValue(row: number, col: number, value: any, cellCreator?: () => GridCell): any {
+  setValue(row: number, col: number, value: any, cellCreator?: (row: GridRow, col: number) => GridCell): any {
     const grow = this.getRow(row);
     if (!cellCreator) {
-      cellCreator = () => {
-        return new GridCell(grow, col);
+      cellCreator = (row: GridRow, col: number) => {
+        return new GridCell(row, col);
       };
     }
     if (value == null) {
       const out = grow.clearCellAt(col);
       if (out != null) {
-        this.eventHub?.emit(GridCellEvent.CLEARED, this, out.location);
+        this.eventHub?.emit(GridCellEvent.CLEARED, this, {
+          loc: out.location,
+        });
       }
       return out;
     } else {
       const cell = grow.cellAt(col, cellCreator) as GridCell;
       const oldValue = cell.value;
       this.eventHub?.emit(GridCellEvent.UPDATED, this, {
+        loc: cell.location,
         cell: cell,
         oldValue: cell.value,
       });
@@ -111,41 +108,29 @@ export class GridModel extends TSU.Events.EventEmitter {
 }
 
 export class GridView {
-  getCellView: (value: any) => GridCellView;
-  removeCellView: (cell: GridCellView) => void;
-  rowAligns: RowAlign[] = [];
-  colAligns: ColAlign[] = [];
-  colAlignsByCell: TSU.StringMap<ColAlign>;
-  rowAlignsByCell: TSU.StringMap<RowAlign>;
-  events: any[];
-
   constructor(public readonly gridModel: GridModel) {
-    this.events = [];
-    gridModel.eventHub?.on(GridCellEvent.CLEARED, (event) => {
-      this.events.push(event);
+    gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, (event) => {
+      this.applyModelEvents(event.payload);
     });
-    gridModel.eventHub?.on(GridCellEvent.UPDATED, (event) => {
-      this.events.push(event);
-    });
-  }
-
-  setColAlign(cell: GridCell, colAlign: ColAlign) {
-    colAlign.addCell(cell);
-  }
-
-  setRowAlign(cell: GridCell, rowAlign: RowAlign) {
-    rowAlign.addCell(cell);
   }
 
   get startingRows(): RowAlign[] {
     const out = [] as RowAlign[];
-    const firstRow = this.gridModel.getRow(0);
-    const visited = {} as any;
-    for (let i = 0; i < firstRow.numCols; i++) {
-      const cell = firstRow.cellAt(i);
-      if (cell && !visited[cell.rowAlign.uuid]) {
-        visited[cell.rowAlign.uuid] = true;
-        out.push(cell.rowAlign);
+    let firstRow: null | GridRow = null;
+    for (let i = 0; i < this.gridModel.rows.length; i++) {
+      if (this.gridModel.getRow(i).numCells > 0) {
+        firstRow = this.gridModel.getRow(i);
+        break;
+      }
+    }
+    if (firstRow != null) {
+      const visited = {} as any;
+      for (let i = 0; i < firstRow.numCols; i++) {
+        const cell = firstRow.cellAt(i);
+        if (cell && !visited[cell.rowAlign.uuid]) {
+          visited[cell.rowAlign.uuid] = true;
+          out.push(cell.rowAlign);
+        }
       }
     }
     return out;
@@ -171,7 +156,7 @@ export class GridView {
    * to see which rows and/or columns are affected (and need to be
    * resized/repositioned).
    */
-  applyChanges(): void {
+  protected applyModelEvents(events: TSU.Events.TEvent[]) {
     // go through events here and route them to the right row and column
 
     // Step 1 - topologically sort RowAligns of changed cells
@@ -184,12 +169,12 @@ export class GridView {
     // instead of going through every change.
     // Later on we can revisit this if the events are edge triggered instead
     // of level triggered
-    for (let i = this.events.length - 1; i >= 0; i--) {
-      const event = this.events[i];
-      const loc = event[1];
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      const loc = event.payload.loc;
       if (cellVisited[loc]) continue;
       cellVisited[loc] = true;
-      const [row, col] = loc.split(",").map((x: string) => parseInt(x));
+      const [row, col] = loc.split(":").map((x: string) => parseInt(x));
       const gMod = this.gridModel;
       const cell = gMod.getRow(row).cellAt(col);
       if (cell) {
@@ -215,6 +200,8 @@ export class GridView {
     }
 
     // Eval max height for all changed rowAligns
+    // let firstRowChanged = this.gridModel.rows.length;
+    // let firstColChanged = 1000000000; // INT_MAX
     for (const rowAlignId in changedRowAligns) {
       const val = changedRowAligns[rowAlignId];
       val.align.evalMaxHeight(val.cells);
@@ -241,6 +228,7 @@ export class GridView {
       const nextQueue = [] as [null | RowAlign, RowAlign][];
       for (let i = 0; i < rowQueue.length; i++) {
         const [prevRowAlign, rowAlign] = rowQueue[i];
+        visitedRows[rowAlign.uuid] = true;
         let newY = rowAlign.coordOffset;
         let rowChanged = rowAlign.uuid in changedRowAligns;
         if (prevRowAlign) {
@@ -251,12 +239,12 @@ export class GridView {
         }
         if (rowChanged) {
           rowAlign.setY(newY);
+          rowOffsetChanged[rowAlign.uuid] = true;
         }
 
         // Add next neighbors now
         for (const next of rowAlign.nextLines) {
           if (!visitedRows[next.uuid]) {
-            visitedRows[next.uuid] = true;
             nextQueue.push([rowAlign, next]);
           }
         }
@@ -274,6 +262,7 @@ export class GridView {
       const nextQueue = [] as [null | ColAlign, ColAlign][];
       for (let i = 0; i < colQueue.length; i++) {
         const [prevColAlign, colAlign] = colQueue[i];
+        visitedCols[colAlign.uuid] = true;
         let newX = colAlign.coordOffset;
         let colChanged = colAlign.uuid in changedColAligns;
         if (prevColAlign) {
@@ -284,12 +273,12 @@ export class GridView {
         }
         if (colChanged) {
           colAlign.setX(newX);
+          colOffsetChanged[colAlign.uuid] = true;
         }
 
         // Add next neighbors now
         for (const next of colAlign.nextLines) {
           if (!visitedCols[next.uuid]) {
-            visitedCols[next.uuid] = true;
             nextQueue.push([colAlign, next]);
           }
         }
@@ -297,7 +286,6 @@ export class GridView {
       colQueue = nextQueue;
     }
     this.gridModel.markSynced();
-    this.events = [];
   }
 }
 
@@ -326,11 +314,29 @@ export class GridCell {
   private static idCounter = 0;
   readonly uuid = GridCell.idCounter++;
   cellView: GridCellView | null;
-  rowAlign: RowAlign;
-  colAlign: ColAlign;
+  private _rowAlign: RowAlign;
+  private _colAlign: ColAlign;
 
   constructor(public gridRow: GridRow, public colIndex: number, public value: any = null) {
     this.rowAlign = gridRow.defaultRowAlign;
+  }
+
+  get rowAlign(): RowAlign {
+    return this._rowAlign;
+  }
+
+  set rowAlign(val: RowAlign) {
+    val.addCell(this);
+    this._rowAlign = val;
+  }
+
+  get colAlign(): ColAlign {
+    return this._colAlign;
+  }
+
+  set colAlign(val: ColAlign) {
+    val.addCell(this);
+    this._colAlign = val;
   }
 
   get location(): string {
@@ -341,7 +347,7 @@ export class GridCell {
     return this.gridRow.grid;
   }
 
-  get row(): number {
+  get rowIndex(): number {
     return this.gridRow.rowIndex;
   }
 
@@ -375,10 +381,21 @@ export class GridRow {
     return this.cells.length;
   }
 
-  cellAt(col: number, creator?: () => GridCell): GridCell | null {
+  /**
+   * Returns the number of cells that contain values.
+   */
+  get numCells() {
+    let i = 0;
+    for (const cell of this.cells) {
+      if (cell != null && cell.value != null) i++;
+    }
+    return i;
+  }
+
+  cellAt(col: number, creator?: (row: GridRow, col: number) => GridCell): GridCell | null {
     let out = this.cells[col] || null;
     if (!out && creator) {
-      this.cells[col] = out = creator();
+      this.cells[col] = out = creator(this, col);
       out.gridRow = this;
       out.colIndex = col;
     }
@@ -415,18 +432,7 @@ export abstract class AlignedLine {
   paddingAfter = 15;
   // All the cells that belong in this column
   cells: GridCell[] = [];
-  modifiedCells = new Set<number>();
-  gridView: GridView;
-
-  // Any extra data the caller can set
-  extraData = null as any;
-  // cmpFunc is a way to indicate given two AlignedLines which of them
-  // needs to appear before which,
-  //
-  // if this returns -1 then a *must* appear before b (less than)
-  // if this returns +1 then a *must* after before b (greater than)
-  // if this return a 0 then a and b can appear in any order
-  // cmpFunc: (a: this, b: this) => number;
+  getCellView: (value: any) => GridCellView;
 
   get coordOffset(): number {
     return this._coordOffset;
@@ -454,7 +460,6 @@ export abstract class AlignedLine {
 
   addCell(cell: GridCell): this {
     this.cells.push(cell);
-    this.modifiedCells.add(cell.uuid);
     return this;
   }
 
@@ -465,7 +470,6 @@ export abstract class AlignedLine {
         break;
       }
     }
-    this.modifiedCells.add(cell.uuid);
     return this;
   }
 
@@ -506,7 +510,7 @@ export class ColAlign extends AlignedLine {
     this._coordOffset = val;
     for (const cell of this.cells) {
       if (cell.value) {
-        const cellView = this.gridView.getCellView(cell);
+        const cellView = this.getCellView(cell);
         console.log("Here CV: ", cellView);
         cellView.x = val + this.paddingBefore;
         cellView.width = this._maxLength;
@@ -518,7 +522,7 @@ export class ColAlign extends AlignedLine {
     this._maxLength = 0;
     for (const cell of this.cells) {
       if (cell.value) {
-        const cellView = this.gridView.getCellView(cell);
+        const cellView = this.getCellView(cell);
         this._maxLength = Math.max(cellView.minSize.width, this.maxLength);
       }
     }
@@ -551,7 +555,7 @@ export class RowAlign extends AlignedLine {
     this._coordOffset = val;
     for (const cell of this.cells) {
       if (cell.value) {
-        const cellView = this.gridView.getCellView(cell);
+        const cellView = this.getCellView(cell);
         cellView.y = val + this.paddingBefore;
         cellView.height = this._maxLength;
       }
@@ -562,7 +566,7 @@ export class RowAlign extends AlignedLine {
     this._maxLength = 0;
     for (const cell of this.cells) {
       if (cell.value) {
-        const cellView = this.gridView.getCellView(cell);
+        const cellView = this.getCellView(cell);
         this._maxLength = Math.max(cellView.minSize.height, this._maxLength);
       }
     }
