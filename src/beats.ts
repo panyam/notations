@@ -3,7 +3,7 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
-import { GridView, GridCell, GridCellView, ColAlign } from "./grids";
+import { GridModel, GridView, GridCell, GridCellView, ColAlign } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -168,6 +168,37 @@ export class BeatsBuilder {
   }
 }
 
+export class BeatColumn extends ColAlign {
+  atomSpacing = 5;
+  readonly key: string;
+  constructor(
+    public readonly offset: Fraction,
+    public readonly endOffset: Fraction,
+    public readonly markerType: number,
+  ) {
+    super();
+    offset = offset.factorized;
+    endOffset = endOffset.factorized;
+    this.key = BeatColumn.keyFor(offset, endOffset, markerType);
+  }
+
+  static keyFor(offset: Fraction, endOffset: Fraction, markerType = 0): string {
+    offset = offset.factorized;
+    endOffset = endOffset.factorized;
+    if (markerType < 0) {
+      // return the column for the marker "before" this col
+      // int his case only the "start offset" is needed and length doesnt matter
+      return ":" + offset.toString();
+    } else if (markerType > 0) {
+      // return the column for the marker "after" this col
+      // in this case only thd end offset matters
+      return endOffset.toString() + ":";
+    } else {
+      return offset.toString() + ":" + endOffset.toString();
+    }
+  }
+}
+
 /**
  * Grouping of beats by their column based on the layout params.
  * The confusion is we have beats broken up and saved in columns
@@ -228,16 +259,16 @@ export class BeatColDAG {
       if (markerType == 0) {
         const [prevcol] = this.ensureBeatColumn(offset, endOffset, -1);
         const [nextcol] = this.ensureBeatColumn(offset, endOffset, 1);
-        prevcol.gridCol.addSuccessor(bcol.gridCol);
-        bcol.gridCol.addSuccessor(nextcol.gridCol);
+        prevcol.addSuccessor(bcol);
+        bcol.addSuccessor(nextcol);
         for (const other of this.beatColumns.values()) {
           // only join the "marker" columns
           if (other.markerType == -1 && endOffset.equals(other.offset)) {
             // our next col is a preecessor of other
-            nextcol.gridCol.addSuccessor(other.gridCol);
+            nextcol.addSuccessor(other);
           } else if (other.markerType == 1 && other.endOffset.equals(offset)) {
             // our prev col is a predecessor of other
-            other.gridCol.addSuccessor(prevcol.gridCol);
+            other.addSuccessor(prevcol);
           }
         }
       }
@@ -253,26 +284,8 @@ type LineId = number;
 type LPID = number;
 export class GlobalBeatLayout {
   gridViewsForLine = new Map<LineId, GridView>();
-  layoutParamsForLine = new Map<LineId, LayoutParams>();
   roleBeatsForLine = new Map<LineId, Beat[][]>();
   beatColDAGsByLP = new Map<LPID, BeatColDAG>();
-
-  /**
-   * First lines are added to the BeatLayout object.
-   * This ensures that a line is broken down into beats and added
-   * into a dedicated GridView per line.
-   *
-   * A line must also be given the layout params by which the beat
-   * break down will happen.  This LayoutParams object does not have
-   * to be unique per line (this non-constraint allows to align
-   * beats across lines!).
-   */
-  addLine(line: Line, layoutParams: LayoutParams): GridView {
-    const gridView = this.getGridViewForLine(line.uuid);
-    this.layoutParamsForLine.set(line.uuid, layoutParams);
-    /*const roleBeats = */ this.lineToRoleBeats(line, layoutParams);
-    return gridView;
-  }
 
   /**
    * Get the GridView associated with a particular line.
@@ -280,10 +293,17 @@ export class GlobalBeatLayout {
   getGridViewForLine(lineid: LineId): GridView {
     let out = this.gridViewsForLine.get(lineid) || null;
     if (!out) {
-      out = new GridView();
+      out = new GridView(new GridModel());
+      out.gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, (event) => {
+        this.gridModelUpdated(out as GridView, event.payload);
+      });
       this.gridViewsForLine.set(lineid, out);
     }
     return out;
+  }
+
+  protected gridModelUpdated(gridView: GridView, events: TSU.Events.TEvent[]) {
+    // Here is an opportunity to layout the entire grid
   }
 
   protected beatColDAGForLP(lpid: LPID): BeatColDAG {
@@ -295,7 +315,25 @@ export class GlobalBeatLayout {
     return out;
   }
 
-  protected lineToRoleBeats(line: Line, lp: LayoutParams): Beat[][] {
+  /**
+   * First lines are added to the BeatLayout object.
+   * This ensures that a line is broken down into beats and added
+   * into a dedicated GridView per line.
+   *
+   * A line must also be given the layout params by which the beat
+   * break down will happen.  This LayoutParams object does not have
+   * to be unique per line (this non-constraint allows to align
+   * beats across lines!).
+   */
+  addLine(line: Line): void {
+    const gridView = this.getGridViewForLine(line.uuid) as GridView;
+    gridView.gridModel.eventHub?.startBatchMode()
+    this.lineToRoleBeats(line, gridView);
+    gridView.gridModel.eventHub?.commitBatch()
+  }
+
+  protected lineToRoleBeats(line: Line, gridView: GridView): Beat[][] {
+    const lp = line.layoutParams;
     const roleBeats = [] as Beat[][];
     this.roleBeatsForLine.set(line.uuid, roleBeats);
     const lineOffset = line.offset.divbyNum(lp.beatDuration);
@@ -306,7 +344,7 @@ export class GlobalBeatLayout {
       // Add these to the beat layout too
       for (const beat of bb.beats) {
         // beat.ensureUniformSpaces(layoutParams.beatDuration);
-        this.addBeat(beat);
+        this.addBeat(beat, gridView);
       }
     }
     return roleBeats;
@@ -316,12 +354,11 @@ export class GlobalBeatLayout {
    * Adds the beat to this layout and returns the BeatColumn to which
    * this beat was added.
    */
-  protected addBeat(beat: Beat): GridCell {
+  protected addBeat(beat: Beat, gridView: GridView): GridCell {
     // Get the beat column at this index (and line) and add to it.
     const line = beat.role.line;
-    const lp = this.layoutParamsForLine.get(line.uuid) as LayoutParams;
+    const lp = line.layoutParams;
     const beatColDAG = this.beatColDAGForLP(lp.uuid);
-    const gridView = this.getGridViewForLine(line.uuid) as GridView;
     const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
     const bcol = beatColDAG.getBeatColumn(rowOffset, beat.endOffset, 0);
 
@@ -330,41 +367,12 @@ export class GlobalBeatLayout {
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
     const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
     const realCol = layoutColumn * 3;
-    return gridView.setValue(realRow, realCol, beat, () => {
-      const cell = new GridCell(gridView.getRow(realRow), realCol);
-      cell.colAlign = bcol.gridCol;
+    return gridView.gridModel.setValue(realRow, realCol, beat, () => {
+      const gridRow = gridView.gridModel.getRow(realRow);
+      const cell = new GridCell(gridRow, realCol);
+      gridView.setColAlign(cell, bcol);
+      bcol.gridView = gridView;
       return cell;
     });
-  }
-}
-
-export class BeatColumn {
-  atomSpacing = 5;
-  gridCol: ColAlign;
-  readonly key: string;
-  constructor(
-    public readonly offset: Fraction,
-    public readonly endOffset: Fraction,
-    public readonly markerType: number,
-  ) {
-    offset = offset.factorized;
-    endOffset = endOffset.factorized;
-    this.key = BeatColumn.keyFor(offset, endOffset, markerType);
-  }
-
-  static keyFor(offset: Fraction, endOffset: Fraction, markerType = 0): string {
-    offset = offset.factorized;
-    endOffset = endOffset.factorized;
-    if (markerType < 0) {
-      // return the column for the marker "before" this col
-      // int his case only the "start offset" is needed and length doesnt matter
-      return ":" + offset.toString();
-    } else if (markerType > 0) {
-      // return the column for the marker "after" this col
-      // in this case only thd end offset matters
-      return endOffset.toString() + ":";
-    } else {
-      return offset.toString() + ":" + endOffset.toString();
-    }
   }
 }

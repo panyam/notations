@@ -79,7 +79,7 @@ export class NotationView {
   ensureLineView(line: Line): LineView {
     let lineView = this.getLineView(line);
     if (lineView == null) {
-      const layoutParams = this.notation.layoutParamsForLine(line) || null;
+      const layoutParams = line.layoutParams || null;
       const svgElem = this.newLineRoot(this.tableElement, line);
       lineView = new LineView(svgElem, line, {
         layoutParams: layoutParams,
@@ -103,8 +103,8 @@ export class NotationView {
       const line = beat.role.line;
       // how to get the bar and beat index for a given beat in a given row?
       const lineView = this.ensureLineView(line);
-      const lp = this.beatLayout!.layoutParamsForLine.get(line.uuid);
-      curr = new BeatView(beat, lineView.gElem, lp!.cycle);
+      const lp = line.layoutParams;
+      curr = new BeatView(beat, lineView.gElem, lp.cycle);
       this.beatViews.set(beat.uuid, curr);
     }
     return curr as BeatView;
@@ -147,7 +147,7 @@ export class NotationView {
 
     const now = performance.now();
     for (const lineView of lineViews) {
-      lineView.beatGridView.setUpdatedAt(now);
+      lineView.beatGridView.gridModel.setUpdatedAt(now);
     }
 
     for (const lineView of lineViews) {

@@ -41,7 +41,7 @@ function expectNotation(notation: Notation, expected: any) {
       } else {
         const line = found as Line;
         expect(line.roles.map((r) => r.debugValue())).toEqual(block.roles);
-        const lpForLine = notation.layoutParamsForLine(line);
+        const lpForLine = line.layoutParams;
         if (typeof block.layoutParams === "number") {
           expect(lpForLine).toBe(notation.unnamedLayoutParams[block.layoutParams]);
         } else if (block.layoutParams) {

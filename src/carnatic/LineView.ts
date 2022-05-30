@@ -1,11 +1,11 @@
 import * as TSU from "@panyam/tsutils";
-import { GridView } from "../grids";
+import { GridView, GridModel } from "../grids";
 import { Line } from "../core";
 
 export class LineView {
   // The beat layout associated with the layout params of this Line
   // at this point beats have already been added to the right columns
-  beatGridView: GridView;
+  beatGridView: GridView = new GridView(new GridModel());
   gElem: SVGGElement;
 
   // Space between two roles (within the same row)

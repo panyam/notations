@@ -80,20 +80,11 @@ export class Notation extends Entity {
   private _currRoleDef: TSU.Nullable<RoleDef> = null;
   roles: RoleDef[] = [];
   blocks: (Line | RawBlock)[] = [];
-  private lpsForLine = new Map<number, LayoutParams>();
   currentAPB = 1;
   currentCycle: Cycle = Cycle.DEFAULT;
   currentBreaks: number[] = [];
   metadata = new Map<string, MetaData>();
   onMissingRole: (name: string) => RoleDef | null = (name) => this.newRoleDef(name, name == "sw");
-
-  layoutParamsForLine(line: Line): null | LayoutParams {
-    return this.lpsForLine.get(line.uuid) || null;
-  }
-
-  setLayoutParamsForLine(line: Line, layoutParams: LayoutParams): void {
-    this.lpsForLine.set(line.uuid, layoutParams);
-  }
 
   get unnamedLayoutParams(): ReadonlyArray<LayoutParams> {
     return this._unnamedLayoutParams;

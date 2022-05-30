@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { GridView, GridCell, ColAlign } from "../grids";
+import { GridModel, GridCell, ColAlign } from "../grids";
 
 function testGrid(debug: boolean, found: any, expected: any): void {
   if (debug) {
@@ -9,9 +9,9 @@ function testGrid(debug: boolean, found: any, expected: any): void {
   expect(found.debugValue()).toEqual(expected);
 }
 
-describe("Basic GridView Tests", () => {
+describe("Basic GridModel Tests", () => {
   test("Creation", () => {
-    const g = new GridView();
+    const g = new GridModel();
     testGrid(false, g, {
       rows: [],
       lastUpdatedAt: 0,
@@ -20,7 +20,7 @@ describe("Basic GridView Tests", () => {
   });
 
   test("Ensure X Rows", () => {
-    const g = new GridView();
+    const g = new GridModel();
     g.getRow(4);
     testGrid(false, g, {
       rows: [
@@ -64,7 +64,7 @@ describe("Basic GridView Tests", () => {
   });
 
   test("Set and clear a Value", () => {
-    const g = new GridView();
+    const g = new GridModel();
     g.setValue(5, 5, 10);
     expect(g.getRow(5).cellAt(5)?.grid).toBe(g);
     testGrid(false, g, {
@@ -89,7 +89,6 @@ describe("Basic GridView Tests", () => {
       ],
       lastUpdatedAt: 0,
       lastSyncedAt: -1,
-      events: [["updated", "5:5", null]],
     });
     g.setValue(5, 5, null);
     g.setValue(1, 5, "hello");
@@ -105,20 +104,11 @@ describe("Basic GridView Tests", () => {
       ],
       lastUpdatedAt: 0,
       lastSyncedAt: -1,
-      events: [
-        ["updated", "5:5", null],
-        ["cleared", "5:5"],
-        ["updated", "1:5", null],
-        ["updated", "3:3", null],
-      ],
     });
-    g.applyChanges();
-    expect(g.lastUpdatedAt).toEqual(g.lastSyncedAt);
-    expect(g.events).toEqual([]);
   });
 
   test("Test Layouts", () => {
-    const g = new GridView();
+    const g = new GridModel();
     g.setValue(1, 1, 10.5);
     g.setValue(2, 2, "Hello");
     g.setValue(3, 3, "World");
@@ -135,23 +125,12 @@ describe("Basic GridView Tests", () => {
       ],
       lastUpdatedAt: 0,
       lastSyncedAt: -1,
-      events: [
-        ["updated", "1:1", null],
-        ["updated", "2:2", null],
-        ["updated", "3:3", null],
-        ["updated", "4:4", null],
-        ["updated", "5:5", null],
-      ],
     });
     const alcols = [] as ColAlign[];
     for (let i = 1; i <= 5; i++) {
       const cell = g.getRow(i).cellAt(i) as GridCell;
       cell.colAlign = alcols[i] = new ColAlign();
     }
-
-    g.applyChanges();
-    expect(g.lastUpdatedAt).toEqual(g.lastSyncedAt);
-    expect(g.events).toEqual([]);
 
     testGrid(false, g, {
       rows: [
@@ -163,7 +142,7 @@ describe("Basic GridView Tests", () => {
         { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 0, h: 30, x: 0, w: 30 }] },
       ],
       lastUpdatedAt: 0,
-      lastSyncedAt: 0,
+      lastSyncedAt: -1,
     });
   });
 });

@@ -24,7 +24,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
     "module": "ES2020",
-    "target": "es5"
+    "target": "es6"
   },
   "typedocOptions": {
       "entryPoints": [

@@ -74,9 +74,9 @@ export class AddAtoms extends Command {
       // throw new Error("Current role is invalid");
     }
     // Ensure a line exists
-    const lpForLine = notation.layoutParamsForLine(notation.currentLine);
+    const lpForLine = notation.currentLine.layoutParams;
     if (lpForLine == null) {
-      notation.setLayoutParamsForLine(notation.currentLine, notation.layoutParams);
+      notation.currentLine.layoutParams = notation.layoutParams;
     } else {
       TSU.assert(
         lpForLine == notation.layoutParams,

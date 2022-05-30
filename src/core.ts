@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Entity, TimedEntity } from "./entity";
+import { LayoutParams } from "./layouts";
 
 /**
  * Alias to TSU.Num.Fraction in tsutils.
@@ -469,8 +470,8 @@ export class Group extends Atom {
 }
 
 export class Line extends Entity {
-  // Line can have atoms starting "before" the cycle.  The offset tells how many notes
-  // before or after the cycle this line's atoms start at.
+  // Line can have atoms starting "before" the cycle.  The offset tells how
+  // many notes before or after the cycle this line's atoms start at.
   offset: Fraction = ZERO;
   roles: Role[] = [];
 
@@ -479,6 +480,9 @@ export class Line extends Entity {
   // space less wasteful
   // A better solution is inter-beat annotation but it is very complex for now
   marginText = "";
+
+  // The LayoutParams associated with this line.
+  layoutParams: LayoutParams;
 
   indexOfRole(name: string): number {
     for (let i = 0; i < this.roles.length; i++) {

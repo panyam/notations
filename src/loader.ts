@@ -29,10 +29,9 @@ export function load(
     if (block.type == "Line" && !(block as Line).isEmpty) {
       const line = block as Line;
       // LP should exist by now
-      const layoutParams = notation.layoutParamsForLine(line) || null;
       // Probably because this is an empty line and AddAtoms was not called
-      TSU.assert(layoutParams != null, "Layout params for a non empty line *SHOULD* exist");
-      beatLayout.addLine(line, layoutParams);
+      TSU.assert(line.layoutParams != null, "Layout params for a non empty line *SHOULD* exist");
+      beatLayout.addLine(line);
     }
   }
   const buildTime = performance.now();
