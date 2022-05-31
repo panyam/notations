@@ -452,6 +452,7 @@ export class RowAlign extends AlignedLine {
 export class GridLayoutGroup {
   rowAligns = new Map<number, RowAlign>();
   colAligns = new Map<number, ColAlign>();
+  gridModels = [] as GridModel[];
 
   private eventHandler = (event: TSU.Events.TEvent) => {
     this.applyModelEvents(event.payload);
@@ -471,6 +472,7 @@ export class GridLayoutGroup {
         gridModel.layoutGroup.removeGridModel(gridModel);
       }
       gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
+      this.gridModels.push(gridModel);
     }
     return true;
   }
@@ -478,10 +480,18 @@ export class GridLayoutGroup {
   removeGridModel(gridModel: GridModel): void {
     if (gridModel.layoutGroup == this) {
       gridModel.eventHub?.removeOn(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
+      for (let i = 0; i < this.gridModels.length; i++) {
+        if (this.gridModels[i] == gridModel) {
+          this.gridModels.splice(i, 1);
+          break;
+        }
+      }
     }
   }
 
+  _getCellView: (cell: GridCell) => GridCellView;
   set getCellView(creator: (cell: GridCell) => GridCellView) {
+    this._getCellView = creator;
     for (const [, rowAlign] of this.rowAligns) {
       rowAlign.getCellView = creator;
     }
@@ -508,6 +518,37 @@ export class GridLayoutGroup {
       }
     }
     return out;
+  }
+
+  /**
+   * Forces a full refresh.
+   */
+  refreshLayout() {
+    const gridModels: GridModel[] = [];
+    const changedRowAligns = {} as any;
+    const changedColAligns = {} as any;
+
+    for (const [, rowAlign] of this.rowAligns) {
+      if (!(rowAlign.uuid in changedRowAligns)) {
+        changedRowAligns[rowAlign.uuid] = {
+          align: rowAlign,
+          cells: [],
+        };
+      }
+    }
+
+    for (const [, colAlign] of this.colAligns) {
+      if (!(colAlign.uuid in changedColAligns)) {
+        changedColAligns[colAlign.uuid] = {
+          align: colAlign,
+          cells: [],
+        };
+      }
+    }
+
+    this.doBfsLayout(this.startingRows, changedRowAligns);
+    this.doBfsLayout(this.startingCols, changedColAligns);
+    gridModels.forEach((gm) => gm.markSynced());
   }
 
   /**
@@ -577,6 +618,7 @@ export class GridLayoutGroup {
   // first do above for rows
   protected doBfsLayout<T extends AlignedLine>(startingLines: T[], changedAligns: any) {
     // Eval max lengths for all changed aligns
+    if (!this._getCellView) return;
     for (const alignId in changedAligns) {
       const val = changedAligns[alignId];
       val.align.evalMaxLength(val.cells);

@@ -295,7 +295,7 @@ export class GlobalBeatLayout {
     let out = this.gridModelsForLine.get(lineid) || null;
     if (!out) {
       out = new GridModel();
-      this.gridLayoutGroup.addGridModel(out);
+      out.layoutGroup = this.gridLayoutGroup;
       this.gridModelsForLine.set(lineid, out);
     }
     return out;

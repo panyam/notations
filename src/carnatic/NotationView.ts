@@ -13,13 +13,18 @@ export class NotationView {
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
   markdownParser: (contents: string) => string;
+  _beatLayout: GlobalBeatLayout;
 
-  constructor(
-    public readonly rootElement: HTMLElement,
-    public readonly beatLayout: GlobalBeatLayout,
-    public readonly config?: any,
-  ) {
+  constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
     this.loadChildViews();
+  }
+
+  get beatLayout(): GlobalBeatLayout {
+    return this._beatLayout;
+  }
+
+  set beatLayout(beatLayout: GlobalBeatLayout) {
+    this._beatLayout = beatLayout;
     beatLayout.gridLayoutGroup.getCellView = (cell) => this.viewForBeat(cell.value);
   }
 
@@ -87,7 +92,7 @@ export class NotationView {
       if (!line.isEmpty) {
         // Probably because this is an empty line and AddAtoms was not called
         TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
-        // lineView.gridModel = this.beatLayout!.getGridModelForLine(line.uuid);
+        lineView.gridModel = this.beatLayout!.getGridModelForLine(line.uuid);
       }
       this.lineViews.push(lineView);
     }
@@ -133,7 +138,7 @@ export class NotationView {
       lineView.gridModel.setUpdatedAt(now);
     }
 
-    this.beatLayout.refreshLayout();
+    this.beatLayout.gridLayoutGroup.refreshLayout();
 
     for (const lineView of lineViews) {
       lineView.wrapToSize();
