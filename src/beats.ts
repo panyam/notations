@@ -365,13 +365,7 @@ export class GlobalBeatLayout {
     return gridModel.setValue(realRow, realCol, beat, (gridRow: GridRow, col: number) => {
       const cell = new GridCell(gridRow, col);
       cell.colAlign = bcol;
-      this.gridLayoutGroup.rowAligns.set(cell.rowAlign.uuid, cell.rowAlign);
-      this.gridLayoutGroup.colAligns.set(cell.colAlign.uuid, cell.colAlign);
       return cell;
     });
-  }
-
-  refreshLayout(): void {
-    // for (const lineView of lineViews) { lineView.beatGridView.applyChanges(); }
   }
 }

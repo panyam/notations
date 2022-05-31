@@ -513,13 +513,18 @@ export class GridLayoutGroup {
   /**
    * As the grid model changes (cell content changed, cleared etc) we need
    * to refresh our layout based on this.
-   * As a first step the new height and width of all changed cells is evaluted
-   * to see which rows and/or columns are affected (and need to be
+   * As a first step the new height and width of all changed cells is
+   * evaluted to see which rows and/or columns are affected (and need to be
    * resized/repositioned).
    */
   protected applyModelEvents(events: TSU.Events.TEvent[]) {
-    // go through events here and route them to the right row and column
+    const [gridModels, changedRowAligns, changedColAligns] = this.changesForEvents(events);
+    this.doBfsLayout(this.startingRows, changedRowAligns);
+    this.doBfsLayout(this.startingCols, changedColAligns);
+    gridModels.forEach((gm) => gm.markSynced());
+  }
 
+  protected changesForEvents(events: TSU.Events.TEvent[]): [GridModel[], any, any] {
     // Step 1 - topologically sort RowAligns of changed cells
     // Step 2 - topologically sort ColAligns of changed cells
     // Step 3 -
@@ -561,10 +566,7 @@ export class GridLayoutGroup {
         changedColAligns[cell.colAlign.uuid]["cells"].push(cell);
       }
     }
-
-    this.doBfsLayout(this.startingRows, changedRowAligns);
-    this.doBfsLayout(this.startingCols, changedColAligns);
-    gridModels.forEach((gm) => gm.markSynced());
+    return [gridModels, changedRowAligns, changedColAligns];
   }
 
   // 1. start from the starting lines and do a BF traversal
