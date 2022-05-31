@@ -149,6 +149,28 @@ describe("Basic GridModel Tests", () => {
 
 describe("Basic GridView Tests", () => {
   test("Test Layouts", () => {
+    class TestCellView {
+      x = 0;
+      y = 0;
+      width = 0;
+      height = 0;
+      needsLayout = false;
+
+      constructor(public readonly cell: GridCell) {
+        //
+      }
+
+      get minSize() {
+        return { width: 10 * ("" + this.cell.value).length, height: 30 + this.cell.rowIndex };
+      }
+
+      setBounds(x: number | null, y: number | null, w: number | null, h: number | null, applyBounds = false) {
+        if (x != null) this.x = x;
+        if (y != null) this.y = y;
+        if (w != null) this.width = w;
+        if (h != null) this.height = h;
+      }
+    }
     const g = new GridModel();
     const alcols = [] as ColAlign[];
     for (let i = 1; i <= 5; i++) {
@@ -161,14 +183,7 @@ describe("Basic GridView Tests", () => {
     const cellViews = {} as any;
     g.layoutGroup.getCellView = (cell: GridCell): GridCellView => {
       if (!(cell.location in cellViews)) {
-        cellViews[cell.location] = {
-          x: 0,
-          y: 0,
-          width: 0,
-          height: 0,
-          minSize: { width: 10 * ("" + cell.value).length, height: 30 + cell.rowIndex },
-          needsLayout: false,
-        };
+        cellViews[cell.location] = new TestCellView(cell);
       }
       return cellViews[cell.location];
     };

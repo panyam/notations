@@ -128,6 +128,13 @@ export interface GridCellView {
   y: number;
   width: number;
   height: number;
+  setBounds(
+    x: number | null,
+    y: number | null,
+    w: number | null,
+    h: number | null,
+    applyLayout: boolean,
+  ): [number | null, number | null, number | null, number | null];
   readonly needsLayout: boolean;
   readonly minSize: TSU.Geom.Size;
   readonly bbox: TSU.Geom.Rect;
@@ -378,8 +385,7 @@ export class ColAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
-        cellView.x = val + this.paddingBefore;
-        cellView.width = this._maxLength;
+        cellView.setBounds(val + this.paddingBefore, null, this._maxLength, null, true);
       }
     }
   }
@@ -416,8 +422,7 @@ export class RowAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
-        cellView.y = val + this.paddingBefore;
-        cellView.height = this._maxLength;
+        cellView.setBounds(null, val + this.paddingBefore, null, this._maxLength, true);
       }
     }
   }
