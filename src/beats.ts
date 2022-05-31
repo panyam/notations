@@ -3,7 +3,7 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
-import { GridModel, GridView, GridRow, GridCell, GridCellView, ColAlign } from "./grids";
+import { GridModel, GridRow, GridCell, GridCellView, RowAlign, ColAlign, GridLayoutGroup } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -238,6 +238,7 @@ export class BeatColumn extends ColAlign {
  */
 export class BeatColDAG {
   beatColumns = new Map<string, BeatColumn>();
+
   ensureBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): [BeatColumn, boolean] {
     const key = BeatColumn.keyFor(offset, endOffset, markerType);
     let bcol = this.beatColumns.get(key) || null;
@@ -282,18 +283,20 @@ export class BeatColDAG {
 type LineId = number;
 type LPID = number;
 export class GlobalBeatLayout {
-  gridViewsForLine = new Map<LineId, GridView>();
+  gridModelsForLine = new Map<LineId, GridModel>();
   roleBeatsForLine = new Map<LineId, Beat[][]>();
   beatColDAGsByLP = new Map<LPID, BeatColDAG>();
+  gridLayoutGroup = new GridLayoutGroup();
 
   /**
    * Get the GridView associated with a particular line.
    */
-  getGridViewForLine(lineid: LineId): GridView {
-    let out = this.gridViewsForLine.get(lineid) || null;
+  getGridModelForLine(lineid: LineId): GridModel {
+    let out = this.gridModelsForLine.get(lineid) || null;
     if (!out) {
-      out = new GridView(new GridModel());
-      this.gridViewsForLine.set(lineid, out);
+      out = new GridModel();
+      this.gridLayoutGroup.addGridModel(out);
+      this.gridModelsForLine.set(lineid, out);
     }
     return out;
   }
@@ -310,7 +313,7 @@ export class GlobalBeatLayout {
   /**
    * First lines are added to the BeatLayout object.
    * This ensures that a line is broken down into beats and added
-   * into a dedicated GridView per line.
+   * into a dedicated GridModel per line.
    *
    * A line must also be given the layout params by which the beat
    * break down will happen.  This LayoutParams object does not have
@@ -318,13 +321,13 @@ export class GlobalBeatLayout {
    * beats across lines!).
    */
   addLine(line: Line): void {
-    const gridView = this.getGridViewForLine(line.uuid) as GridView;
-    gridView.gridModel.eventHub?.startBatchMode();
-    this.lineToRoleBeats(line, gridView);
-    gridView.gridModel.eventHub?.commitBatch();
+    const gridModel = this.getGridModelForLine(line.uuid) as GridModel;
+    gridModel.eventHub?.startBatchMode();
+    this.lineToRoleBeats(line, gridModel);
+    gridModel.eventHub?.commitBatch();
   }
 
-  protected lineToRoleBeats(line: Line, gridView: GridView): Beat[][] {
+  protected lineToRoleBeats(line: Line, gridModel: GridModel): Beat[][] {
     const lp = line.layoutParams;
     const roleBeats = [] as Beat[][];
     this.roleBeatsForLine.set(line.uuid, roleBeats);
@@ -336,7 +339,7 @@ export class GlobalBeatLayout {
       // Add these to the beat layout too
       for (const beat of bb.beats) {
         // beat.ensureUniformSpaces(layoutParams.beatDuration);
-        this.addBeat(beat, gridView);
+        this.addBeat(beat, gridModel);
       }
     }
     return roleBeats;
@@ -346,7 +349,7 @@ export class GlobalBeatLayout {
    * Adds the beat to this layout and returns the BeatColumn to which
    * this beat was added.
    */
-  protected addBeat(beat: Beat, gridView: GridView): GridCell {
+  protected addBeat(beat: Beat, gridModel: GridModel): GridCell {
     // Get the beat column at this index (and line) and add to it.
     const line = beat.role.line;
     const lp = line.layoutParams;
@@ -359,10 +362,16 @@ export class GlobalBeatLayout {
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
     const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
     const realCol = layoutColumn * 3;
-    return gridView.gridModel.setValue(realRow, realCol, beat, (gridRow: GridRow, col: number) => {
+    return gridModel.setValue(realRow, realCol, beat, (gridRow: GridRow, col: number) => {
       const cell = new GridCell(gridRow, col);
       cell.colAlign = bcol;
+      this.gridLayoutGroup.rowAligns.set(cell.rowAlign.uuid, cell.rowAlign);
+      this.gridLayoutGroup.colAligns.set(cell.colAlign.uuid, cell.colAlign);
       return cell;
     });
+  }
+
+  refreshLayout(): void {
+    // for (const lineView of lineViews) { lineView.beatGridView.applyChanges(); }
   }
 }

@@ -34,6 +34,7 @@ export function load(
       beatLayout.addLine(line);
     }
   }
+
   const buildTime = performance.now();
   if (config.log) {
     console.log(`V4 Document, Parse Time: ${parseTime - startTime}ms, Build Time: ${buildTime - parseTime}ms`);

@@ -2,25 +2,25 @@ import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock } from "../notation";
 import { Beat, GlobalBeatLayout } from "../beats";
-import { BeatView } from "./beatviews";
 import { Line } from "../core";
+import { BeatView } from "./beatviews";
 
 export class NotationView {
   headerElement: HTMLDivElement;
   notation: Notation;
   lineViews: LineView[] = [];
   // Mapping from line id -> list of beats in each of its roles
-  beatLayout: null | GlobalBeatLayout;
   currentSVGElement: SVGSVGElement | null = null;
   tableElement: HTMLTableElement;
   markdownParser: (contents: string) => string;
 
-  constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
+  constructor(
+    public readonly rootElement: HTMLElement,
+    public readonly beatLayout: GlobalBeatLayout,
+    public readonly config?: any,
+  ) {
     this.loadChildViews();
-  }
-
-  refresh(): void {
-    this.beatViews = new Map<number, BeatView>();
+    beatLayout.gridLayoutGroup.getCellView = (cell) => this.viewForBeat(cell.value);
   }
 
   loadChildViews(): void {
@@ -87,27 +87,11 @@ export class NotationView {
       if (!line.isEmpty) {
         // Probably because this is an empty line and AddAtoms was not called
         TSU.assert(layoutParams != null, "Layout params for a non empty line *should* exist");
-        lineView.beatGridView = this.beatLayout!.getGridViewForLine(line.uuid);
-        lineView.beatGridView.getCellView = this.viewForBeat;
+        // lineView.gridModel = this.beatLayout!.getGridModelForLine(line.uuid);
       }
       this.lineViews.push(lineView);
     }
     return lineView;
-  }
-
-  beatViews = new Map<number, BeatView>();
-
-  viewForBeat(beat: Beat): BeatView {
-    let curr = this.beatViews.get(beat.uuid) || null;
-    if (curr == null) {
-      const line = beat.role.line;
-      // how to get the bar and beat index for a given beat in a given row?
-      const lineView = this.ensureLineView(line);
-      const lp = line.layoutParams;
-      curr = new BeatView(beat, lineView.gElem, lp.cycle);
-      this.beatViews.set(beat.uuid, curr);
-    }
-    return curr as BeatView;
   }
 
   getLineView(line: Line): TSU.Nullable<LineView> {
@@ -121,7 +105,6 @@ export class NotationView {
   clear(): void {
     this.lineViews = [];
     // Mapping from line id -> list of beats in each of its roles
-    this.beatLayout = null;
     this.currentSVGElement = null;
     this.tableElement.innerHTML = "";
     this.beatViews = new Map<number, BeatView>();
@@ -147,12 +130,10 @@ export class NotationView {
 
     const now = performance.now();
     for (const lineView of lineViews) {
-      lineView.beatGridView.gridModel.setUpdatedAt(now);
+      lineView.gridModel.setUpdatedAt(now);
     }
 
-    for (const lineView of lineViews) {
-      lineView.beatGridView.applyChanges();
-    }
+    this.beatLayout.refreshLayout();
 
     for (const lineView of lineViews) {
       lineView.wrapToSize();
@@ -181,5 +162,19 @@ export class NotationView {
       div.innerHTML = this.markdownParser(raw.content.trim());
     }
     this.currentSVGElement = null;
+  }
+
+  beatViews = new Map<number, BeatView>();
+  viewForBeat(beat: Beat): BeatView {
+    let curr = this.beatViews.get(beat.uuid) || null;
+    if (curr == null) {
+      const line = beat.role.line;
+      // how to get the bar and beat index for a given beat in a given row?
+      const lineView = this.ensureLineView(line);
+      const lp = line.layoutParams;
+      curr = new BeatView(beat, lineView.gElem, lp.cycle);
+      this.beatViews.set(beat.uuid, curr);
+    }
+    return curr;
   }
 }
