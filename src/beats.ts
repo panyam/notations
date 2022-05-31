@@ -239,15 +239,8 @@ export class BeatColumn extends ColAlign {
 export class BeatColDAG {
   beatColumns = new Map<string, BeatColumn>();
 
-  ensureBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): [BeatColumn, boolean] {
-    const key = BeatColumn.keyFor(offset, endOffset, markerType);
-    let bcol = this.beatColumns.get(key) || null;
-    const newcreated = bcol == null;
-    if (!bcol) {
-      bcol = new BeatColumn(offset, endOffset, markerType);
-      this.beatColumns.set(key, bcol);
-    }
-    return [bcol, newcreated];
+  constructor(public readonly layoutGroup: GridLayoutGroup) {
+    //
   }
 
   /**
@@ -275,6 +268,18 @@ export class BeatColDAG {
     }
     return bcol;
   }
+
+  protected ensureBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): [BeatColumn, boolean] {
+    const key = BeatColumn.keyFor(offset, endOffset, markerType);
+    let bcol = this.beatColumns.get(key) || null;
+    const newcreated = bcol == null;
+    if (!bcol) {
+      bcol = new BeatColumn(offset, endOffset, markerType);
+      this.beatColumns.set(key, bcol);
+      this.layoutGroup.addColAlign(bcol);
+    }
+    return [bcol, newcreated];
+  }
 }
 
 /**
@@ -286,7 +291,7 @@ export class GlobalBeatLayout {
   gridModelsForLine = new Map<LineId, GridModel>();
   roleBeatsForLine = new Map<LineId, Beat[][]>();
   beatColDAGsByLP = new Map<LPID, BeatColDAG>();
-  gridLayoutGroup = new GridLayoutGroup();
+  readonly gridLayoutGroup = new GridLayoutGroup();
 
   /**
    * Get the GridView associated with a particular line.
@@ -304,7 +309,7 @@ export class GlobalBeatLayout {
   protected beatColDAGForLP(lpid: LPID): BeatColDAG {
     let out = this.beatColDAGsByLP.get(lpid) || null;
     if (!out) {
-      out = new BeatColDAG();
+      out = new BeatColDAG(this.gridLayoutGroup);
       this.beatColDAGsByLP.set(lpid, out);
     }
     return out;

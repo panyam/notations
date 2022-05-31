@@ -460,10 +460,12 @@ export class GridLayoutGroup {
 
   addRowAlign(align: RowAlign): void {
     this.rowAligns.set(align.uuid, align);
+    if (!align.getCellView) align.getCellView = this._getCellView;
   }
 
   addColAlign(align: ColAlign): void {
     this.colAligns.set(align.uuid, align);
+    if (!align.getCellView) align.getCellView = this._getCellView;
   }
 
   addGridModel(gridModel: GridModel): boolean {

@@ -159,7 +159,7 @@ describe("Basic GridView Tests", () => {
       }
     }
     const cellViews = {} as any;
-    const getCellView = (cell: GridCell): GridCellView => {
+    g.layoutGroup.getCellView = (cell: GridCell): GridCellView => {
       if (!(cell.location in cellViews)) {
         cellViews[cell.location] = {
           x: 0,
@@ -176,8 +176,6 @@ describe("Basic GridView Tests", () => {
     const cellCreator = (gridRow: GridRow, col: number) => {
       const cell = new GridCell(gridRow, col);
       cell.colAlign = alcols[col];
-      cell.rowAlign.getCellView = getCellView;
-      cell.colAlign.getCellView = getCellView;
       return cell;
     };
     g.setValue(1, 1, 10.5, cellCreator);
