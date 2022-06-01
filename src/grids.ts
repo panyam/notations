@@ -14,50 +14,68 @@ import * as TSU from "@panyam/tsutils";
  * columns index changes impacting us.
  */
 export class GridModel extends TSU.Events.EventEmitter {
-  private _lastUpdatedAt = 0;
-  private _lastSyncedAt = -1;
+  private static idCounter = 0;
+  readonly uuid = GridModel.idCounter++;
+  lastUpdatedAt = 0;
   // cells = new SparseArray<SparseArray<GridCell>>();
   rows: GridRow[] = [];
-  private _layoutGroup: GridLayoutGroup;
-
-  constructor() {
-    super();
-    this.layoutGroup = new GridLayoutGroup();
-  }
+  rowAligns = new Map<number, RowAlign>();
+  colAligns = new Map<number, ColAlign>();
 
   debugValue() {
     const out = {
       rows: this.rows.map((r) => r.debugValue()),
       lastUpdatedAt: this.lastUpdatedAt,
-      lastSyncedAt: this.lastSyncedAt,
     } as any;
     return out;
   }
 
-  get layoutGroup(): GridLayoutGroup {
-    return this._layoutGroup;
-  }
-
-  set layoutGroup(lg: GridLayoutGroup) {
-    if (lg.addGridModel(this)) {
-      this._layoutGroup = lg;
+  get firstRow(): number {
+    for (const gr of this.rows) {
+      if (gr.numCells > 0) return gr.rowIndex;
     }
+    return -1;
   }
 
-  get lastSyncedAt() {
-    return this._lastSyncedAt;
+  get firstCol(): number {
+    let minCol = -1;
+    for (const gr of this.rows) {
+      const fc = gr.firstCol;
+      if (fc >= 0) {
+        if (minCol < 0 || fc < minCol) {
+          minCol = fc;
+        }
+      }
+    }
+    return minCol;
   }
 
-  get lastUpdatedAt() {
-    return this._lastUpdatedAt;
+  cellsInRow(row: number): GridCell[] {
+    const out = [] as GridCell[];
+    const gr = this.rows[row];
+    if (gr) {
+      for (const cell of gr.cells) {
+        if (cell?.value) out.push(cell);
+      }
+    }
+    return out;
   }
 
-  markSynced() {
-    this._lastSyncedAt = this._lastUpdatedAt;
+  cellsInCol(col: number): GridCell[] {
+    const out = [] as GridCell[];
+    for (const gr of this.rows) {
+      const cell = gr.cellAt(col);
+      if (cell?.value) out.push(cell);
+    }
+    return out;
   }
 
-  setUpdatedAt(val: number) {
-    this._lastUpdatedAt = val;
+  addRowAlign(align: RowAlign): void {
+    this.rowAligns.set(align.uuid, align);
+  }
+
+  addColAlign(align: ColAlign): void {
+    this.colAligns.set(align.uuid, align);
   }
 
   addRows(insertBefore = -1, numRows = 1): this {
@@ -218,7 +236,16 @@ export class GridRow {
 
   constructor(public grid: GridModel, public rowIndex: number) {
     this.defaultRowAlign = new RowAlign();
-    this.grid.layoutGroup?.addRowAlign(this.defaultRowAlign);
+    this.grid.addRowAlign(this.defaultRowAlign);
+  }
+
+  get firstCol() {
+    for (let i = 0; i < this.cells.length; i++) {
+      if (this.cells[i]?.value) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   get numCols() {
@@ -242,13 +269,11 @@ export class GridRow {
       this.cells[col] = out = creator(this, col);
       out.gridRow = this;
       out.colIndex = col;
-      if (this.grid.layoutGroup) {
-        if (out.rowAlign) {
-          this.grid.layoutGroup.addRowAlign(out.rowAlign);
-        }
-        if (out.colAlign) {
-          this.grid.layoutGroup.addColAlign(out.colAlign);
-        }
+      if (out.rowAlign) {
+        this.grid.addRowAlign(out.rowAlign);
+      }
+      if (out.colAlign) {
+        this.grid.addColAlign(out.colAlign);
       }
     }
     return out;
@@ -320,9 +345,7 @@ export abstract class AlignedLine {
     return this;
   }
 
-  protected beforeAddingCell(cell: GridCell): boolean {
-    return true;
-  }
+  protected abstract beforeAddingCell(cell: GridCell): boolean;
 
   removeCell(cell: GridCell): this {
     if (this.beforeRemovingCell(cell)) {
@@ -336,9 +359,7 @@ export abstract class AlignedLine {
     return this;
   }
 
-  protected beforeRemovingCell(cell: GridCell): boolean {
-    return true;
-  }
+  protected abstract beforeRemovingCell(cell: GridCell): boolean;
 
   // The "neighboring" columns that depend on this column to be placed
   // before they are placed
@@ -385,7 +406,7 @@ export class ColAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
-        cellView.setBounds(val + this.paddingBefore, null, this._maxLength, null, true);
+        cellView.setBounds(val, null, this.maxLength, null, true);
       }
     }
   }
@@ -395,7 +416,7 @@ export class ColAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
-        this._maxLength = Math.max(cellView.minSize.width, this.maxLength);
+        this._maxLength = Math.max(cellView.minSize.width, this._maxLength);
       }
     }
     return this._maxLength;
@@ -422,7 +443,7 @@ export class RowAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
-        cellView.setBounds(null, val + this.paddingBefore, null, this._maxLength, true);
+        cellView.setBounds(null, this.paddingBefore, null, this.maxLength, true);
       }
     }
   }
@@ -455,87 +476,70 @@ export class RowAlign extends AlignedLine {
  * alignment objects.
  */
 export class GridLayoutGroup {
-  rowAligns = new Map<number, RowAlign>();
-  colAligns = new Map<number, ColAlign>();
+  // rowAligns = new Map<number, RowAlign>();
+  // colAligns = new Map<number, ColAlign>();
   gridModels = [] as GridModel[];
 
   private eventHandler = (event: TSU.Events.TEvent) => {
     this.applyModelEvents(event.payload);
   };
 
-  addRowAlign(align: RowAlign): void {
-    this.rowAligns.set(align.uuid, align);
-    if (!align.getCellView) align.getCellView = this._getCellView;
-  }
-
-  addColAlign(align: ColAlign): void {
-    this.colAligns.set(align.uuid, align);
-    if (!align.getCellView) align.getCellView = this._getCellView;
-  }
-
   addGridModel(gridModel: GridModel): boolean {
-    if (gridModel.layoutGroup != this) {
-      if (gridModel.layoutGroup) {
-        gridModel.layoutGroup.removeGridModel(gridModel);
-      }
-      gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
-      this.gridModels.push(gridModel);
-    }
+    gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
+    this.gridModels.push(gridModel);
     return true;
   }
 
-  removeGridModel(gridModel: GridModel): void {
-    if (gridModel.layoutGroup == this) {
-      gridModel.eventHub?.removeOn(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
-      for (let i = 0; i < this.gridModels.length; i++) {
-        if (this.gridModels[i] == gridModel) {
-          this.gridModels.splice(i, 1);
-          break;
+  startingRowAligns(): RowAlign[] {
+    const out = [] as RowAlign[];
+    const visited = {} as any;
+    for (const gm of this.gridModels) {
+      for (const cell of gm.cellsInRow(gm.firstRow)) {
+        if (cell.rowAlign && !visited[cell.rowAlign.uuid]) {
+          visited[cell.rowAlign.uuid] = true;
+          out.push(cell.rowAlign)
         }
       }
     }
+    return out;
   }
 
-  _getCellView: (cell: GridCell) => GridCellView;
-  set getCellView(creator: (cell: GridCell) => GridCellView) {
-    this._getCellView = creator;
-    for (const [, rowAlign] of this.rowAligns) {
-      rowAlign.getCellView = creator;
-    }
-    for (const [, colAlign] of this.colAligns) {
-      colAlign.getCellView = creator;
-    }
-  }
-
-  get startingRows(): RowAlign[] {
-    const out = [] as RowAlign[];
-    for (const [, rowAlign] of this.rowAligns) {
-      if (rowAlign.prevLines.length == 0) {
-        out.push(rowAlign);
+  startingColAligns(): ColAlign[] {
+    const out = [] as ColAlign[];
+    const visited = {} as any;
+    for (const gm of this.gridModels) {
+      for (const cell of gm.cellsInCol(gm.firstCol)) {
+        if (cell.colAlign && !visited[cell.colAlign.uuid]) {
+          visited[cell.colAlign.uuid] = true;
+          out.push(cell.colAlign)
+        }
       }
     }
     return out;
+  }
+
+  removeGridModel(gridModel: GridModel): void {
+    gridModel.eventHub?.removeOn(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
+  }
+
+  getCellView: (cell: GridCell) => GridCellView;
+
+  get startingRows(): RowAlign[] {
+    return this.startingRowAligns();
   }
 
   get startingCols(): ColAlign[] {
-    const out = [] as ColAlign[];
-    for (const [, colAlign] of this.colAligns) {
-      if (colAlign.prevLines.length == 0) {
-        out.push(colAlign);
-      }
-    }
-    return out;
+    return this.startingColAligns();
   }
 
   /**
    * Forces a full refresh.
    */
   refreshLayout() {
-    const gridModels: GridModel[] = [];
     const changedRowAligns = {} as any;
     const changedColAligns = {} as any;
 
-    for (const [, rowAlign] of this.rowAligns) {
+    for (const rowAlign of this.startingRowAligns()) {
       if (!(rowAlign.uuid in changedRowAligns)) {
         changedRowAligns[rowAlign.uuid] = {
           align: rowAlign,
@@ -544,7 +548,7 @@ export class GridLayoutGroup {
       }
     }
 
-    for (const [, colAlign] of this.colAligns) {
+    for (const colAlign of this.startingColAligns()) {
       if (!(colAlign.uuid in changedColAligns)) {
         changedColAligns[colAlign.uuid] = {
           align: colAlign,
@@ -555,7 +559,6 @@ export class GridLayoutGroup {
 
     this.doBfsLayout(this.startingRows, changedRowAligns);
     this.doBfsLayout(this.startingCols, changedColAligns);
-    gridModels.forEach((gm) => gm.markSynced());
   }
 
   /**
@@ -566,13 +569,12 @@ export class GridLayoutGroup {
    * resized/repositioned).
    */
   protected applyModelEvents(events: TSU.Events.TEvent[]) {
-    const [gridModels, changedRowAligns, changedColAligns] = this.changesForEvents(events);
+    const [changedRowAligns, changedColAligns] = this.changesForEvents(events);
     this.doBfsLayout(this.startingRows, changedRowAligns);
     this.doBfsLayout(this.startingCols, changedColAligns);
-    gridModels.forEach((gm) => gm.markSynced());
   }
 
-  protected changesForEvents(events: TSU.Events.TEvent[]): [GridModel[], any, any] {
+  protected changesForEvents(events: TSU.Events.TEvent[]): [any, any] {
     // Step 1 - topologically sort RowAligns of changed cells
     // Step 2 - topologically sort ColAligns of changed cells
     // Step 3 -
@@ -583,7 +585,6 @@ export class GridLayoutGroup {
     // instead of going through every change.
     // Later on we can revisit this if the events are edge triggered instead
     // of level triggered
-    const gridModels = [] as GridModel[];
     for (let i = events.length - 1; i >= 0; i--) {
       const event = events[i];
       const loc = event.payload.loc;
@@ -591,7 +592,6 @@ export class GridLayoutGroup {
       cellVisited[loc] = true;
       const [row, col] = loc.split(":").map((x: string) => parseInt(x));
       const gridModel = event.source;
-      gridModels.push(gridModel);
       const cell = gridModel.getRow(row).cellAt(col);
       if (cell) {
         // TODO - For now we are marking both row and col as having
@@ -614,7 +614,7 @@ export class GridLayoutGroup {
         changedColAligns[cell.colAlign.uuid]["cells"].push(cell);
       }
     }
-    return [gridModels, changedRowAligns, changedColAligns];
+    return [changedRowAligns, changedColAligns];
   }
 
   // 1. start from the starting lines and do a BF traversal
@@ -625,9 +625,12 @@ export class GridLayoutGroup {
   // first do above for rows
   protected doBfsLayout<T extends AlignedLine>(startingLines: T[], changedAligns: any) {
     // Eval max lengths for all changed aligns
-    if (!this._getCellView) return;
     for (const alignId in changedAligns) {
       const val = changedAligns[alignId];
+      if (!val.align.getCellView) {
+        if (!this.getCellView) return;
+        val.align.getCellView = this.getCellView;
+      }
       val.align.evalMaxLength(val.cells);
     }
     let lineQueue = [] as [null | T, T][];
