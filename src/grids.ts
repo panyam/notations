@@ -406,6 +406,10 @@ export class ColAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
+        if (this._maxLength <= 0) {
+          // this hasnt been evaluated yet so do it!
+          this.evalMaxLength();
+        }
         cellView.setBounds(val, null, this.maxLength, null, true);
       }
     }
@@ -443,6 +447,10 @@ export class RowAlign extends AlignedLine {
     for (const cell of this.cells) {
       if (cell.value) {
         const cellView = this.getCellView(cell);
+        if (this._maxLength <= 0) {
+          // this hasnt been evaluated yet so do it!
+          this.evalMaxLength();
+        }
         cellView.setBounds(null, this.paddingBefore, null, this.maxLength, true);
       }
     }
@@ -497,7 +505,7 @@ export class GridLayoutGroup {
       for (const cell of gm.cellsInRow(gm.firstRow)) {
         if (cell.rowAlign && !visited[cell.rowAlign.uuid]) {
           visited[cell.rowAlign.uuid] = true;
-          out.push(cell.rowAlign)
+          out.push(cell.rowAlign);
         }
       }
     }
@@ -511,7 +519,7 @@ export class GridLayoutGroup {
       for (const cell of gm.cellsInCol(gm.firstCol)) {
         if (cell.colAlign && !visited[cell.colAlign.uuid]) {
           visited[cell.colAlign.uuid] = true;
-          out.push(cell.colAlign)
+          out.push(cell.colAlign);
         }
       }
     }
@@ -617,6 +625,16 @@ export class GridLayoutGroup {
     return [changedRowAligns, changedColAligns];
   }
 
+  protected ensureGetCellView(align: AlignedLine) {
+    if (!align.getCellView) {
+      if (!this.getCellView) {
+        return null;
+      }
+      align.getCellView = this.getCellView;
+    }
+    return align.getCellView;
+  }
+
   // 1. start from the starting lines and do a BF traversal
   // 2. If a line not visited (ie laid out):
   //      if it is in the changedAlign list then reval its length (w/h)
@@ -625,12 +643,10 @@ export class GridLayoutGroup {
   // first do above for rows
   protected doBfsLayout<T extends AlignedLine>(startingLines: T[], changedAligns: any) {
     // Eval max lengths for all changed aligns
+    if (!this.getCellView) return;
     for (const alignId in changedAligns) {
       const val = changedAligns[alignId];
-      if (!val.align.getCellView) {
-        if (!this.getCellView) return;
-        val.align.getCellView = this.getCellView;
-      }
+      this.ensureGetCellView(val.align);
       val.align.evalMaxLength(val.cells);
     }
     let lineQueue = [] as [null | T, T][];
@@ -642,16 +658,17 @@ export class GridLayoutGroup {
       for (let i = 0; i < lineQueue.length; i++) {
         const [prevLineAlign, lineAlign] = lineQueue[i];
         visitedLines[lineAlign.uuid] = true;
-        let newY = lineAlign.coordOffset;
+        let newOffset = lineAlign.coordOffset;
         let lineChanged = lineAlign.uuid in changedAligns;
         if (prevLineAlign) {
           if (lineOffsetChanged[prevLineAlign.uuid]) {
-            newY = prevLineAlign.coordOffset + prevLineAlign.maxLength;
+            newOffset = prevLineAlign.coordOffset + prevLineAlign.maxLength;
             lineChanged = true;
           }
         }
         if (lineChanged) {
-          lineAlign.setOffset(newY);
+          this.ensureGetCellView(lineAlign);
+          lineAlign.setOffset(newOffset);
           lineOffsetChanged[lineAlign.uuid] = true;
         }
 

@@ -276,7 +276,6 @@ export class BeatColDAG {
     if (!bcol) {
       bcol = new BeatColumn(offset, endOffset, markerType);
       this.beatColumns.set(key, bcol);
-      this.layoutGroup.addColAlign(bcol);
     }
     return [bcol, newcreated];
   }
@@ -300,7 +299,7 @@ export class GlobalBeatLayout {
     let out = this.gridModelsForLine.get(lineid) || null;
     if (!out) {
       out = new GridModel();
-      out.layoutGroup = this.gridLayoutGroup;
+      this.gridLayoutGroup.addGridModel(out);
       this.gridModelsForLine.set(lineid, out);
     }
     return out;

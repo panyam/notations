@@ -135,7 +135,7 @@ export class NotationView {
 
     const now = performance.now();
     for (const lineView of lineViews) {
-      lineView.gridModel.setUpdatedAt(now);
+      lineView.gridModel.lastUpdatedAt = now;
     }
 
     this.beatLayout.gridLayoutGroup.refreshLayout();
