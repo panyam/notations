@@ -1,12 +1,27 @@
 import * as TSU from "@panyam/tsutils";
 import { GridLayoutGroup, GridRow, GridModel, GridCellView, GridCell, ColAlign } from "../grids";
 
-function testGrid(debug: boolean, found: any, expected: any): void {
+function testGrid(debug: boolean, found: GridModel, expected: any, getCellView?: any): void {
   if (debug) {
     console.log("Expected Grid: \n", JSON.stringify(expected, TSU.Misc.getCircularReplacer(), 2));
     console.log("Found Grid: \n", JSON.stringify(found.debugValue(), TSU.Misc.getCircularReplacer(), 2));
   }
   expect(found.debugValue()).toEqual(expected);
+
+  // Now ensure that a cell's bounds match that of its view
+  if (getCellView) {
+    for (const row of found.rows) {
+      for (const cell of row.cells) {
+        if (cell != null) {
+          const view = getCellView(cell);
+          expect(view.x).toEqual(cell.colAlign.coordOffset);
+          expect(view.width).toEqual(cell.colAlign.maxLength);
+          expect(view.y).toEqual(cell.rowAlign.coordOffset);
+          expect(view.height).toEqual(cell.rowAlign.maxLength);
+        }
+      }
+    }
+  }
 }
 
 class TestCellView {
@@ -409,43 +424,48 @@ describe("Basic GridView Tests", () => {
       lastUpdatedAt: 0,
     });
 
-    testGrid(false, g, {
-      rows: [
-        {
-          r: 0,
-          cells: [
-            { r: 0, c: 0, value: 1, y: 0, h: 51, x: 0, w: 60 },
-            { r: 0, c: 1, value: 2, y: 0, h: 51, x: 60, w: 70 },
-            { r: 0, c: 2, value: 3, y: 0, h: 51, x: 130, w: 110 },
-            { r: 0, c: 3, value: 4, y: 0, h: 51, x: 240, w: 100 },
-            { r: 0, c: 4, value: 5, y: 0, h: 51, x: 340, w: 100 },
-          ],
-        },
-        {
-          r: 1,
-          cells: [
-            { r: 1, c: 0, value: "APPLE", y: 51, h: 60, x: 0, w: 60 },
-            { r: 1, c: 1, value: "Orange", y: 51, h: 60, x: 60, w: 70 },
-            { r: 1, c: 2, value: "WaterMelon", y: 51, h: 60, x: 130, w: 110 },
-            { r: 1, c: 3, value: "Grape", y: 51, h: 60, x: 240, w: 100 },
-          ],
-        },
-        {
-          r: 2,
-          cells: [
-            { r: 2, c: 0, value: "India", y: 111, h: 59, x: 0, w: 60 },
-            { r: 2, c: 2, value: "NZ", y: 111, h: 59, x: 130, w: 110 },
-            { r: 2, c: 3, value: "Australia", y: 111, h: 59, x: 240, w: 100 },
-            { r: 2, c: 4, value: "Sri Lanka", y: 111, h: 59, x: 340, w: 100 },
-          ],
-        },
-        {
-          r: 3,
-          cells: [{ r: 3, c: 2, value: "Antartica", y: 170, h: 59, x: 130, w: 110 }],
-        },
-      ],
-      lastUpdatedAt: 0,
-    });
+    testGrid(
+      false,
+      g,
+      {
+        rows: [
+          {
+            r: 0,
+            cells: [
+              { r: 0, c: 0, value: 1, y: 0, h: 51, x: 0, w: 60 },
+              { r: 0, c: 1, value: 2, y: 0, h: 51, x: 60, w: 70 },
+              { r: 0, c: 2, value: 3, y: 0, h: 51, x: 130, w: 110 },
+              { r: 0, c: 3, value: 4, y: 0, h: 51, x: 240, w: 100 },
+              { r: 0, c: 4, value: 5, y: 0, h: 51, x: 340, w: 100 },
+            ],
+          },
+          {
+            r: 1,
+            cells: [
+              { r: 1, c: 0, value: "APPLE", y: 51, h: 60, x: 0, w: 60 },
+              { r: 1, c: 1, value: "Orange", y: 51, h: 60, x: 60, w: 70 },
+              { r: 1, c: 2, value: "WaterMelon", y: 51, h: 60, x: 130, w: 110 },
+              { r: 1, c: 3, value: "Grape", y: 51, h: 60, x: 240, w: 100 },
+            ],
+          },
+          {
+            r: 2,
+            cells: [
+              { r: 2, c: 0, value: "India", y: 111, h: 59, x: 0, w: 60 },
+              { r: 2, c: 2, value: "NZ", y: 111, h: 59, x: 130, w: 110 },
+              { r: 2, c: 3, value: "Australia", y: 111, h: 59, x: 240, w: 100 },
+              { r: 2, c: 4, value: "Sri Lanka", y: 111, h: 59, x: 340, w: 100 },
+            ],
+          },
+          {
+            r: 3,
+            cells: [{ r: 3, c: 2, value: "Antartica", y: 170, h: 59, x: 130, w: 110 }],
+          },
+        ],
+        lastUpdatedAt: 0,
+      },
+      lg.getCellView,
+    );
 
     /*
     lg.refreshLayout();

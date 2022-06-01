@@ -451,7 +451,7 @@ export class RowAlign extends AlignedLine {
           // this hasnt been evaluated yet so do it!
           this.evalMaxLength();
         }
-        cellView.setBounds(null, this.paddingBefore, null, this.maxLength, true);
+        cellView.setBounds(null, val, null, this.maxLength, true);
       }
     }
   }
