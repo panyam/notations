@@ -3,13 +3,11 @@ import { Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
-import { GridModel, GridRow, GridCell, GridCellView, RowAlign, ColAlign, GridLayoutGroup } from "./grids";
+import { GridModel, GridRow, GridCell, ColAlign, GridLayoutGroup } from "./grids";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
-
-export type BeatView = GridCellView;
 
 export class Beat {
   private static idCounter = 0;

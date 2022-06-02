@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Note } from "../core";
-import { BeatView } from "../beats";
+import { BeatView } from "../beatview";
 import { Embelishment } from "../shapes";
 import { LeafAtomView } from "./atomviews";
 import { JaaruGamaka } from "./gamakas";

@@ -142,6 +142,7 @@ export class GridModel extends TSU.Events.EventEmitter {
 }
 
 export interface GridCellView {
+  readonly cell: GridCell;
   x: number;
   y: number;
   width: number;

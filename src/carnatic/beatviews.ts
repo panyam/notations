@@ -1,37 +1,12 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType } from "../core";
-import { Cycle } from "../cycle";
-import { BeatView as BeatViewBase, Beat } from "../beats";
-import { AtomView, GroupView, Embelishment, ElementShape } from "../shapes";
+import { Embelishment } from "../shapes";
 import { createAtomView } from "./atomviews";
+import { BeatView as BeatViewBase } from "../beatview";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 
-export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase {
-  private _embelishments: Embelishment[];
-  atomView: AtomView;
-  needsLayout = true;
-  constructor(
-    public readonly beat: Beat,
-    public readonly rootElement: SVGGraphicsElement,
-    public readonly cycle: Cycle,
-    config?: any,
-  ) {
-    super(
-      TSU.DOM.createSVGNode("g", {
-        parent: rootElement,
-        attrs: {
-          class: "beatView",
-          beatId: "" + beat.uuid,
-          id: "" + beat.uuid,
-          roleName: beat.role.name,
-          layoutLine: "" + beat.layoutLine,
-          layoutColumn: "" + beat.layoutColumn,
-          beatIndex: "" + beat.index,
-        },
-      }),
-    );
-    this.atomView = createAtomView(this.element, beat.atom, beat.role.defaultToNotes);
-    this.atomView.refreshLayout();
+export class BeatView extends BeatViewBase {
+  createAtomView() {
+    return createAtomView(this.element, this.beat.atom, this.beat.role.defaultToNotes);
   }
 
   refreshLayout(): void {
@@ -41,13 +16,6 @@ export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase 
     this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
     this.invalidateBounds();
-  }
-
-  get embelishments(): Embelishment[] {
-    if (!this._embelishments) {
-      this._embelishments = this.createEmbelishments();
-    }
-    return this._embelishments;
   }
 
   protected createEmbelishments(): Embelishment[] {
@@ -80,9 +48,5 @@ export class BeatView extends ElementShape<SVGGElement> implements BeatViewBase 
       }
     }
     return embelishments;
-  }
-
-  setStyles(config: any): void {
-    this.needsLayout = true;
   }
 }

@@ -1,7 +1,8 @@
 import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock } from "../notation";
-import { Beat, GlobalBeatLayout } from "../beats";
+import { GlobalBeatLayout } from "../beats";
+import { GridCell } from "../grids";
 import { Line } from "../core";
 import { BeatView } from "./beatviews";
 
@@ -25,7 +26,7 @@ export class NotationView {
 
   set beatLayout(beatLayout: GlobalBeatLayout) {
     this._beatLayout = beatLayout;
-    beatLayout.gridLayoutGroup.getCellView = (cell) => this.viewForBeat(cell.value);
+    beatLayout.gridLayoutGroup.getCellView = (cell) => this.viewForBeat(cell);
   }
 
   loadChildViews(): void {
@@ -170,14 +171,15 @@ export class NotationView {
   }
 
   beatViews = new Map<number, BeatView>();
-  viewForBeat(beat: Beat): BeatView {
+  viewForBeat(cell: GridCell): BeatView {
+    const beat = cell.value;
     let curr = this.beatViews.get(beat.uuid) || null;
     if (curr == null) {
       const line = beat.role.line;
       // how to get the bar and beat index for a given beat in a given row?
       const lineView = this.ensureLineView(line);
       const lp = line.layoutParams;
-      curr = new BeatView(beat, lineView.gElem, lp.cycle);
+      curr = new BeatView(cell, beat, lineView.gElem, lp.cycle);
       this.beatViews.set(beat.uuid, curr);
     }
     return curr;
