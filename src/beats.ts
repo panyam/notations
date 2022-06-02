@@ -357,7 +357,8 @@ export class GlobalBeatLayout {
     const lp = line.layoutParams;
     const beatColDAG = this.beatColDAGForLP(lp.uuid);
     const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
-    const bcol = beatColDAG.getBeatColumn(rowOffset, beat.endOffset, 0);
+    const colEnd = rowOffset.plus(beat.duration, true);
+    const bcol = beatColDAG.getBeatColumn(rowOffset, colEnd, 0);
 
     // Since a beat's column has a "pre" and "post" col to, each
     // beat has 3 columns for it
