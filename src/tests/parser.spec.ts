@@ -646,4 +646,70 @@ describe("Marker Tests", () => {
       },
     ]);
   });
+
+  test("Marker with roles", () => {
+    testV4(`Sw: "Hello">> A Sh: 'world'>> B <<"Hello"`, false, [
+      {
+        name: "ActivateRole",
+        index: 0,
+        params: [
+          {
+            key: null,
+            value: "sw",
+          },
+        ],
+      },
+      {
+        name: "AddAtoms",
+        index: 1,
+        atoms: [
+          {
+            type: "Literal",
+            mbef: [
+              {
+                type: "Marker",
+                text: "Hello",
+                before: true,
+              },
+            ],
+            value: "A",
+          },
+        ],
+      },
+      {
+        name: "ActivateRole",
+        index: 2,
+        params: [
+          {
+            key: null,
+            value: "sh",
+          },
+        ],
+      },
+      {
+        name: "AddAtoms",
+        index: 3,
+        atoms: [
+          {
+            type: "Literal",
+            mbef: [
+              {
+                type: "Marker",
+                text: "world",
+                before: true,
+              },
+            ],
+            maft: [
+              {
+                type: "Marker",
+                text: "Hello",
+                before: false,
+              },
+            ],
+            value: "B",
+          },
+        ],
+      },
+    ]);
+  });
 });

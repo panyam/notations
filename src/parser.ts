@@ -97,20 +97,25 @@ const [parser, itemGraph] = G.newParser(
     Atoms -> Atoms Atom { concatAtoms } ;
     Atoms -> { newArray } ;
 
-    Atom -> Duration  Leaf { applyDuration } ;
-    Atom -> PRE_MARKER Atom { applyPreMarker }
-          | Atom POST_MARKER  { applyPostMarker }
+    Atom -> Atom POST_MARKER  { applyPostMarker }
+          | PreMarkedAtom
           ;
-    Atom -> Leaf ;
-    Leaf -> Space | Lit | Group | Rest  ;
-    Rest -> HYPHEN { newRest };
+    PreMarkedAtom -> Leaf
+                  | PRE_MARKER PreMarkedAtom { applyPreMarker }
+                  ;
 
+    Leaf -> Space | Lit | Group | Rest  ;
+    Leaf -> Duration Leaf { applyDuration } ;
+    Rest -> HYPHEN { newRest };
     Space -> COMMA { newSpace } 
           | SEMI_COLON { newDoubleSpace } 
           | UNDER_SCORE { newSilentSpace } 
           ;
 
-    /* - An alternative representation to support both pre and post embelishment operators.  */
+    /* - An alternative representation to support both pre and
+     *   post embelishment operators.   Here PRE_EMBs have a higher
+     *   associativity over POST_EMBs
+     */
      Lit -> Lit POST_EMB  { litWithPostEmb }
          | PreEmbLit
          ;
