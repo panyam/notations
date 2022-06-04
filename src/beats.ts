@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Group, Line, Atom, Space, Role } from "./";
+import { AtomType, Marker, Group, Line, Atom, Space, Role } from "./";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
@@ -12,8 +12,6 @@ const ONE = TSU.Num.Fraction.ONE;
 export class Beat {
   private static idCounter = 0;
   readonly uuid = Beat.idCounter++;
-  layoutLine = -1;
-  layoutColumn = -1;
   // Should this be as flat Atoms or should we keep it as atoms and breakdown
   // later?
   atom: Atom;
@@ -68,6 +66,36 @@ export class Beat {
       (this.atom as Group).addAtoms(true, atom);
     }
     return true;
+  }
+
+  get preMarkers(): Marker[] {
+    const out = [] as Marker[];
+    let curr: Atom | null = this.atom;
+    while (curr != null) {
+      for (const marker of curr.markersBefore || []) {
+        out.push(marker);
+      }
+      if (curr.type == AtomType.GROUP) {
+        curr = (curr as Group).atoms.first;
+      } else {
+        curr = null;
+      }
+    }
+    return out;
+  }
+
+  get postMarkers(): Marker[] {
+    const out = [] as Marker[];
+    let curr: Atom | null = this.atom;
+    while (curr != null) {
+      out.splice(0, 0, ...(curr.markersAfter || []));
+      if (curr.type == AtomType.GROUP) {
+        curr = (curr as Group).atoms.last;
+      } else {
+        curr = null;
+      }
+    }
+    return out;
   }
 }
 
@@ -364,7 +392,34 @@ export class GlobalBeatLayout {
     // beat has 3 columns for it
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
     const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
-    const realCol = layoutColumn * 3;
+    // pre marker goes on realCol - 1, post marker goes on realCol + 1
+    const realCol = 1 + layoutColumn * 3;
+    const preMarkers = beat.preMarkers;
+    if (preMarkers.length > 0) {
+      const val = {
+        beat: beat,
+        markers: preMarkers,
+      };
+      const precol = beatColDAG.getBeatColumn(rowOffset, colEnd, -1);
+      gridModel.setValue(realRow, realCol - 1, val, (gridRow: GridRow, col: number) => {
+        const cell = new GridCell(gridRow, col);
+        cell.colAlign = precol;
+        return cell;
+      });
+    }
+    const postMarkers = beat.postMarkers;
+    if (postMarkers.length > 0) {
+      const val = {
+        beat: beat,
+        markers: postMarkers,
+      };
+      const postcol = beatColDAG.getBeatColumn(rowOffset, colEnd, 1);
+      gridModel.setValue(realRow, realCol + 1, val, (gridRow: GridRow, col: number) => {
+        const cell = new GridCell(gridRow, col);
+        cell.colAlign = postcol;
+        return cell;
+      });
+    }
     return gridModel.setValue(realRow, realCol, beat, (gridRow: GridRow, col: number) => {
       const cell = new GridCell(gridRow, col);
       cell.colAlign = bcol;

@@ -23,9 +23,9 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
           beatId: "" + beat.uuid,
           id: "" + beat.uuid,
           roleName: beat.role.name,
-          layoutLine: "" + beat.layoutLine,
-          layoutColumn: "" + beat.layoutColumn,
           beatIndex: "" + beat.index,
+          gridRow: cell.rowIndex,
+          gridCol: cell.colIndex,
         },
       }),
     );

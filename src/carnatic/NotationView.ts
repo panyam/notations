@@ -1,10 +1,10 @@
 import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock } from "../notation";
-import { GlobalBeatLayout } from "../beats";
-import { GridCell } from "../grids";
+import { Beat, GlobalBeatLayout } from "../beats";
+import { GridCell, GridCellView } from "../grids";
 import { Line } from "../core";
-import { BeatView } from "./beatviews";
+import { BeatView, MarkerView } from "./beatviews";
 
 export class NotationView {
   headerElement: HTMLDivElement;
@@ -171,17 +171,35 @@ export class NotationView {
   }
 
   beatViews = new Map<number, BeatView>();
-  viewForBeat(cell: GridCell): BeatView {
-    const beat = cell.value;
-    let curr = this.beatViews.get(beat.uuid) || null;
-    if (curr == null) {
-      const line = beat.role.line;
-      // how to get the bar and beat index for a given beat in a given row?
-      const lineView = this.ensureLineView(line);
-      const lp = line.layoutParams;
-      curr = new BeatView(cell, beat, lineView.gElem, lp.cycle);
-      this.beatViews.set(beat.uuid, curr);
+  markerViews = new Map<string, MarkerView>();
+  viewForBeat(cell: GridCell): GridCellView {
+    if (cell.colIndex % 3 == 1) {
+      // beat view needed
+      const beat = cell.value;
+      let curr = this.beatViews.get(beat.uuid) || null;
+      if (curr == null) {
+        const line = beat.role.line;
+        // how to get the bar and beat index for a given beat in a given row?
+        const lineView = this.ensureLineView(line);
+        const lp = line.layoutParams;
+        curr = new BeatView(cell, beat, lineView.gElem, lp.cycle);
+        this.beatViews.set(beat.uuid, curr);
+      }
+      return curr;
+    } else {
+      // markers view
+      const marker = cell.value;
+      const beat = marker.beat as Beat;
+      let curr = this.markerViews.get("pre:" + beat.uuid) || null;
+      if (curr == null) {
+        const line = beat.role.line;
+        const lineView = this.ensureLineView(line);
+        const lp = line.layoutParams;
+        const isPreMarker = cell.colIndex % 3 == 0;
+        curr = new MarkerView(cell, beat, marker.markers, isPreMarker, lineView.gElem);
+        this.markerViews.set("pre:" + beat.uuid, curr);
+      }
+      return curr;
     }
-    return curr;
   }
 }

@@ -279,16 +279,6 @@ export abstract class LeafAtomView extends AtomView {
   get viewId(): number {
     return this.leafAtom.uuid;
   }
-
-  /*
-  embRoot(): SVGGraphicsElement {
-    let rootElem = this.glyph.element.parentElement as any as SVGGraphicsElement;
-    while (rootElem && (rootElem.tagName == "tspan" || rootElem.tagName == "text")) {
-      rootElem = rootElem.parentElement as any as SVGGraphicsElement;
-    }
-    return rootElem;
-  }
-  */
 }
 
 /**

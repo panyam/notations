@@ -1,8 +1,63 @@
 import * as TSU from "@panyam/tsutils";
 import { Embelishment } from "../shapes";
+import { GridCell, GridCellView } from "../grids";
+import { ElementShape } from "../shapes";
 import { createAtomView } from "./atomviews";
+import { Marker } from "../core";
+import { Beat } from "../beats";
 import { BeatView as BeatViewBase } from "../beatview";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
+
+export class MarkerView extends ElementShape<SVGGElement> implements GridCellView {
+  needsLayout = true;
+  rootGroup: SVGGElement;
+  textElement: SVGTextElement;
+  constructor(
+    public readonly cell: GridCell,
+    public readonly beat: Beat,
+    public readonly markers: Marker[],
+    public readonly isPreMarker: boolean,
+    public readonly rootElement: SVGGraphicsElement,
+    config?: any,
+  ) {
+    const rootGroup = TSU.DOM.createSVGNode("g", {
+      parent: rootElement,
+      attrs: {
+        class: "markerView",
+        pre: isPreMarker,
+        roleName: beat.role.name,
+        beatIndex: "" + beat.index,
+        gridRow: cell.rowIndex,
+        gridCol: cell.colIndex,
+      },
+    });
+    super(rootGroup);
+    this.rootGroup = rootGroup as SVGGElement;
+    this.textElement = TSU.DOM.createSVGNode("text", {
+      parent: rootGroup,
+      attrs: {
+        class: "markerText",
+        pre: isPreMarker,
+      },
+      text: this.markers[0].text,
+    });
+  }
+
+  refreshLayout(): void {
+    // TODO - move this code out to refreshLayout?
+    // set the glyphs Y first so we can layout others
+    this.rootGroup.setAttribute("transform", "translate(" + this.x + "," + this.y + ")");
+  }
+
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    return [x, y, NaN, NaN];
+  }
+}
 
 export class BeatView extends BeatViewBase {
   createAtomView() {
