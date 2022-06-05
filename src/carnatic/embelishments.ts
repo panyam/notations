@@ -201,7 +201,7 @@ export class BeatEndLines extends Embelishment {
     return [x, y];
   }
 
-  barSpacing = 15;
+  barSpacing = 0;
 
   refreshLayout(): void {
     // const x = this.source.width + this.barSpacing;

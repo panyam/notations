@@ -38,9 +38,17 @@ export class MarkerView extends ElementShape<SVGGElement> implements GridCellVie
       attrs: {
         class: "markerText",
         pre: isPreMarker,
+        dx: isPreMarker ? 0 : 15,
       },
       text: this.markers[0].text,
     });
+  }
+
+  protected refreshMinSize(): TSU.Geom.Size {
+    const ts = TSU.DOM.svgBBox(this.textElement);
+    const totalWidth = ts.width;
+    const maxHeight = ts.height;
+    return new TSU.Geom.Size(totalWidth + 5, maxHeight + 5);
   }
 
   refreshLayout(): void {
