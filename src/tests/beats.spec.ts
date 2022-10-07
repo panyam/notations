@@ -41,28 +41,28 @@ describe("GlobalBeatLayout", () => {
       Sw:
       a b c d e f g h i
     `);
-    expect(beatLayout.roleBeatsForLine.size).toBe(1)
-    expect(beatLayout.gridModelsForLine.size).toBe(1)
-    expect(beatLayout.beatColDAGsByLP.size).toBe(1)
+    expect(beatLayout.roleBeatsForLine.size).toBe(1);
+    expect(beatLayout.gridModelsForLine.size).toBe(1);
+    expect(beatLayout.beatColDAGsByLP.size).toBe(1);
     const gm = beatLayout.gridLayoutGroup.gridModels[0];
-    expect(gm.rows.length).toBe(9)
-    const a0 = (gm.getRow(0).cellAt(1)?.value as Beat).atom as Note
-    expect(a0.value).toBe("a")
-    const a1 = (gm.getRow(1).cellAt(1)?.value as Beat).atom as Note
-    expect(a1.value).toBe("b")
-    const a2 = (gm.getRow(2).cellAt(1)?.value as Beat).atom as Note
-    expect(a2.value).toBe("c")
-    const a3 = (gm.getRow(3).cellAt(1)?.value as Beat).atom as Note
-    expect(a3.value).toBe("d")
-    const a4 = (gm.getRow(4).cellAt(1)?.value as Beat).atom as Note
-    expect(a4.value).toBe("e")
-    const a5 = (gm.getRow(5).cellAt(1)?.value as Beat).atom as Note
-    expect(a5.value).toBe("f")
-    const a6 = (gm.getRow(6).cellAt(1)?.value as Beat).atom as Note
-    expect(a6.value).toBe("g")
-    const a7 = (gm.getRow(7).cellAt(1)?.value as Beat).atom as Note
-    expect(a7.value).toBe("h")
-    const a8 = (gm.getRow(8).cellAt(1)?.value as Beat).atom as Note
-    expect(a8.value).toBe("i")
+    expect(gm.rows.length).toBe(9);
+    const a0 = (gm.getRow(0).cellAt(1)?.value as Beat).atom as Note;
+    expect(a0.value).toBe("a");
+    const a1 = (gm.getRow(1).cellAt(1)?.value as Beat).atom as Note;
+    expect(a1.value).toBe("b");
+    const a2 = (gm.getRow(2).cellAt(1)?.value as Beat).atom as Note;
+    expect(a2.value).toBe("c");
+    const a3 = (gm.getRow(3).cellAt(1)?.value as Beat).atom as Note;
+    expect(a3.value).toBe("d");
+    const a4 = (gm.getRow(4).cellAt(1)?.value as Beat).atom as Note;
+    expect(a4.value).toBe("e");
+    const a5 = (gm.getRow(5).cellAt(1)?.value as Beat).atom as Note;
+    expect(a5.value).toBe("f");
+    const a6 = (gm.getRow(6).cellAt(1)?.value as Beat).atom as Note;
+    expect(a6.value).toBe("g");
+    const a7 = (gm.getRow(7).cellAt(1)?.value as Beat).atom as Note;
+    expect(a7.value).toBe("h");
+    const a8 = (gm.getRow(8).cellAt(1)?.value as Beat).atom as Note;
+    expect(a8.value).toBe("i");
   });
 });
