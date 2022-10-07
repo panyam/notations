@@ -384,14 +384,16 @@ export class GlobalBeatLayout {
     const line = beat.role.line;
     const lp = line.layoutParams;
     const beatColDAG = this.beatColDAGForLP(lp.uuid);
-    const [layoutLine, layoutColumn, rowOffset] = lp.getBeatLocation(beat);
+    const [layoutLine, layoutColumn, rowOffset ] = lp.getBeatLocation(beat);
     const colEnd = rowOffset.plus(beat.duration, true);
     const bcol = beatColDAG.getBeatColumn(rowOffset, colEnd, 0);
 
     // Since a beat's column has a "pre" and "post" col to, each
     // beat has 3 columns for it
     const roleIndex = beat.role.line.indexOfRole(beat.role.name);
-    const realRow = line.roles.length * (layoutLine + Math.floor(beat.index / lp.totalBeats)) + roleIndex;
+    const nthLine = Math.floor(beat.index / lp.totalBeats)
+    const realLine = lp.lineBreaks.length * nthLine + layoutLine;
+    const realRow = line.roles.length * realLine + roleIndex;
     // pre marker goes on realCol - 1, post marker goes on realCol + 1
     const realCol = 1 + layoutColumn * 3;
     const preMarkers = beat.preMarkers;

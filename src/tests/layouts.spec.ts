@@ -5,6 +5,7 @@ import { LayoutParams } from "../layouts";
 import { BeatsBuilder, Beat } from "../beats";
 import { ensureUniformSpaces } from "../beatutils";
 
+const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 const TWO = ONE.timesNum(2);
 const THREE = ONE.timesNum(3);
@@ -781,5 +782,48 @@ describe("Simple BeatLayout Tests", () => {
     expect(b.add(new Note("1", ONE))).toEqual(true);
     expect(b.remaining).toEqual(TEN.minus(ONE));
     expect(b.filled).toEqual(false);
+  });
+});
+
+describe("LayoutParams getBeatLocation tests", () => {
+  test("Create Beats", () => {
+    const c = new Cycle({
+      name: "C1",
+      bars: [new Bar({ name: "B1", beatLengths: [1] })],
+    });
+    const lp = new LayoutParams({
+      cycle: c,
+      beatDuration: 1,
+      lineBreaks: [1, 1],
+    });
+    let [line, col, rOffset] = lp.getBeatLocation({
+      index: 0,
+      barIndex: 0,
+      beatIndex: 0,
+      instance: 0,
+    });
+    expect(line).toEqual(0);
+    expect(col).toEqual(0);
+    expect(rOffset).toEqual(ZERO);
+
+    [line, col, rOffset] = lp.getBeatLocation({
+      index: 1,
+      barIndex: 0,
+      beatIndex: 0,
+      instance: 0,
+    });
+    expect(line).toEqual(1);
+    expect(col).toEqual(0);
+    expect(rOffset).toEqual(ZERO);
+
+    [line, col, rOffset] = lp.getBeatLocation({
+      index: 2,
+      barIndex: 0,
+      beatIndex: 0,
+      instance: 0,
+    });
+    expect(line).toEqual(0);
+    expect(col).toEqual(0);
+    expect(rOffset).toEqual(ZERO);
   });
 });
