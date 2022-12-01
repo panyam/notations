@@ -19,6 +19,7 @@ export function load(
   codeText: string,
   config: any = {},
 ): [Notation, GlobalBeatLayout, G.ParseError[], TSU.StringMap<number>] {
+  codeText = codeText || "";
   const beatLayout = new GlobalBeatLayout();
   const startTime = performance.now();
   const [notation, errors] = parse(codeText);
