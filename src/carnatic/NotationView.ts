@@ -38,6 +38,15 @@ export class NotationView {
     }) as HTMLTableElement;
   }
 
+  renderNotation(notation: Notation, beatLayout: GlobalBeatLayout): void {
+    this.notation = notation;
+    this.beatLayout = beatLayout;
+    const startTime = performance.now();
+    this.refreshLayout();
+    const layoutTime = performance.now();
+    console.log(`V4 Document, Layout Time: ${layoutTime - startTime}ms`);
+  }
+
   public addNewRow(id: string, prefix: string, withAnnotation = true): [HTMLElement, HTMLElement] {
     const tr = TSU.DOM.createNode("tr", {
       parent: this.tableElement, // parent,
