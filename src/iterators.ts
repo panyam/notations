@@ -3,10 +3,11 @@ import { TimedEntity } from "./entity";
 import { Atom, LeafAtom, Space, Group, AtomType } from "./core";
 
 type Fraction = TSU.Num.Fraction;
-
-type FlatAtom2 = [atom: Atom, duration: TSU.Num.Fraction, offset: TSU.Num.Fraction];
+// type FlatAtom2 = [atom: Atom, duration: TSU.Num.Fraction, offset: TSU.Num.Fraction];
 
 export class FlatAtom extends TimedEntity {
+  readonly TYPE = "FlatAtom";
+
   depth: number;
   duration: TSU.Num.Fraction;
   offset: TSU.Num.Fraction;
@@ -18,13 +19,6 @@ export class FlatAtom extends TimedEntity {
     this.duration = config.duration || atom.duration;
     this.offset = config.offset || TSU.Num.Fraction.ZERO;
     this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
-  }
-
-  /**
-   * Returns the type of this Entity.
-   */
-  get type(): unknown {
-    return "FlatAtom";
   }
 
   get endOffset(): TSU.Num.Fraction {
@@ -95,7 +89,7 @@ export class AtomIterator {
     while (this.atomQueue.first != null) {
       // Get from front of queue
       const [nextAtom, nextDepth, nextDuration] = this.atomQueue.first.value;
-      if (nextAtom.type != AtomType.GROUP) {
+      if (nextAtom.TYPE != AtomType.GROUP) {
         return true;
       } else {
         this.atomQueue.popFront();

@@ -24,16 +24,16 @@ describe("Atom Iterator Tests", () => {
     const iter = new AtomIterator(atoms);
     let next = iter.get(TSU.Num.Frac(1));
     expect(next.length).toBe(1);
-    expect(next[0].type).toBe(AtomType.SPACE);
+    expect(next[0].TYPE).toBe(AtomType.SPACE);
     expect(next[0].duration).toBe(1);
 
     next = iter.get(TSU.Num.Frac(2));
     expect(next.length).toBe(1);
-    expect(next[0].type).toBe(AtomType.NOTE);
+    expect(next[0].TYPE).toBe(AtomType.NOTE);
 
     next = iter.get(TSU.Num.Frac(5));
     expect(next.length).toBe(2);
-    expect(next[0].type).toBe(AtomType.GROUP);
+    expect(next[0].TYPE).toBe(AtomType.GROUP);
     expect(next[0].duration).toBe(1);
     expect(next[1].duration).toBe(4);
     */
@@ -151,7 +151,7 @@ describe("Atom Splitting Tests", () => {
     expect(l1.splitAt(TWO.times(Frac(3, 2)))).toBe(null); // split at 3 - no spill over
     expect(l1.splitAt(TWO)).toBe(null); // split at exactly 2 - no spill over
     const l3 = l1.splitAt(TWO.times(Frac(3, 4), true)); // split at 1.5
-    expect(l3?.type).toBe(AtomType.SPACE);
+    expect(l3?.TYPE).toBe(AtomType.SPACE);
     expect(l3?.isContinuation).toBe(true);
     expect(l3?.duration).toEqual(Frac(1, 2));
   });
@@ -161,7 +161,7 @@ describe("Group Tests", () => {
   test("Group Creation", () => {
     const notes = [new Syllable("aaa"), new Space(THREE, true), new Note("ga", THREE)];
     const g = new Group(...notes).setDuration(FIVE);
-    expect(g.type).toBe(AtomType.GROUP);
+    expect(g.TYPE).toBe(AtomType.GROUP);
 
     let child = g.atoms.first;
     for (let i = 0; i < 3; i++, child = child!.nextSibling) {
@@ -249,7 +249,7 @@ describe("Group Tests", () => {
     expect(g.atoms.last).toBe(atoms[2]);
     expect(atoms[2].duration).toEqual(TWO);
     expect(g2?.atoms.size).toBe(2);
-    expect(g2?.atoms.first?.type).toBe(AtomType.SPACE);
+    expect(g2?.atoms.first?.TYPE).toBe(AtomType.SPACE);
     expect(g2?.atoms.first?.duration).toEqual(ONE);
     expect(g2?.atoms.last).toBe(atoms[3]);
   });

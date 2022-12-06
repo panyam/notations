@@ -37,10 +37,6 @@ export abstract class Command extends Entity {
     return this.constructor.name;
   }
 
-  get type(): string {
-    return "Command";
-  }
-
   debugValue(): any {
     return { name: this.name, index: this.index, params: this.params };
   }
@@ -59,6 +55,7 @@ export abstract class Command extends Entity {
 }
 
 export class RawBlock extends Entity {
+  readonly TYPE: string = "RawBlock";
   constructor(public content: string, public contentType: string = "md") {
     super();
   }
@@ -75,6 +72,7 @@ export class MetaData {
 }
 
 export class Notation extends Entity {
+  readonly TYPE = "Notation";
   private _unnamedLayoutParams: LayoutParams[] = [];
   private _namedLayoutParams = new Map<string, LayoutParams>();
   private _currRoleDef: TSU.Nullable<RoleDef> = null;
@@ -92,10 +90,6 @@ export class Notation extends Entity {
 
   get namedLayoutParams(): ReadonlyMap<string, LayoutParams> {
     return this._namedLayoutParams;
-  }
-
-  get type(): unknown {
-    return "Notation";
   }
 
   addLine(line: Line): void {

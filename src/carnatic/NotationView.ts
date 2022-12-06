@@ -133,7 +133,7 @@ export class NotationView {
     const lines = [] as Line[];
     const lineViews = [] as LineView[];
     for (const block of this.notation.blocks) {
-      if (block.type == "RawBlock") {
+      if (block.TYPE == "RawBlock") {
         // Add the markdown here
         this.renderBlock(block as RawBlock);
       } else {

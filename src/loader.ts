@@ -27,7 +27,7 @@ export function load(
 
   // Create Line Beats
   for (const block of notation.blocks) {
-    if (block.type == "Line" && !(block as Line).isEmpty) {
+    if (block.TYPE == "Line" && !(block as Line).isEmpty) {
       const line = block as Line;
       // LP should exist by now
       // Probably because this is an empty line and AddAtoms was not called

@@ -141,7 +141,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
    */
   orderEmbelishments(): void {
     const atom = this.leafAtom;
-    if (atom.type != AtomType.SYLLABLE && atom.type != AtomType.NOTE) {
+    if (atom.TYPE != AtomType.SYLLABLE && atom.TYPE != AtomType.NOTE) {
       return;
     }
     const lit = atom as Literal;
@@ -337,7 +337,7 @@ export function createAtomView(
   groupViewScale = 1.0,
 ): AtomView {
   let out: AtomView;
-  switch (atom.type) {
+  switch (atom.TYPE) {
     // Dealing with leaf atoms
     case AtomType.SPACE:
       out = new SpaceView(atom as Space);
@@ -365,7 +365,7 @@ export function createAtomView(
     default:
       // We should never get a group as we are iterating
       // at leaf atom levels
-      throw new Error("Invalid atom type: " + atom.type);
+      throw new Error("Invalid atom type: " + atom.TYPE);
   }
   out.createElements(parent);
   return out;

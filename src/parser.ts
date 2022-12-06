@@ -331,7 +331,7 @@ export class Parser {
       if (typeof dur === "number") {
         dur = ONE.timesNum(dur);
       }
-      if (leaf.type == AtomType.GROUP) {
+      if (leaf.TYPE == AtomType.GROUP) {
         (leaf as Group).setDuration(dur, true);
       } else {
         leaf.duration = dur;

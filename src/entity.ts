@@ -5,6 +5,9 @@ import * as TSU from "@panyam/tsutils";
  * debug info.
  */
 export class Entity {
+  readonly TYPE: string = "Entity";
+
+  // readonly TYPE:string = "Entity";
   private static counter = 0;
   readonly uuid = Entity.counter++;
   // private metadata: TSU.StringMap<any>;
@@ -22,7 +25,7 @@ export class Entity {
    */
   debugValue(): any {
     // if (Object.keys(this.metadata).length > 0) return { metadata: this.metadata, type: this.type };
-    return { type: this.type };
+    return { type: this.TYPE };
   }
 
   /**
@@ -104,15 +107,6 @@ export class Entity {
   */
 
   /**
-   * Returns the type of this Entity.
-   *
-   * Type properties are used to identify the class type of Entities.
-   */
-  get type(): unknown {
-    return this.constructor.name;
-  }
-
-  /**
    * Simple string representation of this Entity.
    */
   toString(): string {
@@ -120,7 +114,7 @@ export class Entity {
   }
 
   equals(another: this, expect = false): boolean {
-    if (this.type != another.type) return false;
+    if (this.TYPE != another.TYPE) return false;
     // check metadata too
     return true;
   }
@@ -161,6 +155,8 @@ export class Entity {
  * have a duration.
  */
 export abstract class TimedEntity extends Entity {
+  readonly TYPE: string = "TimedEntity";
+
   /**
    * Duration of this entity in beats.
    * By default entities durations are readonly

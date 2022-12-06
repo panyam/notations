@@ -75,7 +75,7 @@ export class Beat {
       for (const marker of curr.markersBefore || []) {
         out.push(marker);
       }
-      if (curr.type == AtomType.GROUP) {
+      if (curr.TYPE == AtomType.GROUP) {
         curr = (curr as Group).atoms.first;
       } else {
         curr = null;
@@ -89,7 +89,7 @@ export class Beat {
     let curr: Atom | null = this.atom;
     while (curr != null) {
       out.splice(0, 0, ...(curr.markersAfter || []));
-      if (curr.type == AtomType.GROUP) {
+      if (curr.TYPE == AtomType.GROUP) {
         curr = (curr as Group).atoms.last;
       } else {
         curr = null;

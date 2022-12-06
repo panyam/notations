@@ -35,8 +35,8 @@ function expectNotation(notation: Notation, expected: any) {
     for (let i = 0; i < expected.blocks.length; i++) {
       const block = expected.blocks[i];
       const found = notation.blocks[i];
-      if (block.type === "Raw") {
-        expect(found.type).toEqual("RawBlock");
+      expect(found.TYPE).toEqual(block.type);
+      if (found.TYPE === "RawBlock") {
         expect((found as RawBlock).content).toEqual(block.content);
       } else {
         const line = found as Line;
@@ -77,6 +77,7 @@ describe("Basic Notation Model tests", () => {
       roles: [],
       blocks: [
         {
+          type: "Line",
           roles: [],
         },
       ],
@@ -466,7 +467,7 @@ describe("Testing Applying Commands after Parsing", () => {
           layoutParams: 0,
         },
         {
-          type: "Raw",
+          type: "RawBlock",
           content: "Some Raw Content",
         },
       ],

@@ -60,6 +60,8 @@ export class CycleCursor {
 }
 
 export class Bar extends TimedEntity {
+  readonly TYPE: string = "Bar";
+
   name: string;
   // Length/Duration of each beat.
   beatLengths: Fraction[] = [];
@@ -144,6 +146,8 @@ export class Bar extends TimedEntity {
 
 // Describes the cycle pattern
 export class Cycle extends TimedEntity {
+  readonly TYPE: string = "Cycle";
+
   name: string;
   bars: Bar[];
 

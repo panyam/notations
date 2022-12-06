@@ -28,6 +28,8 @@ export enum AtomType {
  * Atoms are the base class of timed entities that can appear in a Notation.
  */
 export abstract class Atom extends TimedEntity {
+  readonly TYPE: string = "Atom";
+
   protected _duration: Fraction;
   markersBefore: Marker[];
   markersAfter: Marker[];
@@ -78,6 +80,8 @@ export abstract class Atom extends TimedEntity {
 }
 
 export abstract class LeafAtom extends Atom {
+  readonly TYPE: string = "LeafAtom";
+
   // Tells if this atom is followed by a rest
   beforeRest = false;
 
@@ -107,6 +111,8 @@ export abstract class LeafAtom extends Atom {
 }
 
 export class Marker extends Entity {
+  readonly TYPE = "Marker";
+
   constructor(public text: string, public isBefore = true) {
     super();
   }
@@ -121,6 +127,8 @@ export class Marker extends Entity {
 }
 
 export class Rest extends LeafAtom {
+  readonly TYPE = "Rest";
+
   // rests are zero length - why not just use 0 length silent spaces?
   constructor() {
     super(ZERO);
@@ -131,6 +139,7 @@ export class Rest extends LeafAtom {
  * Spaces are used to denote either silence or continuations of previous notes.
  */
 export class Space extends LeafAtom {
+  readonly TYPE = "Space";
   /**
    * Tells if this is a silent space or a continuation of previous note.
    */
@@ -166,6 +175,7 @@ export class Space extends LeafAtom {
 }
 
 export class Literal extends LeafAtom {
+  readonly TYPE: string = "Literal";
   /**
    * The value of this Syllable.
    */
@@ -198,8 +208,10 @@ export class Literal extends LeafAtom {
 }
 
 export class Syllable extends Literal {
+  readonly TYPE = "Syllable";
+
   static fromLit(lit: Literal): Syllable {
-    if (lit.type == AtomType.SYLLABLE) return lit as Syllable;
+    if (lit.TYPE == AtomType.SYLLABLE) return lit as Syllable;
     const out = new Syllable(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
     out.beforeRest = lit.beforeRest;
@@ -212,6 +224,8 @@ export class Syllable extends Literal {
 }
 
 export class Note extends Literal {
+  readonly TYPE = "Note";
+
   /**
    * Which octave is the note in.  Can be +ve or -ve to indicate higher or lower octaves.
    */
@@ -229,7 +243,7 @@ export class Note extends Literal {
   }
 
   static fromLit(lit: Literal): Note {
-    if (lit.type == AtomType.NOTE) return lit as Note;
+    if (lit.TYPE == AtomType.NOTE) return lit as Note;
     const out = new Note(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
     out.beforeRest = lit.beforeRest;
@@ -259,6 +273,8 @@ export class Note extends Literal {
 }
 
 export class Group extends Atom {
+  readonly TYPE = "Group";
+
   /**
    * This indicates whether our duration is static or linear to number of
    * atoms in this group.
@@ -408,9 +424,9 @@ export class Group extends Atom {
         }
         atom.parentGroup.removeAtoms(false, atom);
       }
-      if (atom.type == AtomType.REST) {
+      if (atom.TYPE == AtomType.REST) {
         const last = this.atoms.last;
-        if (last && last.type != AtomType.GROUP && last.type != AtomType.LABEL) {
+        if (last && last.TYPE != AtomType.GROUP && last.TYPE != AtomType.LABEL) {
           (last as LeafAtom).beforeRest = true;
         }
       } else {
@@ -470,6 +486,8 @@ export class Group extends Atom {
 }
 
 export class Line extends Entity {
+  readonly TYPE: string = "Line";
+
   // Line can have atoms starting "before" the cycle.  The offset tells how
   // many notes before or after the cycle this line's atoms start at.
   offset: Fraction = ZERO;
@@ -543,6 +561,8 @@ export class Line extends Entity {
 }
 
 export class Role extends Entity {
+  readonly TYPE = "Role";
+
   defaultToNotes = true;
   atoms: Atom[] = [];
 
@@ -561,8 +581,8 @@ export class Role extends Entity {
   addAtoms(...atoms: Atom[]): void {
     let last: null | Atom = null;
     for (const atom of atoms) {
-      if (atom.type == AtomType.REST) {
-        if (last && last.type != AtomType.GROUP && last.type != AtomType.LABEL) {
+      if (atom.TYPE == AtomType.REST) {
+        if (last && last.TYPE != AtomType.GROUP && last.TYPE != AtomType.LABEL) {
           (last as LeafAtom).beforeRest = true;
         }
       } else {

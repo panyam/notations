@@ -281,7 +281,7 @@ describe("Line tests", () => {
   test("copy", () => {
     const l = new Line();
     // expect(l.parent).toBe(null);
-    expect(l.type).toBe("Line");
+    expect(l.TYPE).toBe("Line");
     const l2 = l.clone();
     expect(l.equals(l2)).toBe(true);
     expect(l.duration.num).toBe(0);
