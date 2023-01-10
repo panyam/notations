@@ -19,7 +19,7 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
       TSU.DOM.createSVGNode("g", {
         parent: rootElement,
         attrs: {
-          class: "beatView",
+          class: `beatView role_${beat.role.name}`,
           beatId: "" + beat.uuid,
           id: "" + beat.uuid,
           roleName: beat.role.name,
