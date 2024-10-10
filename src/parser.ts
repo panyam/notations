@@ -33,7 +33,7 @@ const TWO = ONE.timesNum(2);
  */
 const [parser, itemGraph] = G.newParser(
   String.raw`
-    %define IdentChar     /[^%!@&\^|\[\]={}()+\-,;~: \t\f\r\n\v\\\.]/
+    %define IdentChar     /[^%!@$#&\^|\[\]={}()<>+\-,;~: \t\f\r\n\v\\\.\'\"]/
 
     %token  BSLASH        "\\"
     %token  OPEN_SQ       "["
