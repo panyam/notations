@@ -445,8 +445,7 @@ export class Parser {
     params = params || [];
     if (lName == "line") {
       return new CreateLine(params);
-    } else if (lName == "meta") {
-      return new MetaData(params);
+    // } else if (lName == "meta") { return new MetaData(params);
     } else if (lName == "role") {
       return new CreateRole(params);
     } else if (lName == "layout") {

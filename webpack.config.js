@@ -16,6 +16,18 @@ module.exports = (env, argv) => {
       // libraryTarget: "umd", // supports commonjs, amd and web browsers
       globalObject: "this",
     },
+    resolve: {
+        extensions: [ '.ts', '.js' ],
+        fallback: {
+            // "stream": require.resolve("stream-browserify"),
+            "buffer": require.resolve("buffer")
+        }
+    },
+    plugins: [
+      new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+      }),
+    ],
     module: {
       rules: [{ test: /\.t|js$/, use: "babel-loader" }],
     },
