@@ -1,8 +1,9 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
+import matter from "gray-matter";
 import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group, Marker } from "./core";
-import { Command, CmdParam } from "./notation";
+import { Notation, MetaData as Meta, Command, CmdParam } from "./notation";
 import {
   RawEmbedding,
   ApplyLayout,
@@ -51,6 +52,7 @@ const [parser, itemGraph] = G.newParser(
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
 
+    %token  FRONT_MATTER                 /^---.*^---/    { toFrontMatter }
     %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
     %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
@@ -73,6 +75,10 @@ const [parser, itemGraph] = G.newParser(
     %skip                 /[ \t\n\f\r]+/
     %skip_flex            "//.*$"
     %skip                 /\/\*.*?\*\//
+
+    Document -> Elements { $1 }
+              | FRONT_MATTER Elements { prependFrontMatter }
+              ;
 
     Elements -> Elements Command Atoms { appendCommand } 
               | Elements RoleSelector Atoms { appendRoleSelector } 
@@ -213,6 +219,12 @@ const [parser, itemGraph] = G.newParser(
         token.value = token.value.substring(1);
         return token;
       },
+      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+        // skip the initial ">"
+        const { data } = matter(token.value);
+        console.log("Found FM: ", data);
+        return data;
+      },
       toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);
@@ -242,9 +254,10 @@ const [parser, itemGraph] = G.newParser(
  */
 export class Parser {
   errors: (TLEX.TokenizerError | G.ParseError)[] = [];
+  readonly metadata: any = {};
   readonly commands: Command[] = [];
   // readonly notation: Notation = new Notation();
-  private runCommandFound = false;
+  // private runCommandFound = false;
   // readonly parseTree = new PTNodeList("Snippet", null);
 
   protected ruleHandlers = {
@@ -374,6 +387,11 @@ export class Parser {
       }
       return null;
     },
+    prependFrontMatter: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      console.log("Child 0: ", children[0].value);
+      console.log("Child 1: ", children[1].value);
+      return children[1].value;
+    },
     appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const command = children[1].value as Command;
       this.addCommand(command);
@@ -441,6 +459,7 @@ export class Parser {
   }
 
   parse(input: string): any {
+    // first we try to parse front-matter and use that as metadata
     this.errors = [];
     try {
       const ptree = parser.parse(input, {
@@ -460,6 +479,19 @@ export class Parser {
       }
     }
     return null;
+  }
+
+  parseAndBuild(input: string): [Notation, G.ParseError[]] {
+    // first we try to parse front-matter and use that as metadata
+    this.parse(input);
+    const notation = new Notation();
+    const errors: G.ParseError[] = [];
+    errors.push(...this.errors);
+
+    // First add the metadata then we can set it
+    for (const key in this.metadata) notation.addMetaData(new Meta(key, this.metadata[key]));
+    for (const cmd of this.commands) cmd.applyToNotation(notation);
+    return [notation, errors];
   }
 
   parseEmbelishment(value: string): [any, boolean] {

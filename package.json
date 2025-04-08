@@ -27,7 +27,8 @@
   "dependencies": {
     "@lume/kiwi": "^0.1.0",
     "@panyam/tsutils": "*",
-    "galore": "*"
+    "galore": "*",
+    "gray-matter": "^4.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",

@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import * as TSU from "@panyam/tsutils";
-import { load, parse } from "../loader";
+import { parse } from "../loader";
 
 function testV4(input: string, debug = false, expected: any = null): void {
   const [notation] = parse(input);

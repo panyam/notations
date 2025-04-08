@@ -109,8 +109,8 @@ export class Notation extends Entity {
     this.resetLine();
   }
 
-  addMetaData(meta: MetaData): void {
-    if (!this.metadata.has(meta.key)) {
+  addMetaData(meta: MetaData, addBlock = true): void {
+    if (addBlock && !this.metadata.has(meta.key)) {
       // Add a new raw block here
       // set this by key so even if metadata changes we can
       // get latest value of it

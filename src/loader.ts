@@ -6,13 +6,7 @@ import { Parser } from "./parser";
 import { Notation } from "./notation";
 
 export function parse(input: string): [Notation, G.ParseError[]] {
-  const notation = new Notation();
-  const parser = new Parser();
-  const errors: G.ParseError[] = [];
-  parser.parse(input);
-  errors.push(...parser.errors);
-  for (const cmd of parser.commands) cmd.applyToNotation(notation);
-  return [notation, errors];
+  return new Parser().parseAndBuild(input);
 }
 
 export function load(
