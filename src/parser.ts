@@ -32,7 +32,7 @@ const TWO = ONE.timesNum(2);
  * song.  So users spend more time writing notation and less worrying about
  * other things like headings etc.
  */
-const [parser, itemGraph] = G.newParser(
+const [parser /*itemGraph*/] = G.newParser(
   String.raw`
     %define IdentChar     /[^%!@$#&\^|\[\]={}()<>+\-,;~: \t\f\r\n\v\\\.\'\"]/
 
@@ -52,7 +52,7 @@ const [parser, itemGraph] = G.newParser(
     %token  SEMI_COLON    ";"
     %token  COLON         ":"
 
-    %token  FRONT_MATTER                 /^---.*^---/    { toFrontMatter }
+    %token  FRONT_MATTER                 /^---$/m    { toFrontMatter }
     %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
     %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
@@ -76,7 +76,7 @@ const [parser, itemGraph] = G.newParser(
     %skip_flex            "//.*$"
     %skip                 /\/\*.*?\*\//
 
-    Document -> Elements { $1 }
+    Document -> Elements
               | FRONT_MATTER Elements { prependFrontMatter }
               ;
 
@@ -219,12 +219,6 @@ const [parser, itemGraph] = G.newParser(
         token.value = token.value.substring(1);
         return token;
       },
-      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
-        // skip the initial ">"
-        const { data } = matter(token.value);
-        console.log("Found FM: ", data);
-        return data;
-      },
       toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);
@@ -242,6 +236,18 @@ const [parser, itemGraph] = G.newParser(
         token.value = tape.substring(startPos, endPos);
         return token;
       },
+      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+        // skip the initial ">"
+        const endPat = "\n---";
+        const startPos = tape.index;
+        const endPos = TLEX.TapeHelper.advanceAfter(tape, endPat) - endPat.length;
+        if (endPos < 0) {
+          throw new Error("EOF expected while finding end of front matter");
+        }
+        token.value = tape.substring(startPos, endPos);
+        // console.log("Found FM: ", token.value);
+        return token;
+      },
     },
   },
 );
@@ -254,7 +260,7 @@ const [parser, itemGraph] = G.newParser(
  */
 export class Parser {
   errors: (TLEX.TokenizerError | G.ParseError)[] = [];
-  readonly metadata: any = {};
+  metadata: any = {};
   readonly commands: Command[] = [];
   // readonly notation: Notation = new Notation();
   // private runCommandFound = false;
@@ -388,8 +394,12 @@ export class Parser {
       return null;
     },
     prependFrontMatter: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      console.log("Child 0: ", children[0].value);
-      console.log("Child 1: ", children[1].value);
+      const fm = children[0].value;
+      // console.log("Child 0: ", fm);
+      // console.log("Child 1: ", children[1].value);
+      const { data } = matter("---\n" + fm + "\n---");
+      console.log("Parsed FM: ", data);
+      this.metadata = data;
       return children[1].value;
     },
     appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
@@ -459,7 +469,6 @@ export class Parser {
   }
 
   parse(input: string): any {
-    // first we try to parse front-matter and use that as metadata
     this.errors = [];
     try {
       const ptree = parser.parse(input, {
@@ -482,7 +491,6 @@ export class Parser {
   }
 
   parseAndBuild(input: string): [Notation, G.ParseError[]] {
-    // first we try to parse front-matter and use that as metadata
     this.parse(input);
     const notation = new Notation();
     const errors: G.ParseError[] = [];

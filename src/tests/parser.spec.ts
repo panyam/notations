@@ -4,15 +4,21 @@
 import * as TSU from "@panyam/tsutils";
 import { Parser } from "../parser";
 
-function testV4(input: string, debug = false, expected: any = null): void {
+function testV4(input: string, debug = false, expected: any = null, fm?: any): void {
   const parser = new Parser();
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
+  if (parser.errors.length > 0) {
+    console.log("Parse Errors: ", parser.errors);
+  }
   if (debug || expected == null) {
     console.log("Result Parse Tree: \n", JSON.stringify(root.debugValue(), TSU.Misc.getCircularReplacer(), 2));
     console.log("Result Snippet: \n", JSON.stringify(cmds, TSU.Misc.getCircularReplacer(), 2));
   }
   expect(cmds).toEqual(expected);
+  if (fm) {
+    expect(fm).toEqual(parser.metadata);
+  }
 }
 
 describe("Parser Tests", () => {
@@ -43,45 +49,7 @@ describe("Parser Tests", () => {
     ]);
   });
 
-  test("Test Front Matter", () => {
-    testV4(
-      `
----
-      a: 1
-      b: 2
----
-
-           s r g m p d n s.
-    `,
-      true,
-      [
-        {
-          name: "CreateLine",
-          index: 0,
-          params: [
-            {
-              key: null,
-              value: -2,
-            },
-            {
-              key: null,
-              value: { num: -2, den: -1 },
-            },
-            {
-              key: null,
-              value: { num: 2, den: -2 },
-            },
-            {
-              key: "offset",
-              value: -2,
-            },
-          ],
-        },
-      ],
-    );
-  });
-
-  test("Test Command Parsing", () => {
+  test("Test Command Parsing 2", () => {
     testV4(`\\line( "world" , "a", "b", x = 1, c = 'hello', ab = "cd")`, false, [
       {
         name: "CreateLine",
@@ -749,5 +717,57 @@ describe("Marker Tests", () => {
         ],
       },
     ]);
+  });
+
+  test("Test Front Matter", () => {
+    testV4(
+      `
+---
+      a: 1
+      b: 2
+---
+
+           s r g m p d n s.
+    `,
+      false,
+      [
+        {
+          name: "AddAtoms",
+          index: 0,
+          atoms: [
+            {
+              type: "Literal",
+              value: "s",
+            },
+            {
+              type: "Literal",
+              value: "r",
+            },
+            {
+              type: "Literal",
+              value: "g",
+            },
+            {
+              type: "Literal",
+              value: "m",
+            },
+            {
+              type: "Literal",
+              value: "p",
+            },
+            {
+              type: "Literal",
+              value: "d",
+            },
+            {
+              type: "Literal",
+              value: "n",
+            },
+            { type: "Note", value: "s", octave: 1 },
+          ],
+        },
+      ],
+      { a: 1, b: 2 },
+    );
   });
 });
