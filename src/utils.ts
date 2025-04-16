@@ -4,14 +4,15 @@ import { Cycle, Bar } from "./cycle";
 const ONE = TSU.Num.Fraction.ONE;
 
 /**
- * Convert a cycle given as a string into the bars representing
- * each of its cycle bars.
- *
- * Essentially a list of bars can be specified by the "|" delimited string:
- *
+ * Converts a cycle string into an array of bar strings.
+ * 
+ * A cycle is specified by a "|" delimited string in the format:
  * <bar1>|<bar2>|<bar3>....|<barN>
- *
+ * 
  * Empty bars are ignored.
+ * 
+ * @param cycleStr The cycle string to convert
+ * @returns An array of bar strings
  */
 export function cycleStrToBarsStrs(cycleStr: string): string[] {
   return cycleStr
@@ -22,7 +23,10 @@ export function cycleStrToBarsStrs(cycleStr: string): string[] {
 }
 
 /**
- * Parse a tala pattern string.
+ * Parses a tala pattern string into a Cycle object.
+ * 
+ * @param cycleStr The cycle string to parse
+ * @returns A new Cycle object
  */
 export function parseCycle(cycleStr: string): Cycle {
   return new Cycle({
@@ -31,21 +35,22 @@ export function parseCycle(cycleStr: string): Cycle {
 }
 
 /**
- * Parse a cycle part string into beat lengths.
- *
+ * Parses a bar string into a Bar object.
+ * 
  * A bar string is a space delimited string in the following format:
- *
- *  "<beat1> <spaces> <beat2> .... <beatN>"
- *
+ * "<beat1> <spaces> <beat2> .... <beatN>"
+ * 
  * beatX substring cannot contain "|" or spaces.
- *
+ * 
  * Each Beat string is in the following format:
- *
  * "<length>(:<count>)?"  or "<length>?:<count>"
- *
- * Both length and count are optional but atleast one of them must be specified.
+ * 
+ * Both length and count are optional but at least one of them must be specified.
  * When not specified the other defaults to 1.
- * Lenght can also be a fraction of the form <num>"/"<den> (without spaces).
+ * Length can also be a fraction of the form <num>"/"<den> (without spaces).
+ * 
+ * @param barStr The bar string to parse
+ * @returns A new Bar object
  */
 export function parseBar(barStr: string): Bar {
   const bars = barStr.replace(/\s+/g, " ").split(" ");
@@ -93,6 +98,12 @@ export function parseBar(barStr: string): Bar {
   return cp;
 }
 
+/**
+ * Parses a string into a syllable atom structure.
+ * 
+ * @param value The string to parse
+ * @returns An atom representing the syllable structure
+ */
 export function parseSyllable(value: string): Atom {
   const notes = [] as Atom[];
   // Only "_" make a difference here
@@ -118,6 +129,13 @@ export function parseSyllable(value: string): Atom {
   return new Group(...notes);
 }
 
+/**
+ * Parses a property string in the format "key = value".
+ * 
+ * @param line The property string to parse
+ * @returns A tuple containing the key and value
+ * @throws Error if the property string is invalid
+ */
 export function parseProperty(line: string): [string, string] {
   const bars = line.split("=").map((x) => x.trim());
   if (bars.length < 2) {
@@ -136,6 +154,9 @@ export function parseProperty(line: string): [string, string] {
 export class SparseArray<T> {
   runs: [number, T[]][] = [];
 
+  /**
+   * Gets the total length of this sparse array.
+   */
   get length(): number {
     let out = 0;
     for (const [, vals] of this.runs) {
@@ -147,7 +168,11 @@ export class SparseArray<T> {
   /**
    * Returns the value at a given index.
    * If the value does not exist an optional creator method can be passed
-   * to ensure that this value is also created and set at the given index
+   * to ensure that this value is also created and set at the given index.
+   * 
+   * @param index The index to get the value at
+   * @param creator Optional function to create a value if none exists
+   * @returns The value at the index
    */
   valueAt(index: number, creator?: () => any): any {
     let out = null;
@@ -159,14 +184,36 @@ export class SparseArray<T> {
     return out;
   }
 
+  /**
+   * Sets values at a specific index.
+   * 
+   * @param index The index to set values at
+   * @param values The values to set
+   * @returns This array instance for method chaining
+   */
   setAt(index: number, ...values: (T | null)[]): this {
     return this.splice(index, values.length, ...values);
   }
 
+  /**
+   * Removes values at a specific index.
+   * 
+   * @param index The index to remove values at
+   * @param count The number of values to remove, defaults to 1
+   * @returns This array instance for method chaining
+   */
   removeAt(index: number, count = 1): this {
     return this.splice(index, count);
   }
 
+  /**
+   * Splices values at a specific index.
+   * 
+   * @param index The index to splice at
+   * @param numToDelete The number of values to delete
+   * @param valuesToInsert The values to insert
+   * @returns This array instance for method chaining
+   */
   splice(index: number, numToDelete: number, ...valuesToInsert: (T | null)[]) {
     //
     return this;

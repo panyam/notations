@@ -2,6 +2,16 @@ import * as TSU from "@panyam/tsutils";
 import { Space } from "./";
 import { FlatAtom } from "./iterators";
 
+/**
+ * Ensures uniform spacing between atoms in a beat.
+ * This utility function adjusts the spacing between atoms to create a consistent,
+ * evenly spaced visualization based on the least common multiple (LCM) of their 
+ * duration denominators.
+ * 
+ * @param currOffset Current time offset at which to start
+ * @param atoms Array of flat atoms to process
+ * @param slotsPerBeat Number of slots per beat, defaults to 1
+ */
 export function ensureUniformSpaces(currOffset: TSU.Num.Fraction, atoms: FlatAtom[], slotsPerBeat = 1): void {
   let lcm = 1;
   let gcd = 0;

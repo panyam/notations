@@ -5,10 +5,23 @@ import { GlobalBeatLayout } from "./beats";
 import { Parser } from "./parser";
 import { Notation } from "./notation";
 
+/**
+ * Parses a notation string into a Notation object.
+ * 
+ * @param input The notation string to parse
+ * @returns A tuple containing the parsed Notation and any parsing errors
+ */
 export function parse(input: string): [Notation, G.ParseError[]] {
   return new Parser().parseAndBuild(input);
 }
 
+/**
+ * Loads a notation from a string and builds the beat layout.
+ * 
+ * @param codeText The notation string to load
+ * @param config Optional configuration object
+ * @returns A tuple containing the Notation, GlobalBeatLayout, parsing errors, and timing information
+ */
 export function load(
   codeText: string,
   config: any = {},
