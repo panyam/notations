@@ -258,9 +258,22 @@ export class BeatsBuilder {
   }
 }
 
+/**
+ * Represents a column of beats in a layout grid.
+ * Used for aligning beats vertically in the notation.
+ */
 export class BeatColumn extends ColAlign {
+  /** Spacing between atoms in this column */
   atomSpacing = 5;
+  /** Unique key for this column */
   readonly key: string;
+
+  /**
+   * Creates a new BeatColumn.
+   * @param offset The starting offset of this column
+   * @param endOffset The ending offset of this column
+   * @param markerType The type of marker for this column (negative: before, positive: after, zero: normal)
+   */
   constructor(
     public readonly offset: Fraction,
     public readonly endOffset: Fraction,
@@ -272,6 +285,13 @@ export class BeatColumn extends ColAlign {
     this.key = BeatColumn.keyFor(offset, endOffset, markerType);
   }
 
+  /**
+   * Generates a key for identifying columns with the same offsets and marker type.
+   * @param offset The starting offset
+   * @param endOffset The ending offset
+   * @param markerType The type of marker (negative: before, positive: after, zero: normal)
+   * @returns A string key
+   */
   static keyFor(offset: Fraction, endOffset: Fraction, markerType = 0): string {
     offset = offset.factorized;
     endOffset = endOffset.factorized;
@@ -290,6 +310,9 @@ export class BeatColumn extends ColAlign {
 }
 
 /**
+ * Manages the organization of beats into columns based on their offsets.
+ * Used to create a directed acyclic graph (DAG) of beat columns for layout purposes.
+ *
  * Grouping of beats by their column based on the layout params.
  * The confusion is we have beats broken up and saved in columns
  * but we are loosing how a line is supposed to access it in its own way
@@ -328,14 +351,24 @@ export class BeatColumn extends ColAlign {
  *
  */
 export class BeatColDAG {
+  /** Map of column keys to BeatColumn objects */
   beatColumns = new Map<string, BeatColumn>();
 
+  /**
+   * Creates a new BeatColDAG.
+   * @param layoutGroup The layout group to associate with this DAG
+   */
   constructor(public readonly layoutGroup: GridLayoutGroup) {
     //
   }
 
   /**
-   * Gets the beat column of a given duration at the given offset.
+   * Gets the beat column for a given duration at the specified offset.
+   * Creates a new column if none exists.
+   * @param offset The starting offset
+   * @param endOffset The ending offset
+   * @param markerType The type of marker
+   * @returns The BeatColumn for the specified parameters
    */
   getBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): BeatColumn {
     const [bcol, newcreated] = this.ensureBeatColumn(offset, endOffset, markerType);
@@ -360,6 +393,13 @@ export class BeatColDAG {
     return bcol;
   }
 
+  /**
+   * Ensures a beat column exists for the given parameters.
+   * @param offset The starting offset
+   * @param endOffset The ending offset
+   * @param markerType The type of marker
+   * @returns A tuple containing the column and whether it was newly created
+   */
   protected ensureBeatColumn(offset: Fraction, endOffset: Fraction, markerType = 0): [BeatColumn, boolean] {
     const key = BeatColumn.keyFor(offset, endOffset, markerType);
     let bcol = this.beatColumns.get(key) || null;
@@ -372,19 +412,29 @@ export class BeatColDAG {
   }
 }
 
-/**
- * Manages the beat layouts for *all* lines in a notation.
- */
+/** Type alias for line IDs */
 type LineId = number;
+/** Type alias for layout parameter IDs */
 type LPID = number;
+
+/**
+ * Manages the beat layouts for all lines in a notation.
+ * Handles the creation of grid models, positioning of beats, and alignment of beats across lines.
+ */
 export class GlobalBeatLayout {
+  /** Map of line IDs to grid models */
   gridModelsForLine = new Map<LineId, GridModel>();
+  /** Map of line IDs to arrays of beats for each role */
   roleBeatsForLine = new Map<LineId, Beat[][]>();
+  /** Map of layout parameter IDs to beat column DAGs */
   beatColDAGsByLP = new Map<LPID, BeatColDAG>();
+  /** The global layout group for all grid models */
   readonly gridLayoutGroup = new GridLayoutGroup();
 
   /**
-   * Get the GridView associated with a particular line.
+   * Gets the GridModel associated with a particular line, creating one if it doesn't exist.
+   * @param lineid The ID of the line
+   * @returns The GridModel for the line
    */
   getGridModelForLine(lineid: LineId): GridModel {
     let out = this.gridModelsForLine.get(lineid) || null;
@@ -396,6 +446,11 @@ export class GlobalBeatLayout {
     return out;
   }
 
+  /**
+   * Gets the BeatColDAG for a specific layout parameter ID, creating one if it doesn't exist.
+   * @param lpid The layout parameter ID
+   * @returns The BeatColDAG for the layout parameters
+   */
   protected beatColDAGForLP(lpid: LPID): BeatColDAG {
     let out = this.beatColDAGsByLP.get(lpid) || null;
     if (!out) {
@@ -406,14 +461,14 @@ export class GlobalBeatLayout {
   }
 
   /**
-   * First lines are added to the BeatLayout object.
-   * This ensures that a line is broken down into beats and added
-   * into a dedicated GridModel per line.
-   *
-   * A line must also be given the layout params by which the beat
-   * break down will happen.  This LayoutParams object does not have
-   * to be unique per line (this non-constraint allows to align
-   * beats across lines!).
+   * Adds a line to the beat layout.
+   * This ensures that a line is broken down into beats and added into a dedicated GridModel.
+   * 
+   * A line must also be given the layout params by which the beat breakdown will happen.
+   * This LayoutParams object does not have to be unique per line (this non-constraint allows
+   * beats to be aligned across lines).
+   * 
+   * @param line The line to add
    */
   addLine(line: Line): void {
     const gridModel = this.getGridModelForLine(line.uuid) as GridModel;
@@ -422,6 +477,12 @@ export class GlobalBeatLayout {
     gridModel.eventHub?.commitBatch();
   }
 
+  /**
+   * Converts a line into a series of beats for each role.
+   * @param line The line to convert
+   * @param gridModel The grid model to use
+   * @returns Arrays of beats for each role
+   */
   protected lineToRoleBeats(line: Line, gridModel: GridModel): Beat[][] {
     const lp = line.layoutParams;
     const roleBeats = [] as Beat[][];
@@ -441,8 +502,10 @@ export class GlobalBeatLayout {
   }
 
   /**
-   * Adds the beat to this layout and returns the BeatColumn to which
-   * this beat was added.
+   * Adds a beat to the layout.
+   * @param beat The beat to add
+   * @param gridModel The grid model to add the beat to
+   * @returns The grid cell containing the beat
    */
   protected addBeat(beat: Beat, gridModel: GridModel): GridCell {
     // Get the beat column at this index (and line) and add to it.
