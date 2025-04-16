@@ -453,9 +453,9 @@ export abstract class AlignedLine {
   /** The maximum length of this line */
   protected _maxLength = 0;
   /** Padding before this line */
-  paddingBefore = 15;
+  paddingBefore = 5;
   /** Padding after this line */
-  paddingAfter = 15;
+  paddingAfter = 5;
   /** The cells that belong to this line */
   cells: GridCell[] = [];
   /** Function to get a view for a cell value */
@@ -603,6 +603,10 @@ export abstract class AlignedLine {
  * Manages the alignment of cells in a column.
  */
 export class ColAlign extends AlignedLine {
+  paddingBefore = 10;
+  /** Padding after this line */
+  paddingAfter = 10;
+
   /**
    * Sets the offset of this column and updates all associated cells.
    * @param val The new offset value

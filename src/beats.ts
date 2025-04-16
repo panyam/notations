@@ -16,8 +16,8 @@ const ONE = TSU.Num.Fraction.ONE;
 export class Beat {
   private static idCounter = 0;
   readonly uuid = Beat.idCounter++;
-  // Should this be as flat Atoms or should we keep it as atoms and breakdown
-  // later?
+  // Should this be as flat Atoms or should we keep it as atoms and breakdown later?
+
   /** The atom contained in this beat */
   atom: Atom;
   protected atomIsPlaceholder = false;
