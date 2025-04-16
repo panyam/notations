@@ -2,26 +2,31 @@ import * as TSU from "@panyam/tsutils";
 // import * as kiwi from "@lume/kiwi";
 
 /**
- * A generic way to host child views in a grid (very similar to gridbag
- * layout) This allows us to have a framework for hosting BeatViews instead
- * of mucking about with beat rows and beat columns etc.
- *
- * Grid "cells" can be referred by cell indexes.  Additionally we want our
- * grid rows and columns to have names (like in Spreadsheets) so that even
- * when rows and columns are inserted, though indexes may change, the
- * "addresses" will be fixed and immovable.  This helps us do things like
- * insert a new new column (say for markers) and not have to worry other
- * columns index changes impacting us.
+ * A generic grid layout system for hosting child views (similar to GridBagLayout).
+ * This provides a framework for hosting BeatViews in a structured grid arrangement,
+ * with support for rows, columns, and alignment.
+ * 
+ * Grid "cells" can be referred to by cell indexes. Additionally, grid rows and
+ * columns can have names (like in spreadsheets) so that even when rows and columns
+ * are inserted, though indexes may change, the "addresses" remain fixed and immovable.
  */
 export class GridModel extends TSU.Events.EventEmitter {
   private static idCounter = 0;
   readonly uuid = GridModel.idCounter++;
+  /** Timestamp of the last update to this grid */
   lastUpdatedAt = 0;
   // cells = new SparseArray<SparseArray<GridCell>>();
+  /** The rows in this grid */
   rows: GridRow[] = [];
+  /** Mapping of row indices to row alignment objects */
   rowAligns = new Map<number, RowAlign>();
+  /** Mapping of column indices to column alignment objects */
   colAligns = new Map<number, ColAlign>();
 
+  /**
+   * Returns a debug-friendly representation of this GridModel.
+   * @returns An object containing debug information
+   */
   debugValue() {
     const out = {
       rows: this.rows.map((r) => r.debugValue()),
@@ -30,6 +35,10 @@ export class GridModel extends TSU.Events.EventEmitter {
     return out;
   }
 
+  /**
+   * Gets the index of the first non-empty row.
+   * @returns The index of the first row containing cells, or -1 if none
+   */
   get firstRow(): number {
     for (const gr of this.rows) {
       if (gr.numCells > 0) return gr.rowIndex;
@@ -37,6 +46,10 @@ export class GridModel extends TSU.Events.EventEmitter {
     return -1;
   }
 
+  /**
+   * Gets the index of the leftmost column containing cells.
+   * @returns The index of the first column containing cells, or -1 if none
+   */
   get firstCol(): number {
     let minCol = -1;
     for (const gr of this.rows) {
@@ -50,6 +63,11 @@ export class GridModel extends TSU.Events.EventEmitter {
     return minCol;
   }
 
+  /**
+   * Gets all non-empty cells in a specific row.
+   * @param row The index of the row
+   * @returns An array of cells in the row
+   */
   cellsInRow(row: number): GridCell[] {
     const out = [] as GridCell[];
     const gr = this.rows[row];
@@ -61,6 +79,11 @@ export class GridModel extends TSU.Events.EventEmitter {
     return out;
   }
 
+  /**
+   * Gets all non-empty cells in a specific column.
+   * @param col The index of the column
+   * @returns An array of cells in the column
+   */
   cellsInCol(col: number): GridCell[] {
     const out = [] as GridCell[];
     for (const gr of this.rows) {
@@ -70,14 +93,28 @@ export class GridModel extends TSU.Events.EventEmitter {
     return out;
   }
 
+  /**
+   * Adds a row alignment object to the grid.
+   * @param align The row alignment to add
+   */
   addRowAlign(align: RowAlign): void {
     this.rowAligns.set(align.uuid, align);
   }
 
+  /**
+   * Adds a column alignment object to the grid.
+   * @param align The column alignment to add
+   */
   addColAlign(align: ColAlign): void {
     this.colAligns.set(align.uuid, align);
   }
 
+  /**
+   * Adds rows to the grid.
+   * @param insertBefore The index before which to insert the rows, or -1 to append
+   * @param numRows The number of rows to add
+   * @returns This grid instance for method chaining
+   */
   addRows(insertBefore = -1, numRows = 1): this {
     if (insertBefore < 0) {
       insertBefore = this.rows.length;
@@ -101,6 +138,11 @@ export class GridModel extends TSU.Events.EventEmitter {
     return this;
   }
 
+  /**
+   * Gets a row at the specified index, creating it if necessary.
+   * @param row The index of the row to get
+   * @returns The row at the specified index
+   */
   getRow(row: number): GridRow {
     if (row >= this.rows.length) {
       this.addRows(-1, 1 + row - this.rows.length);
@@ -108,6 +150,14 @@ export class GridModel extends TSU.Events.EventEmitter {
     return this.rows[row];
   }
 
+  /**
+   * Sets a value in a cell at the specified row and column.
+   * @param row The row index
+   * @param col The column index
+   * @param value The value to set
+   * @param cellCreator Optional function to create a custom cell
+   * @returns The previous value of the cell
+   */
   setValue(row: number, col: number, value: any, cellCreator?: (row: GridRow, col: number) => GridCell): any {
     const grow = this.getRow(row);
     if (!cellCreator) {
@@ -136,17 +186,39 @@ export class GridModel extends TSU.Events.EventEmitter {
     }
   }
 
+  /**
+   * Handles changes to the event hub.
+   */
   protected eventHubChanged(): void {
     console.log("Event Hub Changed for GridModel");
   }
 }
 
+/**
+ * Interface for a view associated with a grid cell.
+ * GridCellView defines the contract for views that can be placed in grid cells.
+ */
 export interface GridCellView {
+  /** The grid cell this view is associated with */
   readonly cell: GridCell;
+  /** X-coordinate of the view */
   x: number;
+  /** Y-coordinate of the view */
   y: number;
+  /** Width of the view */
   width: number;
+  /** Height of the view */
   height: number;
+  
+  /**
+   * Sets the bounds of the view.
+   * @param x New x-coordinate, or null to keep current value
+   * @param y New y-coordinate, or null to keep current value
+   * @param w New width, or null to keep current value
+   * @param h New height, or null to keep current value
+   * @param applyLayout Whether to apply layout immediately
+   * @returns The new bounds values
+   */
   setBounds(
     x: number | null,
     y: number | null,
@@ -154,11 +226,20 @@ export interface GridCellView {
     h: number | null,
     applyLayout: boolean,
   ): [number | null, number | null, number | null, number | null];
+  
+  /** Whether this view needs layout */
   readonly needsLayout: boolean;
+  
+  /** The minimum size this view requires */
   readonly minSize: TSU.Geom.Size;
+  
+  /** The bounding box of this view */
   readonly bbox: TSU.Geom.Rect;
 }
 
+/**
+ * Enum defining the events that can occur on grid cells.
+ */
 export enum GridCellEvent {
   ADDED = "CellAdded",
   CLEARED = "CellCleared",
@@ -168,49 +249,82 @@ export enum GridCellEvent {
 }
 
 /**
- * Interface for a view for a given cell in the grid.
+ * Represents a cell in the grid.
+ * GridCell holds a value and manages alignment with rows and columns.
  */
 export class GridCell {
   private static idCounter = 0;
   readonly uuid = GridCell.idCounter++;
+  /** The view associated with this cell */
   cellView: GridCellView | null;
   private _rowAlign: RowAlign;
   private _colAlign: ColAlign;
 
+  /**
+   * Creates a new GridCell.
+   * @param gridRow The row this cell belongs to
+   * @param colIndex The column index of this cell
+   * @param value Optional initial value for the cell
+   */
   constructor(public gridRow: GridRow, public colIndex: number, public value: any = null) {
     this.rowAlign = gridRow.defaultRowAlign;
   }
 
+  /**
+   * Gets the row alignment for this cell.
+   */
   get rowAlign(): RowAlign {
     return this._rowAlign;
   }
 
+  /**
+   * Sets the row alignment for this cell.
+   */
   set rowAlign(val: RowAlign) {
     val.addCell(this);
     this._rowAlign = val;
   }
 
+  /**
+   * Gets the column alignment for this cell.
+   */
   get colAlign(): ColAlign {
     return this._colAlign;
   }
 
+  /**
+   * Sets the column alignment for this cell.
+   */
   set colAlign(val: ColAlign) {
     val.addCell(this);
     this._colAlign = val;
   }
 
+  /**
+   * Gets the location string for this cell (rowIndex:colIndex).
+   */
   get location(): string {
     return this.gridRow.rowIndex + ":" + this.colIndex;
   }
 
+  /**
+   * Gets the grid this cell belongs to.
+   */
   get grid(): GridModel {
     return this.gridRow.grid;
   }
 
+  /**
+   * Gets the row index of this cell.
+   */
   get rowIndex(): number {
     return this.gridRow.rowIndex;
   }
 
+  /**
+   * Returns a debug-friendly representation of this GridCell.
+   * @returns An object containing debug information
+   */
   debugValue() {
     const out = {
       r: this.gridRow.rowIndex,
@@ -228,18 +342,27 @@ export class GridCell {
 }
 
 /**
- * Represents a row of grid cells in a GridModel
+ * Represents a row of grid cells in a GridModel.
  */
 export class GridRow {
+  /** The cells in this row */
   cells: (null | GridCell)[] = [];
-  // The default vertical alignment manager for all cells in this row
+  /** The default vertical alignment for all cells in this row */
   defaultRowAlign: RowAlign;
 
+  /**
+   * Creates a new GridRow.
+   * @param grid The grid this row belongs to
+   * @param rowIndex The index of this row
+   */
   constructor(public grid: GridModel, public rowIndex: number) {
     this.defaultRowAlign = new RowAlign();
     this.grid.addRowAlign(this.defaultRowAlign);
   }
 
+  /**
+   * Gets the index of the first non-empty column in this row.
+   */
   get firstCol() {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i]?.value) {
@@ -249,12 +372,15 @@ export class GridRow {
     return -1;
   }
 
+  /**
+   * Gets the number of columns in this row.
+   */
   get numCols() {
     return this.cells.length;
   }
 
   /**
-   * Returns the number of cells that contain values.
+   * Gets the number of cells that contain values.
    */
   get numCells() {
     let i = 0;
@@ -264,6 +390,12 @@ export class GridRow {
     return i;
   }
 
+  /**
+   * Gets the cell at the specified column index, optionally creating it if it doesn't exist.
+   * @param col The column index
+   * @param creator Optional function to create the cell if it doesn't exist
+   * @returns The cell at the specified index, or null if it doesn't exist and no creator was provided
+   */
   cellAt(col: number, creator?: (row: GridRow, col: number) => GridCell): GridCell | null {
     let out = this.cells[col] || null;
     if (!out && creator) {
@@ -280,10 +412,13 @@ export class GridRow {
     return out;
   }
 
-  // Clears the cell at the given column.
-  // Note this is not the same as "removing" a cell.
-  // Removing a cell needs all cells to the "right" to be shifted left.
-  // We wont support removing yet.
+  /**
+   * Clears the cell at the given column.
+   * Note this is not the same as "removing" a cell.
+   * Removing a cell would require all cells to the "right" to be shifted left.
+   * @param col The column index
+   * @returns The cell that was cleared, or null if none existed
+   */
   clearCellAt(col: number): GridCell | null {
     const out = this.cells[col] || null;
     if (out) {
@@ -292,6 +427,10 @@ export class GridRow {
     return out;
   }
 
+  /**
+   * Returns a debug-friendly representation of this GridRow.
+   * @returns An object containing debug information
+   */
   debugValue() {
     return {
       r: this.rowIndex,
@@ -300,36 +439,68 @@ export class GridRow {
   }
 }
 
+/**
+ * Base class for row and column alignment objects.
+ * AlignedLine manages the alignment of cells along a line (row or column).
+ */
 export abstract class AlignedLine {
   private static idCounter = 0;
   readonly uuid = AlignedLine.idCounter++;
+  /** Whether this line needs layout */
   needsLayout = false;
+  /** The coordinate offset of this line */
   protected _coordOffset = 0;
+  /** The maximum length of this line */
   protected _maxLength = 0;
+  /** Padding before this line */
   paddingBefore = 15;
+  /** Padding after this line */
   paddingAfter = 15;
-  // All the cells that belong in this column
+  /** The cells that belong to this line */
   cells: GridCell[] = [];
+  /** Function to get a view for a cell value */
   getCellView: (value: any) => GridCellView;
 
+  /**
+   * Sets the offset of this line.
+   * @param val The new offset value
+   */
   abstract setOffset(val: number): void;
+  
+  /**
+   * Evaluates the maximum length required for this line.
+   * @param changedCells Cells that have changed and need re-evaluation
+   * @returns The maximum length
+   */
   abstract evalMaxLength(changedCells: GridCell[]): number;
 
+  /**
+   * Gets the coordinate offset of this line.
+   */
   get coordOffset(): number {
     return this._coordOffset;
   }
 
   /**
-   * Return the maximum width of a particular column.
+   * Gets the maximum length of this line, including padding.
    */
   get maxLength(): number {
     return this._maxLength + this.paddingBefore + this.paddingAfter;
   }
 
+  /**
+   * Sets the maximum length of this line.
+   * @param length The new maximum length
+   */
   setMaxLength(length: number) {
     this._maxLength = length;
   }
 
+  /**
+   * Sets the padding before and after this line.
+   * @param before Padding before the line
+   * @param after Padding after the line
+   */
   setPadding(before: number, after: number): void {
     if (before >= 0) {
       this.paddingBefore = before;
@@ -339,6 +510,11 @@ export abstract class AlignedLine {
     }
   }
 
+  /**
+   * Adds a cell to this line.
+   * @param cell The cell to add
+   * @returns This line instance for method chaining
+   */
   addCell(cell: GridCell): this {
     if (this.beforeAddingCell(cell)) {
       this.cells.push(cell);
@@ -346,8 +522,18 @@ export abstract class AlignedLine {
     return this;
   }
 
+  /**
+   * Called before adding a cell to perform validation or preparation.
+   * @param cell The cell to be added
+   * @returns Whether the cell should be added
+   */
   protected abstract beforeAddingCell(cell: GridCell): boolean;
 
+  /**
+   * Removes a cell from this line.
+   * @param cell The cell to remove
+   * @returns This line instance for method chaining
+   */
   removeCell(cell: GridCell): this {
     if (this.beforeRemovingCell(cell)) {
       for (let i = 0; i < this.cells.length; i++) {
@@ -360,12 +546,24 @@ export abstract class AlignedLine {
     return this;
   }
 
+  /**
+   * Called before removing a cell to perform validation.
+   * @param cell The cell to be removed
+   * @returns Whether the cell should be removed
+   */
   protected abstract beforeRemovingCell(cell: GridCell): boolean;
 
-  // The "neighboring" columns that depend on this column to be placed
+  // The "neighboring" lines that depend on this line to be placed
   // before they are placed
+  /** Lines that must be positioned before this line */
   prevLines = [] as this[];
+  /** Lines that must be positioned after this line */
   nextLines = [] as this[];
+  
+  /**
+   * Adds a successor line to this line.
+   * @param next The line to add as a successor
+   */
   addSuccessor(next: this): void {
     // Set nextCol as a successor of this col
     // TODO - Ensure no cycles
@@ -401,7 +599,14 @@ export abstract class AlignedLine {
   */
 }
 
+/**
+ * Manages the alignment of cells in a column.
+ */
 export class ColAlign extends AlignedLine {
+  /**
+   * Sets the offset of this column and updates all associated cells.
+   * @param val The new offset value
+   */
   setOffset(val: number): void {
     this._coordOffset = val;
     for (const cell of this.cells) {
@@ -416,6 +621,11 @@ export class ColAlign extends AlignedLine {
     }
   }
 
+  /**
+   * Evaluates the maximum width required for this column.
+   * @param changedCells Cells that have changed and need re-evaluation
+   * @returns The maximum width
+   */
   evalMaxLength(changedCells: GridCell[] = []): number {
     this._maxLength = 0;
     for (const cell of this.cells) {
@@ -427,6 +637,11 @@ export class ColAlign extends AlignedLine {
     return this._maxLength;
   }
 
+  /**
+   * Called before adding a cell to perform validation or preparation.
+   * @param cell The cell to be added
+   * @returns Whether the cell should be added
+   */
   protected beforeAddingCell(cell: GridCell): boolean {
     if (cell.colAlign && cell.colAlign != this) {
       cell.colAlign.removeCell(cell);
@@ -434,14 +649,23 @@ export class ColAlign extends AlignedLine {
     return cell.colAlign != this;
   }
 
+  /**
+   * Called before removing a cell to perform validation.
+   * @param cell The cell to be removed
+   * @returns Whether the cell should be removed
+   */
   beforeRemovingCell(cell: GridCell): boolean {
     return cell.colAlign == this;
   }
 }
 
+/**
+ * Manages the alignment of cells in a row.
+ */
 export class RowAlign extends AlignedLine {
   /**
    * Sets the Y coordinate of all cells in this row.
+   * @param val The new Y coordinate
    */
   setOffset(val: number): void {
     this._coordOffset = val;
@@ -457,6 +681,11 @@ export class RowAlign extends AlignedLine {
     }
   }
 
+  /**
+   * Evaluates the maximum height required for this row.
+   * @param changedCells Cells that have changed and need re-evaluation
+   * @returns The maximum height
+   */
   evalMaxLength(changedCells: GridCell[] = []): number {
     this._maxLength = 0;
     for (const cell of this.cells) {
@@ -468,6 +697,11 @@ export class RowAlign extends AlignedLine {
     return this._maxLength;
   }
 
+  /**
+   * Called before adding a cell to perform validation or preparation.
+   * @param cell The cell to be added
+   * @returns Whether the cell should be added
+   */
   protected beforeAddingCell(cell: GridCell): boolean {
     if (cell.rowAlign && cell.rowAlign != this) {
       cell.rowAlign.removeCell(cell);
@@ -475,30 +709,48 @@ export class RowAlign extends AlignedLine {
     return cell.rowAlign != this;
   }
 
+  /**
+   * Called before removing a cell to perform validation.
+   * @param cell The cell to be removed
+   * @returns Whether the cell should be removed
+   */
   beforeRemovingCell(cell: GridCell): boolean {
     return cell.rowAlign == this;
   }
 }
 
 /**
- * The layout manager for a collection of GridViews bound by common
- * alignment objects.
+ * The layout manager for a collection of GridViews bound by common alignment objects.
+ * Manages the layout of multiple grid models, ensuring proper alignment between them.
  */
 export class GridLayoutGroup {
   // rowAligns = new Map<number, RowAlign>();
   // colAligns = new Map<number, ColAlign>();
+  /** The grid models managed by this layout group */
   gridModels = [] as GridModel[];
 
+  /**
+   * Event handler for processing events from grid models.
+   */
   private eventHandler = (event: TSU.Events.TEvent) => {
     this.applyModelEvents(event.payload);
   };
 
+  /**
+   * Adds a grid model to this layout group.
+   * @param gridModel The grid model to add
+   * @returns True if the model was added successfully
+   */
   addGridModel(gridModel: GridModel): boolean {
     gridModel.eventHub?.on(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
     this.gridModels.push(gridModel);
     return true;
   }
 
+  /**
+   * Gets all row alignment objects that have no predecessors.
+   * @returns An array of starting row alignments
+   */
   startingRowAligns(): RowAlign[] {
     const out = [] as RowAlign[];
     const visited = {} as any;
@@ -513,6 +765,10 @@ export class GridLayoutGroup {
     return out;
   }
 
+  /**
+   * Gets all column alignment objects that have no predecessors.
+   * @returns An array of starting column alignments
+   */
   startingColAligns(): ColAlign[] {
     const out = [] as ColAlign[];
     const visited = {} as any;
@@ -527,22 +783,36 @@ export class GridLayoutGroup {
     return out;
   }
 
+  /**
+   * Removes a grid model from this layout group.
+   * @param gridModel The grid model to remove
+   */
   removeGridModel(gridModel: GridModel): void {
     gridModel.eventHub?.removeOn(TSU.Events.EventHub.BATCH_EVENTS, this.eventHandler);
   }
 
+  /**
+   * Function to get a view for a cell value.
+   */
   getCellView: (cell: GridCell) => GridCellView;
 
+  /**
+   * Gets the starting row alignments.
+   */
   get startingRows(): RowAlign[] {
     return this.startingRowAligns();
   }
 
+  /**
+   * Gets the starting column alignments.
+   */
   get startingCols(): ColAlign[] {
     return this.startingColAligns();
   }
 
   /**
-   * Forces a full refresh.
+   * Forces a full refresh of the layout.
+   * This recalculates all row and column sizes and positions.
    */
   refreshLayout() {
     const changedRowAligns = {} as any;
@@ -571,18 +841,25 @@ export class GridLayoutGroup {
   }
 
   /**
-   * As the grid model changes (cell content changed, cleared etc) we need
-   * to refresh our layout based on this.
-   * As a first step the new height and width of all changed cells is
-   * evaluted to see which rows and/or columns are affected (and need to be
-   * resized/repositioned).
+   * Applies model events to update the layout.
+   * @param events The events to process
    */
   protected applyModelEvents(events: TSU.Events.TEvent[]) {
+    // As the grid model changes (cell content changed, cleared etc) we need
+    // to refresh our layout based on this.
+    // As a first step the new height and width of all changed cells is
+    // evaluted to see which rows and/or columns are affected (and need to be
+    // resized/repositioned).
     const [changedRowAligns, changedColAligns] = this.changesForEvents(events);
     this.doBfsLayout(this.startingRows, changedRowAligns);
     this.doBfsLayout(this.startingCols, changedColAligns);
   }
 
+  /**
+   * Determines which rows and columns need to be updated based on events.
+   * @param events The events to process
+   * @returns A tuple containing the changed row and column alignments
+   */
   protected changesForEvents(events: TSU.Events.TEvent[]): [any, any] {
     // Step 1 - topologically sort RowAligns of changed cells
     // Step 2 - topologically sort ColAligns of changed cells
@@ -626,6 +903,11 @@ export class GridLayoutGroup {
     return [changedRowAligns, changedColAligns];
   }
 
+  /**
+   * Ensures that a cell view getter function is available for an alignment.
+   * @param align The alignment to check
+   * @returns The cell view getter function
+   */
   protected ensureGetCellView(align: AlignedLine) {
     if (!align.getCellView) {
       if (!this.getCellView) {
@@ -636,14 +918,18 @@ export class GridLayoutGroup {
     return align.getCellView;
   }
 
-  // 1. start from the starting lines and do a BF traversal
-  // 2. If a line not visited (ie laid out):
-  //      if it is in the changedAlign list then reval its length (w/h)
-  //      set its offset and length if either width or offset has changed
-  //      offset can be thought of changed if the preceding line's offset has changed
-  // first do above for rows
+  /**
+   * Performs a breadth-first layout of aligned lines.
+   * @param startingLines The lines to start from
+   * @param changedAligns Map of alignment IDs to changed alignments
+   */
   protected doBfsLayout<T extends AlignedLine>(startingLines: T[], changedAligns: any) {
-    // Eval max lengths for all changed aligns
+    // 1. start from the starting lines and do a BF traversal
+    // 2. If a line not visited (ie laid out):
+    //      if it is in the changedAlign list then reval its length (w/h)
+    //      set its offset and length if either width or offset has changed
+    //      offset can be thought of changed if the preceding line's offset has changed
+    // first do above for rows
     if (!this.getCellView) return;
     for (const alignId in changedAligns) {
       const val = changedAligns[alignId];

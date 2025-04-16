@@ -2,20 +2,22 @@ import * as TSU from "@panyam/tsutils";
 import { Atom, LeafAtom, Group } from "./core";
 
 /**
- * Base class of all renderable objects for caching things like bounding boxes etc.
- * We do this since a lot of the property setters dont change bounding boxes but
- * bounding box reads are a bit slow in general.  This also allows us to test
- * layouts, positioning etc without having to worry about implementation details.
+ * Base class for all renderable objects.
+ * 
+ * Shape caches properties like bounding boxes to improve performance,
+ * since bounding box calculations can be expensive. This also allows
+ * testing layouts and positioning without worrying about implementation details.
  */
 export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
+  
   /**
    * Note that x and y coordinates are not always the x and y coordinates
    * of the bounding box.
-   * Eg a circle's x and y coordinates are its center point and not the
+   * E.g., a circle's x and y coordinates are its center point and not the
    * top left corner.
-   * These "main" coordinates are referred as control coordinates.
+   * These "main" coordinates are referred to as control coordinates.
    */
   protected _x: number | null = null;
   protected _y: number | null = null;
@@ -24,8 +26,13 @@ export abstract class Shape {
   protected _bbox: TSU.Geom.Rect;
   protected _minSize: TSU.Geom.Size;
   protected parentShape: Shape | null = null;
+  /** Child shapes contained within this shape */
   children: Shape[] = [];
 
+  /**
+   * Gets the bounding box of this shape.
+   * Calculates it if it hasn't been calculated yet.
+   */
   get bbox(): TSU.Geom.Rect {
     if (!this._bbox) {
       this._bbox = this.refreshBBox();
@@ -34,7 +41,7 @@ export abstract class Shape {
   }
 
   /**
-   * Sizes can have a minimum size.
+   * Gets the minimum size of this shape.
    * This is usually the size of the bounding box.
    */
   get minSize(): TSU.Geom.Size {
@@ -45,11 +52,27 @@ export abstract class Shape {
   }
 
   /**
-   * refreshBBox is called by the Shape when it knows the bbox it is tracking
-   * cannot be trusted and has to be refreshed by calling native methods.
+   * Refreshes the bounding box of this shape.
+   * Called when the shape knows the bbox it is tracking cannot be trusted
+   * and has to be refreshed by calling native methods.
+   * @returns The refreshed bounding box
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
+  
+  /**
+   * Refreshes the minimum size of this shape.
+   * @returns The refreshed minimum size
+   */
   protected abstract refreshMinSize(): TSU.Geom.Size;
+  
+  /**
+   * Updates the bounds of this shape.
+   * @param x New x coordinate, or null to keep current value
+   * @param y New y coordinate, or null to keep current value
+   * @param w New width, or null to keep current value
+   * @param h New height, or null to keep current value
+   * @returns The updated bounds values
+   */
   protected abstract updateBounds(
     x: null | number,
     y: null | number,
@@ -57,18 +80,28 @@ export abstract class Shape {
     h: null | number,
   ): [number | null, number | null, number | null, number | null];
 
+  /**
+   * Invalidates the cached bounds of this shape.
+   * Forces recalculation of bounding box and minimum size.
+   */
   invalidateBounds(): void {
     this._minSize = null as unknown as TSU.Geom.Size;
     this._bbox = null as unknown as TSU.Geom.Rect;
   }
 
   /**
-   * Sets the x or y coordinate of this shape in coordinate system within its
-   * parent.
-   *
+   * Sets the bounds of this shape.
+   * 
    * Note that null and NaN are valid values and mean the following:
-   * null - Dont change the value.  Passed to "ignore" effects.
-   * NaN - Ensure the value is set to null so that the bounding box specific coord is used going forward.
+   * - null: Don't change the value
+   * - NaN: Set the value to null (use the bounding box's value)
+   * 
+   * @param x New x coordinate, or null to keep current value
+   * @param y New y coordinate, or null to keep current value
+   * @param w New width, or null to keep current value
+   * @param h New height, or null to keep current value
+   * @param applyLayout Whether to apply layout immediately
+   * @returns The updated bounds values
    */
   setBounds(
     x: number | null,
@@ -139,18 +172,30 @@ export abstract class Shape {
     return [nx, ny, nw, nh];
   }
 
+  /**
+   * Checks if this shape has an explicit x coordinate.
+   */
   get hasX(): boolean {
     return this._x != null && !isNaN(this._x);
   }
 
+  /**
+   * Checks if this shape has an explicit y coordinate.
+   */
   get hasY(): boolean {
     return this._y != null && !isNaN(this._y);
   }
 
+  /**
+   * Checks if this shape has an explicit width.
+   */
   get hasWidth(): boolean {
     return this._width != null && !isNaN(this._width);
   }
 
+  /**
+   * Checks if this shape has an explicit height.
+   */
   get hasHeight(): boolean {
     return this._height != null && !isNaN(this._height);
   }
@@ -187,51 +232,88 @@ export abstract class Shape {
     this.setBounds(null, y == null ? NaN : y, null, null);
   }
 
+  /**
+   * Gets the width of this shape.
+   */
   get width(): number {
     if (this._width != null) return this._width;
     return 0; // this.bbox.width;
   }
 
+  /**
+   * Sets the width of this shape.
+   */
   set width(w: number | null) {
     this.setBounds(null, null, w == null ? NaN : w, null);
   }
 
+  /**
+   * Gets the height of this shape.
+   */
   get height(): number {
     if (this._height != null) return this._height;
     return 0; // this.bbox.height;
   }
 
+  /**
+   * Sets the height of this shape.
+   */
   set height(h: number | null) {
     this.setBounds(null, null, null, h == null ? NaN : h);
   }
 
   /**
-   * This is called when bounds or other properties of a shape have changed to
-   * give the shape an opportunity to layout the children.  For shapes
-   * with no children this is a no-op.  It is expected the Shape will keep track
-   * of all changes so it can apply them all in in one go in this method - A
-   * form of "commit"ing the layout transaction.
+   * Refreshes the layout of this shape.
+   * Called when bounds or other properties have changed to give the shape an
+   * opportunity to layout its children. For shapes with no children this is a no-op.
    */
   refreshLayout(): void {
     // throw new Error("Implement this");
   }
 }
 
+/**
+ * Represents an embellishment applied to a musical element.
+ */
 export abstract class Embelishment extends Shape {}
 
+/**
+ * A shape that wraps an SVG element.
+ * ElementShape provides the base class for all shapes that are rendered as SVG elements.
+ */
 export class ElementShape<T extends SVGGraphicsElement = SVGGraphicsElement> extends Shape {
+  /**
+   * Creates a new ElementShape.
+   * @param element The SVG element this shape wraps
+   */
   constructor(public readonly element: T) {
     super();
   }
 
+  /**
+   * Refreshes the bounding box of this element.
+   * @returns The refreshed bounding box
+   */
   protected refreshBBox(): TSU.Geom.Rect {
     return TSU.DOM.svgBBox(this.element);
   }
 
+  /**
+   * Refreshes the minimum size of this element.
+   * @returns The refreshed minimum size
+   */
   protected refreshMinSize(): TSU.Geom.Size {
     return TSU.DOM.svgBBox(this.element);
   }
 
+  /**
+   * Updates the bounds of this element.
+   * @param x New x coordinate, or null to keep current value
+   * @param y New y coordinate, or null to keep current value
+   * @param w New width, or null to keep current value
+   * @param h New height, or null to keep current value
+   * @returns The updated bounds values
+   */
   protected updateBounds(
     x: null | number,
     y: null | number,
@@ -241,57 +323,101 @@ export class ElementShape<T extends SVGGraphicsElement = SVGGraphicsElement> ext
     return [x, y, w, h];
   }
 
+  /**
+   * Refreshes the layout of this element.
+   * Updates the element's attributes based on the shape's properties.
+   */
   refreshLayout(): void {
     if (this.hasX) this.element.setAttribute("x", "" + this._x);
     if (this.hasY) this.element.setAttribute("y", "" + this._y);
   }
 }
 
+/**
+ * Base class for views that represent atoms in the notation.
+ * AtomView provides the visual representation of an atom.
+ */
 export abstract class AtomView extends Shape {
+  /** Nesting depth of this atom in the structure */
   depth = 0;
+  /** Index of the role containing this atom */
   roleIndex = 0;
 
   // LayoutMetrics for the AtomView so all atomviews laid out on the
   // same baseline will show up aligned vertically
+  /** Baseline position for vertical alignment */
   baseline: number;
+  /** Ascent (space above baseline) */
   ascent: number;
+  /** Descent (space below baseline) */
   descent: number;
+  /** Height of capital letters */
   capHeight: number;
+  /** Space between lines */
   leading: number;
 
+  /**
+   * Checks if this atom view represents a leaf atom.
+   */
   abstract isLeaf(): boolean;
 
   /**
-   * Creates views needed for this AtomView.
+   * Creates the SVG elements needed for this atom view.
+   * @param parent The parent SVG element to attach to
    */
   abstract createElements(parent: SVGGraphicsElement): void;
 }
 
+/**
+ * A view for leaf atoms (those that cannot contain other atoms).
+ */
 export abstract class LeafAtomView extends AtomView {
+  /**
+   * Creates a new LeafAtomView.
+   * @param leafAtom The leaf atom this view represents
+   */
   constructor(public leafAtom: LeafAtom) {
     super();
   }
 
+  /**
+   * Leaf atom views always return true for isLeaf().
+   */
   isLeaf(): boolean {
     return true;
   }
 
+  /**
+   * Gets a unique identifier for this view based on the atom's UUID.
+   */
   get viewId(): number {
     return this.leafAtom.uuid;
   }
 }
 
 /**
- * An GroupView that contains a collection of AtomViews.
+ * A view for group atoms that contain multiple child atoms.
  */
 export abstract class GroupView extends AtomView {
+  /** Space between atoms in this group */
   protected atomSpacing: number;
+  /** The SVG group element for this view */
   protected groupElement: SVGGElement;
+  /** Views for the atoms in this group */
   protected atomViews: AtomView[] = [];
   private _embelishments: Embelishment[];
+  /** Whether this group represents notes by default */
   defaultToNotes = true;
+  /** Whether this view needs layout */
   needsLayout = true;
+  /** Scale factor for this group */
   scaleFactor = 1.0;
+  
+  /**
+   * Creates a new GroupView.
+   * @param group The group atom this view represents
+   * @param config Optional configuration object
+   */
   constructor(public group: Group, config?: any) {
     super();
     this.atomSpacing = 5;
@@ -299,7 +425,8 @@ export abstract class GroupView extends AtomView {
   }
 
   /**
-   * Creates views needed for this AtomView.
+   * Creates the SVG elements needed for this group view.
+   * @param parent The parent SVG element to attach to
    */
   createElements(parent: SVGGraphicsElement): void {
     this.groupElement = TSU.DOM.createSVGNode("g", {
@@ -318,14 +445,25 @@ export abstract class GroupView extends AtomView {
     this.invalidateBounds();
   }
 
+  /**
+   * Group views always return false for isLeaf().
+   */
   isLeaf(): boolean {
     return false;
   }
 
+  /**
+   * Refreshes the bounding box of this group.
+   * @returns The refreshed bounding box
+   */
   protected refreshBBox(): TSU.Geom.Rect {
     return TSU.DOM.svgBBox(this.groupElement);
   }
 
+  /**
+   * Refreshes the minimum size of this group.
+   * @returns The refreshed minimum size
+   */
   protected refreshMinSize(): TSU.Geom.Size {
     let totalWidth = 0;
     let maxHeight = 0;
@@ -337,8 +475,21 @@ export abstract class GroupView extends AtomView {
     return new TSU.Geom.Size(totalWidth * this.scaleFactor, maxHeight * this.scaleFactor);
   }
 
+  /**
+   * Creates an atom view for a specific atom.
+   * @param atom The atom to create a view for
+   * @returns The created atom view
+   */
   abstract createAtomView(atom: Atom): AtomView;
 
+  /**
+   * Updates the bounds of this group.
+   * @param x New x coordinate, or null to keep current value
+   * @param y New y coordinate, or null to keep current value
+   * @param w New width, or null to keep current value
+   * @param h New height, or null to keep current value
+   * @returns The updated bounds values
+   */
   protected updateBounds(
     x: null | number,
     y: null | number,
@@ -348,6 +499,10 @@ export abstract class GroupView extends AtomView {
     return [x, y, w, h];
   }
 
+  /**
+   * Refreshes the layout of this group.
+   * Updates the position and size of the group and its child atoms.
+   */
   refreshLayout(): void {
     let transform = "translate(" + this.x + "," + this.y + ")";
     if (this.scaleFactor < 1) {
@@ -371,6 +526,9 @@ export abstract class GroupView extends AtomView {
     this.invalidateBounds();
   }
 
+  /**
+   * Gets the embellishments for this group.
+   */
   get embelishments(): Embelishment[] {
     if (!this._embelishments) {
       this._embelishments = this.createEmbelishments();
@@ -378,10 +536,18 @@ export abstract class GroupView extends AtomView {
     return this._embelishments;
   }
 
+  /**
+   * Creates the embellishments for this group.
+   * @returns An array of embellishments
+   */
   protected createEmbelishments(): Embelishment[] {
     return [];
   }
 
+  /**
+   * Sets the styles for this group.
+   * @param config Style configuration object
+   */
   setStyles(config: any): void {
     if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
     this.needsLayout = true;

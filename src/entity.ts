@@ -2,17 +2,22 @@ import * as TSU from "@panyam/tsutils";
 
 /**
  * A common Entity base class with support for unique IDs, copying, children and
- * debug info.
+ * debug info. This serves as the foundation for all entities in the notation system.
  */
 export class Entity {
   readonly TYPE: string = "Entity";
 
   // readonly TYPE:string = "Entity";
   private static counter = 0;
+  /** Unique identifier for this entity */
   readonly uuid = Entity.counter++;
   // private metadata: TSU.StringMap<any>;
   // parent: TSU.Nullable<Entity> = null;
 
+  /**
+   * Creates a new Entity.
+   * @param config Optional configuration object
+   */
   constructor(config: any = null) {
     config = config || {};
     if (config.metadata) throw new Error("See where metadata is being passed");
@@ -20,8 +25,9 @@ export class Entity {
   }
 
   /**
-   * debugValue returns information about this entity to be printed during a debug.
+   * Returns a debug-friendly representation of this entity.
    * Usually overridden by children to add more debug info.
+   * @returns An object containing debug information
    */
   debugValue(): any {
     // if (Object.keys(this.metadata).length > 0) return { metadata: this.metadata, type: this.type };
@@ -29,14 +35,15 @@ export class Entity {
   }
 
   /**
-   * Children of this entity.
+   * Gets all child entities of this entity.
+   * @returns An array of child entities
    */
   children(): Entity[] {
     return [];
   }
 
   /**
-   * Property returning the count of child entities.
+   * Gets the count of child entities.
    */
   get childCount(): number {
     return this.children().length;
@@ -44,8 +51,9 @@ export class Entity {
 
   /**
    * Adds a child entity at a given index.
-   * @param child   Child entity to be aded.
-   * @param index   Index where the child is to be inserted.  -1 to append at the end.
+   * @param child Child entity to be added
+   * @param index Index where the child is to be inserted, -1 to append at the end
+   * @returns This entity instance for method chaining
    */
   addChild(child: Entity, index = -1): this {
     if (index < 0) {
@@ -58,6 +66,8 @@ export class Entity {
 
   /**
    * Returns the child at a given index.
+   * @param index The index of the child to retrieve
+   * @returns The child entity at the specified index
    */
   childAt(index: number): Entity {
     return this.children()[index];
@@ -65,8 +75,8 @@ export class Entity {
 
   /**
    * Returns the index of a given child entity.
-   *
-   * @return the index where child exists otherwise -1.
+   * @param entity The child entity to find
+   * @returns The index where the child exists, or -1 if not found
    */
   indexOfChild(entity: Entity): number {
     let i = 0;
@@ -77,6 +87,11 @@ export class Entity {
     return -1;
   }
 
+  /**
+   * Removes and returns the child entity at the specified index.
+   * @param index The index of the child to remove
+   * @returns The removed child entity
+   */
   removeChildAt(index: number): Entity {
     const children = this.children();
     const out = children[index];
@@ -84,6 +99,12 @@ export class Entity {
     return out;
   }
 
+  /**
+   * Sets a child entity at the specified index.
+   * @param index The index where to set the child
+   * @param entity The entity to set at the index
+   * @returns This entity instance for method chaining
+   */
   setChildAt(index: number, entity: Entity): this {
     this.children()[index] = entity;
     return this;
@@ -107,12 +128,19 @@ export class Entity {
   */
 
   /**
-   * Simple string representation of this Entity.
+   * Returns a simple string representation of this Entity.
+   * @returns A string representation
    */
   toString(): string {
     return `Entity(id = ${this.uuid})`;
   }
 
+  /**
+   * Checks if this Entity is equal to another Entity.
+   * @param another The Entity to compare with
+   * @param expect Optional parameter
+   * @returns True if the Entities are equal, false otherwise
+   */
   equals(another: this, expect = false): boolean {
     if (this.TYPE != another.TYPE) return false;
     // check metadata too
@@ -120,14 +148,12 @@ export class Entity {
   }
 
   /**
-   * All entities allow cloning in a way that is specific to the entity.
-   * This allows application level "copy/pasting" of entities.  Cloning
-   * is a two part process:
-   *
-   * * Creation of a new instance of the same type via this.newInstance()
-   * * Copying of data into the new instance.
-   *
-   * Both of these can be overridden.
+   * Creates a clone of this entity.
+   * Cloning is a two-part process:
+   * 1. Creation of a new instance via this.newInstance()
+   * 2. Copying of data into the new instance via this.copyTo()
+   * 
+   * @returns A new instance of the same type with the same properties
    */
   clone(): this {
     const out = this.newInstance();
@@ -137,6 +163,7 @@ export class Entity {
 
   /**
    * Copies information about this instance into another instance of the same type.
+   * @param another The target instance to copy properties to
    */
   copyTo(another: this): void {
     // another.metadata = { ...this.metadata };
@@ -144,6 +171,7 @@ export class Entity {
 
   /**
    * First part of the cloning process where the instance is created.
+   * @returns A new instance of the same type
    */
   protected newInstance(): this {
     return new (this.constructor as any)();
@@ -151,18 +179,23 @@ export class Entity {
 }
 
 /**
- * Music is all about timing!   TimedEntities are base of all entities that
- * have a duration.
+ * Music is all about timing! TimedEntities are base of all entities that
+ * have a duration. This is an abstract class that all timed entities inherit from.
  */
 export abstract class TimedEntity extends Entity {
   readonly TYPE: string = "TimedEntity";
 
   /**
-   * Duration of this entity in beats.
-   * By default entities durations are readonly
+   * Gets the duration of this entity in terms of beats.
+   * By default, entity durations are readonly.
    */
   abstract get duration(): TSU.Num.Fraction;
 
+  /**
+   * Checks if this TimedEntity is equal to another TimedEntity.
+   * @param another The TimedEntity to compare with
+   * @returns True if the TimedEntities are equal, false otherwise
+   */
   equals(another: this): boolean {
     return super.equals(another) && this.duration.equals(another.duration);
   }

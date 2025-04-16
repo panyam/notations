@@ -11,9 +11,24 @@ export type CycleIterator = Generator<[CyclePosition, Fraction]>;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 
+/**
+ * A cursor that traverses through a Cycle's beats in a controlled manner.
+ * Allows forward and backward navigation through the cycle.
+ */
 export class CycleCursor {
+  /**
+   * Creates a new CycleCursor.
+   * @param cycle The Cycle to traverse
+   * @param barIndex The starting bar index, defaults to 0
+   * @param beatIndex The starting beat index within the bar, defaults to 0
+   * @param instance The starting instance index within the beat, defaults to 0
+   */
   constructor(public readonly cycle: Cycle, public barIndex = 0, public beatIndex = 0, public instance = 0) {}
 
+  /**
+   * Advances the cursor to the next beat and returns the current position and beat length.
+   * @returns A tuple containing the current position and beat length
+   */
   get next(): [CyclePosition, Fraction] {
     const currBar = this.cycle.bars[this.barIndex];
     const result: [CyclePosition, Fraction] = [
@@ -35,6 +50,10 @@ export class CycleCursor {
     return result;
   }
 
+  /**
+   * Moves the cursor to the previous beat and returns the current position and beat length.
+   * @returns A tuple containing the current position and beat length
+   */
   get prev(): [CyclePosition, Fraction] {
     const currBar = this.cycle.bars[this.barIndex];
     const result: [CyclePosition, Fraction] = [
@@ -59,16 +78,26 @@ export class CycleCursor {
   }
 }
 
+/**
+ * Represents a bar in a musical cycle.
+ * A bar consists of beats with specific lengths and counts.
+ */
 export class Bar extends TimedEntity {
   readonly TYPE: string = "Bar";
 
+  /** Name of the bar (e.g., "Laghu", "Dhrutam") */
   name: string;
-  // Length/Duration of each beat.
+  
+  /** Length/Duration of each beat in the bar */
   beatLengths: Fraction[] = [];
 
-  // How many times should a beat be repeated - the Kalai!
+  /** How many times each beat should be repeated (the Kalai) */
   beatCounts: number[] = [];
 
+  /**
+   * Creates a new Bar.
+   * @param config Configuration object containing name, beatLengths, and beatCounts
+   */
   constructor(config: any = null) {
     super((config = config || {}));
     this.name = config.name || "";
@@ -87,10 +116,19 @@ export class Bar extends TimedEntity {
     }
   }
 
+  /**
+   * Returns a debug-friendly representation of this Bar.
+   * @returns An object containing debug information
+   */
   debugValue(): any {
     return { ...super.debugValue(), name: name, beatLengths: this.beatLengths };
   }
 
+  /**
+   * Checks if this Bar is equal to another Bar.
+   * @param another The Bar to compare with
+   * @returns True if the Bars are equal, false otherwise
+   */
   equals(another: this): boolean {
     if (!super.equals(another)) return false;
     if (this.beatLengths.length != another.beatLengths.length) return false;
@@ -104,6 +142,10 @@ export class Bar extends TimedEntity {
     return true;
   }
 
+  /**
+   * Copies the properties of this Bar to another Bar.
+   * @param another The target Bar to copy properties to
+   */
   copyTo(another: this): void {
     super.copyTo(another);
     another.name = this.name;
@@ -111,6 +153,11 @@ export class Bar extends TimedEntity {
     another.beatCounts = [...this.beatCounts];
   }
 
+  /**
+   * Gets the instance count for a specific beat in the bar.
+   * @param beatIndex The index of the beat
+   * @returns The number of instances for the specified beat
+   */
   instanceCount(beatIndex: number): number {
     if (beatIndex > this.beatCounts.length) {
       // by default each beat has 1 instance?
@@ -120,10 +167,16 @@ export class Bar extends TimedEntity {
     }
   }
 
+  /**
+   * Gets the number of unique beats in this bar (irrespective of instances).
+   */
   get beatCount(): number {
     return this.beatLengths.length;
   }
 
+  /**
+   * Gets the total number of beat instances in this bar.
+   */
   get totalBeatCount(): number {
     let out = 0;
     for (let i = 0; i < this.beatLengths.length; i++) {
@@ -133,7 +186,7 @@ export class Bar extends TimedEntity {
   }
 
   /**
-   * Total duration (of time) across all beats in this bar.
+   * Gets the total duration of time across all beats in this bar.
    */
   get duration(): Fraction {
     let total = ZERO;
@@ -144,13 +197,22 @@ export class Bar extends TimedEntity {
   }
 }
 
-// Describes the cycle pattern
+/**
+ * Represents a complete rhythmic cycle pattern composed of bars.
+ * In carnatic music, this typically represents a tala.
+ */
 export class Cycle extends TimedEntity {
   readonly TYPE: string = "Cycle";
 
+  /** Name of the cycle (e.g., "Adi Thalam") */
   name: string;
+  
+  /** The bars that make up this cycle */
   bars: Bar[];
 
+  /**
+   * Default cycle representing Adi Thalam (4+2+2 structure).
+   */
   static readonly DEFAULT = new Cycle({
     name: "Adi Thalam",
     bars: [
@@ -160,20 +222,37 @@ export class Cycle extends TimedEntity {
     ],
   });
 
+  /**
+   * Creates a new Cycle.
+   * @param config Configuration object containing name and bars
+   */
   constructor(config: null | { name?: string; bars?: Bar[] } = null) {
     super((config = config || {}));
     this.name = config.name || "";
     this.bars = config.bars || [];
   }
 
+  /**
+   * Returns a debug-friendly representation of this Cycle.
+   * @returns An object containing debug information
+   */
   debugValue(): any {
     return { ...super.debugValue(), name: name, bars: this.bars.map((p) => p.debugValue()) };
   }
 
+  /**
+   * Gets all child entities of this Cycle.
+   * @returns An array of child entities (bars)
+   */
   children(): Entity[] {
     return this.bars;
   }
 
+  /**
+   * Checks if this Cycle is equal to another Cycle.
+   * @param another The Cycle to compare with
+   * @returns True if the Cycles are equal, false otherwise
+   */
   equals(another: this): boolean {
     if (!super.equals(another)) {
       return false;
@@ -186,17 +265,13 @@ export class Cycle extends TimedEntity {
   }
 
   /**
-   * Given a global beat index returns four values [cycle,bar,beat,instance] where:
-   *
-   * cycle        - The nth cycle in which the beat lies.  Since the global beat
-   *                index can be greater the number of beats in this cycle this
-   *                allows us to wrap around.  Similarly if beatindex is less than
-   *                0 then we can also go behind a cycle.
-   * bar          - The mth bar in the nth cycle which the offset exists
-   * beat         - The beat within the mth bar in the nth cycle where the
-   *                offset lies
-   * instance     - The beat instance where the offset lies.
-   * startOffset  - Offset of the beat at this global index.
+   * Given a global beat index, returns the position within the cycle.
+   * 
+   * @param globalIndex The global beat index
+   * @returns A tuple containing [cycle number, position, start offset]
+   *         - cycle: The nth cycle in which the beat lies
+   *         - position: [barIndex, beatIndex, instance] within the cycle
+   *         - startOffset: Offset of the beat at this global index
    */
   getAtIndex(globalIndex: number): [number, CyclePosition, Fraction] {
     let cycle = 0;
@@ -234,16 +309,14 @@ export class Cycle extends TimedEntity {
   }
 
   /**
-   * Given a global offset returns five values [cycle, bar,beat,instance,offset] where:
-   *
-   * cycle        - The nth cycle in which the beat lies.  Since the global offset can be
-   *                greater the duration of the cycle this allows us to wrap around.
-   *                Similarly if globalOffset is less than 0 then we can also go behind a cycle.
-   * bar          - The mth bar in the nth cycle which the offset exists
-   * beat         - The beat within the mth bar in the nth cycle where the offset lies
-   * instance     - The beat instance where the offset lies.
-   * startOffset  - The note offset within the beat where the global offset lies.
-   * globalIndex  - The beat index within the entire cycle and not just within the bar.
+   * Given a global offset, returns the position within the cycle.
+   * 
+   * @param globalOffset The global time offset
+   * @returns A tuple containing [cycle number, position, note offset, global index]
+   *         - cycle: The nth cycle in which the offset lies
+   *         - position: [barIndex, beatIndex, instance] within the cycle
+   *         - startOffset: The note offset within the beat
+   *         - globalIndex: The beat index within the entire cycle
    */
   getPosition(globalOffset: Fraction): [number, CyclePosition, Fraction, number] {
     const duration = this.duration;
@@ -289,6 +362,14 @@ export class Cycle extends TimedEntity {
     throw new Error("Should not be here!");
   }
 
+  /**
+   * Creates an iterator that yields beats in sequence from a starting position.
+   * 
+   * @param startBar The starting bar index, defaults to 0
+   * @param startBeat The starting beat index, defaults to 0
+   * @param startInstance The starting instance index, defaults to 0
+   * @returns A generator that yields [position, beat length] pairs
+   */
   *iterateBeats(startBar = 0, startBeat = 0, startInstance = 0): CycleIterator {
     let barIndex = startBar;
     let beatIndex = startBeat;
@@ -311,18 +392,28 @@ export class Cycle extends TimedEntity {
     }
   }
 
+  /**
+   * Copies the properties of this Cycle to another Cycle.
+   * @param another The target Cycle to copy properties to
+   */
   copyTo(another: this): void {
     super.copyTo(another);
     another.name = this.name;
     another.bars = this.bars.map((x) => x.clone());
   }
 
+  /**
+   * Gets the number of unique beats in this cycle (irrespective of instances).
+   */
   get beatCount(): number {
     let out = 0;
     for (const bar of this.bars) out += bar.beatCount;
     return out;
   }
 
+  /**
+   * Gets the total number of beat instances in this cycle.
+   */
   get totalBeatCount(): number {
     let out = 0;
     for (const bar of this.bars) out += bar.totalBeatCount;
@@ -330,7 +421,7 @@ export class Cycle extends TimedEntity {
   }
 
   /**
-   * Total duration (of time) across all bars in this cycle.
+   * Gets the total duration of time across all bars in this cycle.
    */
   get duration(): Fraction {
     return this.bars.reduce((x, y) => x.plus(y.duration), ZERO);

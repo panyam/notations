@@ -5,14 +5,31 @@ import { Atom, LeafAtom, Space, Group, AtomType } from "./core";
 type Fraction = TSU.Num.Fraction;
 // type FlatAtom2 = [atom: Atom, duration: TSU.Num.Fraction, offset: TSU.Num.Fraction];
 
+/**
+ * Represents a flattened atom with timing information.
+ * FlatAtom is used to process nested atom structures in a flat, sequential manner
+ * with proper timing information.
+ */
 export class FlatAtom extends TimedEntity {
   readonly TYPE = "FlatAtom";
 
+  /** Nesting depth of this atom in the original structure */
   depth: number;
+  
+  /** Duration of this atom */
   duration: TSU.Num.Fraction;
+  
+  /** Time offset of this atom */
   offset: TSU.Num.Fraction;
+  
+  /** Whether this atom is a continuation of a previous atom */
   private isContinuation: boolean;
 
+  /**
+   * Creates a new FlatAtom.
+   * @param atom The leaf atom this flat atom represents
+   * @param config Optional configuration with depth, duration, offset, and continuation info
+   */
   constructor(public atom: LeafAtom, config: any = null) {
     super((config = config || {}));
     this.depth = config.depth || 0;
@@ -21,10 +38,17 @@ export class FlatAtom extends TimedEntity {
     this.isContinuation = "isContinuation" in config ? config.isContinuation : false;
   }
 
+  /**
+   * Gets the end offset of this atom (offset + duration).
+   */
   get endOffset(): TSU.Num.Fraction {
     return this.offset.plus(this.duration);
   }
 
+  /**
+   * Returns a debug-friendly representation of this FlatAtom.
+   * @returns An object containing debug information
+   */
   debugValue(): any {
     const out = {
       ...super.debugValue(),
@@ -41,19 +65,25 @@ export class FlatAtom extends TimedEntity {
 /**
  * A nested atom iterator that returns one atom at a time at the leaf-most level.
  * If we have a Group (or nested Groups) only the leaf atoms are returned as if
- * in an in order traversal thus ensuring time order of atoms.
+ * in an in-order traversal, thus ensuring time order of atoms.
  */
 export class AtomIterator {
   private atomQueue = new TSU.Lists.List<[Atom, number, Fraction]>();
   private currOffset = TSU.Num.Fraction.ZERO;
   private peeked: TSU.Nullable<FlatAtom> = null;
 
+  /**
+   * Creates a new AtomIterator with optional initial atoms.
+   * @param atoms Initial atoms to iterate through
+   */
   constructor(...atoms: Atom[]) {
     this.push(...atoms);
   }
 
   /**
    * Push atoms to be flattened and served by this iterator.
+   * @param atoms The atoms to add to the queue
+   * @returns This iterator instance for method chaining
    */
   push(...atoms: Atom[]): this {
     for (const atom of atoms) {
@@ -62,6 +92,10 @@ export class AtomIterator {
     return this;
   }
 
+  /**
+   * Gets the next atom in the sequence and advances the iterator.
+   * @returns The next FlatAtom, or null if no more atoms are available
+   */
   next(): TSU.Nullable<FlatAtom> {
     const out = this.peek();
     this.peeked = null;
@@ -71,6 +105,10 @@ export class AtomIterator {
     return out;
   }
 
+  /**
+   * Peeks at the next atom without advancing the iterator.
+   * @returns The next FlatAtom, or null if no more atoms are available
+   */
   peek(): TSU.Nullable<FlatAtom> {
     if (this.peeked == null) {
       if (this.hasNext) {
@@ -85,6 +123,10 @@ export class AtomIterator {
     return this.peeked;
   }
 
+  /**
+   * Checks if more atoms are available in this iterator.
+   * This may process group atoms to find the next leaf atom.
+   */
   get hasNext(): boolean {
     while (this.atomQueue.first != null) {
       // Get from front of queue
@@ -106,6 +148,11 @@ export class AtomIterator {
     return false;
   }
 
+  /**
+   * Gets the atom with the minimum offset from multiple iterators.
+   * @param iterators An array of AtomIterators to compare
+   * @returns A tuple containing the index of the selected iterator and its next atom
+   */
   static getMin(iterators: AtomIterator[]): [number, FlatAtom] {
     let currRole = -1;
     let currAtom: TSU.Nullable<FlatAtom> = null;
@@ -125,17 +172,28 @@ export class AtomIterator {
   }
 }
 
+/**
+ * An iterator that provides atoms within specified time windows.
+ * WindowIterator allows fetching atoms to cover a specific duration,
+ * handling the splitting of atoms if necessary.
+ */
 export class WindowIterator {
   private atomQueue = new TSU.Lists.List<Atom>();
   private currOffset = TSU.Num.Fraction.ZERO;
   private peeked: TSU.Nullable<Atom> = null;
 
+  /**
+   * Creates a new WindowIterator with optional initial atoms.
+   * @param atoms Initial atoms to iterate through
+   */
   constructor(...atoms: Atom[]) {
     this.push(...atoms);
   }
 
   /**
-   * Push atoms to be flattened and served by this iterator.
+   * Push atoms to be served by this iterator.
+   * @param atoms The atoms to add to the queue
+   * @returns This iterator instance for method chaining
    */
   push(...atoms: Atom[]): this {
     for (const atom of atoms) {
@@ -144,6 +202,10 @@ export class WindowIterator {
     return this;
   }
 
+  /**
+   * Gets the next atom in the sequence and advances the iterator.
+   * @returns The next Atom, or null if no more atoms are available
+   */
   next(): TSU.Nullable<Atom> {
     const out = this.peek();
     this.peeked = null;
@@ -153,6 +215,10 @@ export class WindowIterator {
     return out;
   }
 
+  /**
+   * Peeks at the next atom without advancing the iterator.
+   * @returns The next Atom, or null if no more atoms are available
+   */
   peek(): TSU.Nullable<Atom> {
     if (this.peeked == null && this.hasMore) {
       this.peeked = this.atomQueue.popFront();
@@ -160,16 +226,22 @@ export class WindowIterator {
     return this.peeked;
   }
 
+  /**
+   * Checks if more atoms are available in this iterator.
+   */
   get hasMore(): boolean {
     return !this.atomQueue.isEmpty;
   }
 
   /**
-   * Gets the atoms to cover the given duration.
-   *
-   * If the number of atoms left in the iterator is 0 then an empty list
-   * is returned.  Otherwise the duration of atoms returned will cover
+   * Gets atoms to cover the specified duration.
+   * 
+   * If the number of atoms left in the iterator is 0, an empty list
+   * is returned. Otherwise, the duration of atoms returned will cover
    * the given duration even if padding with Space atoms is necessary.
+   * 
+   * @param duration The duration to cover
+   * @returns A tuple containing the array of atoms and whether the full duration was filled
    */
   get(duration: TSU.Num.Fraction): [Atom[], boolean] {
     const out: Atom[] = [];
@@ -191,18 +263,25 @@ export class WindowIterator {
 }
 
 /**
- * Duration Iterators take a tree of Atoms and return atoms in given windowed
- * durations.  This also ensures that a leaf atom can be further split if it is
- * larger than the required duration.
+ * An iterator that provides atoms with specific durations.
+ * DurationIterator ensures that atoms fit within specified duration windows,
+ * splitting atoms if necessary to fit.
  */
 export class DurationIterator {
   private atomIterator: AtomIterator;
   private spillOver: TSU.Nullable<FlatAtom> = null;
 
+  /**
+   * Creates a new DurationIterator.
+   * @param atomIterator The AtomIterator to use as a source of atoms
+   */
   constructor(atomIterator: AtomIterator) {
     this.atomIterator = atomIterator;
   }
 
+  /**
+   * Checks if more atoms are available in this iterator.
+   */
   get hasMore(): boolean {
     if (this.spillOver != null) {
       return true;
@@ -211,11 +290,14 @@ export class DurationIterator {
   }
 
   /**
-   * Gets the atoms to cover the given duration.
-   *
-   * If the number of atoms left in the iterator is 0 then an empty list
-   * is returned.  Otherwise the duration of atoms returned will cover
+   * Gets atoms to cover the specified duration.
+   * 
+   * If the number of atoms left in the iterator is 0, an empty list
+   * is returned. Otherwise, the duration of atoms returned will cover
    * the given duration even if padding with Space atoms is necessary.
+   * 
+   * @param duration The duration to cover
+   * @returns A tuple containing the array of FlatAtoms and whether the full duration was filled
    */
   get(duration: TSU.Num.Fraction): [FlatAtom[], boolean] {
     const iter = this.atomIterator;
@@ -232,7 +314,7 @@ export class DurationIterator {
         if (next.duration.cmp(remaining) <= 0) {
           remaining = remaining.minus(next.duration);
         } else {
-          // Next leaf atm is > duration
+          // Next leaf atom is > duration
           // so split it into two
           this.spillOver = new FlatAtom(new Space(next.duration.minus(remaining)));
           next.duration = remaining;

@@ -9,13 +9,31 @@ type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
 const ONE = TSU.Num.Fraction.ONE;
 
+/**
+ * Represents a single beat in the notation.
+ * A beat contains one or more atoms and has a specific position in a bar.
+ */
 export class Beat {
   private static idCounter = 0;
   readonly uuid = Beat.idCounter++;
   // Should this be as flat Atoms or should we keep it as atoms and breakdown
   // later?
+  /** The atom contained in this beat */
   atom: Atom;
   protected atomIsPlaceholder = false;
+  
+  /**
+   * Creates a new Beat.
+   * @param index The index of this beat in the sequence
+   * @param role The role this beat belongs to
+   * @param offset The time offset of this beat from the start
+   * @param duration The duration of this beat
+   * @param barIndex The index of the bar containing this beat
+   * @param beatIndex The index of this beat within its bar
+   * @param instance The instance number of this beat
+   * @param prevBeat The previous beat in the sequence, if any
+   * @param nextBeat The next beat in the sequence, if any
+   */
   constructor(
     public readonly index: number,
     public readonly role: Role,
@@ -28,6 +46,10 @@ export class Beat {
     public nextBeat: null | Beat,
   ) {}
 
+  /**
+   * Returns a debug-friendly representation of this Beat.
+   * @returns An object containing debug information
+   */
   debugValue(): any {
     return {
       index: this.index,
@@ -41,17 +63,32 @@ export class Beat {
     };
   }
 
+  /**
+   * Gets the end offset of this beat (offset + duration).
+   */
   get endOffset(): Fraction {
     return this.offset.plus(this.duration);
   }
+  
+  /**
+   * Checks if this beat is filled completely (no remaining space).
+   */
   get filled(): boolean {
     return this.remaining.isZero;
   }
 
+  /**
+   * Gets the remaining duration available in this beat.
+   */
   get remaining(): Fraction {
     return this.atom ? this.duration.minus(this.atom.duration, true) : this.duration;
   }
 
+  /**
+   * Adds an atom to this beat.
+   * @param atom The atom to add
+   * @returns True if the atom was added successfully, false if there's not enough space
+   */
   add(atom: Atom): boolean {
     if (this.remaining.cmp(atom.duration) < 0) {
       return false;
@@ -68,6 +105,10 @@ export class Beat {
     return true;
   }
 
+  /**
+   * Gets all markers that should be displayed before this beat.
+   * @returns An array of Marker objects
+   */
   get preMarkers(): Marker[] {
     const out = [] as Marker[];
     let curr: Atom | null = this.atom;
@@ -84,6 +125,10 @@ export class Beat {
     return out;
   }
 
+  /**
+   * Gets all markers that should be displayed after this beat.
+   * @returns An array of Marker objects
+   */
   get postMarkers(): Marker[] {
     const out = [] as Marker[];
     let curr: Atom | null = this.atom;
@@ -99,22 +144,34 @@ export class Beat {
   }
 }
 
+/**
+ * Builds a sequence of beats from atoms according to layout parameters.
+ * Used to convert a flat sequence of atoms into structured beats for display.
+ */
 export class BeatsBuilder {
-  // All atoms divided into beats
+  /** All atoms divided into beats */
   readonly beats: Beat[] = [];
   readonly startIndex: number;
   readonly beatOffset: Fraction;
   cycleIter: CycleIterator;
   windowIter: WindowIterator;
 
-  // Callback for when an atom is added to this role.
+  /** Callback for when an atom is added to this role */
   onAtomAdded: (atom: Atom, beat: Beat) => void;
 
-  // Callback for when a new beat is added
+  /** Callback for when a new beat is added */
   onBeatAdded: (beat: Beat) => void;
-  // Callback for when a beat has been filled
+  
+  /** Callback for when a beat has been filled */
   onBeatFilled: (beat: Beat) => void;
 
+  /**
+   * Creates a new BeatsBuilder.
+   * @param role The role containing the atoms
+   * @param layoutParams Layout parameters for structuring beats
+   * @param startOffset The starting offset for the first beat, defaults to ZERO
+   * @param atoms Initial atoms to add to the beats
+   */
   constructor(
     public readonly role: Role,
     public readonly layoutParams: LayoutParams,
@@ -133,6 +190,10 @@ export class BeatsBuilder {
     this.addAtoms(...atoms);
   }
 
+  /**
+   * Adds atoms to be processed into beats.
+   * @param atoms The atoms to add
+   */
   addAtoms(...atoms: Atom[]): void {
     // First add all atoms to the atom Iterator so we can
     // fetch them as FlatAtoms.  This is needed because atoms
@@ -166,6 +227,10 @@ export class BeatsBuilder {
     }
   }
 
+  /**
+   * Adds a new beat to the sequence.
+   * @returns The newly created beat
+   */
   protected addBeat(): Beat {
     const numBeats = this.beats.length;
     const lastBeat = numBeats == 0 ? null : this.beats[numBeats - 1];
