@@ -4,7 +4,12 @@
 
 When creating a song there is no concept of layouts.  Only durations matter.  One entity responsible for controlling layouts are Cycles.
 
-* Cycle - A grouping of bars of different durations over which atoms are split.   The Cycle on its own does not denote how lines are to be split.  The cycle just tells what the groupings are.
+### Cycles: 
+
+```
+A grouping of bars of different durations over which atoms are split.   The Cycle on its own does not denote how lines
+are to be split.  The cycle just tells what the groupings are.
+```
 
 For example Adi thalam can be described as:
 
@@ -12,7 +17,7 @@ For example Adi thalam can be described as:
 \cycle("4", "2", "2")
 ```
 
-This cycle contains 3 bars.  First bar contians 4 beats and the second and 3rd bar contains 2 beats each.  Givent this one of the ways of laying out notes could be:
+This cycle contains 3 bars.  First bar contians 4 beats and the second and 3rd bar contains 2 beats each.  Given this one of the ways of laying out notes could be:
 
 ```
 | , , , , | , , | , , ||
@@ -91,7 +96,7 @@ There are a few problems with the above layout.  What would be desirable is for 
 | 25 26 _ _   |
 ```
 
-3. We also want to be able to reset layouts so that we can layouts to be applied to only a "some" lines.
+3. We also want to be able to reset layouts so that we can force layouts to be applied to only a "some" lines.
 
 Having alignment global means as the number of notes/lines increase layout can get slower.  Another problem is that fully global layouts means we can provide unnecessary alignments adjustment (say if one beat in one bar is too large.  
 
@@ -99,7 +104,9 @@ Here away to reset layouts (or saving and reloading) would be useful features.
 
 4. Custom layout windows.
 
-In the above layouts all lines begin at the start of a cycle.   It is useful to be able to start layout "before" the begining of a cycle.  Examples of these are first and and second chittai swarams in the Bhairavi varnam `(m p g , r s .n , ,)` and `(d , n n d d , n d d ...)`.
+In the above layouts all lines begin at the start of a cycle.   It is useful to be able to start layout "before" the
+begining of a cycle.  Examples of these are first and and second chittai swarams in the Bhairavi varnam `(m p g , r s .n
+, ,)` and `(d , n n d d , n d d ...)`.
 
 The Ata thala cycle would be:
 

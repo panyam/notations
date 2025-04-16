@@ -88,3 +88,13 @@ mā , , , ra , nan , , , nē , , , lu , kō , , rā , , sa , ra , su , , dā , ,
 
 Unlike a "full page" song - it may be important to "link" notations so that attributes can be carried over from one
 block to another (eg if we want to share beat info or synchronize cell widths etc).
+
+Linking serves 2 purposes:
+
+1. Synchronize layouts
+2. Inherit parameters (eg cycles etc)
+
+
+Linking is not strictly necessary though.  We can just repeat common aspects (like cycles etc).   If we are putting a
+break between blocks then most likely we are interrupting these blocks with say description text or images.   So it may
+not even necessary to align across blocks.  By default each block can be treated independently.
