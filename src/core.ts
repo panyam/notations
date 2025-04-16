@@ -6,8 +6,8 @@ import { LayoutParams } from "./layouts";
  * Alias to TSU.Num.Fraction in tsutils.
  */
 type Fraction = TSU.Num.Fraction;
-const ZERO = TSU.Num.Fraction.ZERO;
-const ONE = TSU.Num.Fraction.ONE;
+export const ZERO = TSU.Num.Fraction.ZERO;
+export const ONE = TSU.Num.Fraction.ONE;
 
 /**
  * AtomType enums are used to denote specific Atoms

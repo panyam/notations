@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom, LeafAtom, Group } from "./core";
+import { ZERO, Atom, LeafAtom, Group } from "./core";
 
 /**
  * Base class for all renderable objects.
@@ -361,6 +361,8 @@ export abstract class AtomView extends Shape {
    */
   abstract isLeaf(): boolean;
 
+  abstract get totalDuration(): TSU.Num.Fraction;
+
   /**
    * Creates the SVG elements needed for this atom view.
    * @param parent The parent SVG element to attach to
@@ -393,6 +395,13 @@ export abstract class LeafAtomView extends AtomView {
   get viewId(): number {
     return this.leafAtom.uuid;
   }
+
+  /**
+   * Returns the total duration of the atom rendered by this view.
+   */
+  get totalDuration(): TSU.Num.Fraction {
+    return this.leafAtom.duration
+  }
 }
 
 /**
@@ -422,6 +431,13 @@ export abstract class GroupView extends AtomView {
     super();
     this.atomSpacing = 5;
     this.setStyles(config || {});
+  }
+
+  /**
+   * Returns the total duration of the group rendered by this view.
+   */
+  get totalDuration(): TSU.Num.Fraction {
+    return this.group.totalChildDuration
   }
 
   /**
@@ -517,10 +533,27 @@ export abstract class GroupView extends AtomView {
     // spaces etc) explicitly setting x/y may be important
     let currX = 0;
     const currY = 0; // null; // this.y; //  + 10;
-    this.atomViews.forEach((av, index) => {
-      av.setBounds(currX, currY, null, null, true);
-      currX += this.atomSpacing + av.minSize.width;
-    });
+
+    if (true) {
+      this.atomViews.forEach((av, index) => {
+        av.setBounds(currX, currY, null, null, true);
+        currX += this.atomSpacing + av.minSize.width;
+      });
+    } else {    // currently this is disabled because "smaller" beats are not EXPANDED to what they could be
+      // smart alignment based layout where X = F(offset)
+      // we want an atom's X offset to be something like (atom.timeOffset / group.duration) * groupWidth
+      const totalDur = this.group.totalChildDuration;
+      let currTime = ZERO
+      this.atomViews.forEach((av, index) => {
+        let newX = currTime.timesNum(this.minSize.width).divby(this.group.duration).floor
+        if (newX >= currX) {
+          currX = newX
+        }
+        av.setBounds(currX, currY, null, null, true);
+        currX += this.atomSpacing + av.minSize.width;
+        currTime = currTime.plus(av.totalDuration)
+      });
+    }
     this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
     this.invalidateBounds();
