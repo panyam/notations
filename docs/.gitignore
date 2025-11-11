@@ -1,5 +1,6 @@
 # Build output
 sites/
+dist/
 
 # Go build artifacts
 __debug_bin*
