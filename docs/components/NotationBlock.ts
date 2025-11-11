@@ -30,9 +30,6 @@ export default class NotationBlock {
       <span><strong>Output:</strong></span>
       <div  id = "notationViewer_${this.id}"
             class="notation-view">
-        <pre class="notationContentsPre hidden">
-          <code class="notationContents">${this.source}</code>
-        </pre>
       </div>
     `;
     if (this.showSource) {
