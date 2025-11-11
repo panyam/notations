@@ -4,9 +4,12 @@ NUM_LINKED_GOMODS=`cat go.mod | grep -v "^\/\/" | grep replace | wc -l | sed -e 
 all: build run
 
 run:
-	# cp ../secrets/notations/.env /tmp 
+	# cp ../secrets/notations/.env /tmp
 	# cp ../secrets/notations/.env.dev /tmp
 	NOTATIONS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
+
+webpack:
+	npm run build
 
 checklinks:
 	@if [ x"${NUM_LINKED_GOMODS}" != "x0" ]; then	\
@@ -16,7 +19,7 @@ checklinks:
 deploy: checklinks build
 	gcloud app deploy --project notations --verbosity=info
 
-build: resymlink
+build: resymlink webpack
 
 resymlink:
 	mkdir -p locallinks

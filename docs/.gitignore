@@ -1,6 +1,10 @@
 # Build output
 sites/
 dist/
+static/js/gen/
+
+# Dependencies
+node_modules/
 
 # Go build artifacts
 __debug_bin*
@@ -14,3 +18,8 @@ locallinks/
 # Development
 .vimspector.json
 .vscode/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
