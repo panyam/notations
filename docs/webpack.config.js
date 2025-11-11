@@ -20,7 +20,9 @@ module.exports = (_env, options) => {
         {
           test: /\.ts$/,
           exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "dist")],
-          include: [path.resolve(__dirname, "components")],
+          include: [
+            path.resolve(__dirname, "components")
+          ],
           use: [
             {
               loader: "ts-loader",
