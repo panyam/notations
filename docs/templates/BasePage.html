@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{{# include "Header.html" #}}
+{{# include "Sidebar.html" #}}
+{{# include "Content.html" #}}
+{{# include "Footer.html" #}}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ if .FrontMatter.description }}{{ .FrontMatter.description }}{{ else }}{{ (json "SiteMetadata.json" "siteDescription") }}{{ end }}">
+    <title>{{ if .FrontMatter.title }}{{ .FrontMatter.title }} - {{ end }}{{ (json "SiteMetadata.json" "siteName") }}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{.Site.PathPrefix}}/static/css/main.css">
+    {{ if .FrontMatter.customCSS }}
+    <link rel="stylesheet" href="{{ .FrontMatter.customCSS }}">
+    {{ end }}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{.Site.PathPrefix}}/static/images/favicon.png">
+</head>
+<body>
+    <!-- Header -->
+    {{ template "Header" . }}
+
+    <div class="page-container">
+        <!-- Sidebar -->
+        {{ template "Sidebar" . }}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {{ template "Content" . }}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    {{ template "Footer" . }}
+
+    <!-- JavaScript will be injected here by webpack-generated template -->
+    {{# include "gen.DocsPage.html" #}}
+    {{ template "gen.DocsPage.html" }}
+</body>
+</html>

@@ -1,0 +1,64 @@
+{{ define "Content" }}
+<article class="content">
+    <!-- Page Header -->
+    {{ if .FrontMatter.title }}
+    <header class="content-header">
+        <h1>{{ .FrontMatter.title }}</h1>
+        {{ if .FrontMatter.description }}
+        <p class="lead">{{ .FrontMatter.description }}</p>
+        {{ end }}
+        {{ if .FrontMatter.date }}
+        <div class="meta">
+            <time datetime="{{ .FrontMatter.date }}">{{ .FrontMatter.date }}</time>
+            {{ if .FrontMatter.author }}
+            <span class="author">by {{ .FrontMatter.author }}</span>
+            {{ end }}
+        </div>
+        {{ end }}
+    </header>
+    {{ end }}
+
+    <!-- Page Content -->
+    <div class="content-body">
+        {{ BytesToString .Content | HTML }}
+    </div>
+
+    <!-- Page Footer -->
+    <footer class="content-footer">
+        {{ if .FrontMatter.tags }}
+        <div class="tags">
+            {{ range .FrontMatter.tags }}
+            <a href="/docs/tags/{{ . }}/" class="tag">{{ . }}</a>
+            {{ end }}
+        </div>
+        {{ end }}
+
+        <!-- Previous/Next Navigation -->
+        {{ if or .FrontMatter.prev .FrontMatter.next }}
+        <nav class="page-nav">
+            {{ if .FrontMatter.prev }}
+            <a href="{{ .FrontMatter.prev.url }}" class="page-nav-prev">
+                <span class="arrow">←</span>
+                <span class="text">{{ .FrontMatter.prev.title }}</span>
+            </a>
+            {{ end }}
+            {{ if .FrontMatter.next }}
+            <a href="{{ .FrontMatter.next.url }}" class="page-nav-next">
+                <span class="text">{{ .FrontMatter.next.title }}</span>
+                <span class="arrow">→</span>
+            </a>
+            {{ end }}
+        </nav>
+        {{ end }}
+
+        <!-- Edit This Page Link -->
+        {{ if .FrontMatter.editUrl }}
+        <div class="edit-page">
+            <a href="{{ .FrontMatter.editUrl }}" target="_blank" rel="noopener">
+                <i class="icon-edit"></i> Edit this page on GitHub
+            </a>
+        </div>
+        {{ end }}
+    </footer>
+</article>
+{{ end }}

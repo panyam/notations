@@ -1,0 +1,15 @@
+# Build output
+sites/
+
+# Go build artifacts
+__debug_bin*
+*.exe
+*.test
+*.out
+
+# Symlinks (managed by Makefile)
+locallinks/
+
+# Development
+.vimspector.json
+.vscode/

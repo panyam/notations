@@ -1,0 +1,25 @@
+{
+  "siteName": "Notations Library Documentation",
+  "siteDescription": "Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation",
+  "version": "0.0.65",
+  "author": "Sriram Panyam",
+  "repository": "https://github.com/panyam/notations",
+  "license": "ISC",
+  "baseUrl": "/docs",
+  "theme": {
+    "primaryColor": "#2c5282",
+    "secondaryColor": "#4a5568",
+    "accentColor": "#d69e2e"
+  },
+  "features": {
+    "search": true,
+    "toc": true,
+    "syntaxHighlighting": true,
+    "darkMode": false
+  },
+  "contact": {
+    "github": "https://github.com/panyam/notations",
+    "issues": "https://github.com/panyam/notations/issues",
+    "npm": "https://www.npmjs.com/package/notations"
+  }
+}

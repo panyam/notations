@@ -1,0 +1,38 @@
+{{ define "Header" }}
+<header class="site-header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/docs/">
+                <img src="{{.Site.PathPrefix}}/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                <span class="logo-text">{{ (json "SiteMetadata.json" "siteName") }}</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            {{ $navLinks := (json "HeaderNavLinks.json" "") }}
+            {{ debug "Navlinks: "  $navLinks }}
+            {{ range $navLinks }}
+            <div class="nav-item{{ if .children }} has-children{{ end }}">
+                <a href="{{ .url }}" class="nav-link">
+                    {{ if .icon }}<i class="icon-{{ .icon }}"></i>{{ end }}
+                    {{ .name }}
+                </a>
+                {{ if .children }}
+                <div class="nav-dropdown">
+                    {{ range .children }}
+                    <a href="{{ .url }}" class="dropdown-item">{{ .name }}</a>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+        </nav>
+
+        <div class="header-actions">
+            <a href="{{ (json "SiteMetadata.json" "repository") }}" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+{{ end }}

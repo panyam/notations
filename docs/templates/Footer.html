@@ -1,0 +1,41 @@
+{{ define "Footer" }}
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>{{ (json "SiteMetadata.json" "siteDescription") }}</p>
+            <p class="version">Version {{ (json "SiteMetadata.json" "version") }}</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/docs/getting-started/">Getting Started</a></li>
+                <li><a href="/docs/tutorials/">Tutorials</a></li>
+                <li><a href="/docs/api/">API Documentation</a></li>
+                <li><a href="/docs/cookbook/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="{{ (json "SiteMetadata.json" "repository") }}" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="{{ (json "SiteMetadata.json" "issues") }}" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="{{ (json "SiteMetadata.json" "npm") }}" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/docs/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="{{ (json "SiteMetadata.json" "repository") }}/blob/master/LICENSE">{{ (json "SiteMetadata.json" "license") }}</a></p>
+            <p>&copy; {{ .Now.UTC.Year }} {{ (json "SiteMetadata.json" "author") }}</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+{{ end }}
