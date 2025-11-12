@@ -23,6 +23,6 @@
   },
   "dependencies": {
     "notations": "file:../",
-    "@notations/web-components": "file:../web-components"
+    "notations-web": "file:../web-components"
   }
 }

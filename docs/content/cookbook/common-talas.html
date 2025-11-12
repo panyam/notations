@@ -1,0 +1,118 @@
+---
+title: "Common Talas"
+description: "Examples of commonly used talas in Carnatic music"
+---
+
+<h1>Common Talas</h1>
+
+<p>This recipe demonstrates how to notate music in the most common Carnatic talas (rhythmic cycles).</p>
+
+<h2>Adi Tala (4+2+2 = 8 beats)</h2>
+
+<p>Adi tala is the most common tala, with 8 beats divided into three bars (4, 2, 2):</p>
+
+<notation id="adi-tala" showSource="true" caption="Adi Tala">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa
+</notation>
+
+<p>The cycle repeats every 8 beats. Notice how the notation automatically wraps based on the tala structure.</p>
+
+<h2>Rupaka Tala (2+4 = 6 beats)</h2>
+
+<p>Rupaka tala has 6 beats divided into two bars (2, 4):</p>
+
+<notation id="rupaka" showSource="true" caption="Rupaka Tala">
+\cycle("|2|4|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa
+</notation>
+
+<p>The shorter cycle creates a different feel compared to Adi tala.</p>
+
+<h2>Misra Chapu (3+2+2 = 7 beats)</h2>
+
+<p>Misra Chapu tala has 7 beats divided into three bars (3, 2, 2):</p>
+
+<notation id="misra-chapu" showSource="true" caption="Misra Chapu">
+\cycle("|3|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa sa sa
+</notation>
+
+<p>The odd number of beats (7) creates an asymmetric feel.</p>
+
+<h2>Khanda Chapu (2+3 = 5 beats)</h2>
+
+<p>Khanda Chapu tala has 5 beats divided into two bars (2, 3):</p>
+
+<notation id="khanda-chapu" showSource="true" caption="Khanda Chapu">
+\cycle("|2|3|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S.
+Sh: sa ri ga ma pa dha ni sa sa sa
+</notation>
+
+<h2>Jhompa Tala (7+1+2 = 10 beats)</h2>
+
+<p>Jhompa tala has 10 beats divided into three bars (7, 1, 2):</p>
+
+<notation id="jhompa" showSource="true" caption="Jhompa Tala">
+\cycle("|7|1|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D N S. R. S.
+</notation>
+
+<h2>Tisra Adi (3+3+3 = 9 beats)</h2>
+
+<p>When Adi tala is performed in tisram (triplet feel), each bar has 3 beats:</p>
+
+<notation id="tisra-adi" showSource="true" caption="Tisra Adi">
+\cycle("|3|3|3|")
+\beatDuration(3)
+Sw: S R G M P D N S. R.
+Sh: sa ri ga ma pa dha ni sa sa
+</notation>
+
+<h2>Tala Comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tala</th>
+      <th>Cycle Pattern</th>
+      <th>Total Beats</th>
+      <th>Common Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Adi</td><td><code>"|4|2|2|"</code></td><td>8</td><td>Most common, varnams, kritis</td></tr>
+    <tr><td>Rupaka</td><td><code>"|2|4|"</code></td><td>6</td><td>Devotional songs, light music</td></tr>
+    <tr><td>Misra Chapu</td><td><code>"|3|2|2|"</code></td><td>7</td><td>Film songs, bhajans</td></tr>
+    <tr><td>Khanda Chapu</td><td><code>"|2|3|"</code></td><td>5</td><td>Rhythmic variety, tillanas</td></tr>
+    <tr><td>Jhompa</td><td><code>"|7|1|2|"</code></td><td>10</td><td>Rare, advanced compositions</td></tr>
+    <tr><td>Tisra Adi</td><td><code>"|3|3|3|"</code></td><td>9</td><td>Tisram variations</td></tr>
+  </tbody>
+</table>
+
+<h2>Tips</h2>
+
+<ul>
+  <li>Use <code>\cycle</code> at the beginning of your notation to set the tala</li>
+  <li>The cycle automatically repeats throughout the composition</li>
+  <li>Bar divisions are shown visually in the rendered notation</li>
+  <li>Different talas create different rhythmic feels</li>
+  <li>Experiment with beat duration values to find the right density</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/reference/commands/">Commands Reference</a> - Complete cycle documentation</li>
+  <li><a href="/docs/tutorials/02-commands/">Tutorial: Commands</a> - Learn about cycle command</li>
+  <li><a href="/docs/cookbook/different-speeds/">Different Speeds</a> - Combine talas with speed variations</li>
+</ul>

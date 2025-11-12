@@ -1,0 +1,71 @@
+---
+title: "Installation"
+description: "How to install and set up the Notations library"
+---
+
+<h1>Installation</h1>
+
+<h2>Prerequisites</h2>
+
+<p>You need Node.js (version 14 or higher) and npm or yarn installed on your system.</p>
+
+<h2>Install via npm</h2>
+
+<pre><code>npm install notations</code></pre>
+
+<h2>Install via yarn</h2>
+
+<pre><code>yarn add notations</code></pre>
+
+<h2>TypeScript Support</h2>
+
+<p>The library is written in TypeScript and includes type definitions. No additional @types packages are needed.</p>
+
+<h2>Browser Usage</h2>
+
+<p>For browser applications, the library works with modern bundlers like Webpack, Rollup, or Vite:</p>
+
+<pre><code>import * as N from "notations";
+
+// Use the library
+const [notation, layout, errors] = N.load(source);
+</code></pre>
+
+<h2>Web Components (Optional)</h2>
+
+<p>If you want to use interactive notation components in your web application, install the web-components package:</p>
+
+<pre><code>npm install notations-web notations</code></pre>
+
+<p>This package provides ready-to-use components for rendering notation with the <code>&lt;notation&gt;</code> tag. See the <a href="/docs/api/integration-guide/">Integration Guide</a> for details.</p>
+
+<h2>Verify Installation</h2>
+
+<p>Create a simple test file to verify the installation:</p>
+
+<pre><code>// test.js
+import * as N from "notations";
+
+const source = "S R G M";
+const [notation, layout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  console.log("Installation successful!");
+  console.log("Notation:", notation);
+} else {
+  console.error("Errors:", errors);
+}
+</code></pre>
+
+<p>Run it:</p>
+
+<pre><code>node test.js</code></pre>
+
+<p>If you see "Installation successful!", you're ready to go.</p>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/docs/getting-started/">Quick Start</a> - Write your first notation</li>
+  <li><a href="/docs/tutorials/01-basics/">Tutorial: Basics</a> - Learn the fundamentals</li>
+</ul>

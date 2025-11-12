@@ -1,0 +1,172 @@
+---
+title: "Embellishments Reference"
+description: "Complete reference for gamakas and ornaments in Carnatic music notation"
+---
+
+<h1>Embellishments Reference</h1>
+
+<p>Embellishments (gamakas) add ornamental details to notes in Carnatic music. All embellishments start with a tilde <code>~</code> and continue until whitespace.</p>
+
+<h2>Syntax</h2>
+
+<pre><code>~         // Kampitam
+~/        // Eetra Jaaru (ascending)
+~\        // Irakka Jaaru (descending)
+~w        // Nokku
+~^        // Raavi
+~x        // Odukkal</code></pre>
+
+<h2>Basic Gamakas</h2>
+
+<h3>Kampitam (~)</h3>
+
+<p>An oscillation between two notes.</p>
+
+<notation id="kampitam" showSource="true" caption="Kampitam">
+\beatDuration(4)
+S R ~ G M P ~
+</notation>
+
+<p>Example usage: <code>p , S..n S..n S..n</code> shows kampitam oscillating between notes.</p>
+
+<h3>Jaaru - Eetra (~/ or ~/note)</h3>
+
+<p>Ascending slide from one note to another.</p>
+
+<notation id="jaaru-eetra" showSource="true" caption="Eetra Jaaru (Ascending)">
+\beatDuration(4)
+S ~/ R G ~/ M P
+</notation>
+
+<p>You can specify a starting note: <code>~S/</code> means slide from S to the current note.</p>
+
+<h3>Jaaru - Irakka (~\ or ~\note)</h3>
+
+<p>Descending slide from one note to another.</p>
+
+<notation id="jaaru-irakka" showSource="true" caption="Irakka Jaaru (Descending)">
+\beatDuration(4)
+P ~\ D N ~\ S.
+</notation>
+
+<p>You can specify a starting note: <code>~P\</code> means slide from P to the current note.</p>
+
+<h2>Ornamental Gamakas</h2>
+
+<h3>Nokku (~w)</h3>
+
+<p>A gentle touch or glance at a note.</p>
+
+<notation id="nokku" showSource="true" caption="Nokku">
+\beatDuration(4)
+S R ~w G M P ~w D
+</notation>
+
+<h3>Raavi (~^)</h3>
+
+<p>An aahaatam (struck) gamaka, providing emphasis.</p>
+
+<notation id="raavi" showSource="true" caption="Raavi">
+\beatDuration(4)
+S ~^ R G M ~^ P
+</notation>
+
+<h3>Kandippu (~✓ or ~./ or ~.\)</h3>
+
+<p>A subtle touch on a note, like in Shankarabharanam where the note appears briefly.</p>
+
+<notation id="kandippu" showSource="true" caption="Kandippu">
+\beatDuration(4)
+S. , , , n ~./ , P , , ,
+</notation>
+
+<h3>Vaali (~~)</h3>
+
+<p>A curved or bent ornament.</p>
+
+<notation id="vaali" showSource="true" caption="Vaali">
+\beatDuration(4)
+S R ~~ G M
+</notation>
+
+<h3>Odukkal (~x)</h3>
+
+<p>A veena gamaka where the note is stretched to reach the next note effect without plucking. On voice, it sounds like an Eetra Jaaru.</p>
+
+<notation id="odukkal" showSource="true" caption="Odukkal">
+\beatDuration(4)
+S R ~x G M
+</notation>
+
+<h3>Orikkai (~γ or ~Y)</h3>
+
+<p>A complex oscillating pattern.</p>
+
+<notation id="orikkai" showSource="true" caption="Orikkai">
+\beatDuration(4)
+S ~Y R G ~Y M
+</notation>
+
+<p>Example: <code>S~~ RN N~~S.D D~~~NP</code></p>
+
+<h2>Jantai Gamakas</h2>
+
+<h3>Spuritam (~∴ or ~:-)</h3>
+
+<p>Stress on the second note of a jantai (paired notes).</p>
+
+<notation id="spuritam" showSource="true" caption="Spuritam">
+\beatDuration(4)
+[S R] ~:- [G M]
+</notation>
+
+<h3>Prathyagatam (~∵ or ~-:)</h3>
+
+<p>Similar to Spuritam but in reverse (descending order).</p>
+
+<notation id="prathyagatam" showSource="true" caption="Prathyagatam">
+\beatDuration(4)
+[M G] ~-: [R S]
+</notation>
+
+<h2>Gamaka Summary Table</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Syntax</th>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>~</code></td><td>Kampitam</td><td>Oscillation between notes</td></tr>
+    <tr><td><code>~/</code></td><td>Eetra Jaaru</td><td>Ascending slide</td></tr>
+    <tr><td><code>~\</code></td><td>Irakka Jaaru</td><td>Descending slide</td></tr>
+    <tr><td><code>~w</code></td><td>Nokku</td><td>Gentle touch</td></tr>
+    <tr><td><code>~^</code></td><td>Raavi</td><td>Struck emphasis</td></tr>
+    <tr><td><code>~./</code> or <code>~✓</code></td><td>Kandippu</td><td>Subtle touch</td></tr>
+    <tr><td><code>~~</code></td><td>Vaali</td><td>Curved ornament</td></tr>
+    <tr><td><code>~x</code></td><td>Odukkal</td><td>Stretched note (veena)</td></tr>
+    <tr><td><code>~Y</code> or <code>~γ</code></td><td>Orikkai</td><td>Complex oscillation</td></tr>
+    <tr><td><code>~:-</code> or <code>~∴</code></td><td>Spuritam</td><td>Jantai stress (ascending)</td></tr>
+    <tr><td><code>~-:</code> or <code>~∵</code></td><td>Prathyagatam</td><td>Jantai stress (descending)</td></tr>
+  </tbody>
+</table>
+
+<h2>Usage Notes</h2>
+
+<ul>
+  <li>Embellishments can appear before or after a note depending on the gamaka type</li>
+  <li>The Carnatic plugin determines whether an embellishment is valid in a given position</li>
+  <li>Embellishments work with groups and can be nested within complex phrases</li>
+  <li>Use embellishments sparingly for clarity, or abundantly for detailed notation</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/tutorials/03-embelishments/">Tutorial: Embellishments</a></li>
+  <li><a href="/docs/reference/syntax/">Syntax Reference</a></li>
+  <li><a href="/docs/cookbook/">Cookbook</a></li>
+</ul>

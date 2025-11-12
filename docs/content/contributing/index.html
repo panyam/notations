@@ -1,0 +1,114 @@
+---
+title: "Contributing"
+description: "How to contribute to the Notations project"
+---
+
+<h1>Contributing</h1>
+
+<p>Thank you for your interest in contributing to the Notations project. This guide will help you get started with contributing code, documentation, or examples.</p>
+
+<h2>Getting Started</h2>
+
+<p>The Notations project is open source and welcomes contributions. The codebase is organized into several packages:</p>
+
+<ul>
+  <li><strong>notations</strong> - Core library (parser, models, layout)</li>
+  <li><strong>notations-web</strong> - Browser components for rendering</li>
+  <li><strong>docs</strong> - Documentation site (this site)</li>
+</ul>
+
+<h2>Development Setup</h2>
+
+<p>Clone the repository and install dependencies:</p>
+
+<pre><code>git clone https://github.com/panyam/notation.git
+cd notation
+pnpm install
+</code></pre>
+
+<p>Build the core library:</p>
+
+<pre><code>cd notations
+pnpm build
+pnpm test
+</code></pre>
+
+<h2>Making Changes</h2>
+
+<ol>
+  <li>Create a new branch for your feature or fix</li>
+  <li>Make your changes with clear commit messages</li>
+  <li>Add tests for new functionality</li>
+  <li>Ensure all tests pass</li>
+  <li>Update documentation as needed</li>
+  <li>Submit a pull request</li>
+</ol>
+
+<h2>Code Style</h2>
+
+<p>The project uses TypeScript with ESLint and Prettier for code formatting:</p>
+
+<pre><code>pnpm lint
+pnpm lintfix
+</code></pre>
+
+<h2>Testing</h2>
+
+<p>All new features should include tests. Run the test suite:</p>
+
+<pre><code>pnpm test
+</code></pre>
+
+<p>Tests are located in the <code>src/tests/</code> directory.</p>
+
+<h2>Documentation</h2>
+
+<p>Documentation improvements are always welcome. The docs site is built with s3gen:</p>
+
+<pre><code>cd docs
+go run . serve
+</code></pre>
+
+<p>Documentation files are in <code>docs/content/</code> and use HTML with frontmatter.</p>
+
+<h2>Areas for Contribution</h2>
+
+<ul>
+  <li><strong>Parser improvements</strong> - Better error messages, new syntax features</li>
+  <li><strong>Layout algorithms</strong> - Improved rendering and spacing</li>
+  <li><strong>Gamaka support</strong> - Additional embellishment types</li>
+  <li><strong>Documentation</strong> - Tutorials, examples, cookbook recipes</li>
+  <li><strong>Web components</strong> - Interactive features, editing capabilities</li>
+  <li><strong>Examples</strong> - Real compositions notated with the library</li>
+</ul>
+
+<h2>Reporting Issues</h2>
+
+<p>If you find a bug or have a feature request, please open an issue on GitHub with:</p>
+
+<ul>
+  <li>A clear description of the problem or feature</li>
+  <li>Steps to reproduce (for bugs)</li>
+  <li>Expected vs actual behavior</li>
+  <li>Example notation source (if applicable)</li>
+</ul>
+
+<h2>Community</h2>
+
+<p>Join the discussion and get help:</p>
+
+<ul>
+  <li>GitHub Issues - Bug reports and feature requests</li>
+  <li>GitHub Discussions - Questions and general discussion</li>
+</ul>
+
+<h2>License</h2>
+
+<p>By contributing to this project, you agree that your contributions will be licensed under the same license as the project.</p>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/api/">API Documentation</a> - Understand the codebase</li>
+  <li><a href="/docs/reference/">Reference Documentation</a> - Complete syntax specification</li>
+</ul>

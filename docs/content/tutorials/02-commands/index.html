@@ -1,0 +1,110 @@
+---
+title: "Tutorial 02: Commands"
+description: "Learn about commands for controlling notation behavior"
+---
+
+<h1>Tutorial 02: Commands</h1>
+
+<p>Commands control aspects of notation like beat duration, cycle patterns, and layout. Commands start with a backslash.</p>
+
+<h2>Beat Duration</h2>
+
+<p>The <code>\beatDuration</code> command sets how many notes fit in one beat:</p>
+
+<notation id="beat-duration-1" showSource="true" caption="One Note per Beat">
+\beatDuration(1)
+S R G M P D N S.
+</notation>
+
+<notation id="beat-duration-2" showSource="true" caption="Two Notes per Beat">
+\beatDuration(2)
+S R G M P D N S.
+</notation>
+
+<notation id="beat-duration-4" showSource="true" caption="Four Notes per Beat (Second Speed)">
+\beatDuration(4)
+S R G M P D N S.
+</notation>
+
+<p>This is commonly used to notate different speeds in Carnatic music without changing the actual notation.</p>
+
+<h2>Note Durations</h2>
+
+<p>You can set the duration of individual notes by prefixing them with a number or fraction:</p>
+
+<notation id="note-duration" showSource="true" caption="Custom Note Durations">
+\beatDuration(4)
+S 2 R G M
+</notation>
+
+<p>Here, R has a duration of 2 units at the current beat duration (4 notes per beat), making R twice as long as S, G, or M.</p>
+
+<h2>Cycle (Tala)</h2>
+
+<p>The <code>\cycle</code> command defines the rhythmic pattern (tala). A cycle is made of multiple bars, each with a specified number of beats:</p>
+
+<notation id="cycle-basic" showSource="true" caption="Adi Tala">
+\cycle("|4|2|2|")
+\beatDuration(4)
+S R G M P D N S. , S. N D P M G R S
+</notation>
+
+<p>The pattern <code>"|4|2|2|"</code> means:</p>
+<ul>
+  <li>First bar: 4 beats</li>
+  <li>Second bar: 2 beats</li>
+  <li>Third bar: 2 beats</li>
+  <li>Total: 8 beats per cycle (Adi Tala)</li>
+</ul>
+
+<h2>Creating Lines</h2>
+
+<p>The <code>\line</code> command starts a new line in the notation:</p>
+
+<notation id="lines" showSource="true" caption="Multiple Lines">
+S R G M
+\line
+P D N S.
+</notation>
+
+<p>You can add margin text to lines:</p>
+
+<notation id="line-margin" showSource="true" caption="Line with Margin Text">
+\line("Pallavi")
+S R G M P D N S.
+\line("Anupallavi")
+S. N D P M G R S
+</notation>
+
+<h2>Creating Roles</h2>
+
+<p>The <code>\role</code> command creates new roles beyond the default Sw and Sh:</p>
+
+<notation id="custom-role" showSource="true" caption="Custom Roles">
+\role("Perc", notes=true)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+Perc: ta ki ta ta ta ki ta ta
+</notation>
+
+<h2>Practice Exercise</h2>
+
+<p>Create a notation with varying beat durations and multiple lines:</p>
+
+<notation id="practice-commands" showSource="true" caption="Practice with Commands">
+\cycle("|4|2|2|")
+\beatDuration(2)
+\line("First Speed")
+Sw: S R G M P D N S.
+
+\beatDuration(4)
+\line("Second Speed")
+Sw: S R G M P D N S.
+</notation>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/docs/tutorials/03-embelishments/">Tutorial 03: Embellishments</a> - Add ornaments to your notation</li>
+  <li><a href="/docs/reference/commands/">Commands Reference</a> - Complete list of available commands</li>
+</ul>

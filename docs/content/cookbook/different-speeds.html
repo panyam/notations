@@ -1,0 +1,106 @@
+---
+title: "Different Speeds"
+description: "How to notate music at first, second, and third speeds"
+---
+
+<h1>Different Speeds</h1>
+
+<p>Carnatic music often progresses through multiple speeds. This recipe shows how to notate the same phrase at different speeds using the <code>\beatDuration</code> command.</p>
+
+<h2>First Speed (1-2 notes per beat)</h2>
+
+<p>At first speed, typically 1 or 2 notes occupy each beat:</p>
+
+<notation id="first-speed" showSource="true" caption="First Speed">
+\cycle("|4|2|2|")
+\beatDuration(1)
+\line("First Speed - 1 note per beat")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<notation id="first-speed-2" showSource="true" caption="First Speed with Groups">
+\cycle("|4|2|2|")
+\beatDuration(2)
+\line("First Speed - 2 notes per beat")
+Sw: S R [G M] P D [N S.]
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>Second Speed (4 notes per beat)</h2>
+
+<p>Second speed uses 4 notes per beat. This is the most common notation speed:</p>
+
+<notation id="second-speed" showSource="true" caption="Second Speed">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Second Speed")
+Sw: S R G M P D N S. R. S. N D P M G R S
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa
+</notation>
+
+<h2>Third Speed (8 notes per beat)</h2>
+
+<p>Third speed doubles the density again to 8 notes per beat:</p>
+
+<notation id="third-speed" showSource="true" caption="Third Speed">
+\cycle("|4|2|2|")
+\beatDuration(8)
+\line("Third Speed")
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D
+</notation>
+
+<h2>Progressive Speed Changes</h2>
+
+<p>A composition often transitions between speeds. Here's how to notate that:</p>
+
+<notation id="progressive" showSource="true" caption="Progressive Speeds">
+\cycle("|4|2|2|")
+
+\beatDuration(2)
+\line("First Speed")
+Sw: S R G M P D N S.
+
+\beatDuration(4)
+\line("Second Speed")
+Sw: S R G M P D N S. R. S. N D P M G R S
+
+\beatDuration(8)
+\line("Third Speed")
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D
+
+\beatDuration(4)
+\line("Back to Second")
+Sw: S. , , , , , , S
+Sh: sa , , , , , , sa
+</notation>
+
+<h2>Using Groups for Variety</h2>
+
+<p>Combine groups with beat duration for rhythmic variety:</p>
+
+<notation id="groups-variety" showSource="true" caption="Groups at Different Speeds">
+\cycle("|4|2|2|")
+
+\beatDuration(4)
+\line("Mixed grouping")
+Sw: S R [G M] P [D N S.] R. [S. N D P] M G R S
+</notation>
+
+<h2>Tips</h2>
+
+<ul>
+  <li>Use <code>\beatDuration(1)</code> or <code>\beatDuration(2)</code> for first speed</li>
+  <li>Use <code>\beatDuration(4)</code> for second speed (most common)</li>
+  <li>Use <code>\beatDuration(8)</code> for third speed</li>
+  <li>Use <code>\line</code> with margin text to mark speed transitions</li>
+  <li>Square brackets create subdivisions within beats</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/reference/commands/">Commands Reference</a> - Complete beatDuration documentation</li>
+  <li><a href="/docs/tutorials/02-commands/">Tutorial: Commands</a> - Learn about beat duration</li>
+  <li><a href="/docs/cookbook/tisram/">Tisram Notation</a> - Working with 3 notes per beat</li>
+</ul>

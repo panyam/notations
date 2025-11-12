@@ -1,0 +1,106 @@
+---
+title: "Tutorial 01: Basics"
+description: "Learn the fundamentals of the Notations DSL"
+---
+
+<h1>Tutorial 01: Basics</h1>
+
+<p>This tutorial covers the fundamental concepts of the Notations DSL. By the end, you'll understand how to write basic Carnatic music notation.</p>
+
+<h2>Notes (Swaras)</h2>
+
+<p>Swaras are written as text tokens without spaces:</p>
+
+<notation id="basic-swaras" showSource="true" caption="Basic Swaras">
+S R G M P D N
+</notation>
+
+<p>Common swaras:</p>
+
+<ul>
+  <li><strong>S</strong> - Shadja (sa)</li>
+  <li><strong>R</strong> - Rishabha (ri)</li>
+  <li><strong>G</strong> - Gandhara (ga)</li>
+  <li><strong>M</strong> - Madhyama (ma)</li>
+  <li><strong>P</strong> - Panchama (pa)</li>
+  <li><strong>D</strong> - Dhaivata (dha)</li>
+  <li><strong>N</strong> - Nishada (ni)</li>
+</ul>
+
+<p>You can use any text as literals. The notation system doesn't assign meaning - only durations and layout matter.</p>
+
+<h2>Octaves</h2>
+
+<p>Add dots before or after a note (without spaces) to indicate octaves:</p>
+
+<notation id="octaves" showSource="true" caption="Octaves">
+...sa ..ri .ga ma pa da. ni. sa.. ri..
+</notation>
+
+<ul>
+  <li><strong>...sa</strong> - Three octaves below</li>
+  <li><strong>.ga</strong> - One octave below</li>
+  <li><strong>ma</strong> - Middle octave (default)</li>
+  <li><strong>da.</strong> - One octave above</li>
+  <li><strong>sa..</strong> - Two octaves above</li>
+</ul>
+
+<h2>Spaces (Karvais)</h2>
+
+<p>Spaces indicate empty durations where the previous note continues. Use commas:</p>
+
+<notation id="spacing" showSource="true" caption="Notes with Spaces">
+S , R , , G
+</notation>
+
+<p>In this example:</p>
+<ul>
+  <li>S has one beat</li>
+  <li>One beat gap (comma) - S continues</li>
+  <li>R has one beat</li>
+  <li>Two beats gap (two commas) - R continues</li>
+  <li>G has one beat</li>
+</ul>
+
+<p>Use semicolon for double space:</p>
+
+<notation id="double-space" showSource="true" caption="Double Spaces">
+S ; R , , G
+</notation>
+
+<h2>Groups</h2>
+
+<p>Square brackets group multiple notes into a single beat:</p>
+
+<notation id="groups" showSource="true" caption="Grouped Notes">
+S [R G] M [P D N] S.
+</notation>
+
+<p>Here, R and G share one beat, and P, D, and N share one beat.</p>
+
+<h2>Multiple Lines (Roles)</h2>
+
+<p>Each role represents different content. Use role selectors with a colon (no space before colon):</p>
+
+<notation id="roles" showSource="true" caption="Swaras and Sahitya">
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<p>The Sw (swara) and Sh (sahitya) roles are aligned automatically.</p>
+
+<h2>Practice Exercise</h2>
+
+<p>Try writing a simple arohanam and avarohanam:</p>
+
+<notation id="practice" showSource="true" caption="Arohanam and Avarohanam">
+Sw: S R G M P D N S. , S. N D P M G R S
+Sh: sa ri ga ma pa dha ni sa , sa ni dha pa ma ga ri sa
+</notation>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/docs/tutorials/02-commands/">Tutorial 02: Commands</a> - Learn about beatDuration, cycle, and layout commands</li>
+  <li><a href="/docs/reference/syntax/">Syntax Reference</a> - Complete DSL specification</li>
+</ul>

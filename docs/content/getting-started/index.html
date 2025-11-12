@@ -1,0 +1,89 @@
+---
+title: "Getting Started"
+description: "Install the Notations library and write your first notation"
+---
+
+<h1>Getting Started</h1>
+
+<p>The Notations library provides tools for parsing, modeling, and rendering Carnatic music notation. This guide will help you install the library and create your first notation.</p>
+
+<h2>Installation</h2>
+
+<p>Install via npm:</p>
+
+<pre><code>npm install notations</code></pre>
+
+<p>Or with yarn:</p>
+
+<pre><code>yarn add notations</code></pre>
+
+<h2>Basic Usage</h2>
+
+<p>Import the library and load a notation string:</p>
+
+<pre><code>import * as N from "notations";
+
+// Parse and render notation
+const source = `
+S R G M P D N S.
+sa ri ga ma pa dha ni sa
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  console.log("Notation loaded successfully");
+  // notation contains the parsed data
+  // beatLayout contains the layout information
+}
+</code></pre>
+
+<h2>Your First Notation</h2>
+
+<p>Try this simple example:</p>
+
+<notation id="first-example" showSource="true" caption="Basic Scale">
+S R G M P D N S.
+sa ri ga ma pa dha ni sa
+</notation>
+
+<p>The notation above shows a basic Carnatic scale with swaras (notes) on the first line and sahitya (lyrics) on the second line. The dot after the final S indicates it's one octave higher.</p>
+
+<h2>Understanding the DSL</h2>
+
+<p>The Notations library uses a domain-specific language (DSL) for writing music. Here are the key concepts:</p>
+
+<ul>
+  <li><strong>Lines</strong>: Each line represents a role (swara, sahitya, percussion, etc.)</li>
+  <li><strong>Notes</strong>: Capital letters represent swaras (S R G M P D N)</li>
+  <li><strong>Spaces</strong>: Commas (,) add timing gaps between notes</li>
+  <li><strong>Groups</strong>: Square brackets group notes that share a beat</li>
+  <li><strong>Octaves</strong>: Dots before a note (.S) for lower octaves, dots after (S.) for higher octaves. Use multiple dots for multiple octaves (S.. or ..S)</li>
+</ul>
+
+<h3>Example with Grouping</h3>
+
+<notation id="grouping-example" showSource="true" caption="Notes with Groups">
+S R [G M] P , D N S.
+</notation>
+
+<p>In this example, G and M are grouped together and share one beat.</p>
+
+<h3>Example with Octaves</h3>
+
+<notation id="octave-example" showSource="true" caption="Notes Across Octaves">
+.N .D S R G M P D N S. R.
+</notation>
+
+<p>This example shows notes spanning three octaves. .N and .D are in the lower octave, S through N are in the middle octave, and S. and R. are in the upper octave.</p>
+
+<h2>Next Steps</h2>
+
+<p>Now that you have the basics, explore these topics:</p>
+
+<ul>
+  <li><a href="/docs/tutorials/">Tutorials</a> - Learn the DSL step by step</li>
+  <li><a href="/docs/reference/">Reference</a> - Complete syntax documentation</li>
+  <li><a href="/docs/cookbook/">Cookbook</a> - Real-world examples</li>
+  <li><a href="/docs/api/">API Documentation</a> - Programmatic usage</li>
+</ul>

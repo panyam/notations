@@ -1,0 +1,112 @@
+---
+title: "Tutorial 04: Advanced Techniques"
+description: "Master complex notation patterns and advanced features"
+---
+
+<h1>Tutorial 04: Advanced Techniques</h1>
+
+<p>This tutorial covers advanced techniques for creating complex Carnatic music notation.</p>
+
+<h2>Nested Groups</h2>
+
+<p>Groups can contain other groups for complex rhythmic patterns:</p>
+
+<notation id="nested-groups" showSource="true" caption="Nested Groups">
+\beatDuration(4)
+S [R [G M] P] D N S.
+</notation>
+
+<p>The inner group [G M] is nested within the outer group [R [G M] P], creating a subdivision.</p>
+
+<h2>Custom Note Durations</h2>
+
+<p>Combine duration prefixes with beat duration for precise control:</p>
+
+<notation id="custom-durations" showSource="true" caption="Custom Durations">
+\beatDuration(4)
+S 2 R [G M] 3 P D N S.
+</notation>
+
+<p>Here, R has duration 2 and P has duration 3 at a beat duration of 4 notes per beat.</p>
+
+<h2>Fractional Durations</h2>
+
+<p>Use fractions for precise duration control:</p>
+
+<notation id="fractional" showSource="true" caption="Fractional Durations">
+\beatDuration(4)
+S 3/2 R G 1/2 M P D N S.
+</notation>
+
+<h2>Multiple Roles</h2>
+
+<p>Use multiple lines to represent different aspects of the composition:</p>
+
+<notation id="multi-role" showSource="true" caption="Multiple Roles">
+\beatDuration(4)
+\role("Perc", notes=true)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+Perc: ta ki ta ta ta ki ta ta
+</notation>
+
+<p>The first line shows swaras, the second shows sahitya, and the third shows percussion syllables.</p>
+
+<h2>Complex Rhythmic Patterns</h2>
+
+<p>Combine groups, spacing, and beat duration to create intricate rhythms:</p>
+
+<notation id="complex-rhythm" showSource="true" caption="Complex Rhythm">
+\beatDuration(2)
+\line("First Speed")
+S [R G] , [M P] D
+\beatDuration(4)
+\line("Second Speed")
+[S R] [G M] [P D] [N S.]
+\beatDuration(2)
+\line("Back to First")
+S.
+</notation>
+
+<h2>Cycle and Line Management</h2>
+
+<p>Use cycle and line commands to organize longer pieces:</p>
+
+<notation id="long-comp" showSource="true" caption="Structured Composition">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S R G M P D N S.
+\line("Anupallavi")
+Sw: S. N D P M G R S
+\line("Charanam")
+Sw: S R [G M] P [D N] S.
+</notation>
+
+<h2>Practice Exercise</h2>
+
+<p>Create a complete composition using all the techniques you've learned:</p>
+
+<notation id="final-practice" showSource="true" caption="Complete Composition">
+\cycle("|4|2|2|")
+\beatDuration(2)
+\line("Opening")
+Sw: S R G M , P D N S.
+Sh: sa ri ga ma , pa dha ni sa
+\beatDuration(4)
+\line("Second Speed")
+Sw: S R [G M] [P D] N S.
+Sh: sa ri ga ma pa dha ni sa
+\beatDuration(2)
+\line("Closing")
+Sw: S. , , S
+Sh: sa , , sa
+</notation>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/docs/reference/">Reference Documentation</a> - Complete syntax specification</li>
+  <li><a href="/docs/cookbook/">Cookbook</a> - Real-world examples and patterns</li>
+  <li><a href="/docs/api/">API Documentation</a> - Use the library programmatically</li>
+</ul>

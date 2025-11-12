@@ -1,0 +1,146 @@
+---
+title: "Cycles Reference"
+description: "Complete reference for talas and rhythmic cycles"
+---
+
+<h1>Cycles Reference</h1>
+
+<p>Cycles (talas) are rhythmic patterns that repeat throughout a composition. In Carnatic music, a cycle consists of multiple bars (angas), each with a specific number of beats.</p>
+
+<h2>Understanding Cycles</h2>
+
+<p>A cycle is defined using the <code>\cycle</code> command with a pattern of beats per bar:</p>
+
+<pre><code>\cycle("|beats1|beats2|beats3|")</code></pre>
+
+<p>For example, Adi tala is <code>"|4|2|2|"</code> meaning 4 beats in the first bar, 2 in the second, and 2 in the third, totaling 8 beats per cycle.</p>
+
+<h2>Common Talas</h2>
+
+<h3>Adi Tala (4+2+2 = 8 beats)</h3>
+
+<p>The most common tala in Carnatic music:</p>
+
+<notation id="adi" showSource="true" caption="Adi Tala">
+\cycle("|4|2|2|")
+\beatDuration(4)
+S R G M P D N S. R. S. N D P M G R S
+</notation>
+
+<p>Adi tala has three angas:</p>
+<ul>
+  <li>First anga: 4 beats (laghu with 4 counts)</li>
+  <li>Second anga: 2 beats (dhrutam)</li>
+  <li>Third anga: 2 beats (dhrutam)</li>
+</ul>
+
+<h3>Rupaka Tala (2+4 = 6 beats)</h3>
+
+<notation id="rupaka" showSource="true" caption="Rupaka Tala">
+\cycle("|2|4|")
+\beatDuration(4)
+S R G M P D N S. R. S. N D
+</notation>
+
+<h3>Misra Chapu (3+2+2 = 7 beats)</h3>
+
+<notation id="misra-chapu" showSource="true" caption="Misra Chapu">
+\cycle("|3|2|2|")
+\beatDuration(4)
+S R G M P D N S. R. S. N D P M G R S .N .D
+</notation>
+
+<h3>Khanda Chapu (2+3 = 5 beats)</h3>
+
+<notation id="khanda-chapu" showSource="true" caption="Khanda Chapu">
+\cycle("|2|3|")
+\beatDuration(4)
+S R G M P D N S. R. S.
+</notation>
+
+<h2>Tala Structure</h2>
+
+<p>Talas are built from three basic angas (units):</p>
+
+<ul>
+  <li><strong>Laghu</strong> - Variable beats (indicated by hand clap + finger counts)</li>
+  <li><strong>Dhrutam</strong> - 2 beats (clap + wave)</li>
+  <li><strong>Anudhrutam</strong> - 1 beat (clap only)</li>
+</ul>
+
+<h2>Gati (Subdivision)</h2>
+
+<p>Each beat can be subdivided into different gatisusing <code>\beatDuration</code>:</p>
+
+<ul>
+  <li><strong>Chatusra</strong> (4 units per beat) - Most common, use <code>\beatDuration(4)</code></li>
+  <li><strong>Tisra</strong> (3 units per beat) - Triplet feel, use <code>\beatDuration(3)</code></li>
+  <li><strong>Khanda</strong> (5 units per beat) - Use <code>\beatDuration(5)</code></li>
+  <li><strong>Misra</strong> (7 units per beat) - Use <code>\beatDuration(7)</code></li>
+  <li><strong>Sankeerna</strong> (9 units per beat) - Use <code>\beatDuration(9)</code></li>
+</ul>
+
+<notation id="gati-example" showSource="true" caption="Chatusra vs Tisra">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Chatusra - 4 per beat")
+S R G M P D N S.
+
+\beatDuration(3)
+\line("Tisra - 3 per beat")
+S R G M P D N S.
+</notation>
+
+<h2>Kalai (Speed)</h2>
+
+<p>Kalai refers to the repetition factor of the cycle. While not directly represented in the DSL, you can think of different beat durations as representing different kalais:</p>
+
+<ul>
+  <li><strong>First kalai</strong> - <code>\beatDuration(1)</code> or <code>\beatDuration(2)</code></li>
+  <li><strong>Second kalai</strong> - <code>\beatDuration(4)</code></li>
+  <li><strong>Third kalai</strong> - <code>\beatDuration(8)</code></li>
+</ul>
+
+<h2>Sapta Talas (Seven Primary Talas)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tala</th>
+      <th>Structure</th>
+      <th>Cycle Pattern (Chatusra)</th>
+      <th>Beats</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Dhruva</td><td>| O || O ||</td><td><code>"|4|2|4|4|"</code></td><td>14</td></tr>
+    <tr><td>Matya</td><td>| O |</td><td><code>"|4|2|4|"</code></td><td>10</td></tr>
+    <tr><td>Rupaka</td><td>O |</td><td><code>"|2|4|"</code></td><td>6</td></tr>
+    <tr><td>Jhampa</td><td>| U O</td><td><code>"|7|1|2|"</code></td><td>10</td></tr>
+    <tr><td>Triputa (Adi)</td><td>| O O</td><td><code>"|4|2|2|"</code></td><td>8</td></tr>
+    <tr><td>Ata</td><td>| | O O</td><td><code>"|5|5|2|2|"</code></td><td>14</td></tr>
+    <tr><td>Eka</td><td>|</td><td><code>"|4|"</code></td><td>4</td></tr>
+  </tbody>
+</table>
+
+<p>Note: | = Laghu, O = Dhrutam, U = Anudhrutam. The beats shown assume Chatusra laghu (4 beats).</p>
+
+<h2>Hand Gestures (Kriyas)</h2>
+
+<p>Each bar in a cycle corresponds to a hand gesture used by performers:</p>
+
+<ul>
+  <li><strong>Laghu</strong> - Clap followed by finger counts</li>
+  <li><strong>Dhrutam</strong> - Clap followed by wave</li>
+  <li><strong>Anudhrutam</strong> - Single clap</li>
+</ul>
+
+<p>This is why the distinction between <code>"|4|"</code> (one 4-beat bar) and <code>"|2|2|"</code> (two 2-beat bars) matters - they result in different hand gestures and rhythmic feels.</p>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/reference/commands/">Commands Reference</a> - \cycle command details</li>
+  <li><a href="/docs/cookbook/common-talas/">Cookbook: Common Talas</a> - Practical examples</li>
+  <li><a href="/docs/tutorials/02-commands/">Tutorial: Commands</a> - Learn about cycles</li>
+</ul>

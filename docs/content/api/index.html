@@ -1,0 +1,168 @@
+---
+title: "API Documentation"
+description: "Use the Notations library programmatically"
+---
+
+<h1>API Documentation</h1>
+
+<p>The Notations library provides a programmatic API for parsing, modeling, and rendering Carnatic music notation. This guide shows you how to use the library in your JavaScript or TypeScript applications.</p>
+
+<h2>Basic Usage</h2>
+
+<p>Import the library and use the <code>load</code> function to parse notation:</p>
+
+<pre><code>import * as N from "notations";
+
+const source = `
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  console.log("Notation loaded successfully");
+  console.log("Notation:", notation);
+  console.log("Beat Layout:", beatLayout);
+} else {
+  console.error("Errors:", errors);
+}
+</code></pre>
+
+<h2>Return Values</h2>
+
+<p>The <code>N.load()</code> function returns a tuple with three elements:</p>
+
+<ol>
+  <li><strong>notation</strong> - The parsed notation object containing all commands, roles, and atoms</li>
+  <li><strong>beatLayout</strong> - Layout information for rendering the notation</li>
+  <li><strong>errors</strong> - Array of parsing errors (empty if successful)</li>
+</ol>
+
+<h2>Working with Notation Objects</h2>
+
+<p>The notation object contains structured data about your composition:</p>
+
+<pre><code>const [notation, beatLayout, errors] = N.load(source);
+
+// Access metadata
+console.log("Current cycle:", notation.currentCycle);
+console.log("Current APB:", notation.currentAPB);
+
+// Access roles
+notation.roles.forEach(role => {
+  console.log("Role:", role.name);
+});
+
+// Access blocks and lines
+notation.blocks.forEach(block => {
+  block.lines.forEach(line => {
+    console.log("Line:", line);
+  });
+});
+</code></pre>
+
+<h2>Error Handling</h2>
+
+<p>Always check for parsing errors before using the notation:</p>
+
+<pre><code>const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  errors.forEach(error => {
+    console.error("Error:", error.message);
+    console.error("Line:", error.line);
+    console.error("Column:", error.column);
+  });
+  return;
+}
+
+// Safe to use notation here
+processNotation(notation, beatLayout);
+</code></pre>
+
+<h2>Using the Parser Directly</h2>
+
+<p>For more control, use the Parser class:</p>
+
+<pre><code>import { Parser } from "notations";
+
+const parser = new Parser();
+const result = parser.parse(source);
+
+console.log("Commands:", parser.commands);
+console.log("Metadata:", parser.metadata);
+console.log("Errors:", parser.errors);
+</code></pre>
+
+<h2>Rendering</h2>
+
+<p>The library provides rendering capabilities through the NotationView:</p>
+
+<pre><code>import * as N from "notations";
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  const container = document.getElementById("notation-container");
+  const view = N.Carnatic.createNotationView(container);
+  view.setNotation(notation, beatLayout);
+}
+</code></pre>
+
+<h2>TypeScript Support</h2>
+
+<p>The library includes full TypeScript type definitions:</p>
+
+<pre><code>import * as N from "notations";
+import { Notation, BeatLayout, ParseError } from "notations";
+
+function loadNotation(source: string): [Notation, BeatLayout, ParseError[]] {
+  return N.load(source);
+}
+</code></pre>
+
+<h2>Web Components</h2>
+
+<p>For easy integration in web applications, use the separate web-components package:</p>
+
+<pre><code>npm install @notations/web-components notations
+</code></pre>
+
+<pre><code>import { NotationBlock } from "@notations/web-components";
+import * as NV from "./NotationViewer";
+
+const container = document.getElementById("notation-container");
+const config = {
+  createViewer: NV.createViewer,
+  cssClasses: {
+    sourceContainer: "bg-white",
+    outputContainer: "p-4"
+  }
+};
+
+const block = new NotationBlock(container, config);
+</code></pre>
+
+<p>See the <a href="/docs/api/web-components/">Web Components Guide</a> for details.</p>
+
+<h2>Core Concepts</h2>
+
+<ul>
+  <li><strong>Notation</strong> - Top-level object containing the entire composition</li>
+  <li><strong>Block</strong> - A section of notation with multiple lines</li>
+  <li><strong>Line</strong> - A horizontal line of notation containing multiple roles</li>
+  <li><strong>Role</strong> - A type of content (Sw for swaras, Sh for sahitya)</li>
+  <li><strong>Atom</strong> - Basic unit (Note, Space, Rest, Group)</li>
+  <li><strong>BeatLayout</strong> - Layout information for rendering</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/getting-started/">Getting Started</a> - Installation and basic usage</li>
+  <li><a href="/docs/reference/">Reference Documentation</a> - Complete DSL specification</li>
+  <li><a href="/docs/cookbook/">Cookbook</a> - Real-world examples</li>
+</ul>

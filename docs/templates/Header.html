@@ -10,7 +10,6 @@
 
         <nav class="main-nav">
             {{ $navLinks := (json "HeaderNavLinks.json" "") }}
-            {{ debug "Navlinks: "  $navLinks }}
             {{ range $navLinks }}
             <div class="nav-item{{ if .children }} has-children{{ end }}">
                 <a href="{{ .url }}" class="nav-link">

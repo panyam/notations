@@ -1,0 +1,294 @@
+---
+title: "API Examples"
+description: "Code examples for using the Notations library"
+---
+
+<h1>API Examples</h1>
+
+<p>Practical code examples demonstrating how to use the Notations library in different scenarios.</p>
+
+<h2>Basic Parsing</h2>
+
+<pre><code>import * as N from "notations";
+
+const source = `
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  console.error("Parse errors:", errors);
+} else {
+  console.log("Parsed successfully!");
+  console.log("Cycle:", notation.currentCycle);
+  console.log("Beat duration:", notation.currentAPB);
+}
+</code></pre>
+
+<h2>Rendering Notation</h2>
+
+<pre><code>import * as N from "notations";
+
+// Parse the notation
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Create a view
+  const container = document.getElementById("notation-output");
+  const view = N.Carnatic.createNotationView(container);
+
+  // Render the notation
+  view.setNotation(notation, beatLayout);
+}
+</code></pre>
+
+<h2>Dynamic Notation Editor</h2>
+
+<pre><code>import * as N from "notations";
+
+const textarea = document.getElementById("editor");
+const output = document.getElementById("output");
+const errors = document.getElementById("errors");
+
+let view = null;
+
+function renderNotation() {
+  const source = textarea.value;
+  const [notation, beatLayout, parseErrors] = N.load(source);
+
+  if (parseErrors.length > 0) {
+    // Display errors
+    errors.innerHTML = parseErrors
+      .map(e => `Line ${e.line}, Col ${e.column}: ${e.message}`)
+      .join('<br>');
+    errors.style.display = 'block';
+  } else {
+    // Clear errors
+    errors.style.display = 'none';
+
+    // Create view if needed
+    if (!view) {
+      view = N.Carnatic.createNotationView(output);
+    }
+
+    // Render notation
+    view.setNotation(notation, beatLayout);
+  }
+}
+
+// Update on input
+textarea.addEventListener('input', renderNotation);
+
+// Initial render
+renderNotation();
+</code></pre>
+
+<h2>Analyzing Notation Structure</h2>
+
+<pre><code>import * as N from "notations";
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Count notes
+  let noteCount = 0;
+  notation.blocks.forEach(block => {
+    block.lines.forEach(line => {
+      Object.values(line.roles).forEach(role => {
+        role.atoms.forEach(atom => {
+          if (atom.type === "Literal") {
+            noteCount++;
+          }
+        });
+      });
+    });
+  });
+
+  console.log("Total notes:", noteCount);
+
+  // List all roles
+  const roleNames = notation.roles.map(r => r.name);
+  console.log("Roles:", roleNames);
+
+  // Get cycle information
+  console.log("Cycle pattern:", notation.currentCycle);
+  console.log("Atoms per beat:", notation.currentAPB);
+}
+</code></pre>
+
+<h2>Server-Side Rendering</h2>
+
+<pre><code>// Node.js example
+const N = require('notations');
+const fs = require('fs');
+
+// Read notation from file
+const source = fs.readFileSync('composition.txt', 'utf8');
+
+// Parse notation
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  console.error('Parse errors:');
+  errors.forEach(e => {
+    console.error(`  Line ${e.line}, Col ${e.column}: ${e.message}`);
+  });
+  process.exit(1);
+}
+
+// Process notation data
+const output = {
+  title: notation.metadata.title || 'Untitled',
+  cycle: notation.currentCycle,
+  beatDuration: notation.currentAPB,
+  roles: notation.roles.map(r => r.name),
+  blockCount: notation.blocks.length
+};
+
+// Write to JSON
+fs.writeFileSync('output.json', JSON.stringify(output, null, 2));
+
+console.log('Notation processed successfully');
+</code></pre>
+
+<h2>Batch Processing</h2>
+
+<pre><code>import * as N from "notations";
+import * as fs from "fs/promises";
+import * as path from "path";
+
+async function processNotationFiles(directory) {
+  const files = await fs.readdir(directory);
+  const results = [];
+
+  for (const file of files) {
+    if (file.endsWith('.txt')) {
+      const fullPath = path.join(directory, file);
+      const source = await fs.readFile(fullPath, 'utf8');
+
+      const [notation, beatLayout, errors] = N.load(source);
+
+      results.push({
+        file: file,
+        success: errors.length === 0,
+        errors: errors.length,
+        blocks: notation?.blocks.length || 0
+      });
+    }
+  }
+
+  return results;
+}
+
+// Usage
+processNotationFiles('./notations').then(results => {
+  console.log('Processing complete:');
+  results.forEach(r => {
+    console.log(`  ${r.file}: ${r.success ? 'OK' : 'ERRORS'}`);
+  });
+});
+</code></pre>
+
+<h2>Custom Error Handling</h2>
+
+<pre><code>import * as N from "notations";
+
+function parseNotationSafely(source) {
+  try {
+    const [notation, beatLayout, errors] = N.load(source);
+
+    if (errors.length > 0) {
+      throw new Error(
+        'Parse errors:\n' +
+        errors.map(e =>
+          `Line ${e.line}, Column ${e.column}: ${e.message}`
+        ).join('\n')
+      );
+    }
+
+    return { notation, beatLayout };
+  } catch (error) {
+    console.error('Failed to parse notation:', error.message);
+    throw error;
+  }
+}
+
+// Usage
+try {
+  const { notation, beatLayout } = parseNotationSafely(source);
+  // Use notation and beatLayout
+} catch (error) {
+  // Handle error gracefully
+  displayErrorToUser(error.message);
+}
+</code></pre>
+
+<h2>Working with Metadata</h2>
+
+<pre><code>import * as N from "notations";
+
+const source = `
+---
+title: "Mohana Varnam"
+raga: "Bhairavi"
+composer: "Papanasam Sivan"
+---
+
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+Sw: S R G M P D N S.
+`;
+
+const parser = new N.Parser();
+parser.parse(source);
+
+console.log('Metadata:', parser.metadata);
+// Output: { title: "Mohana Varnam", raga: "Bhairavi", ... }
+
+const [notation, beatLayout, errors] = N.load(source);
+console.log('Title:', notation.metadata.title);
+</code></pre>
+
+<h2>Filtering and Transforming</h2>
+
+<pre><code>import * as N from "notations";
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Extract only swara role
+  const swaraLines = notation.blocks.flatMap(block =>
+    block.lines.map(line => line.roles['Sw'])
+  ).filter(role => role !== undefined);
+
+  console.log('Swara lines:', swaraLines.length);
+
+  // Count spaces
+  let spaceCount = 0;
+  notation.blocks.forEach(block => {
+    block.lines.forEach(line => {
+      Object.values(line.roles).forEach(role => {
+        role.atoms.forEach(atom => {
+          if (atom.type === "Space") {
+            spaceCount++;
+          }
+        });
+      });
+    });
+  });
+
+  console.log('Total spaces:', spaceCount);
+}
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/api/integration-guide/">Integration Guide</a> - Framework integration</li>
+  <li><a href="/docs/api/reference/">API Reference</a> - Complete API documentation</li>
+  <li><a href="/docs/tutorials/">Tutorials</a> - Learn the DSL</li>
+</ul>

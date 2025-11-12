@@ -1,0 +1,202 @@
+---
+title: "Syntax Reference"
+description: "Complete syntax specification for the Notations DSL"
+---
+
+<h1>Syntax Reference</h1>
+
+<p>This document provides a complete reference for the Notations domain-specific language (DSL).</p>
+
+<h2>Basic Elements</h2>
+
+<h3>Literals (Notes and Syllables)</h3>
+
+<p>Literals are text tokens without spaces. Any text can be used as a literal:</p>
+
+<notation id="literals" showSource="true" caption="Various Literals">
+S R G M P D N
+sa ri ga ma pa dha ni
+do re mi fa so la ti
+</notation>
+
+<p>The notation system doesn't assign meaning to literals - only durations and layout matter.</p>
+
+<h3>Octaves</h3>
+
+<p>Dots indicate octaves. Place dots before a note for lower octaves, after for higher octaves (no spaces):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Syntax</th>
+      <th>Octave</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>...S</code></td><td>Three octaves below</td></tr>
+    <tr><td><code>..S</code></td><td>Two octaves below</td></tr>
+    <tr><td><code>.S</code></td><td>One octave below</td></tr>
+    <tr><td><code>S</code></td><td>Middle octave (default)</td></tr>
+    <tr><td><code>S.</code></td><td>One octave above</td></tr>
+    <tr><td><code>S..</code></td><td>Two octaves above</td></tr>
+    <tr><td><code>S...</code></td><td>Three octaves above</td></tr>
+  </tbody>
+</table>
+
+<notation id="octaves" showSource="true" caption="Octave Examples">
+..S .S S S. S..
+</notation>
+
+<h3>Whitespace</h3>
+
+<p>Spaces and line breaks between notes are ignored by the parser. They don't affect timing or layout:</p>
+
+<notation id="whitespace" showSource="true" caption="Whitespace is Ignored">
+S R G M
+S    R    G    M
+</notation>
+
+<p>Both lines produce identical output.</p>
+
+<h3>Spaces (Karvais)</h3>
+
+<p>Spaces represent empty durations where the previous note continues. Use commas:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Name</th>
+      <th>Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>,</code></td><td>Space (Karvai)</td><td>1 unit</td></tr>
+    <tr><td><code>;</code></td><td>Double space</td><td>2 units</td></tr>
+    <tr><td><code>_</code></td><td>Silent space</td><td>1 unit (not displayed)</td></tr>
+  </tbody>
+</table>
+
+<notation id="spaces" showSource="true" caption="Spaces">
+S , R ; G , , M
+</notation>
+
+<p>Silent spaces consume duration without displaying the space symbol, useful to avoid clutter.</p>
+
+<h3>Rests</h3>
+
+<p>Use hyphen for an explicit rest (no note continuation):</p>
+
+<notation id="rests" showSource="true" caption="Rests">
+S - R - - G
+</notation>
+
+<h3>Groups</h3>
+
+<p>Square brackets group multiple notes into a single beat:</p>
+
+<notation id="groups" showSource="true" caption="Groups">
+S [R G] M [P D N] S.
+</notation>
+
+<p>Groups can be nested:</p>
+
+<notation id="nested" showSource="true" caption="Nested Groups">
+S [R [G M] P] D
+</notation>
+
+<h3>Note Durations</h3>
+
+<p>Prefix a note with a number or fraction to set its duration:</p>
+
+<notation id="durations" showSource="true" caption="Custom Durations">
+\beatDuration(4)
+S 2 R G 3 M
+</notation>
+
+<p>Fractional durations are also supported:</p>
+
+<notation id="fractions" showSource="true" caption="Fractional Durations">
+\beatDuration(4)
+S 3/2 R G 1/2 M
+</notation>
+
+<h2>Roles</h2>
+
+<p>Roles represent different types of content. Use a role selector with a colon (no space before colon):</p>
+
+<notation id="roles" showSource="true" caption="Role Selectors">
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<p>Common roles:</p>
+<ul>
+  <li><strong>Sw</strong> - Swaras (notes)</li>
+  <li><strong>Sh</strong> - Sahitya (lyrics)</li>
+</ul>
+
+<p>Create custom roles with the <code>\role</code> command.</p>
+
+<h2>Commands</h2>
+
+<p>Commands start with a backslash and control notation behavior:</p>
+
+<pre><code>\commandName(param1, param2, key=value)</code></pre>
+
+<p>See the <a href="/docs/reference/commands/">Commands Reference</a> for details.</p>
+
+<h2>Embellishments</h2>
+
+<p>Embellishments start with a tilde and continue until whitespace:</p>
+
+<notation id="embellishments" showSource="true" caption="Embellishments">
+S ~kampita R G ~jaru M
+</notation>
+
+<p>See the <a href="/docs/reference/embellishments/">Embellishments Reference</a> for details.</p>
+
+<h2>Comments</h2>
+
+<p>Use <code>//</code> for line comments:</p>
+
+<pre><code>// This is a comment
+S R G M
+// Comments are ignored by the parser
+P D N S.
+</code></pre>
+
+<p>Block comments are also supported:</p>
+
+<pre><code>/* This is a
+   multi-line comment */
+S R G M
+</code></pre>
+
+<h2>Grammar Summary</h2>
+
+<pre><code>notation      := elements
+elements      := (command | roleSelector | atoms)*
+command       := "\\" name "(" params? ")"
+roleSelector  := name ":"
+atoms         := atom+
+atom          := duration? leaf marker?
+leaf          := literal | group | space | rest
+literal       := (dots? ident dots?) embellishment?
+group         := "[" atoms "]"
+space         := "," | ";" | "_"
+rest          := "-"
+duration      := number | fraction
+fraction      := number "/" number
+octave        := "."+ (before or after literal)
+embellishment := "~" text
+marker        := "<<" text ">>" | ">>" text "<<"
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/reference/commands/">Commands Reference</a></li>
+  <li><a href="/docs/reference/embellishments/">Embellishments Reference</a></li>
+  <li><a href="/docs/tutorials/">Tutorials</a></li>
+</ul>

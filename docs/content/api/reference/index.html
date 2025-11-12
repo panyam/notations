@@ -1,0 +1,243 @@
+---
+title: "API Reference"
+description: "Complete API reference for the Notations library"
+---
+
+<h1>API Reference</h1>
+
+<p>Complete API reference for the Notations library classes, interfaces, and functions.</p>
+
+<h2>Core Functions</h2>
+
+<h3>N.load(source: string)</h3>
+
+<p>Main function to parse and load notation from a source string.</p>
+
+<h4>Parameters</h4>
+
+<ul>
+  <li><strong>source</strong> (string) - The notation DSL source code</li>
+</ul>
+
+<h4>Returns</h4>
+
+<p>Tuple of <code>[Notation, BeatLayout, ParseError[]]</code></p>
+
+<ul>
+  <li><strong>Notation</strong> - Parsed notation object</li>
+  <li><strong>BeatLayout</strong> - Layout information for rendering</li>
+  <li><strong>ParseError[]</strong> - Array of parsing errors (empty if successful)</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>const [notation, beatLayout, errors] = N.load(source);
+if (errors.length === 0) {
+  // Use notation and beatLayout
+}
+</code></pre>
+
+<h2>Parser Class</h2>
+
+<h3>new Parser()</h3>
+
+<p>Creates a new parser instance for more control over parsing.</p>
+
+<h4>Methods</h4>
+
+<ul>
+  <li><strong>parse(source: string)</strong> - Parse the source and return the result</li>
+</ul>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>commands</strong> - Array of parsed commands</li>
+  <li><strong>metadata</strong> - Parsed frontmatter metadata</li>
+  <li><strong>errors</strong> - Array of parse errors</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>const parser = new Parser();
+const result = parser.parse(source);
+console.log("Commands:", parser.commands);
+console.log("Errors:", parser.errors);
+</code></pre>
+
+<h2>Notation Class</h2>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>blocks</strong> - Array of Block objects</li>
+  <li><strong>roles</strong> - Array of role definitions</li>
+  <li><strong>currentCycle</strong> - Current cycle pattern</li>
+  <li><strong>currentAPB</strong> - Current atoms per beat (beat duration)</li>
+  <li><strong>currentBreaks</strong> - Current line break pattern</li>
+  <li><strong>metadata</strong> - Metadata from frontmatter</li>
+</ul>
+
+<h3>Methods</h3>
+
+<ul>
+  <li><strong>newRoleDef(name, notesOnly)</strong> - Create a new role definition</li>
+  <li><strong>setCurrRole(name)</strong> - Set the current active role</li>
+  <li><strong>newLine()</strong> - Create a new line</li>
+  <li><strong>ensureNamedLayoutParams(name)</strong> - Get or create named layout parameters</li>
+</ul>
+
+<h2>Block Class</h2>
+
+<p>Represents a block of notation with multiple lines.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>lines</strong> - Array of Line objects</li>
+  <li><strong>index</strong> - Block index in the notation</li>
+</ul>
+
+<h2>Line Class</h2>
+
+<p>Represents a single line of notation containing multiple roles.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>roles</strong> - Map of role name to RoleView</li>
+  <li><strong>offset</strong> - Line offset (Fraction)</li>
+  <li><strong>marginText</strong> - Text to display in margin</li>
+  <li><strong>layoutParams</strong> - Layout parameters for this line</li>
+</ul>
+
+<h3>Methods</h3>
+
+<ul>
+  <li><strong>addAtoms(roleName, notesOnly, ...atoms)</strong> - Add atoms to a role</li>
+</ul>
+
+<h2>Atom Classes</h2>
+
+<h3>Note</h3>
+
+<p>Represents a musical note or syllable.</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>value</strong> - The note text (e.g., "S", "ri")</li>
+  <li><strong>octave</strong> - Octave offset (0 = middle)</li>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+  <li><strong>embellishments</strong> - Array of gamaka objects</li>
+</ul>
+
+<h3>Group</h3>
+
+<p>Represents a group of atoms sharing a beat.</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>atoms</strong> - Array of Atom objects</li>
+  <li><strong>duration</strong> - Total duration (Fraction)</li>
+</ul>
+
+<h3>Space</h3>
+
+<p>Represents an empty duration (karvai).</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>isSilent</strong> - Whether this is a silent space</li>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+</ul>
+
+<h3>Rest</h3>
+
+<p>Represents an explicit rest (no note continuation).</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+</ul>
+
+<h2>BeatLayout Class</h2>
+
+<p>Contains layout information for rendering.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>beats</strong> - Array of Beat objects</li>
+  <li><strong>totalDuration</strong> - Total duration of the layout</li>
+</ul>
+
+<h2>Carnatic Module</h2>
+
+<h3>N.Carnatic.createNotationView(container)</h3>
+
+<p>Creates a notation view for rendering Carnatic notation.</p>
+
+<h4>Parameters</h4>
+
+<ul>
+  <li><strong>container</strong> (HTMLElement) - DOM element to render into</li>
+</ul>
+
+<h4>Returns</h4>
+
+<p>NotationView object</p>
+
+<h4>Example</h4>
+
+<pre><code>const container = document.getElementById("notation");
+const view = N.Carnatic.createNotationView(container);
+view.setNotation(notation, beatLayout);
+</code></pre>
+
+<h2>NotationView Class</h2>
+
+<h3>Methods</h3>
+
+<ul>
+  <li><strong>setNotation(notation, beatLayout)</strong> - Render notation to the view</li>
+  <li><strong>clear()</strong> - Clear the rendered notation</li>
+</ul>
+
+<h2>ParseError Interface</h2>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>message</strong> - Error message</li>
+  <li><strong>line</strong> - Line number where error occurred</li>
+  <li><strong>column</strong> - Column number where error occurred</li>
+</ul>
+
+<h2>TypeScript Types</h2>
+
+<p>The library includes full TypeScript type definitions:</p>
+
+<pre><code>import {
+  Notation,
+  BeatLayout,
+  ParseError,
+  Parser,
+  Note,
+  Group,
+  Space,
+  Rest,
+  Atom
+} from 'notations';
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/docs/api/integration-guide/">Integration Guide</a> - How to use the API</li>
+  <li><a href="/docs/api/examples/">Examples</a> - Code examples</li>
+  <li><a href="/docs/api/">API Overview</a> - Introduction to the API</li>
+</ul>

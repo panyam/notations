@@ -1,4 +1,4 @@
-import { NotationBlock, NotationBlockConfig } from "@notations/web-components";
+import { NotationBlock, NotationBlockConfig } from "notations-web";
 import * as NV from "./NotationViewer";
 
 class DocsPage {
