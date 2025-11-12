@@ -177,35 +177,41 @@ console.log("Errors:", parser.errors);
 
 <h2>Carnatic Module</h2>
 
-<h3>N.Carnatic.createNotationView(container)</h3>
+<h3>N.Carnatic.NotationView</h3>
 
-<p>Creates a notation view for rendering Carnatic notation.</p>
+<p>Class for rendering Carnatic notation to the DOM.</p>
+
+<h4>Constructor</h4>
+
+<pre><code>new N.Carnatic.NotationView(container, config?)</code></pre>
 
 <h4>Parameters</h4>
 
 <ul>
   <li><strong>container</strong> (HTMLElement) - DOM element to render into</li>
+  <li><strong>config</strong> (optional) - Configuration object</li>
 </ul>
 
-<h4>Returns</h4>
+<h4>Methods</h4>
 
-<p>NotationView object</p>
+<ul>
+  <li><strong>renderNotation(notation, beatLayout)</strong> - Render notation to the view</li>
+</ul>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>notation</strong> - Current notation object</li>
+  <li><strong>beatLayout</strong> - Current beat layout</li>
+  <li><strong>rootElement</strong> - Root HTML element</li>
+</ul>
 
 <h4>Example</h4>
 
 <pre><code>const container = document.getElementById("notation");
-const view = N.Carnatic.createNotationView(container);
-view.setNotation(notation, beatLayout);
+const view = new N.Carnatic.NotationView(container);
+view.renderNotation(notation, beatLayout);
 </code></pre>
-
-<h2>NotationView Class</h2>
-
-<h3>Methods</h3>
-
-<ul>
-  <li><strong>setNotation(notation, beatLayout)</strong> - Render notation to the view</li>
-  <li><strong>clear()</strong> - Clear the rendered notation</li>
-</ul>
 
 <h2>ParseError Interface</h2>
 

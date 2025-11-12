@@ -107,8 +107,8 @@ const [notation, beatLayout, errors] = N.load(source);
 
 if (errors.length === 0) {
   const container = document.getElementById("notation-container");
-  const view = N.Carnatic.createNotationView(container);
-  view.setNotation(notation, beatLayout);
+  const view = new N.Carnatic.NotationView(container);
+  view.renderNotation(notation, beatLayout);
 }
 </code></pre>
 

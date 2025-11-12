@@ -22,7 +22,7 @@ import * as N from "notations";
 
 // Define how to create notation viewers
 function createViewer(container) {
-  return N.Carnatic.createNotationView(container);
+  return new N.Carnatic.NotationView(container);
 }
 
 // Configure the notation block
@@ -84,7 +84,7 @@ function NotationViewer({ source }) {
 
     // Create view on first render
     if (!viewRef.current) {
-      viewRef.current = N.Carnatic.createNotationView(
+      viewRef.current = new N.Carnatic.NotationView(
         containerRef.current
       );
     }
@@ -93,7 +93,7 @@ function NotationViewer({ source }) {
     const [notation, beatLayout, errors] = N.load(source);
 
     if (errors.length === 0) {
-      viewRef.current.setNotation(notation, beatLayout);
+      viewRef.current.renderNotation(notation, beatLayout);
     } else {
       console.error("Notation errors:", errors);
     }
@@ -149,7 +149,7 @@ export default {
     };
   },
   mounted() {
-    this.view = N.Carnatic.createNotationView(this.$refs.container);
+    this.view = new N.Carnatic.NotationView(this.$refs.container);
     this.renderNotation();
   },
   watch: {
@@ -162,7 +162,7 @@ export default {
       const [notation, beatLayout, errors] = N.load(this.source);
 
       if (errors.length === 0) {
-        this.view.setNotation(notation, beatLayout);
+        this.view.renderNotation(notation, beatLayout);
       } else {
         console.error('Notation errors:', errors);
       }
