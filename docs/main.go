@@ -43,52 +43,18 @@ var Site = s3.Site{
 			"BodyTemplateName": "Content",
 		},
 	},
-
-	/*
-		// Build rules (order matters - first match wins)
-		BuildRules: []s3.Rule{
-			// Parametric pages must come first (for tags, categories, etc.)
-			&s3.ParametricPages{
-				Renderers: map[string]s3.Rule{
-					".md":   &s3.MDToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".md"}}},
-					".mdx":  &s3.MDToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".mdx"}}},
-					".html": &s3.HTMLToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".html"}}},
-					".htm":  &s3.HTMLToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".htm"}}},
-				},
-			},
-
-			// Markdown to HTML conversion
-			&s3.MDToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".md", ".mdx"}}},
-
-			// HTML to HTML (with templating)
-			&s3.HTMLToHtml{BaseToHtmlRule: s3.BaseToHtmlRule{Extensions: []string{".htm", ".html"}}},
-		},
-
-		// Priority function for build order
-		// Parametric pages -> Index pages -> Regular pages
-		PriorityFunc: func(res *s3.Resource) int {
-			if res.IsParametric {
-				return 1000 // Highest priority
-			}
-			if res.IsIndex {
-				return 100 // Medium priority
-			}
-			return 0 // Default priority
-		},
-	*/
-}
-
-func init() {
-	// In development mode, enable live reloading
-	if os.Getenv("NOTATIONS_ENV") != "production" {
-		Site.Rebuild(nil)
-		Site.Watch()
-	}
 }
 
 func main() {
 	flag.Parse()
 	log.Println("Build: ", *build, reflect.TypeOf(*build))
+
+	// In development mode, enable live reloading
+	if *build || os.Getenv("NOTATIONS_DOCS_ENV") != "production" {
+		Site.Rebuild(nil)
+		Site.Watch()
+	}
+
 	if !*build {
 		Site.Serve(*addr)
 	}

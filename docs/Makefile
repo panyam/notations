@@ -6,7 +6,7 @@ all: build run
 run:
 	# cp ../secrets/notations/.env /tmp
 	# cp ../secrets/notations/.env.dev /tmp
-	NOTATIONS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
+	NOTATIONS_DOCS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
 
 webpack:
 	pnpm build
@@ -32,7 +32,7 @@ resymlink:
 # GitHub Pages deployment
 gh-pages: build
 	@echo "Building production site..."
-	@NOTATIONS_ENV=production go run main.go -build
+	@NOTATIONS_DOCS_ENV=production go run main.go -build
 	@echo "Deploying to gh-pages branch..."
 	@if [ -d dist/docs/.git ]; then \
 		echo "Error: dist/docs appears to be a git repo. Please remove it first."; \

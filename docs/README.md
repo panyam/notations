@@ -108,7 +108,7 @@ sa ri ga ma pa dha ni sa
    # From notations root
    go run docs/main.go
    # Or just run the site with watch mode
-   NOTATIONS_ENV=dev go run docs/main.go
+   NOTATIONS_DOCS_ENV=dev go run docs/main.go
    ```
 
 3. **View site**:
@@ -125,7 +125,7 @@ sa ri ga ma pa dha ni sa
 For development, use watch mode:
 
 ```bash
-NOTATIONS_ENV=dev go run docs/main.go
+NOTATIONS_DOCS_ENV=dev go run docs/main.go
 ```
 
 This will:
@@ -181,7 +181,7 @@ cd docs/components
 pnpm build:production
 
 # Build site
-NOTATIONS_ENV=production go run docs/main.go
+NOTATIONS_DOCS_ENV=production go run docs/main.go
 
 # Output ready in: docs/dist/docs/
 ```
@@ -199,7 +199,7 @@ cp -r docs/dist/docs/* ../gh-pages/
 
 1. Build command: `go run docs/main.go`
 2. Output directory: `docs/dist/docs`
-3. Set environment: `NOTATIONS_ENV=production`
+3. Set environment: `NOTATIONS_DOCS_ENV=production`
 
 ## Content Authoring Guidelines
 
