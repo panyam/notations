@@ -1,11 +1,11 @@
-# @notations/web-components
+# notations-web
 
 Web components for the [Notations](https://github.com/panyam/notations) library - interactive notation blocks, editors, and viewers for Carnatic music notation.
 
 ## Installation
 
 ```bash
-npm install @notations/web-components notations
+npm install notations-web notations
 ```
 
 Note: `notations` is a peer dependency and must be installed separately.
@@ -19,7 +19,7 @@ Interactive component for rendering `<notation>` tags with optional source code 
 #### Basic Usage
 
 ```typescript
-import { NotationBlock, NotationBlockConfig } from "@notations/web-components";
+import { NotationBlock, NotationBlockConfig } from "notations-web";
 import * as N from "notations";
 
 // Define your viewer factory

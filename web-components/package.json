@@ -1,5 +1,5 @@
 {
-  "name": "@notations/web-components",
+  "name": "notations-web",
   "version": "0.0.1",
   "description": "Web components for the Notations library - interactive notation blocks, editors, and viewers",
   "main": "dist/index.js",
