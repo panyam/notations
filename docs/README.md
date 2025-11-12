@@ -6,40 +6,40 @@ This directory contains the complete documentation for the Notations library, bu
 
 ```
 docs/
-├── main.go                  # s3gen site configuration
-├── go.mod                   # Go module definition
-├── Makefile                 # Build automation & symlink management
-├── content/                 # Source content (Markdown/HTML)
-│   ├── index.html          # Documentation homepage
-│   ├── SiteMetadata.json   # Global site configuration
-│   ├── HeaderNavLinks.json # Navigation structure
-│   ├── getting-started/    # Installation & quick start
-│   ├── tutorials/          # Progressive tutorials
-│   │   ├── 01-basics/      # Fundamentals
-│   │   ├── 02-commands/    # Commands & control
-│   │   ├── 03-embelishments/ # Gamakas & ornaments
-│   │   └── 04-advanced/    # Advanced topics
-│   ├── reference/          # Complete syntax reference
-│   ├── cookbook/           # Real-world examples
-│   ├── api/               # Developer API documentation
-│   └── contributing/       # Contributor guides
-├── templates/              # Go template files
-│   ├── BasePage.html      # Main page template
-│   ├── Header.html        # Site header
-│   ├── Sidebar.html       # Sidebar with navigation
-│   ├── Footer.html        # Site footer
-│   ├── Content.html       # Default content template
-│   └── nav/              # Section-specific navigation
-├── components/            # TypeScript interactive components
-│   ├── DocsPage.ts       # Main page controller
-│   └── NotationBlock.ts  # Interactive notation renderer
-├── static/               # Static assets
-│   ├── css/             # Stylesheets
-│   ├── js/              # JavaScript
-│   │   └── gen/        # Webpack-generated bundles
-│   └── images/          # Images and icons
-└── sites/               # Build output
-    └── docs/           # Generated static site
+├── main.go                       # s3gen site configuration
+├── go.mod                        # Go module definition
+├── Makefile                      # Build automation & symlink management
+├── content/                      # Source content (Markdown/HTML)
+│   ├── index.html                # Documentation homepage
+│   ├── SiteMetadata.json         # Global site configuration
+│   ├── HeaderNavLinks.json       # Navigation structure
+│   ├── getting-started/          # Installation & quick start
+│   ├── tutorials/                # Progressive tutorials
+│   │   ├── 01-basics/            # Fundamentals
+│   │   ├── 02-commands/          # Commands & control
+│   │   ├── 03-embelishments/     # Gamakas & ornaments
+│   │   └── 04-advanced/          # Advanced topics
+│   ├── reference/                # Complete syntax reference
+│   ├── cookbook/                 # Real-world examples
+│   ├── api/                      # Developer API documentation
+│   └── contributing/             # Contributor guides
+├── templates/                    # Go template files
+│   ├── BasePage.html             # Main page template
+│   ├── Header.html               # Site header
+│   ├── Sidebar.html              # Sidebar with navigation
+│   ├── Footer.html               # Site footer
+│   ├── Content.html              # Default content template
+│   └── nav/                      # Section-specific navigation
+├── components/                   # TypeScript interactive components
+│   ├── DocsPage.ts               # Main page controller
+│   └── NotationBlock.ts          # Interactive notation renderer
+├── static/                       # Static assets
+│   ├── css/                      # Stylesheets
+│   ├── js/                       # JavaScript
+│   │   └── gen/                  # Webpack-generated bundles
+│   └── images/                   # Images and icons
+└── dist/                         # Build output
+    └── docs/                     # Generated static site
 ```
 
 ## Content Organization
@@ -112,10 +112,10 @@ sa ri ga ma pa dha ni sa
    ```
 
 3. **View site**:
-   - Open `docs/sites/docs/index.html` in browser
+   - Open `docs/dist/docs/index.html` in browser
    - Or serve with local server:
      ```bash
-     cd docs/sites/docs
+     cd docs/dist/docs
      python3 -m http.server 8000
      # Visit http://localhost:8000
      ```
@@ -183,14 +183,14 @@ pnpm build:production
 # Build site
 NOTATIONS_ENV=production go run docs/main.go
 
-# Output ready in: docs/sites/docs/
+# Output ready in: docs/dist/docs/
 ```
 
 ### Deploy to GitHub Pages
 
 ```bash
 # Copy output to gh-pages branch or docs/ folder in main branch
-cp -r docs/sites/docs/* ../gh-pages/
+cp -r docs/dist/docs/* ../gh-pages/
 
 # Or configure GitHub Pages to serve from /docs directory
 ```
@@ -198,7 +198,7 @@ cp -r docs/sites/docs/* ../gh-pages/
 ### Deploy to Netlify/Vercel
 
 1. Build command: `go run docs/main.go`
-2. Output directory: `docs/sites/docs`
+2. Output directory: `docs/dist/docs`
 3. Set environment: `NOTATIONS_ENV=production`
 
 ## Content Authoring Guidelines

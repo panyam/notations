@@ -3,6 +3,9 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
+// This should match the PathPrefix in main.go
+const SITE_PATH_PREFIX = "/notations"
+
 module.exports = (_env, options) => {
   const isDevelopment = options.mode == "development";
   return {
@@ -55,7 +58,7 @@ module.exports = (_env, options) => {
     },
     output: {
       path: path.resolve(__dirname, "./static/js/gen/"),
-      publicPath: "/docs/static/js/gen/",
+      publicPath: SITE_PATH_PREFIX + "/static/js/gen/",
       filename: "[name].[contenthash].js",
       library: ["notations", "[name]"],
       libraryTarget: "umd",

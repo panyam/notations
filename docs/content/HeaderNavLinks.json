@@ -1,91 +1,91 @@
 [
   {
     "name": "Home",
-    "url": "/docs/",
+    "url": "",
     "icon": "home"
   },
   {
     "name": "Getting Started",
-    "url": "/docs/getting-started/",
+    "url": "getting-started/",
     "icon": "rocket"
   },
   {
     "name": "Tutorials",
-    "url": "/docs/tutorials/",
+    "url": "tutorials/",
     "icon": "book",
     "children": [
       {
         "name": "Basics",
-        "url": "/docs/tutorials/01-basics/"
+        "url": "tutorials/01-basics/"
       },
       {
         "name": "Commands",
-        "url": "/docs/tutorials/02-commands/"
+        "url": "tutorials/02-commands/"
       },
       {
         "name": "Embelishments",
-        "url": "/docs/tutorials/03-embelishments/"
+        "url": "tutorials/03-embelishments/"
       },
       {
         "name": "Advanced",
-        "url": "/docs/tutorials/04-advanced/"
+        "url": "tutorials/04-advanced/"
       }
     ]
   },
   {
     "name": "Reference",
-    "url": "/docs/reference/",
+    "url": "reference/",
     "icon": "book-open",
     "children": [
       {
         "name": "DSL Syntax",
-        "url": "/docs/reference/dsl-syntax/"
+        "url": "reference/dsl-syntax/"
       },
       {
         "name": "Commands",
-        "url": "/docs/reference/commands/"
+        "url": "reference/commands/"
       },
       {
         "name": "Embelishments",
-        "url": "/docs/reference/embelishments/"
+        "url": "reference/embelishments/"
       },
       {
         "name": "Cycles",
-        "url": "/docs/reference/cycles/"
+        "url": "reference/cycles/"
       }
     ]
   },
   {
     "name": "Cookbook",
-    "url": "/docs/cookbook/",
+    "url": "cookbook/",
     "icon": "clipboard-list"
   },
   {
     "name": "API",
-    "url": "/docs/api/",
+    "url": "api/",
     "icon": "code",
     "children": [
       {
         "name": "Overview",
-        "url": "/docs/api/"
+        "url": "api/"
       },
       {
         "name": "Integration Guide",
-        "url": "/docs/api/integration-guide/"
+        "url": "api/integration-guide/"
       },
       {
         "name": "API Reference",
-        "url": "/docs/api/reference/"
+        "url": "api/reference/"
       },
       {
         "name": "Examples",
-        "url": "/docs/api/examples/"
+        "url": "api/examples/"
       }
     ]
   },
   {
     "name": "Contributing",
-    "url": "/docs/contributing/",
+    "url": "contributing/",
     "icon": "users"
   }
 ]

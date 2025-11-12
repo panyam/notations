@@ -28,3 +28,23 @@ resymlink:
 	cd locallinks && ln -s ../../../../golang/goutils
 	cd locallinks && ln -s ../../../../golang/oneauth
 	cd locallinks && ln -s ../../../../golang/s3gen
+
+# GitHub Pages deployment
+gh-pages: build
+	@echo "Building production site..."
+	@NOTATIONS_ENV=production go run main.go -build
+	@echo "Deploying to gh-pages branch..."
+	@if [ -d dist/docs/.git ]; then \
+		echo "Error: dist/docs appears to be a git repo. Please remove it first."; \
+		exit 1; \
+	fi
+	@cd dist/docs && \
+		touch .nojekyll && \
+		git init && \
+		git add -A && \
+		git commit -m "Deploy to GitHub Pages" && \
+		git branch -M gh-pages && \
+		git remote add origin git@panyam-github:panyam/notations.git && \
+		git push -f origin gh-pages
+	@echo "Deployed! Enable GitHub Pages in repo settings to serve from gh-pages branch"
+	@rm -rf dist/docs/.git

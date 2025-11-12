@@ -28,7 +28,7 @@
         {{ if .FrontMatter.tags }}
         <div class="tags">
             {{ range .FrontMatter.tags }}
-            <a href="/docs/tags/{{ . }}/" class="tag">{{ . }}</a>
+            <a href="{{.Site.PathPrefix}}/tags/{{ . }}/" class="tag">{{ . }}</a>
             {{ end }}
         </div>
         {{ end }}

@@ -10,10 +10,10 @@
         <div class="footer-section">
             <h4>Quick Links</h4>
             <ul>
-                <li><a href="/docs/getting-started/">Getting Started</a></li>
-                <li><a href="/docs/tutorials/">Tutorials</a></li>
-                <li><a href="/docs/api/">API Documentation</a></li>
-                <li><a href="/docs/cookbook/">Examples</a></li>
+                <li><a href="{{.Site.PathPrefix}}/getting-started/">Getting Started</a></li>
+                <li><a href="{{.Site.PathPrefix}}/tutorials/">Tutorials</a></li>
+                <li><a href="{{.Site.PathPrefix}}/api/">API Documentation</a></li>
+                <li><a href="{{.Site.PathPrefix}}/cookbook/">Examples</a></li>
             </ul>
         </div>
 
@@ -23,7 +23,7 @@
                 <li><a href="{{ (json "SiteMetadata.json" "repository") }}" target="_blank" rel="noopener">GitHub Repository</a></li>
                 <li><a href="{{ (json "SiteMetadata.json" "issues") }}" target="_blank" rel="noopener">Report Issues</a></li>
                 <li><a href="{{ (json "SiteMetadata.json" "npm") }}" target="_blank" rel="noopener">npm Package</a></li>
-                <li><a href="/docs/contributing/">Contributing</a></li>
+                <li><a href="{{.Site.PathPrefix}}/contributing/">Contributing</a></li>
             </ul>
         </div>
 

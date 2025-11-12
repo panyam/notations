@@ -3,15 +3,15 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
 	"os"
+	"reflect"
 
-	"github.com/felixge/httpsnoop"
 	s3 "github.com/panyam/s3gen"
 )
 
 var (
-	addr = flag.String("addr", DefaultAddress(), "Address where the http server is running")
+	addr  = flag.String("addr", DefaultAddress(), "Address where the http server is running")
+	build = flag.Bool("build", false, "Builds the latest site and quits instead of running a server to serve it")
 )
 
 // Site configuration for Notations Library Documentation
@@ -23,7 +23,7 @@ var Site = s3.Site{
 	ContentRoot: "./content",
 
 	// URL path prefix (e.g., if hosting at example.com/docs/)
-	PathPrefix: "/docs",
+	PathPrefix: "/notations",
 
 	// Template directories (searched in order)
 	TemplateFolders: []string{
@@ -87,21 +87,10 @@ func init() {
 }
 
 func main() {
-	if true {
+	flag.Parse()
+	log.Println("Build: ", *build, reflect.TypeOf(*build))
+	if !*build {
 		Site.Serve(*addr)
-	} else {
-		m := http.NewServeMux()
-		m.Handle("/docs/", http.StripPrefix(Site.PathPrefix, &Site))
-
-		srv := &http.Server{
-			Handler: withLogger(m),
-			Addr:    *addr,
-			// Good practice: enforce timeouts for servers you create!
-			// WriteTimeout: 15 * time.Second,
-			// ReadTimeout:  15 * time.Second,
-		}
-		log.Printf("Serving site on %s:", *addr)
-		srv.ListenAndServe()
 	}
 }
 
@@ -111,13 +100,4 @@ func DefaultAddress() string {
 		return gateway_addr
 	}
 	return ":8080"
-}
-func withLogger(handler http.Handler) http.Handler {
-	// the create a handler
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		// pass the handler to httpsnoop to get http status and latency
-		m := httpsnoop.CaptureMetrics(handler, writer, request)
-		// printing exracted data
-		log.Printf("http[%d]-- %s -- %s\n", m.Code, m.Duration, request.URL.Path)
-	})
 }
