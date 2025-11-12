@@ -98,17 +98,17 @@ sa ri ga ma pa dha ni sa
 1. **Build TypeScript components** (first time or when changed):
    ```bash
    cd docs/components
-   npm install
-   npm run build
+   pnpm install
+   pnpm build
    # Output: docs/static/js/gen/
    ```
 
 2. **Build documentation site**:
    ```bash
    # From notations root
-   go run docs/site.go
+   go run docs/main.go
    # Or just run the site with watch mode
-   NOTATIONS_ENV=dev go run docs/site.go
+   NOTATIONS_ENV=dev go run docs/main.go
    ```
 
 3. **View site**:
@@ -125,7 +125,7 @@ sa ri ga ma pa dha ni sa
 For development, use watch mode:
 
 ```bash
-NOTATIONS_ENV=dev go run docs/site.go
+NOTATIONS_ENV=dev go run docs/main.go
 ```
 
 This will:
@@ -169,7 +169,7 @@ Uses **templar** (superset of Go html/template) with special syntax:
    template: "MyCustomTemplate.html"
    ---
    ```
-3. Or set as `BodyTemplateName` param in site.go
+3. Or set as `BodyTemplateName` param in main.go
 
 ## Deployment
 
@@ -178,10 +178,10 @@ Uses **templar** (superset of Go html/template) with special syntax:
 ```bash
 # Build TypeScript components (production mode)
 cd docs/components
-npm run build:production
+pnpm build:production
 
 # Build site
-NOTATIONS_ENV=production go run docs/site.go
+NOTATIONS_ENV=production go run docs/main.go
 
 # Output ready in: docs/sites/docs/
 ```
@@ -197,7 +197,7 @@ cp -r docs/sites/docs/* ../gh-pages/
 
 ### Deploy to Netlify/Vercel
 
-1. Build command: `go run docs/site.go`
+1. Build command: `go run docs/main.go`
 2. Output directory: `docs/sites/docs`
 3. Set environment: `NOTATIONS_ENV=production`
 
@@ -265,7 +265,7 @@ Navigation is defined in `HeaderNavLinks.json` (top menu) and `nav/*.html` templ
 
 **Styles not applied:**
 - Check CSS file paths in templates
-- Verify static folder configuration in site.go
+- Verify static folder configuration in main.go
 - Clear browser cache
 
 ## Contributing
