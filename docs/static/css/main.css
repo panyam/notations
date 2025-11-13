@@ -519,11 +519,15 @@ pre code {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
 }
 
 .notation-source-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
 }
 
 .notation-btn {
@@ -539,6 +543,8 @@ pre code {
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .notation-btn:hover {
@@ -625,9 +631,7 @@ pre code {
         display: none;
     }
 
-    .notation-source-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    .notation-btn {
+        padding: 0.4rem 0.5rem;
     }
 }
