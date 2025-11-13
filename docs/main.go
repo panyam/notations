@@ -15,7 +15,7 @@ var (
 )
 
 // Site configuration for Notations Library Documentation
-var Site = s3.Site{
+var Site = &s3.Site{
 	// Output directory for generated static site
 	OutputDir: "./dist/docs",
 

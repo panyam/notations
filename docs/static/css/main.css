@@ -513,6 +513,99 @@ pre code {
     text-align: center;
 }
 
+/* NotationBlock - Copy and Edit Features */
+.notation-source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.notation-source-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notation-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--code-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.notation-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.notation-btn svg {
+    flex-shrink: 0;
+}
+
+.notation-edit-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    background-color: var(--code-bg);
+    color: var(--code-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.notation-edit-textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.notation-edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.notation-apply-btn {
+    background-color: #48bb78;
+    color: white;
+    border-color: #48bb78;
+}
+
+.notation-apply-btn:hover {
+    background-color: #38a169;
+    border-color: #38a169;
+}
+
+.notation-cancel-btn {
+    background-color: #718096;
+    color: white;
+    border-color: #718096;
+}
+
+.notation-cancel-btn:hover {
+    background-color: #4a5568;
+    border-color: #4a5568;
+}
+
+.notation-source-block {
+    background-color: var(--code-bg);
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .page-container {
@@ -526,5 +619,15 @@ pre code {
     .header-container {
         flex-direction: column;
         gap: 1rem;
+    }
+
+    .notation-btn-text {
+        display: none;
+    }
+
+    .notation-source-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 }
