@@ -6,6 +6,10 @@ Notations is a Typescript library for rendering Carnatic music.  Notations comes
 1. An API for representing and rendering carnatic music.
 2. A DSL and an accompanying parser for representing music in a simpler and intuitive way.
 
+## Documentation
+
+📚 **[Full Documentation](https://panyam.github.io/notations/)** - Tutorials, API reference, cookbook examples, and more.
+
 # Getting Started
 
 ## Installation

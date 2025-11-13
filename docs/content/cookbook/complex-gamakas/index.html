@@ -1,0 +1,112 @@
+---
+title: "Complex Gamakas"
+description: "Applying multiple embellishments and ornamentations in phrases"
+---
+
+<p>Gamakas (embellishments) are essential to Carnatic music. This guide shows how to notate complex gamaka patterns using the Notations DSL.</p>
+
+<h2>Basic Gamaka Syntax</h2>
+
+<p>Gamakas are applied using parentheses with the tilde (<code>~</code>) operator:</p>
+
+<notation id="basic-gamaka" showSource="true" caption="Basic Gamaka">
+\cycle("|4|2|2|")
+\beatDuration(4)
+S (R~G) M P
+</notation>
+
+<h2>Kampitam (Oscillation)</h2>
+
+<p>Kampitam creates a vibrating effect on a note:</p>
+
+<notation id="kampitam" showSource="true" caption="Kampitam on Ga">
+\cycle("|4|2|2|")
+\beatDuration(4)
+S R (G kampitam) M , P D N S.
+</notation>
+
+<h2>Jaru (Glide)</h2>
+
+<p>Jaru creates a smooth glide between notes:</p>
+
+<notation id="jaru" showSource="true" caption="Jaru from Pa to Dha">
+\cycle("|4|2|2|")
+\beatDuration(4)
+S R G M , (P jaru D) N S.
+</notation>
+
+<h2>Multiple Gamakas in a Phrase</h2>
+
+<p>Combining multiple gamakas in a musical phrase (from Raga Shankarabharanam):</p>
+
+<notation id="multi-gamaka" showSource="true" caption="Shankarabharanam Phrase">
+\cycle("|4|2|2|")
+\beatDuration(4)
+(S jaru R) (G kampitam) M , (P~D) (N kampitam) S. , (S. jaru D) N P , (M kampitam) G R S
+</notation>
+
+<h2>Gamaka Patterns in Different Ragas</h2>
+
+<h3>Kalyani</h3>
+
+<notation id="kalyani-gamaka" showSource="true" caption="Kalyani Characteristic Phrase">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\accidentals(M#)
+(N jaru S.) (M# kampitam) G , (M#~P) D N , (S. jaru D) N P , M# G (M#~P) D
+</notation>
+
+<h3>Todi</h3>
+
+<notation id="todi-gamaka" showSource="true" caption="Todi Characteristic Phrase">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\accidentals(R- G- D-)
+(S jaru R-) (G- kampitam) M , (P jaru D-) N S. , (R-~G-) M P , (D- kampitam) N S
+</notation>
+
+<h2>Advanced: Nested Gamakas</h2>
+
+<p>Complex phrases with multiple embellishments on groups of notes:</p>
+
+<notation id="nested-gamaka" showSource="true" caption="Nested Gamakas">
+\cycle("|4|2|2|")
+\beatDuration(4)
+((S R G) kampitam) M , ((P D N) jaru S.) , ((S. D P) kampitam) M , (G R S)
+</notation>
+
+<h2>Combining with Speed Changes</h2>
+
+<p>Gamakas become more intricate at higher speeds:</p>
+
+<notation id="gamaka-speeds" showSource="true" caption="Gamakas at Different Speeds">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("First Speed")
+S (R~G) M P , (P~D) N S.
+
+\line("Second Speed")
+SR (RG~GM) MP PD , (DN~NS.) S.D PN MP
+
+\line("Third Speed")
+SRG (RGM~GMP) MPD PDN , (DNS.~S.D) S.DP DPN PNM
+</notation>
+
+<h2>Practical Tips</h2>
+
+<ul>
+  <li>Use <code>kampitam</code> for sustained oscillating notes</li>
+  <li>Use <code>jaru</code> for smooth glides between notes</li>
+  <li>Use <code>~</code> for quick ornamental touches</li>
+  <li>Study raga-specific gamaka patterns</li>
+  <li>Listen to masters to understand proper gamaka application</li>
+  <li>Practice slowly before attempting gamakas at higher speeds</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/reference/embellishments/">Embellishments Reference</a> - Complete gamaka syntax</li>
+  <li><a href="{{.Site.PathPrefix}}/tutorials/03-embelishments/">Embellishments Tutorial</a> - Learn gamakas step by step</li>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/different-speeds/">Different Speeds</a> - Combining gamakas with speed variations</li>
+</ul>

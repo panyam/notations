@@ -1,0 +1,193 @@
+---
+title: "Percussion Notation"
+description: "Adding mridangam and tabla patterns to your notation"
+---
+
+<p>While the Notations library primarily focuses on melodic content, you can annotate percussion patterns alongside your swaras. This guide shows various approaches.</p>
+
+<h2>Basic Approach: Using Comments</h2>
+
+<p>The simplest way is to add percussion as comments or labels:</p>
+
+<notation id="percussion-comments" showSource="true" caption="Percussion as Comments">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi with Mridangam")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+\line("Mridangam: ta ka dhi mi , ta ka jha nu , ___ ___ , ___ ___")
+</notation>
+
+<h2>Separate Percussion Line</h2>
+
+<p>Create a dedicated line for percussion patterns:</p>
+
+<notation id="percussion-line" showSource="true" caption="Separate Percussion Line">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Melody")
+Sw: S R G M , P D N S. , R. S. N D , P M G R |
+
+\line("Mridangam")
+Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta |
+</notation>
+
+<h2>Common Mridangam Patterns</h2>
+
+<h3>Basic Adi Tala Pattern</h3>
+
+<notation id="adi-mridangam" showSource="true" caption="Basic Adi Tala Mridangam">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Swaras")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+
+\line("Mridangam Pattern")
+Pe: ta ka ta ki , ta ta ka dhi , mi ta ka , jha nu ta |
+</notation>
+
+<h3>Chatusram in Adi Tala</h3>
+
+<notation id="chatusram-mridangam" showSource="true" caption="Chatusram Mridangam Pattern">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+Sw: SRGM PDNS. R.G.M.P. D.N.S..R.. , ___ ___ ___ ___ , ___ ___ ___ ___ |
+Pe: taka dimi taka jhanu , taki tata kadhi mita , ___ ___ ___ ___ , ___ ___ ___ ___ |
+</notation>
+
+<h3>Tisram in Adi Tala</h3>
+
+<notation id="tisram-mridangam" showSource="true" caption="Tisram Mridangam Pattern">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+Sw: SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... ___ ___ , ___ ___ ___ ___ |
+Pe: tak adh imi tak adh , ita kit ata kat adh , imi tak adh ___ , ___ ___ ___ ___ |
+</notation>
+
+<h2>Mridangam in Different Talas</h2>
+
+<h3>Rupaka Tala (6 beats)</h3>
+
+<notation id="rupaka-mridangam" showSource="true" caption="Rupaka Tala Mridangam">
+\cycle("|2|4|")
+\beatDuration(4)
+
+Sw: S R , G M P D N S. |
+Pe: ta ka , dhi mi ta ka jha nu |
+</notation>
+
+<h3>Misra Chapu (7 beats)</h3>
+
+<notation id="chapu-mridangam" showSource="true" caption="Misra Chapu Mridangam">
+\cycle("|3|2|2|")
+\beatDuration(4)
+
+Sw: S R G , M P , D N |
+Pe: ta ka dhi , mi ta , ka jha ||
+</notation>
+
+<h2>Mridangam Korvai Patterns</h2>
+
+<p>Korvai are rhythmic patterns, typically in groups of 3:</p>
+
+<notation id="korvai" showSource="true" caption="Simple Korvai Pattern">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Korvai - First Iteration")
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+
+\line("Korvai - Second Iteration")
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+
+\line("Korvai - Third Iteration")
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+
+\line("Mohra (Ending)")
+Pe: ta ___ dhi mi ___ , ___ ta ___ , ___ ___ ___ ||
+</notation>
+
+<h2>Thani Avartanam Structure</h2>
+
+<p>Organizing a solo percussion interlude:</p>
+
+<notation id="thani" showSource="true" caption="Thani Avartanam Structure">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Section 1 - Simple Patterns")
+Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta |
+
+\line("Section 2 - Increase Complexity")
+Pe: taka dimi taka jhanu , taki tata kadhi mita , takajhanu tari kita , dimi taka jhanu ta |
+
+\line("Section 3 - Korvai")
+Pe: takadimi takajhanu tarikita , takadimi takajhanu tarikita , takadimi takajhanu tarikita , ta ___ dhi mi ___ ||
+</notation>
+
+<h2>Combining with Swaras</h2>
+
+<p>Full example with melody and percussion:</p>
+
+<notation id="combined" showSource="true" caption="Melody with Percussion">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi")
+Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+Pe: ta ka dhi mi , ta ka jha nu , ta ri ki ta , ta ___ ___ ___ ||
+
+\line("Swaram Passage")
+Sw: SR GM PD NS. , R.S. DP MG RS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+Pe: taka dimi taka jhanu , taki tata kadh imi ta , ___ ___ ___ ___ , ___ ___ ___ ___ ||
+</notation>
+
+<h2>Tabla Patterns</h2>
+
+<p>For Hindustani music contexts:</p>
+
+<notation id="tabla" showSource="true" caption="Basic Tabla Pattern in Teental">
+\cycle("|4|4|4|4|")
+\beatDuration(4)
+
+\line("Melody")
+Sw: S R G M , P D N S. , R. G. M. P. , D. N. S.. R.. |
+
+\line("Tabla (Teental)")
+Pe: dha dhin dhin dha , dha dhin dhin dha , dha tin tin ta , ta dhin dhin dha |
+</notation>
+
+<h2>Notation Symbols</h2>
+
+<p>Common mridangam syllables (solkattu):</p>
+<ul>
+  <li><strong>ta, ki, ta</strong> - Right hand (treble) strokes</li>
+  <li><strong>tha, thom, nam</strong> - Left hand (bass) strokes</li>
+  <li><strong>dhi, mi</strong> - Combined strokes</li>
+  <li><strong>ka, ra</strong> - Finger rolls</li>
+  <li><strong>jha, nu</strong> - Combined patterns</li>
+</ul>
+
+<h2>Practical Tips</h2>
+
+<ul>
+  <li>Use a separate line prefixed with <code>Pe:</code> for percussion</li>
+  <li>Align percussion syllables with corresponding melody beats</li>
+  <li>Mark korvai iterations clearly (1st, 2nd, 3rd)</li>
+  <li>Use <code>___</code> for rests or sustained tones</li>
+  <li>Study traditional korvai patterns and their variations</li>
+  <li>Practice reciting solkattu (vocal percussion syllables)</li>
+  <li>Consider the interaction between melody and percussion</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/common-talas/">Common Talas</a> - Percussion patterns for different talas</li>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/tisram/">Tisram Notation</a> - Tisram gati in percussion</li>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/organizing-compositions/">Organizing Compositions</a> - Structuring complex pieces</li>
+</ul>

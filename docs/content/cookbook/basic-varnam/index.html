@@ -1,0 +1,131 @@
+---
+title: "Basic Varnam Notation"
+description: "This example demonstrates how to notate a simple varnam. We'll use 'Ninnu Kori' in Raga Mohanam (Adi Tala) as our example."
+---
+
+<h2>Overview</h2>
+
+<p>A varnam typically contains:</p>
+<ul>
+  <li><strong>Pallavi</strong> - Opening section, repeated after each charanam</li>
+  <li><strong>Anupallavi</strong> - Second section</li>
+  <li><strong>Muktayi Swaram</strong> - Swara passages at different speeds</li>
+  <li><strong>Charanam</strong> - Verses with sahitya</li>
+</ul>
+
+<h2>Setting Up</h2>
+
+<p>First, we set the tala (cycle) and beat duration:</p>
+
+<notation id="setup" showSource="true" caption="Tala Setup for Adi Tala">
+\cycle("|4|2|2|")
+\beatDuration(4)
+</notation>
+
+<h2>Pallavi</h2>
+
+<p>The pallavi contains both swaras and sahitya (lyrics). We use <code>Sw:</code> for swaras and <code>Sh:</code> for sahitya:</p>
+
+<notation id="pallavi" showSource="true" caption="Ninnu Kori - Pallavi">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S R G M , P M G R , S _ _ _ , _ _ _ _ |
+Sh: nin nu ko ri , va ra da nun , nu _ _ _ , _ _ _ _ ||
+
+Sw: S R G M , P M G R , S R G M , P _ _ _ |
+Sh: nin nu ko ri , va ra da nun , nu ko ri , va _ _ _ ||
+</notation>
+
+<h2>Anupallavi</h2>
+
+<p>The anupallavi typically explores the upper octave:</p>
+
+<notation id="anupallavi" showSource="true" caption="Ninnu Kori - Anupallavi">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Anupallavi")
+Sw: P D S. R. , S. D P M , G M P D , S. _ _ _ |
+Sh: en na ju chi , te ne e , man dha ra , va _ _ _ ||
+
+Sw: P D S. R. , S. D P M , G R S _ , _ _ _ _ ||
+Sh: nin nu ko ri , va ra da , nun nu _ , _ _ _ _ ||
+</notation>
+
+<h2>Muktayi Swaram - First Speed</h2>
+
+<p>Swara passages typically start at first speed (one swara per beat):</p>
+
+<notation id="muktayi1" showSource="true" caption="Muktayi Swaram - First Speed">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Muktayi Swaram - 1st Speed")
+Sw: S R G M , P D S. R. , S. D P M , G M P D |
+Sw: S. R. S. D , P M G R , S _ _ _ , _ _ _ _ ||
+</notation>
+
+<h2>Muktayi Swaram - Second Speed</h2>
+
+<p>Then progresses to second speed (two swaras per beat):</p>
+
+<notation id="muktayi2" showSource="true" caption="Muktayi Swaram - Second Speed">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Muktayi Swaram - 2nd Speed")
+Sw: SR GM PD S.R. , S.D PM GR S_ , _S RG MP DS. , R.S. DP MG RS |
+Sw: SR GM PD S.R. , S.D PM GR S_ , __ __ __ __ ||
+</notation>
+
+<h2>Charanam</h2>
+
+<p>The charanam contains verses with both swaras and sahitya:</p>
+
+<notation id="charanam" showSource="true" caption="Ninnu Kori - Charanam">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Charanam")
+Sw: S S S R , G M P M , G R S _ , _ _ _ _ |
+Sh: e va ri ni , bro va ve , nu _ _ , _ _ _ _ ||
+
+Sw: S R G M , P M G R , S R G M , P D S. R. |
+Sh: nin nu ko ri , va ra da nun , nu ko ri , va ra da ||
+
+Sw: S. D P M , G M P D , S. R. S. D , P M G R |
+Sh: e va ri ni , bro va ve , nu da ya ra , dha yu da ||
+
+Sw: S _ _ _ , _ _ _ _ ||
+Sh: va _ _ _ , _ _ _ _ ||
+</notation>
+
+<h2>Complete Structure</h2>
+
+<p>A typical varnam performance follows this pattern:</p>
+<ol>
+  <li>Pallavi</li>
+  <li>Anupallavi</li>
+  <li>Pallavi (repeat)</li>
+  <li>Muktayi Swaram (1st speed)</li>
+  <li>Pallavi (repeat)</li>
+  <li>Muktayi Swaram (2nd speed)</li>
+  <li>Pallavi (repeat)</li>
+  <li>Charanam</li>
+  <li>Pallavi (repeat)</li>
+</ol>
+
+<h2>Tips for Varnam Notation</h2>
+
+<ul>
+  <li>Always align swaras and sahitya on the same beat</li>
+  <li>Use underscores (<code>_</code>) for sustained notes or pauses</li>
+  <li>Use <code>\line()</code> to separate sections clearly</li>
+  <li>Mark speed changes in muktayi swarams</li>
+  <li>Use <code>|</code> and <code>||</code> to mark avartanam (cycle) boundaries</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/different-speeds/">Different Speeds</a> - Learn more about first, second, and third speeds</li>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/common-talas/">Common Talas</a> - Explore other tala patterns</li>
+  <li><a href="{{.Site.PathPrefix}}/tutorials/01-basics/">Basic Tutorial</a> - Learn the fundamentals</li>
+</ul>

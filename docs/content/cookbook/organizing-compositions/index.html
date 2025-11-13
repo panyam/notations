@@ -1,0 +1,198 @@
+---
+title: "Organizing Long Compositions"
+description: "Using lines, margins, and layouts effectively for readable notation"
+---
+
+<p>When notating long compositions like kritis, varnams, or RTP, proper organization is essential for readability. This guide shows best practices for structuring your notation.</p>
+
+<h2>Using Lines to Separate Sections</h2>
+
+<p>Use <code>\line()</code> to clearly mark different sections:</p>
+
+<notation id="lines-basic" showSource="true" caption="Organizing with Lines">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+
+\line("Anupallavi")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+
+\line("Charanam")
+Sw: P D S. R. , S. D P M , G M P D , S. ___ |
+Sh: pa dha sa ri , sa dha pa ma , ga ma pa dha , sa ___ ||
+</notation>
+
+<h2>Separating Swaras and Sahitya</h2>
+
+<p>Keep swaras and sahitya clearly aligned and separated:</p>
+
+<notation id="swara-sahitya" showSource="true" caption="Swara and Sahitya Alignment">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi - Swaras")
+Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+
+\line("Pallavi - Sahitya")
+Sh: nin nu ko ri , va ra da nun , nu ko ri , va ___ ___ ___ ||
+</notation>
+
+<h2>Multi-Speed Sections</h2>
+
+<p>Organize speed variations with clear labels:</p>
+
+<notation id="multi-speed" showSource="true" caption="Organizing Multiple Speeds">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Muktayi Swaram - 1st Speed")
+S R G M , P D N S. , ___ ___ , ___ ___ |
+
+\line("Muktayi Swaram - 2nd Speed")
+SR GM PD NS. , R.S. DP MG RS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+
+\line("Muktayi Swaram - 3rd Speed")
+SRG GMP PDN NS.R. , R.S.D DPN PMG GRS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+</notation>
+
+<h2>Long Kriti Structure</h2>
+
+<p>Example of organizing a complete kriti:</p>
+
+<notation id="kriti-structure" showSource="true" caption="Complete Kriti Organization">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("==== PALLAVI ====")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+Sh: bro va bha ra ma , moo la ra ma chan , dra ___ , ___ ___ ||
+
+\line("==== ANUPALLAVI ====")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+Sh: de va de va , ja ya ja ya , ___ ___ , ___ ___ ||
+
+\line("==== CHARANAM 1 ====")
+Sw: P D S. R. , S. D P M , G R S ___ , ___ ___ ___ ___ |
+Sh: ka ru na ni dhi , ra ma bha dra , nin ne ___ , ___ ___ ___ ___ ||
+
+\line("==== CHARANAM 2 ====")
+Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+Sh: sa da sa dhi ya , tya ga ra ja , vi nu ta , ra ___ ___ ___ ||
+</notation>
+
+<h2>Using Comments for Annotations</h2>
+
+<p>Add performance notes or reminders:</p>
+
+<notation id="comments" showSource="true" caption="Using Comments">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi - Slow tempo, emphasize gamakas")
+Sw: S (R~G) M P , (P~D) N S. , ___ ___ , ___ ___ |
+Sh: nin nu ko ri , va ra da , ___ ___ , ___ ___ ||
+
+\line("Repeat pallavi 2x before anupallavi")
+</notation>
+
+<h2>Organizing Repetitions</h2>
+
+<p>Clearly mark repeated sections:</p>
+
+<notation id="repetitions" showSource="true" caption="Marking Repetitions">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi [Repeat 2x]")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ ||
+
+\line("Anupallavi")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ ||
+
+\line("[Return to Pallavi]")
+</notation>
+
+<h2>Breaking Long Phrases</h2>
+
+<p>Use multiple lines for very long swara patterns:</p>
+
+<notation id="long-phrases" showSource="true" caption="Breaking Long Swara Patterns">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Extended Swaram - Part 1")
+SR GM PD NS. , R.S. DP MG RS , SR GM PD NS. , R.S. DP MG RS |
+
+\line("Extended Swaram - Part 2")
+S.R. G.M. P.D. N.S.. , R..S.. D..N.. P..D.. M..P.. , G..M.. R..G.. S..R.. ___ , ___ ___ ___ ___ |
+</notation>
+
+<h2>Organizing by Tala Avartanams</h2>
+
+<p>Mark each tala cycle clearly:</p>
+
+<notation id="avartanams" showSource="true" caption="Organizing by Avartanams">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Avartanam 1")
+S R G M , P D N S. , ___ ___ , ___ ___ |
+
+\line("Avartanam 2")
+S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+
+\line("Avartanam 3")
+S.. D.. N.. S.. , P. M. G. R. , S. ___ ___ , ___ ___ ___ ||
+</notation>
+
+<h2>Best Practices</h2>
+
+<ul>
+  <li><strong>Consistent naming</strong> - Use clear, consistent section names (Pallavi, Anupallavi, Charanam)</li>
+  <li><strong>Visual separation</strong> - Use <code>\line()</code> liberally to separate sections</li>
+  <li><strong>Alignment</strong> - Keep swaras and sahitya aligned on the same beats</li>
+  <li><strong>Speed markers</strong> - Always label speed changes (1st, 2nd, 3rd speed)</li>
+  <li><strong>Tala markers</strong> - Use <code>|</code> and <code>||</code> to mark avartanam boundaries</li>
+  <li><strong>Whitespace</strong> - Don't be afraid of empty space for readability</li>
+  <li><strong>Comments</strong> - Add performance notes where helpful</li>
+  <li><strong>Logical grouping</strong> - Group related phrases together</li>
+</ul>
+
+<h2>Template for a Complete Composition</h2>
+
+<notation id="template" showSource="true" caption="Composition Template">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\accidentals()  // Add accidentals if needed
+
+\line("==== PALLAVI ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== ANUPALLAVI ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== CHARANAM 1 ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== SWARAM SECTION ====")
+\line("1st Speed")
+// Add swarams
+
+\line("2nd Speed")
+// Add swarams
+</notation>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/basic-varnam/">Basic Varnam</a> - Complete varnam structure example</li>
+  <li><a href="{{.Site.PathPrefix}}/cookbook/ragam-tanam-pallavi/">RTP</a> - Organizing complex RTP structures</li>
+  <li><a href="{{.Site.PathPrefix}}/reference/commands/">Commands Reference</a> - All available commands</li>
+</ul>
