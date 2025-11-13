@@ -33,6 +33,8 @@ resymlink:
 gh-pages: build
 	@echo "Building production site..."
 	@NOTATIONS_DOCS_ENV=production go run main.go -build
+	rm -Rf dist/docs/static
+	cp -r static dist/docs
 	@echo "Deploying to gh-pages branch..."
 	@if [ -d dist/docs/.git ]; then \
 		echo "Error: dist/docs appears to be a git repo. Please remove it first."; \
