@@ -5,7 +5,7 @@ description: "Learn about commands for controlling notation behavior"
 
 <p>Commands control aspects of notation like beat duration, cycle patterns, and layout. Commands start with a backslash.</p>
 
-<h2>Beat Duration</h2>
+<h2 id="beat-duration">Beat Duration</h2>
 
 <p>The <code>\beatDuration</code> command sets how many notes fit in one beat:</p>
 
@@ -26,7 +26,7 @@ S R G M P D N S.
 
 <p>This is commonly used to notate different speeds in Carnatic music without changing the actual notation.</p>
 
-<h2>Note Durations</h2>
+<h2 id="note-durations">Note Durations</h2>
 
 <p>You can set the duration of individual notes by prefixing them with a number or fraction:</p>
 
@@ -37,7 +37,7 @@ S 2 R G M
 
 <p>Here, R has a duration of 2 units at the current beat duration (4 notes per beat), making R twice as long as S, G, or M.</p>
 
-<h2>Cycle (Tala)</h2>
+<h2 id="cycle-tala">Cycle (Tala)</h2>
 
 <p>The <code>\cycle</code> command defines the rhythmic pattern (tala). A cycle is made of multiple bars, each with a specified number of beats:</p>
 
@@ -55,7 +55,7 @@ S R G M P D N S. , S. N D P M G R S
   <li>Total: 8 beats per cycle (Adi Tala)</li>
 </ul>
 
-<h2>Creating Lines</h2>
+<h2 id="creating-lines">Creating Lines</h2>
 
 <p>The <code>\line</code> command starts a new line in the notation:</p>
 
@@ -74,7 +74,7 @@ S R G M P D N S.
 S. N D P M G R S
 </notation>
 
-<h2>Creating Roles</h2>
+<h2 id="creating-roles">Creating Roles</h2>
 
 <p>The <code>\role</code> command creates new roles beyond the default Sw and Sh:</p>
 

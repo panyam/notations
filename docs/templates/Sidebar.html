@@ -22,15 +22,15 @@
         <!-- Section Navigation -->
         <nav class="section-nav">
             {{ if ( Contains $currentPath "/tutorials/") }}
-                {{ template "TutorialsNav" }}
+                {{ template "TutorialsNav" . }}
             {{ else if (Contains $currentPath "/reference/") }}
-                {{ template "ReferenceNav" }}
+                {{ template "ReferenceNav" . }}
             {{ else if (Contains $currentPath "/cookbook/") }}
-                {{ template "CookbookNav" }}
+                {{ template "CookbookNav" . }}
             {{ else if (Contains $currentPath "/api/") }}
-                {{ template "APINav" }}
+                {{ template "APINav" . }}
             {{ else if (Contains $currentPath "/contributing/") }}
-                {{ template "ContributingNav" }}
+                {{ template "ContributingNav" . }}
             {{ else }}
                 <!-- Default navigation for homepage and other pages -->
                 <div class="section-nav-content">
