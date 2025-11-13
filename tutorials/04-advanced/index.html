@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Master complex notation patterns and advanced features">
+    <title>Tutorial 04: Advanced Techniques - Notations Library Documentation</title>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body>
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embelishments/" class="dropdown-item">Embelishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/dsl-syntax/" class="dropdown-item">DSL Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embelishments/" class="dropdown-item">Embelishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/cookbook/" class="nav-link">
+                    <i class="icon-clipboard-list"></i>
+                    Cookbook
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Tutorials</h3>
+
+    <div class="nav-group">
+        <h4>01. Basics</h4>
+        <ul>
+            <li><a href="/notations/tutorials/01-basics/">Overview</a></li>
+            <li><a href="/notations/tutorials/01-basics/#notes-swaras">Notes (Swaras)</a></li>
+            <li><a href="/notations/tutorials/01-basics/#octaves">Octaves</a></li>
+            <li><a href="/notations/tutorials/01-basics/#spaces-karvais">Spaces</a></li>
+            <li><a href="/notations/tutorials/01-basics/#groups">Groups</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>02. Commands</h4>
+        <ul>
+            <li><a href="/notations/tutorials/02-commands/">Overview</a></li>
+            <li><a href="/notations/tutorials/02-commands/#beat-duration">Beat Duration</a></li>
+            <li><a href="/notations/tutorials/02-commands/#cycle-tala">Cycle (Tala)</a></li>
+            <li><a href="/notations/tutorials/02-commands/#creating-lines">Creating Lines</a></li>
+            <li><a href="/notations/tutorials/02-commands/#creating-roles">Creating Roles</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>03. Embellishments</h4>
+        <ul>
+            <li><a href="/notations/tutorials/03-embelishments/">Overview</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#example">Example</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#pre-and-post-embellishments">Pre & Post Embellishments</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#embellishments-with-groups">With Groups</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#multiple-embellishments">Multiple Embellishments</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>04. Advanced</h4>
+        <ul>
+            <li><a href="/notations/tutorials/04-advanced/">Overview</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#nested-groups">Nested Groups</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#custom-note-durations">Custom Durations</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#multiple-roles">Multiple Roles</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#complex-rhythmic-patterns">Rhythmic Patterns</a></li>
+        </ul>
+    </div>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Tutorial 04: Advanced Techniques</h1>
+        
+        <p class="lead">Master complex notation patterns and advanced features</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This tutorial covers advanced techniques for creating complex Carnatic music notation.</p>
+
+<h2 id="nested-groups">Nested Groups</h2>
+
+<p>Groups can contain other groups for complex rhythmic patterns:</p>
+
+<notation id="nested-groups" showSource="true" caption="Nested Groups">
+\beatDuration(4)
+S [R [G M] P] D N S.
+</notation>
+
+<p>The inner group [G M] is nested within the outer group [R [G M] P], creating a subdivision.</p>
+
+<h2 id="custom-note-durations">Custom Note Durations</h2>
+
+<p>Combine duration prefixes with beat duration for precise control:</p>
+
+<notation id="custom-durations" showSource="true" caption="Custom Durations">
+\beatDuration(4)
+S 2 R [G M] 3 P D N S.
+</notation>
+
+<p>Here, R has duration 2 and P has duration 3 at a beat duration of 4 notes per beat.</p>
+
+<h2 id="fractional-durations">Fractional Durations</h2>
+
+<p>Use fractions for precise duration control:</p>
+
+<notation id="fractional" showSource="true" caption="Fractional Durations">
+\beatDuration(4)
+S 3/2 R G 1/2 M P D N S.
+</notation>
+
+<h2 id="multiple-roles">Multiple Roles</h2>
+
+<p>Use multiple lines to represent different aspects of the composition:</p>
+
+<notation id="multi-role" showSource="true" caption="Multiple Roles">
+\beatDuration(4)
+\role("Perc", notes=true)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+Perc: ta ki ta ta ta ki ta ta
+</notation>
+
+<p>The first line shows swaras, the second shows sahitya, and the third shows percussion syllables.</p>
+
+<h2 id="complex-rhythmic-patterns">Complex Rhythmic Patterns</h2>
+
+<p>Combine groups, spacing, and beat duration to create intricate rhythms:</p>
+
+<notation id="complex-rhythm" showSource="true" caption="Complex Rhythm">
+\beatDuration(2)
+\line("First Speed")
+S [R G] , [M P] D
+\beatDuration(4)
+\line("Second Speed")
+[S R] [G M] [P D] [N S.]
+\beatDuration(2)
+\line("Back to First")
+S.
+</notation>
+
+<h2 id="cycle-and-line-management">Cycle and Line Management</h2>
+
+<p>Use cycle and line commands to organize longer pieces:</p>
+
+<notation id="long-comp" showSource="true" caption="Structured Composition">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S R G M P D N S.
+\line("Anupallavi")
+Sw: S. N D P M G R S
+\line("Charanam")
+Sw: S R [G M] P [D N] S.
+</notation>
+
+<h2>Practice Exercise</h2>
+
+<p>Create a complete composition using all the techniques you've learned:</p>
+
+<notation id="final-practice" showSource="true" caption="Complete Composition">
+\cycle("|4|2|2|")
+\beatDuration(2)
+\line("Opening")
+Sw: S R G M , P D N S.
+Sh: sa ri ga ma , pa dha ni sa
+\beatDuration(4)
+\line("Second Speed")
+Sw: S R [G M] [P D] N S.
+Sh: sa ri ga ma pa dha ni sa
+\beatDuration(2)
+\line("Closing")
+Sw: S. , , S
+Sh: sa , , sa
+</notation>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/notations/reference/">Reference Documentation</a> - Complete syntax specification</li>
+  <li><a href="/notations/cookbook/">Cookbook</a> - Real-world examples and patterns</li>
+  <li><a href="/notations/api/">API Documentation</a> - Use the library programmatically</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 0.0.65</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/cookbook/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+
+    
+    <head><script defer="defer" src="/notations/static/js/gen/837.b7a6c04dc72ce8791d86.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.f916c32ab6ebfcd603b7.js"></script></head>
+</body>
+</html>

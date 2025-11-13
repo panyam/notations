@@ -1,0 +1,91 @@
+[
+  {
+    "name": "Home",
+    "url": "",
+    "icon": "home"
+  },
+  {
+    "name": "Getting Started",
+    "url": "getting-started/",
+    "icon": "rocket"
+  },
+  {
+    "name": "Tutorials",
+    "url": "tutorials/",
+    "icon": "book",
+    "children": [
+      {
+        "name": "Basics",
+        "url": "tutorials/01-basics/"
+      },
+      {
+        "name": "Commands",
+        "url": "tutorials/02-commands/"
+      },
+      {
+        "name": "Embelishments",
+        "url": "tutorials/03-embelishments/"
+      },
+      {
+        "name": "Advanced",
+        "url": "tutorials/04-advanced/"
+      }
+    ]
+  },
+  {
+    "name": "Reference",
+    "url": "reference/",
+    "icon": "book-open",
+    "children": [
+      {
+        "name": "DSL Syntax",
+        "url": "reference/dsl-syntax/"
+      },
+      {
+        "name": "Commands",
+        "url": "reference/commands/"
+      },
+      {
+        "name": "Embelishments",
+        "url": "reference/embelishments/"
+      },
+      {
+        "name": "Cycles",
+        "url": "reference/cycles/"
+      }
+    ]
+  },
+  {
+    "name": "Cookbook",
+    "url": "cookbook/",
+    "icon": "clipboard-list"
+  },
+  {
+    "name": "API",
+    "url": "api/",
+    "icon": "code",
+    "children": [
+      {
+        "name": "Overview",
+        "url": "api/"
+      },
+      {
+        "name": "Integration Guide",
+        "url": "api/integration-guide/"
+      },
+      {
+        "name": "API Reference",
+        "url": "api/reference/"
+      },
+      {
+        "name": "Examples",
+        "url": "api/examples/"
+      }
+    ]
+  },
+  {
+    "name": "Contributing",
+    "url": "contributing/",
+    "icon": "users"
+  }
+]
