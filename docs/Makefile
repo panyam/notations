@@ -16,9 +16,6 @@ checklinks:
 		echo "You are trying to deploying with symlinks.  Remove them first and make sure versions exist" && false ;	\
 	fi
 
-deploy: checklinks build
-	gcloud app deploy --project notations --verbosity=info
-
 build: resymlink webpack
 
 resymlink:
