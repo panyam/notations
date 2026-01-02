@@ -14,7 +14,6 @@ import {
   ActivateRole,
   CreateRole,
   CreateLine,
-  MetaData,
 } from "./commands";
 
 // TODO - Make this plugable from the client instead of hard coded
@@ -167,23 +166,23 @@ const [parser /*itemGraph*/] = G.newParser(
         token.tag = pre ? "PRE_EMB" : "POST_EMB";
         return token;
       },
-      toCommandName: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toCommandName: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         token.value = token.value.substring(1);
         return token;
       },
-      toBoolean: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toBoolean: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         token.value = token.value == "true";
         return token;
       },
-      toNumber: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toNumber: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         token.value = parseInt(token.value);
         return token;
       },
-      toString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toString: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         token.value = token.value.substring(1, token.value.length - 1);
         return token;
       },
-      toMarker: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toMarker: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         if (token.tag != "PRE_MARKER" && token.tag != "POST_MARKER") {
           throw new Error("Invalid token for converting to note: " + token.tag);
         }
@@ -196,7 +195,7 @@ const [parser /*itemGraph*/] = G.newParser(
         token.value = new Marker(markerText, isBefore);
         return token;
       },
-      toOctavedNote: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toOctavedNote: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         if (token.tag == "DOTS_IDENT") {
           const octave = token.positions[1][1] - token.positions[1][0];
           const note = token.value.substring(octave);
@@ -210,21 +209,21 @@ const [parser /*itemGraph*/] = G.newParser(
         }
         return token;
       },
-      toRoleSelector: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toRoleSelector: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         token.value = token.value.substring(0, token.value.length - 1);
         return token;
       },
-      toLineAnnotation: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toLineAnnotation: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         // skip the initial "!"
         token.value = token.value.substring(1);
         return token;
       },
-      toSingleLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toSingleLineRawString: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);
         return token;
       },
-      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape, _owner: any) => {
         // consume everything until "#<N times> as start
         const hashes = tape.substring(token.positions[1][0], token.positions[1][1]);
         const endPat = '"' + hashes;
@@ -236,7 +235,7 @@ const [parser /*itemGraph*/] = G.newParser(
         token.value = tape.substring(startPos, endPos);
         return token;
       },
-      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, owner: any) => {
+      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, _owner: any) => {
         // skip the initial ">"
         const endPat = "\n---";
         const startPos = tape.index;
@@ -313,16 +312,16 @@ export class Parser {
         throw new Error("Invalid lit: " + lit);
       }
     },
-    newSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+    newSpace: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
       return new Space();
     },
-    newRest: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+    newRest: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
       return new Rest();
     },
-    newDoubleSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+    newDoubleSpace: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
       return new Space(ONE.timesNum(2));
     },
-    newSilentSpace: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+    newSilentSpace: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
       return new Space(ONE, true);
     },
     applyPreMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
@@ -436,8 +435,8 @@ export class Parser {
     },
   };
 
-  constructor(config?: any) {
-    config = config || {};
+  constructor(_config?: any) {
+    // config = config || {};
   }
 
   createCommand(name: string, params: CmdParam[]): Command {
