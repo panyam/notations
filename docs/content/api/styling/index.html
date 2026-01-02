@@ -9,10 +9,29 @@ description: "How to customize the appearance of notation components using CSS v
 
 <p>Import the default styles, then override any variables you want:</p>
 
+<h3>Via CDN (unpkg)</h3>
+
+<p>For quick prototyping or non-bundled projects, use unpkg:</p>
+
+<pre><code>&lt;!-- CSS --&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+
+&lt;!-- JavaScript (UMD bundle) --&gt;
+&lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- The library is available as window.Notations --&gt;
+&lt;script&gt;
+  const { load, Carnatic } = Notations;
+  // Use the library...
+&lt;/script&gt;
+</code></pre>
+
+<h3>Via npm/pnpm</h3>
+
 <pre><code>// Import the base styles
 import 'notations/dist/NotationView.css';
 
-// Or in HTML
+// Or in HTML (from node_modules)
 &lt;link rel="stylesheet" href="node_modules/notations/dist/NotationView.css"&gt;
 </code></pre>
 
@@ -281,6 +300,57 @@ module.exports = {
 &lt;ThemedNotation&gt;
   &lt;notation&gt;...&lt;/notation&gt;
 &lt;/ThemedNotation&gt;
+</code></pre>
+
+<h2>Complete Standalone Example</h2>
+
+<p>Here's a complete HTML file that uses the library via CDN with no build tools required:</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Carnatic Notation Example&lt;/title&gt;
+
+  &lt;!-- Notation styles --&gt;
+  &lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+
+  &lt;!-- Optional: Custom theme overrides --&gt;
+  &lt;style&gt;
+    :root {
+      --notation-stroke-color: #2d6a4f;
+      --notation-text-color: #1b4332;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="notation-container"&gt;&lt;/div&gt;
+
+  &lt;!-- Notation library --&gt;
+  &lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+  &lt;script&gt;
+    const notation = `
+\\title("Sarali Varisai")
+\\cycle("|4|4|")
+\\beatDuration(4)
+
+Sw: S R G M , P D N S.
+    `;
+
+    // Parse and render
+    const container = document.getElementById('notation-container');
+    const [parsed, beatLayout, errors] = Notations.load(notation);
+
+    if (errors.length === 0) {
+      const view = new Notations.Carnatic.NotationView(container);
+      view.renderNotation(parsed, beatLayout);
+    } else {
+      console.error('Parse errors:', errors);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
 </code></pre>
 
 <h2>See Also</h2>

@@ -1,31 +1,32 @@
 const path = require("path");
+const webpack = require("webpack");
 
 module.exports = (env, argv) => {
+  const isProd = argv.mode === "production";
   return {
-    devtool: "inline-source-map",
+    devtool: isProd ? "source-map" : "inline-source-map",
     entry: {
-      index: path.resolve(__dirname, "./lib/esm/index.js"),
+      notations: path.resolve(__dirname, "./lib/esm/index.js"),
     },
     output: {
-      path: path.resolve(__dirname, "./lib/umd"), // builds to ./dist/umd/
-      filename: "[name].js", // index.js
+      path: path.resolve(__dirname, "./dist"),
+      filename: isProd ? "[name].umd.min.js" : "[name].umd.js",
       library: {
-        name: "notations", // aka window.myLibrary
+        name: "Notations",
         type: "umd",
+        export: "default",
       },
-      // libraryTarget: "umd", // supports commonjs, amd and web browsers
       globalObject: "this",
     },
     resolve: {
-        extensions: [ '.ts', '.js' ],
-        fallback: {
-            // "stream": require.resolve("stream-browserify"),
-            "buffer": require.resolve("buffer")
-        }
+      extensions: [".ts", ".js"],
+      fallback: {
+        buffer: require.resolve("buffer"),
+      },
     },
     plugins: [
       new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer'],
+        Buffer: ["buffer", "Buffer"],
       }),
     ],
     module: {

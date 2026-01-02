@@ -8,6 +8,11 @@ description: "How to integrate the Notations library into your application"
 <h2>Choose Your Integration</h2>
 
 <div class="integration-cards">
+  <a href="#cdn" class="integration-card">
+    <h3>CDN / Vanilla HTML</h3>
+    <p>No build tools required. Just add script tags and start using notation in any HTML page.</p>
+  </a>
+
   <a href="{{.Site.PathPrefix}}/api/integration-guide/web-components/" class="integration-card">
     <h3>Web Components</h3>
     <p>Use the <code>notations-web</code> package for easy integration with any web application. Works with vanilla JS, jQuery, or any framework.</p>
@@ -29,9 +34,103 @@ description: "How to integrate the Notations library into your application"
   </a>
 </div>
 
-<h2>Quick Start</h2>
+<h2 id="cdn">CDN / Vanilla HTML</h2>
 
-<p>The simplest way to add notation to your website:</p>
+<p>The simplest way to add notation to any webpage - no build tools, npm, or bundlers required. Just add two script/link tags and you're ready to go.</p>
+
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Complete Standalone HTML Example</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="cdn-basic-source">Source</button>
+    <button class="tab-btn" data-tab="cdn-basic-output">Output</button>
+  </div>
+  <div id="cdn-basic-source" class="tab-content active">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Carnatic Notation&lt;/title&gt;
+
+  &lt;!-- Notation styles --&gt;
+  &lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="notation-container"&gt;&lt;/div&gt;
+
+  &lt;!-- Notation library --&gt;
+  &lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+  &lt;script&gt;
+    const notation = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+    `;
+
+    const container = document.getElementById('notation-container');
+    const [parsed, beatLayout, errors] = Notations.load(notation);
+
+    if (errors.length === 0) {
+      const view = new Notations.Carnatic.NotationView(container);
+      view.renderNotation(parsed, beatLayout);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+  <div id="cdn-basic-output" class="tab-content">
+    <notation caption="CDN Example Output">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+    </notation>
+  </div>
+</div>
+
+<h3>CDN URLs</h3>
+
+<table class="docs-table">
+  <thead>
+    <tr>
+      <th>Asset</th>
+      <th>URL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>JavaScript (minified)</td>
+      <td><code>https://unpkg.com/notations/dist/notations.umd.min.js</code></td>
+    </tr>
+    <tr>
+      <td>JavaScript (development)</td>
+      <td><code>https://unpkg.com/notations/dist/notations.umd.js</code></td>
+    </tr>
+    <tr>
+      <td>CSS (minified)</td>
+      <td><code>https://unpkg.com/notations/dist/NotationView.min.css</code></td>
+    </tr>
+    <tr>
+      <td>CSS (development)</td>
+      <td><code>https://unpkg.com/notations/dist/NotationView.css</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The library exposes a global <code>Notations</code> object with all exports:</p>
+
+<pre><code>// Available on window.Notations
+const { load, Carnatic, Notation, Atom } = Notations;
+
+// Parse notation
+const [notation, beatLayout, errors] = Notations.load(source);
+
+// Render
+const view = new Notations.Carnatic.NotationView(container);
+view.renderNotation(notation, beatLayout);</code></pre>
+
+<h2>Quick Start (npm)</h2>
+
+<p>For projects using npm/pnpm with a bundler:</p>
 
 <pre><code>npm install notations notations-web</code></pre>
 

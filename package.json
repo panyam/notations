@@ -1,6 +1,6 @@
 {
   "name": "notations",
-  "version": "0.0.67",
+  "version": "0.0.68",
   "author": "Sriram Panyam",
   "description": "A package for modelling, parsing, laying out carnatic musical notation",
   "homepage": "https://github.com/panyam/notations#readme",
@@ -84,8 +84,8 @@
     "builddocs": "npx typedoc",
     "buildbase": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "build:css": "mkdir -p dist && sass styles/NotationView.scss dist/NotationView.css --style=expanded && sass styles/NotationView.scss dist/NotationView.min.css --style=compressed",
-    "buildumd": "npm run builddocs && npm run buildbase && webpack --mode=development",
-    "build": "npm run builddocs && npm run buildbase && npm run build:css",
+    "build:umd": "webpack --mode=development && webpack --mode=production",
+    "build": "npm run builddocs && npm run buildbase && npm run build:css && npm run build:umd",
     "test": "jest --coverage --runInBand",
     "lint": "eslint src --quiet",
     "lintfix": "eslint src --quiet --fix",
