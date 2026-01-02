@@ -40,9 +40,23 @@
 - [x] Navigation header with dropdowns
 - [x] Sidebar navigation per section
 
+### Build & Tooling ✅
+- [x] Modernize ESLint to v9.39.2 with flat config (eslint.config.mjs)
+- [x] Update typescript-eslint to v8.51.0
+- [x] Remove legacy .eslintrc.json and .eslintignore
+- [x] Auto-fix prettier formatting across src/ files
+- [x] Rename "Cookbook" to "Examples" throughout documentation
+
 ---
 
 ## Immediate TODOs
+
+### Test Fixes (Priority)
+- [ ] Fix grid test expectations in `src/tests/grids.spec.ts`
+  - Heights are 20 less than expected (padding changed from 30 to 10 total)
+  - Need to update h values: 54→34, 55→35, 51→31, etc.
+  - Need to update y values (cumulative heights)
+  - Affects "Basic GridView Tests" (3 failing tests)
 
 ### UI/UX Improvements
 - [ ] Fix button wrapping on narrow screens (keep copy/edit buttons on same line)
