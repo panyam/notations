@@ -1,5 +1,9 @@
 import { NotationBlock, NotationBlockConfig } from "notations-web";
+import * as N from "notations";
 import * as NV from "./NotationViewer";
+
+// Expose notations library globally for integration demos
+(window as any).N = N;
 
 class DocsPage {
   notations: NotationBlock[] = [];

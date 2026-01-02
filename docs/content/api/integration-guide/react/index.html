@@ -13,6 +13,13 @@ description: "Using the Notations library in React applications"
 
 <p>Create a reusable React component for notation rendering:</p>
 
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Basic NotationViewer Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="react-basic-source">Source</button>
+    <button class="tab-btn" data-tab="react-basic-output">Output</button>
+  </div>
+  <div id="react-basic-source" class="tab-content active">
 <pre><code>// NotationViewer.jsx
 import React, { useEffect, useRef } from 'react';
 import * as N from 'notations';
@@ -21,7 +28,7 @@ function NotationViewer({ source, className }) {
   const containerRef = useRef(null);
   const viewRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(() =&gt; {
     if (!containerRef.current) return;
 
     // Create table element for notation
@@ -45,13 +52,7 @@ function NotationViewer({ source, className }) {
   return &lt;div ref={containerRef} className={className} /&gt;;
 }
 
-export default NotationViewer;
-</code></pre>
-
-<h3>Usage</h3>
-
-<pre><code>import NotationViewer from './NotationViewer';
-
+// Usage
 function App() {
   const notation = `
 \\cycle("|4|2|2|")
@@ -61,25 +62,32 @@ Sh: sa ri ga ma pa dha ni sa
 
   return (
     &lt;div&gt;
-      &lt;h1&gt;My Composition&lt;/h1&gt;
+      &lt;h3&gt;My Composition&lt;/h3&gt;
       &lt;NotationViewer source={notation} className="my-notation" /&gt;
     &lt;/div&gt;
   );
-}
-</code></pre>
-
-<p><strong>Expected Output:</strong></p>
-
-<notation caption="Basic Scale - React Output">
+}</code></pre>
+  </div>
+  <div id="react-basic-output" class="tab-content">
+    <notation caption="React Component Output">
 \cycle("|4|2|2|")
 Sw: S R G M P D N S.
 Sh: sa ri ga ma pa dha ni sa
-</notation>
+    </notation>
+  </div>
+</div>
 
-<h2>Component with Source Display</h2>
+<h2>Component with Source Display and Editing</h2>
 
-<p>A more complete component that shows source code and output:</p>
+<p>A more complete component that shows source code and allows editing:</p>
 
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Editable NotationBlock Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="react-edit-source">Source</button>
+    <button class="tab-btn" data-tab="react-edit-output">Output</button>
+  </div>
+  <div id="react-edit-source" class="tab-content active">
 <pre><code>// NotationBlock.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import * as N from 'notations';
@@ -91,7 +99,7 @@ function NotationBlock({ source, caption, showSource = false }) {
   const [editedSource, setEditedSource] = useState(source);
   const [currentSource, setCurrentSource] = useState(source);
 
-  useEffect(() => {
+  useEffect(() =&gt; {
     if (!containerRef.current) return;
 
     if (!viewRef.current) {
@@ -109,84 +117,48 @@ function NotationBlock({ source, caption, showSource = false }) {
     }
   }, [currentSource]);
 
-  const handleApply = () => {
+  const handleApply = () =&gt; {
     setCurrentSource(editedSource);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedSource(currentSource);
     setIsEditing(false);
   };
 
   return (
     &lt;div className="notation-block"&gt;
-      {showSource && (
+      {caption &amp;&amp; &lt;div className="notation-caption"&gt;{caption}&lt;/div&gt;}
+      {showSource &amp;&amp; (
         &lt;div className="notation-source"&gt;
-          {caption && &lt;div className="notation-caption"&gt;{caption}&lt;/div&gt;}
           {isEditing ? (
             &lt;&gt;
               &lt;textarea
                 value={editedSource}
-                onChange={(e) => setEditedSource(e.target.value)}
-                className="notation-textarea"
+                onChange={(e) =&gt; setEditedSource(e.target.value)}
               /&gt;
-              &lt;div className="notation-actions"&gt;
-                &lt;button onClick={handleApply}&gt;Apply&lt;/button&gt;
-                &lt;button onClick={handleCancel}&gt;Cancel&lt;/button&gt;
-              &lt;/div&gt;
+              &lt;button onClick={handleApply}&gt;Apply&lt;/button&gt;
+              &lt;button onClick={() =&gt; setIsEditing(false)}&gt;Cancel&lt;/button&gt;
             &lt;/&gt;
           ) : (
             &lt;&gt;
               &lt;pre&gt;&lt;code&gt;{currentSource}&lt;/code&gt;&lt;/pre&gt;
-              &lt;button onClick={() => setIsEditing(true)}&gt;Edit&lt;/button&gt;
+              &lt;button onClick={() =&gt; setIsEditing(true)}&gt;Edit&lt;/button&gt;
             &lt;/&gt;
           )}
         &lt;/div&gt;
       )}
-      &lt;div className="notation-output"&gt;
-        &lt;strong&gt;Output:&lt;/strong&gt;
-        &lt;div ref={containerRef} /&gt;
-      &lt;/div&gt;
+      &lt;div ref={containerRef} /&gt;
     &lt;/div&gt;
   );
-}
-
-export default NotationBlock;
-</code></pre>
-
-<h3>Usage with Editing</h3>
-
-<pre><code>import NotationBlock from './NotationBlock';
-
-function VarnamPage() {
-  const varnam = `
-\\cycle("|4|2|2|")
-\\beatDuration(4)
-\\line("Pallavi")
-Sw: S , R , | G , M , | P , D , | N , S. , ||
-Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
-  `;
-
-  return (
-    &lt;NotationBlock
-      source={varnam}
-      caption="Ninnu Kori Varnam"
-      showSource={true}
-    /&gt;
-  );
-}
-</code></pre>
-
-<p><strong>Expected Output:</strong></p>
-
-<notation showSource="true" caption="Ninnu Kori Varnam">
+}</code></pre>
+  </div>
+  <div id="react-edit-output" class="tab-content">
+    <notation showSource="true" caption="Ninnu Kori Varnam">
 \cycle("|4|2|2|")
 \beatDuration(4)
 \line("Pallavi")
-Sw: S , R , | G , M , | P , D , | N , S. , ||
-Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
-</notation>
+Sw: S , R , G , M , P , D , N , S. ,
+Sh: ni , nnu , ko , ri , va , ra , nam , ma ,
+    </notation>
+  </div>
+</div>
 
 <h2>TypeScript Version</h2>
 
@@ -197,18 +169,18 @@ import * as N from 'notations';
 interface NotationViewerProps {
   source: string;
   className?: string;
-  onError?: (errors: N.ParseError[]) => void;
+  onError?: (errors: N.ParseError[]) =&gt; void;
 }
 
 const NotationViewer: React.FC&lt;NotationViewerProps&gt; = ({
   source,
   className,
   onError
-}) => {
+}) =&gt; {
   const containerRef = useRef&lt;HTMLDivElement&gt;(null);
   const viewRef = useRef&lt;N.Carnatic.NotationView | null&gt;(null);
 
-  useEffect(() => {
+  useEffect(() =&gt; {
     if (!containerRef.current) return;
 
     if (!viewRef.current) {
@@ -231,8 +203,7 @@ const NotationViewer: React.FC&lt;NotationViewerProps&gt; = ({
   return &lt;div ref={containerRef} className={className} /&gt;;
 };
 
-export default NotationViewer;
-</code></pre>
+export default NotationViewer;</code></pre>
 
 <h2>Error Handling</h2>
 
@@ -245,11 +216,11 @@ export default NotationViewer;
         source={source}
         onError={setErrors}
       /&gt;
-      {errors.length > 0 && (
+      {errors.length &gt; 0 &amp;&amp; (
         &lt;div className="error-display"&gt;
           &lt;h4&gt;Parsing Errors:&lt;/h4&gt;
           &lt;ul&gt;
-            {errors.map((err, i) => (
+            {errors.map((err, i) =&gt; (
               &lt;li key={i}&gt;
                 Line {err.line}, Col {err.column}: {err.message}
               &lt;/li&gt;
@@ -259,8 +230,7 @@ export default NotationViewer;
       )}
     &lt;/div&gt;
   );
-}
-</code></pre>
+}</code></pre>
 
 <h2>CSS for React Components</h2>
 
@@ -313,8 +283,7 @@ export default NotationViewer;
 .error-display h4 {
   color: #dc2626;
   margin: 0 0 0.5rem 0;
-}
-</code></pre>
+}</code></pre>
 
 <h2>See Also</h2>
 

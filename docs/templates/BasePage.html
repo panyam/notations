@@ -39,5 +39,15 @@
 
     <!-- JavaScript will be injected here by webpack-generated template -->
     {{# include "gen.DocsPage.html" #}}
+
+    <!-- Tabbed examples component -->
+    <script src="{{.Site.PathPrefix}}/static/js/tabbed-examples.js"></script>
+
+    <!-- Custom page scripts -->
+    {{ if .FrontMatter.customJS }}
+    {{ range .FrontMatter.customJS }}
+    <script src="{{ . }}"></script>
+    {{ end }}
+    {{ end }}
 </body>
 </html>

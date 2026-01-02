@@ -13,6 +13,13 @@ description: "Using the Notations library in Vue applications"
 
 <p>Create a reusable Vue component (Composition API):</p>
 
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Basic NotationViewer Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="vue-basic-source">Source</button>
+    <button class="tab-btn" data-tab="vue-basic-output">Output</button>
+  </div>
+  <div id="vue-basic-source" class="tab-content active">
 <pre><code>&lt;!-- NotationViewer.vue --&gt;
 &lt;template&gt;
   &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
@@ -58,105 +65,35 @@ function renderNotation() {
   }
 }
 
-onMounted(() => {
+onMounted(() =&gt; {
   renderNotation();
 });
 
-watch(() => props.source, () => {
+watch(() =&gt; props.source, () =&gt; {
   renderNotation();
 });
-&lt;/script&gt;
-</code></pre>
-
-<h3>Usage</h3>
-
-<pre><code>&lt;template&gt;
-  &lt;div&gt;
-    &lt;h1&gt;My Composition&lt;/h1&gt;
-    &lt;NotationViewer :source="notation" class-name="my-notation" /&gt;
-  &lt;/div&gt;
-&lt;/template&gt;
-
-&lt;script setup&gt;
-import NotationViewer from './NotationViewer.vue';
-
-const notation = `
-\\cycle("|4|2|2|")
-Sw: S R G M P D N S.
-Sh: sa ri ga ma pa dha ni sa
-`;
-&lt;/script&gt;
-</code></pre>
-
-<p><strong>Expected Output:</strong></p>
-
-<notation caption="Basic Scale - Vue Output">
+&lt;/script&gt;</code></pre>
+  </div>
+  <div id="vue-basic-output" class="tab-content">
+    <notation caption="Vue Component Output">
 \cycle("|4|2|2|")
 Sw: S R G M P D N S.
 Sh: sa ri ga ma pa dha ni sa
-</notation>
+    </notation>
+  </div>
+</div>
 
-<h2>Options API Version</h2>
+<h2>Component with Source Display and Editing</h2>
 
-<pre><code>&lt;!-- NotationViewer.vue (Options API) --&gt;
-&lt;template&gt;
-  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
-&lt;/template&gt;
+<p>A more complete component that shows source code and allows editing:</p>
 
-&lt;script&gt;
-import * as N from 'notations';
-
-export default {
-  name: 'NotationViewer',
-  props: {
-    source: {
-      type: String,
-      required: true
-    },
-    className: {
-      type: String,
-      default: ''
-    }
-  },
-  emits: ['error'],
-  data() {
-    return {
-      view: null
-    };
-  },
-  mounted() {
-    this.initView();
-    this.renderNotation();
-  },
-  watch: {
-    source() {
-      this.renderNotation();
-    }
-  },
-  methods: {
-    initView() {
-      const table = document.createElement('table');
-      table.classList.add('notation-table');
-      this.$refs.container.appendChild(table);
-      this.view = new N.Carnatic.NotationView(table);
-    },
-    renderNotation() {
-      const [notation, beatLayout, errors] = N.load(this.source);
-
-      if (errors.length === 0) {
-        this.view.tableElement.innerHTML = '';
-        this.view.renderNotation(notation, beatLayout);
-      } else {
-        this.$emit('error', errors);
-      }
-    }
-  }
-};
-&lt;/script&gt;
-</code></pre>
-
-<h2>Component with Source Display</h2>
-
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Editable NotationBlock Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="vue-edit-source">Source</button>
+    <button class="tab-btn" data-tab="vue-edit-output">Output</button>
+  </div>
+  <div id="vue-edit-source" class="tab-content active">
 <pre><code>&lt;!-- NotationBlock.vue --&gt;
 &lt;template&gt;
   &lt;div class="notation-block"&gt;
@@ -243,43 +180,78 @@ async function copyToClipboard() {
   await navigator.clipboard.writeText(currentSource.value);
 }
 
-onMounted(() => renderNotation());
-watch(currentSource, () => renderNotation());
-&lt;/script&gt;
-</code></pre>
-
-<h3>Usage</h3>
-
-<pre><code>&lt;template&gt;
-  &lt;NotationBlock
-    :source="varnam"
-    caption="Ninnu Kori Varnam"
-    :show-source="true"
-  /&gt;
-&lt;/template&gt;
-
-&lt;script setup&gt;
-import NotationBlock from './NotationBlock.vue';
-
-const varnam = `
-\\cycle("|4|2|2|")
-\\beatDuration(4)
-\\line("Pallavi")
-Sw: S , R , | G , M , | P , D , | N , S. , ||
-Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
-`;
-&lt;/script&gt;
-</code></pre>
-
-<p><strong>Expected Output:</strong></p>
-
-<notation showSource="true" caption="Ninnu Kori Varnam">
+onMounted(() =&gt; renderNotation());
+watch(currentSource, () =&gt; renderNotation());
+&lt;/script&gt;</code></pre>
+  </div>
+  <div id="vue-edit-output" class="tab-content">
+    <notation showSource="true" caption="Ninnu Kori Varnam">
 \cycle("|4|2|2|")
 \beatDuration(4)
 \line("Pallavi")
-Sw: S , R , | G , M , | P , D , | N , S. , ||
-Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
-</notation>
+Sw: S , R , G , M , P , D , N , S. ,
+Sh: ni , nnu , ko , ri , va , ra , nam , ma ,
+    </notation>
+  </div>
+</div>
+
+<h2>Options API Version</h2>
+
+<pre><code>&lt;!-- NotationViewer.vue (Options API) --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import * as N from 'notations';
+
+export default {
+  name: 'NotationViewer',
+  props: {
+    source: {
+      type: String,
+      required: true
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['error'],
+  data() {
+    return {
+      view: null
+    };
+  },
+  mounted() {
+    this.initView();
+    this.renderNotation();
+  },
+  watch: {
+    source() {
+      this.renderNotation();
+    }
+  },
+  methods: {
+    initView() {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      this.$refs.container.appendChild(table);
+      this.view = new N.Carnatic.NotationView(table);
+    },
+    renderNotation() {
+      const [notation, beatLayout, errors] = N.load(this.source);
+
+      if (errors.length === 0) {
+        this.view.tableElement.innerHTML = '';
+        this.view.renderNotation(notation, beatLayout);
+      } else {
+        this.$emit('error', errors);
+      }
+    }
+  }
+};
+&lt;/script&gt;</code></pre>
 
 <h2>TypeScript with Vue 3</h2>
 
@@ -328,10 +300,9 @@ function renderNotation(): void {
   }
 }
 
-onMounted(() => renderNotation());
-watch(() => props.source, () => renderNotation());
-&lt;/script&gt;
-</code></pre>
+onMounted(() =&gt; renderNotation());
+watch(() =&gt; props.source, () =&gt; renderNotation());
+&lt;/script&gt;</code></pre>
 
 <h2>Error Handling</h2>
 
@@ -360,8 +331,7 @@ const errors = ref([]);
 function handleErrors(errs) {
   errors.value = errs;
 }
-&lt;/script&gt;
-</code></pre>
+&lt;/script&gt;</code></pre>
 
 <h2>See Also</h2>
 
