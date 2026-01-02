@@ -10,7 +10,8 @@
   "types": "lib/cjs/index.d.ts",
   "files": [
     "lib/",
-    "styles/"
+    "styles/",
+    "dist/"
   ],
   "repository": {
     "type": "git",
@@ -62,6 +63,7 @@
     "postcss-cli": "^11.0.1",
     "pre-commit": "^1.2.2",
     "prettier": "^3.5.3",
+    "sass": "^1.97.1",
     "ts-jest": "^29.3.1",
     "typedoc": "^0.28.2",
     "typescript": "^5.8.3",
@@ -81,8 +83,9 @@
     "clean": "rm -Rf lib && jest --clearCache && rm -rf static/lib",
     "builddocs": "npx typedoc",
     "buildbase": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "build:css": "mkdir -p dist && sass styles/NotationView.scss dist/NotationView.css --style=expanded && sass styles/NotationView.scss dist/NotationView.min.css --style=compressed",
     "buildumd": "npm run builddocs && npm run buildbase && webpack --mode=development",
-    "build": "npm run builddocs && npm run buildbase",
+    "build": "npm run builddocs && npm run buildbase && npm run build:css",
     "test": "jest --coverage --runInBand",
     "lint": "eslint src --quiet",
     "lintfix": "eslint src --quiet --fix",

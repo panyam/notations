@@ -2,6 +2,9 @@ import { NotationBlock, NotationBlockConfig } from "notations-web";
 import * as N from "notations";
 import * as NV from "./NotationViewer";
 
+// Import core notation styles (CSS variables for theming)
+import "../../styles/NotationView.scss";
+
 // Expose notations library globally for integration demos
 (window as any).N = N;
 

@@ -97,6 +97,7 @@ export class LabelEmbelishment extends LeafAtomViewEmbelishment {
       text: label,
       attrs: {
         source: "atom" + this.atomView.leafAtom.uuid,
+        class: "notation-embelishment-label",
         "dominant-baseline": "hanging",
       },
     });

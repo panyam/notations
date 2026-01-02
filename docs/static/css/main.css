@@ -295,20 +295,6 @@ pre code {
     background-color: var(--notation-bg-color);
 }
 
-/* Notation SVG text elements */
-.notation-view text,
-.notation-view .atomViewTextRoot {
-    fill: var(--notation-text-color);
-}
-
-/* Notation SVG stroke elements */
-.notation-view .notation-octave-dot,
-.notation-view .bar-start-line,
-.notation-view .bar-end-line,
-.notation-view .notation-jaaru-path {
-    stroke: var(--notation-stroke-color);
-}
-
 /* Buttons */
 .btn {
     display: inline-block;

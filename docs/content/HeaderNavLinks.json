@@ -78,6 +78,10 @@
         "url": "api/reference/"
       },
       {
+        "name": "Styling & Theming",
+        "url": "api/styling/"
+      },
+      {
         "name": "Examples",
         "url": "api/examples/"
       }

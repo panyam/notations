@@ -60,8 +60,10 @@
   fill: var(--notation-fill-color);
 }
 
-/* Text elements */
-.atomViewTextRoot {
+/* Text elements - target all SVG text within notation */
+.notationsContentRootTable text,
+.atomViewTextRoot,
+.notation-embelishment-label {
   fill: var(--notation-text-color);
 }
 

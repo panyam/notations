@@ -1,0 +1,292 @@
+---
+title: "Styling & Theming"
+description: "How to customize the appearance of notation components using CSS variables"
+---
+
+<p>The Notations library uses CSS custom properties (variables) for all visual styling, making it easy to customize colors, strokes, and spacing without modifying the source code.</p>
+
+<h2>Quick Start</h2>
+
+<p>Import the default styles, then override any variables you want:</p>
+
+<pre><code>// Import the base styles
+import 'notations/dist/NotationView.css';
+
+// Or in HTML
+&lt;link rel="stylesheet" href="node_modules/notations/dist/NotationView.css"&gt;
+</code></pre>
+
+<p>Then in your CSS, override the variables:</p>
+
+<pre><code>:root {
+  --notation-stroke-color: #2c5282;
+  --notation-text-color: #1a365d;
+}
+</code></pre>
+
+<h2>Available CSS Variables</h2>
+
+<table class="docs-table">
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Default (Light)</th>
+      <th>Default (Dark)</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--notation-stroke-color</code></td>
+      <td><code>black</code></td>
+      <td><code>#e5e5e5</code></td>
+      <td>Color for lines, bar markers, octave dots</td>
+    </tr>
+    <tr>
+      <td><code>--notation-text-color</code></td>
+      <td><code>#1a1a1a</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Color for swaras, sahityam, embellishments</td>
+    </tr>
+    <tr>
+      <td><code>--notation-fill-color</code></td>
+      <td><code>transparent</code></td>
+      <td><code>transparent</code></td>
+      <td>Fill color for shapes (e.g., jaaru curves)</td>
+    </tr>
+    <tr>
+      <td><code>--notation-border-color</code></td>
+      <td><code>gray</code></td>
+      <td><code>#555</code></td>
+      <td>Border color for the notation table</td>
+    </tr>
+    <tr>
+      <td><code>--notation-stroke-width</code></td>
+      <td><code>1</code></td>
+      <td><code>1</code></td>
+      <td>Stroke width for general elements</td>
+    </tr>
+    <tr>
+      <td><code>--notation-bar-line-width</code></td>
+      <td><code>1</code></td>
+      <td><code>1</code></td>
+      <td>Stroke width for bar lines</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Dark Mode Support</h2>
+
+<p>The library automatically supports dark mode via the <code>.dark</code> class or <code>data-theme="dark"</code> attribute on the root element:</p>
+
+<pre><code>// Toggle dark mode
+document.documentElement.classList.toggle('dark');
+
+// Or use data attribute
+document.documentElement.setAttribute('data-theme', 'dark');
+</code></pre>
+
+<p>System preference is also respected via <code>prefers-color-scheme</code> media query.</p>
+
+<h2>Scoped Overrides</h2>
+
+<p>You can apply different styles to different notation blocks on the same page using wrapper classes. CSS variables cascade, so inner elements inherit from their closest ancestor that defines the variable.</p>
+
+<h3>Example: Two Themes on One Page</h3>
+
+<p>Here are two notation blocks with different color schemes, defined using scoped CSS variables:</p>
+
+<style>
+.theme-ocean {
+  --notation-stroke-color: #0077b6;
+  --notation-text-color: #023e8a;
+  --notation-border-color: #90e0ef;
+  --notation-bg-color: #e0f7ff;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #caf0f8;
+}
+
+.theme-forest {
+  --notation-stroke-color: #2d6a4f;
+  --notation-text-color: #1b4332;
+  --notation-border-color: #95d5b2;
+  --notation-bg-color: #e8f5e9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #d8f3dc;
+}
+
+.theme-sunset {
+  --notation-stroke-color: #9d4edd;
+  --notation-text-color: #7b2cbf;
+  --notation-border-color: #e0aaff;
+  --notation-bg-color: #fff8e1;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #faf0ca;
+}
+</style>
+
+<div class="theme-ocean">
+  <h4 style="margin-top: 0; color: #023e8a;">Ocean Theme</h4>
+  <notation id="ocean-example" caption="Adi Tala in Ocean Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<div class="theme-forest">
+  <h4 style="margin-top: 0; color: #1b4332;">Forest Theme</h4>
+  <notation id="forest-example" caption="Adi Tala in Forest Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<div class="theme-sunset">
+  <h4 style="margin-top: 0; color: #7b2cbf;">Sunset Theme</h4>
+  <notation id="sunset-example" caption="Adi Tala in Sunset Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<h3>CSS for Scoped Themes</h3>
+
+<p>The CSS to create these scoped themes:</p>
+
+<pre><code>.theme-ocean {
+  --notation-stroke-color: #0077b6;
+  --notation-text-color: #023e8a;
+  --notation-border-color: #90e0ef;
+  --notation-bg-color: #e0f7ff;
+  background-color: #caf0f8;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.theme-forest {
+  --notation-stroke-color: #2d6a4f;
+  --notation-text-color: #1b4332;
+  --notation-border-color: #95d5b2;
+  --notation-bg-color: #e8f5e9;
+  background-color: #d8f3dc;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.theme-sunset {
+  --notation-stroke-color: #9d4edd;
+  --notation-text-color: #7b2cbf;
+  --notation-border-color: #e0aaff;
+  --notation-bg-color: #fff8e1;
+  background-color: #faf0ca;
+  padding: 1rem;
+  border-radius: 8px;
+}
+</code></pre>
+
+<h3>HTML Usage</h3>
+
+<pre><code>&lt;div class="theme-ocean"&gt;
+  &lt;notation&gt;
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  &lt;/notation&gt;
+&lt;/div&gt;
+
+&lt;div class="theme-forest"&gt;
+  &lt;notation&gt;
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  &lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h2>Global Overrides</h2>
+
+<p>To change styles globally across your entire application:</p>
+
+<pre><code>/* In your app's CSS, after importing notations CSS */
+:root {
+  /* Custom brand colors */
+  --notation-stroke-color: #6366f1;
+  --notation-text-color: #312e81;
+
+  /* Thicker bar lines */
+  --notation-bar-line-width: 2;
+}
+
+/* Dark mode overrides */
+:root.dark {
+  --notation-stroke-color: #a5b4fc;
+  --notation-text-color: #e0e7ff;
+}
+</code></pre>
+
+<h2>Per-Component Inline Styles</h2>
+
+<p>For one-off customizations, you can also use inline styles:</p>
+
+<pre><code>&lt;div style="--notation-text-color: red;"&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h2>Integration with CSS Frameworks</h2>
+
+<h3>Tailwind CSS</h3>
+
+<p>Define your notation theme colors in <code>tailwind.config.js</code>:</p>
+
+<pre><code>// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        notation: {
+          stroke: 'var(--notation-stroke-color)',
+          text: 'var(--notation-text-color)',
+        }
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>Then use utility classes to set variables:</p>
+
+<pre><code>&lt;div class="[--notation-stroke-color:theme(colors.indigo.600)]"&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h3>CSS-in-JS (Styled Components, Emotion)</h3>
+
+<pre><code>const ThemedNotation = styled.div`
+  --notation-stroke-color: ${props => props.theme.primary};
+  --notation-text-color: ${props => props.theme.text};
+`;
+
+// Usage
+&lt;ThemedNotation&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/ThemedNotation&gt;
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide</a> - Framework integration</li>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/">API Reference</a> - Complete API documentation</li>
+  <li><a href="{{.Site.PathPrefix}}/api/examples/">Examples</a> - Code examples</li>
+</ul>

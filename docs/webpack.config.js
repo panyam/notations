@@ -33,6 +33,10 @@ module.exports = (_env, options) => {
             },
           ],
         },
+        {
+          test: /\.s?css$/,
+          use: ["style-loader", "css-loader", "sass-loader"],
+        },
       ],
     },
     resolve: {
