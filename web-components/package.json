@@ -1,6 +1,6 @@
 {
   "name": "notations-web",
-  "version": "0.0.2",
+  "version": "0.0.68",
   "description": "Web components for the Notations library - interactive notation blocks, editors, and viewers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
