@@ -1,3 +1,74 @@
+/* ========================================
+   CSS Custom Properties (Theme Variables)
+   ======================================== */
+
+:root {
+  /* Colors */
+  --notation-stroke-color: black;
+  --notation-fill-color: transparent;
+  --notation-text-color: #1a1a1a;
+  --notation-border-color: gray;
+
+  /* Strokes */
+  --notation-stroke-width: 1;
+  --notation-bar-line-width: 1;
+
+  /* Spacing (can be overridden) */
+  --notation-line-padding: 5px;
+  --notation-annotation-padding: 10px;
+}
+
+/* Dark mode */
+:root.dark,
+[data-theme="dark"] {
+  --notation-stroke-color: #e5e5e5;
+  --notation-fill-color: transparent;
+  --notation-text-color: #f0f0f0;
+  --notation-border-color: #555;
+}
+
+/* System preference fallback */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    --notation-stroke-color: #e5e5e5;
+    --notation-fill-color: transparent;
+    --notation-text-color: #f0f0f0;
+    --notation-border-color: #555;
+  }
+}
+
+/* ========================================
+   SVG Element Styles
+   ======================================== */
+
+/* Octave indicator dots */
+.notation-octave-dot {
+  stroke: var(--notation-stroke-color);
+  stroke-width: var(--notation-stroke-width);
+}
+
+/* Bar lines (start and end) */
+.bar-start-line,
+.bar-end-line {
+  stroke: var(--notation-stroke-color);
+  stroke-width: var(--notation-bar-line-width);
+}
+
+/* Jaaru (glide) paths */
+.notation-jaaru-path {
+  stroke: var(--notation-stroke-color);
+  fill: var(--notation-fill-color);
+}
+
+/* Text elements */
+.atomViewTextRoot {
+  fill: var(--notation-text-color);
+}
+
+/* ========================================
+   Layout Styles
+   ======================================== */
+
 .lineRow {
   border: none;
 }
@@ -30,6 +101,6 @@
 }
 
 .notationsContentRootTable {
-  border-top: solid 1px gray;
+  border-top: solid 1px var(--notation-border-color);
   width: 100%;
 }

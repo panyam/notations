@@ -44,8 +44,7 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
           cx: cx,
           cy: 0,
           r: this.dotRadius,
-          stroke: "black",
-          "stroke-width": "1",
+          class: "notation-octave-dot",
         },
       });
       cx += this.dotRadius + this.dotRadius + this.dotSpacing;
@@ -139,8 +138,6 @@ export class BeatStartLines extends Embelishment {
       doc: document,
       parent: this.rootElement,
       attrs: {
-        stroke: "black",
-        "stroke-width": "1",
         class: "bar-start-line",
       },
     });
@@ -193,8 +190,6 @@ export class BeatEndLines extends Embelishment {
           // parent: l2g,
           parent: this.rootElement,
           attrs: {
-            stroke: "black",
-            "stroke-width": "1",
             class: "bar-end-line",
           },
         }),
@@ -311,8 +306,7 @@ export class Jaaru extends LeafAtomViewEmbelishment {
       parent: rootElem,
       attrs: {
         source: "atom" + this.atomView.leafAtom.uuid,
-        stroke: "black",
-        fill: "transparent",
+        class: "notation-jaaru-path",
         d: this.pathAttribute(),
       },
     });
