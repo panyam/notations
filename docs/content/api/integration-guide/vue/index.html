@@ -1,0 +1,372 @@
+---
+title: "Vue Integration"
+description: "Using the Notations library in Vue applications"
+---
+
+<p>This guide shows how to create Vue components for rendering Carnatic music notation.</p>
+
+<h2>Installation</h2>
+
+<pre><code>npm install notations</code></pre>
+
+<h2>Basic NotationViewer Component</h2>
+
+<p>Create a reusable Vue component (Composition API):</p>
+
+<pre><code>&lt;!-- NotationViewer.vue --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+const props = defineProps({
+  source: {
+    type: String,
+    required: true
+  },
+  className: {
+    type: String,
+    default: ''
+  }
+});
+
+const emit = defineEmits(['error']);
+
+const container = ref(null);
+let view = null;
+
+function renderNotation() {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(props.source);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  } else {
+    emit('error', errors);
+  }
+}
+
+onMounted(() => {
+  renderNotation();
+});
+
+watch(() => props.source, () => {
+  renderNotation();
+});
+&lt;/script&gt;
+</code></pre>
+
+<h3>Usage</h3>
+
+<pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;h1&gt;My Composition&lt;/h1&gt;
+    &lt;NotationViewer :source="notation" class-name="my-notation" /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import NotationViewer from './NotationViewer.vue';
+
+const notation = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+`;
+&lt;/script&gt;
+</code></pre>
+
+<p><strong>Expected Output:</strong></p>
+
+<notation caption="Basic Scale - Vue Output">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>Options API Version</h2>
+
+<pre><code>&lt;!-- NotationViewer.vue (Options API) --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import * as N from 'notations';
+
+export default {
+  name: 'NotationViewer',
+  props: {
+    source: {
+      type: String,
+      required: true
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['error'],
+  data() {
+    return {
+      view: null
+    };
+  },
+  mounted() {
+    this.initView();
+    this.renderNotation();
+  },
+  watch: {
+    source() {
+      this.renderNotation();
+    }
+  },
+  methods: {
+    initView() {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      this.$refs.container.appendChild(table);
+      this.view = new N.Carnatic.NotationView(table);
+    },
+    renderNotation() {
+      const [notation, beatLayout, errors] = N.load(this.source);
+
+      if (errors.length === 0) {
+        this.view.tableElement.innerHTML = '';
+        this.view.renderNotation(notation, beatLayout);
+      } else {
+        this.$emit('error', errors);
+      }
+    }
+  }
+};
+&lt;/script&gt;
+</code></pre>
+
+<h2>Component with Source Display</h2>
+
+<pre><code>&lt;!-- NotationBlock.vue --&gt;
+&lt;template&gt;
+  &lt;div class="notation-block"&gt;
+    &lt;div v-if="showSource" class="notation-source"&gt;
+      &lt;div v-if="caption" class="notation-caption"&gt;{{ caption }}&lt;/div&gt;
+
+      &lt;template v-if="isEditing"&gt;
+        &lt;textarea
+          v-model="editedSource"
+          class="notation-textarea"
+        &gt;&lt;/textarea&gt;
+        &lt;div class="notation-actions"&gt;
+          &lt;button @click="applyEdit"&gt;Apply&lt;/button&gt;
+          &lt;button @click="cancelEdit"&gt;Cancel&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/template&gt;
+
+      &lt;template v-else&gt;
+        &lt;pre&gt;&lt;code&gt;{{ currentSource }}&lt;/code&gt;&lt;/pre&gt;
+        &lt;div class="notation-actions"&gt;
+          &lt;button @click="copyToClipboard"&gt;Copy&lt;/button&gt;
+          &lt;button @click="startEdit"&gt;Edit&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/template&gt;
+    &lt;/div&gt;
+
+    &lt;div class="notation-output"&gt;
+      &lt;strong&gt;Output:&lt;/strong&gt;
+      &lt;div ref="container"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+const props = defineProps({
+  source: { type: String, required: true },
+  caption: { type: String, default: '' },
+  showSource: { type: Boolean, default: false }
+});
+
+const container = ref(null);
+const isEditing = ref(false);
+const currentSource = ref(props.source);
+const editedSource = ref(props.source);
+let view = null;
+
+function renderNotation() {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(currentSource.value);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  }
+}
+
+function startEdit() {
+  editedSource.value = currentSource.value;
+  isEditing.value = true;
+}
+
+function applyEdit() {
+  currentSource.value = editedSource.value;
+  isEditing.value = false;
+}
+
+function cancelEdit() {
+  editedSource.value = currentSource.value;
+  isEditing.value = false;
+}
+
+async function copyToClipboard() {
+  await navigator.clipboard.writeText(currentSource.value);
+}
+
+onMounted(() => renderNotation());
+watch(currentSource, () => renderNotation());
+&lt;/script&gt;
+</code></pre>
+
+<h3>Usage</h3>
+
+<pre><code>&lt;template&gt;
+  &lt;NotationBlock
+    :source="varnam"
+    caption="Ninnu Kori Varnam"
+    :show-source="true"
+  /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import NotationBlock from './NotationBlock.vue';
+
+const varnam = `
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+\\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+`;
+&lt;/script&gt;
+</code></pre>
+
+<p><strong>Expected Output:</strong></p>
+
+<notation showSource="true" caption="Ninnu Kori Varnam">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+</notation>
+
+<h2>TypeScript with Vue 3</h2>
+
+<pre><code>&lt;!-- NotationViewer.vue --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup lang="ts"&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+interface Props {
+  source: string;
+  className?: string;
+}
+
+const props = withDefaults(defineProps&lt;Props&gt;(), {
+  className: ''
+});
+
+const emit = defineEmits&lt;{
+  (e: 'error', errors: N.ParseError[]): void;
+}&gt;();
+
+const container = ref&lt;HTMLDivElement | null&gt;(null);
+let view: N.Carnatic.NotationView | null = null;
+
+function renderNotation(): void {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(props.source);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  } else {
+    emit('error', errors);
+  }
+}
+
+onMounted(() => renderNotation());
+watch(() => props.source, () => renderNotation());
+&lt;/script&gt;
+</code></pre>
+
+<h2>Error Handling</h2>
+
+<pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;NotationViewer :source="source" @error="handleErrors" /&gt;
+
+    &lt;div v-if="errors.length" class="error-display"&gt;
+      &lt;h4&gt;Parsing Errors:&lt;/h4&gt;
+      &lt;ul&gt;
+        &lt;li v-for="(err, i) in errors" :key="i"&gt;
+          Line {{ err.line }}, Col {{ err.column }}: {{ err.message }}
+        &lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref } from 'vue';
+import NotationViewer from './NotationViewer.vue';
+
+const source = ref('...');
+const errors = ref([]);
+
+function handleErrors(errs) {
+  errors.value = errs;
+}
+&lt;/script&gt;
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide Overview</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/web-components/">Web Components</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/react/">React Integration</a></li>
+</ul>

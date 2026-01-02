@@ -1,0 +1,310 @@
+---
+title: "Node.js Integration"
+description: "Using the Notations library in Node.js for server-side processing"
+---
+
+<p>This guide shows how to use the Notations library in Node.js for server-side parsing, validation, and processing of Carnatic music notation.</p>
+
+<h2>Installation</h2>
+
+<pre><code>npm install notations</code></pre>
+
+<h2>Basic Parsing</h2>
+
+<p>Parse notation and access the structure:</p>
+
+<pre><code>const N = require('notations');
+
+const source = `
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  console.log('Notation parsed successfully!');
+  console.log('Blocks:', notation.blocks.length);
+} else {
+  console.error('Parse errors:', errors);
+}
+</code></pre>
+
+<p>This parses the following notation:</p>
+
+<notation caption="Parsed Notation">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>ES Modules</h2>
+
+<pre><code>import * as N from 'notations';
+
+const [notation, beatLayout, errors] = N.load(source);
+</code></pre>
+
+<h2>Accessing Notation Structure</h2>
+
+<pre><code>const N = require('notations');
+
+const source = `
+\\cycle("|4|2|2|")
+\\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+\\line("Anupallavi")
+Sw: S. , N , | D , P , | M , G , | R , S , ||
+Sh: en , na , | gu , ru , | sva , mi , | ra , ya , ||
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+// Iterate through blocks
+notation.blocks.forEach((block, blockIndex) => {
+  console.log(`\\nBlock ${blockIndex}:`);
+
+  // Iterate through lines in the block
+  block.lines.forEach((line, lineIndex) => {
+    console.log(`  Line ${lineIndex}: "${line.label || 'unlabeled'}"`);
+
+    // Iterate through roles (Sw, Sh, etc.)
+    line.roles.forEach((role, roleIndex) => {
+      console.log(`    Role ${roleIndex}: ${role.name}`);
+      console.log(`      Atoms: ${role.atoms.length}`);
+    });
+  });
+});
+</code></pre>
+
+<p>The notation being processed:</p>
+
+<notation showSource="true" caption="Multi-line Composition">
+\cycle("|4|2|2|")
+\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+\line("Anupallavi")
+Sw: S. , N , | D , P , | M , G , | R , S , ||
+Sh: en , na , | gu , ru , | sva , mi , | ra , ya , ||
+</notation>
+
+<h2>Validation</h2>
+
+<p>Check for parsing errors before processing:</p>
+
+<pre><code>function validateNotation(source) {
+  const [notation, beatLayout, errors] = N.load(source);
+
+  if (errors.length > 0) {
+    return {
+      valid: false,
+      errors: errors.map(err => ({
+        line: err.line,
+        column: err.column,
+        message: err.message
+      }))
+    };
+  }
+
+  return {
+    valid: true,
+    notation,
+    beatLayout,
+    stats: {
+      blocks: notation.blocks.length,
+      lines: notation.blocks.reduce((sum, b) => sum + b.lines.length, 0)
+    }
+  };
+}
+
+// Usage
+const result = validateNotation(userInput);
+
+if (!result.valid) {
+  console.error('Invalid notation:');
+  result.errors.forEach(err => {
+    console.error(`  Line ${err.line}: ${err.message}`);
+  });
+} else {
+  console.log('Valid notation with', result.stats.lines, 'lines');
+}
+</code></pre>
+
+<h2>Express.js API Example</h2>
+
+<pre><code>const express = require('express');
+const N = require('notations');
+
+const app = express();
+app.use(express.json());
+
+// Validate notation endpoint
+app.post('/api/validate', (req, res) => {
+  const { source } = req.body;
+
+  if (!source) {
+    return res.status(400).json({ error: 'Missing source' });
+  }
+
+  const [notation, beatLayout, errors] = N.load(source);
+
+  if (errors.length > 0) {
+    return res.json({
+      valid: false,
+      errors: errors.map(e => ({
+        line: e.line,
+        column: e.column,
+        message: e.message
+      }))
+    });
+  }
+
+  res.json({
+    valid: true,
+    stats: {
+      blocks: notation.blocks.length,
+      lines: notation.blocks.reduce((sum, b) => sum + b.lines.length, 0)
+    }
+  });
+});
+
+// Parse and return structure
+app.post('/api/parse', (req, res) => {
+  const { source } = req.body;
+
+  if (!source) {
+    return res.status(400).json({ error: 'Missing source' });
+  }
+
+  const [notation, beatLayout, errors] = N.load(source);
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
+  }
+
+  // Return simplified structure
+  const structure = notation.blocks.map(block => ({
+    lines: block.lines.map(line => ({
+      label: line.label,
+      roles: line.roles.map(role => ({
+        name: role.name,
+        atomCount: role.atoms.length
+      }))
+    }))
+  }));
+
+  res.json({ structure });
+});
+
+app.listen(3000, () => {
+  console.log('Notation API running on port 3000');
+});
+</code></pre>
+
+<h2>Processing Atoms</h2>
+
+<pre><code>const N = require('notations');
+
+function extractNotes(source) {
+  const [notation, beatLayout, errors] = N.load(source);
+
+  if (errors.length > 0) {
+    throw new Error('Parse error: ' + errors[0].message);
+  }
+
+  const notes = [];
+
+  notation.blocks.forEach(block => {
+    block.lines.forEach(line => {
+      line.roles.forEach(role => {
+        if (role.name === 'Sw') { // Swaras only
+          role.atoms.forEach(atom => {
+            if (atom.type === 'Note') {
+              notes.push({
+                note: atom.note,
+                octave: atom.octave,
+                duration: atom.duration
+              });
+            }
+          });
+        }
+      });
+    });
+  });
+
+  return notes;
+}
+
+const source = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+`;
+
+const notes = extractNotes(source);
+console.log('Notes:', notes);
+// Output: [{ note: 'S', octave: 0, duration: 1 }, ...]
+</code></pre>
+
+<h2>TypeScript</h2>
+
+<pre><code>import * as N from 'notations';
+
+interface ParseResult {
+  valid: boolean;
+  notation?: N.Notation;
+  beatLayout?: N.BeatLayout;
+  errors?: N.ParseError[];
+}
+
+function parseNotation(source: string): ParseResult {
+  const [notation, beatLayout, errors] = N.load(source);
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return { valid: true, notation, beatLayout };
+}
+</code></pre>
+
+<h2>CLI Tool Example</h2>
+
+<pre><code>#!/usr/bin/env node
+const fs = require('fs');
+const N = require('notations');
+
+const file = process.argv[2];
+
+if (!file) {
+  console.error('Usage: notation-check &lt;file&gt;');
+  process.exit(1);
+}
+
+const source = fs.readFileSync(file, 'utf-8');
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  console.error('Errors found:');
+  errors.forEach(err => {
+    console.error(`  ${file}:${err.line}:${err.column} - ${err.message}`);
+  });
+  process.exit(1);
+}
+
+console.log('✓ Valid notation');
+console.log(`  Blocks: ${notation.blocks.length}`);
+console.log(`  Lines: ${notation.blocks.reduce((s, b) => s + b.lines.length, 0)}`);
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide Overview</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/">API Reference</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/examples/">More Examples</a></li>
+</ul>

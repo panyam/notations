@@ -3,261 +3,72 @@ title: "Integration Guide"
 description: "How to integrate the Notations library into your application"
 ---
 
-<p>This guide shows you how to integrate the Notations library into your web or Node.js application.</p>
+<p>This guide shows you how to integrate the Notations library into various platforms and frameworks.</p>
 
-<h2>Web Applications</h2>
+<h2>Choose Your Integration</h2>
 
-<h3>Using Web Components</h3>
+<div class="integration-cards">
+  <a href="{{.Site.PathPrefix}}/api/integration-guide/web-components/" class="integration-card">
+    <h3>Web Components</h3>
+    <p>Use the <code>notations-web</code> package for easy integration with any web application. Works with vanilla JS, jQuery, or any framework.</p>
+  </a>
 
-<p>The easiest way to add notation rendering to your web app is using the <code>notations-web</code> package:</p>
+  <a href="{{.Site.PathPrefix}}/api/integration-guide/react/" class="integration-card">
+    <h3>React</h3>
+    <p>Create React components for notation rendering with hooks and state management.</p>
+  </a>
 
-<pre><code>npm install notations-web notations</code></pre>
+  <a href="{{.Site.PathPrefix}}/api/integration-guide/vue/" class="integration-card">
+    <h3>Vue</h3>
+    <p>Build Vue components with reactive notation rendering and watchers.</p>
+  </a>
 
-<p>Create a notation viewer:</p>
+  <a href="{{.Site.PathPrefix}}/api/integration-guide/nodejs/" class="integration-card">
+    <h3>Node.js</h3>
+    <p>Server-side parsing and processing of notation data.</p>
+  </a>
+</div>
+
+<h2>Quick Start</h2>
+
+<p>The simplest way to add notation to your website:</p>
+
+<pre><code>npm install notations notations-web</code></pre>
 
 <pre><code>import { NotationBlock } from "notations-web";
 import * as N from "notations";
 
-// Define how to create notation viewers
+// Create a viewer factory
 function createViewer(container) {
   return new N.Carnatic.NotationView(container);
 }
 
-// Configure the notation block
-const config = {
-  createViewer: createViewer,
-  cssClasses: {
-    sourceContainer: "bg-gray-100 p-4",
-    outputContainer: "p-4 bg-white"
-  }
-};
-
-// Find all <notation> tags and render them
+// Process all &lt;notation&gt; tags on the page
 document.querySelectorAll("notation").forEach(elem => {
-  new NotationBlock(elem, config);
+  new NotationBlock(elem, { createViewer });
 });
 </code></pre>
 
-<h3>Using HTML Tags</h3>
+<p>Then add notation in your HTML:</p>
 
-<p>Add notation directly in your HTML:</p>
-
-<pre><code>&lt;notation id="example" showSource="true" caption="My Notation"&gt;
+<pre><code>&lt;notation showSource="true"&gt;
 \cycle("|4|2|2|")
-\beatDuration(4)
 Sw: S R G M P D N S.
 Sh: sa ri ga ma pa dha ni sa
 &lt;/notation&gt;</code></pre>
 
-<h3>Custom Styling</h3>
+<p>Which renders as:</p>
 
-<p>The web components accept CSS classes for customization:</p>
-
-<pre><code>const config = {
-  createViewer: createViewer,
-  cssClasses: {
-    root: "notation-root",
-    sourceContainer: "source-section bg-gray-50",
-    sourceCaption: "font-bold text-lg",
-    sourceCode: "font-mono text-sm",
-    outputLabel: "text-gray-600",
-    outputContainer: "notation-output"
-  }
-};
-</code></pre>
-
-<h2>React Integration</h2>
-
-<p>Create a React component for notation:</p>
-
-<pre><code>import React, { useEffect, useRef } from 'react';
-import * as N from 'notations';
-
-function NotationViewer({ source }) {
-  const containerRef = useRef(null);
-  const viewRef = useRef(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Create view on first render
-    if (!viewRef.current) {
-      viewRef.current = new N.Carnatic.NotationView(
-        containerRef.current
-      );
-    }
-
-    // Parse and render notation
-    const [notation, beatLayout, errors] = N.load(source);
-
-    if (errors.length === 0) {
-      viewRef.current.renderNotation(notation, beatLayout);
-    } else {
-      console.error("Notation errors:", errors);
-    }
-  }, [source]);
-
-  return &lt;div ref={containerRef} className="notation-container" /&gt;;
-}
-
-export default NotationViewer;
-</code></pre>
-
-<p>Use it in your components:</p>
-
-<pre><code>function App() {
-  const notationSource = `
-    \\cycle("|4|2|2|")
-    \\beatDuration(4)
-    Sw: S R G M P D N S.
-    Sh: sa ri ga ma pa dha ni sa
-  `;
-
-  return (
-    &lt;div&gt;
-      &lt;h1&gt;My Composition&lt;/h1&gt;
-      &lt;NotationViewer source={notationSource} /&gt;
-    &lt;/div&gt;
-  );
-}
-</code></pre>
-
-<h2>Vue Integration</h2>
-
-<p>Create a Vue component:</p>
-
-<pre><code>&lt;template&gt;
-  &lt;div ref="container" class="notation-container"&gt;&lt;/div&gt;
-&lt;/template&gt;
-
-&lt;script&gt;
-import * as N from 'notations';
-
-export default {
-  name: 'NotationViewer',
-  props: {
-    source: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      view: null
-    };
-  },
-  mounted() {
-    this.view = new N.Carnatic.NotationView(this.$refs.container);
-    this.renderNotation();
-  },
-  watch: {
-    source() {
-      this.renderNotation();
-    }
-  },
-  methods: {
-    renderNotation() {
-      const [notation, beatLayout, errors] = N.load(this.source);
-
-      if (errors.length === 0) {
-        this.view.renderNotation(notation, beatLayout);
-      } else {
-        console.error('Notation errors:', errors);
-      }
-    }
-  }
-};
-&lt;/script&gt;
-</code></pre>
-
-<h2>Node.js Integration</h2>
-
-<p>Use the library in Node.js for server-side rendering or processing:</p>
-
-<pre><code>const N = require('notations');
-
-// Parse notation
-const source = `
-\\cycle("|4|2|2|")
-\\beatDuration(4)
+<notation showSource="true" caption="Quick Start Example">
+\cycle("|4|2|2|")
 Sw: S R G M P D N S.
-`;
-
-const [notation, beatLayout, errors] = N.load(source);
-
-if (errors.length === 0) {
-  // Process notation data
-  console.log('Notation:', notation);
-  console.log('Beat Layout:', beatLayout);
-
-  // Access notation structure
-  notation.blocks.forEach(block => {
-    console.log('Block:', block);
-  });
-} else {
-  console.error('Errors:', errors);
-}
-</code></pre>
-
-<h2>Bundler Configuration</h2>
-
-<h3>Webpack</h3>
-
-<p>The library works with Webpack out of the box. If you encounter issues, ensure you have the necessary loaders:</p>
-
-<pre><code>module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js']
-  }
-};
-</code></pre>
-
-<h3>Vite</h3>
-
-<p>Vite works seamlessly with the library:</p>
-
-<pre><code>import { defineConfig } from 'vite';
-
-export default defineConfig({
-  // No special configuration needed
-});
-</code></pre>
-
-<h2>Error Handling</h2>
-
-<p>Always handle parsing errors gracefully:</p>
-
-<pre><code>const [notation, beatLayout, errors] = N.load(source);
-
-if (errors.length > 0) {
-  // Display errors to user
-  const errorMessages = errors.map(e =&gt;
-    `Line ${e.line}, Column ${e.column}: ${e.message}`
-  ).join('\n');
-
-  console.error('Notation errors:\n', errorMessages);
-
-  // Show error UI to user
-  displayErrorUI(errorMessages);
-} else {
-  // Render notation
-  view.setNotation(notation, beatLayout);
-}
-</code></pre>
+Sh: sa ri ga ma pa dha ni sa
+</notation>
 
 <h2>See Also</h2>
 
 <ul>
   <li><a href="{{.Site.PathPrefix}}/api/">API Documentation</a> - Core API reference</li>
-  <li><a href="{{.Site.PathPrefix}}/api/examples/">Examples</a> - More integration examples</li>
+  <li><a href="{{.Site.PathPrefix}}/api/examples/">Examples</a> - More code examples</li>
   <li><a href="{{.Site.PathPrefix}}/getting-started/">Getting Started</a> - Installation and setup</li>
 </ul>

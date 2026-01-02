@@ -4,10 +4,15 @@
 
     <ul>
         <li><a href="{{.Site.PathPrefix}}/api/">Overview</a></li>
-        <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide</a></li>
-        <li><a href="{{.Site.PathPrefix}}/api/core-concepts/">Core Concepts</a></li>
-        <li><a href="{{.Site.PathPrefix}}/api/rendering/">Rendering</a></li>
-        <li><a href="{{.Site.PathPrefix}}/api/extending/">Extending</a></li>
+        <li>
+            <a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide</a>
+            <ul class="nav-nested">
+                <li><a href="{{.Site.PathPrefix}}/api/integration-guide/web-components/">Web Components</a></li>
+                <li><a href="{{.Site.PathPrefix}}/api/integration-guide/react/">React</a></li>
+                <li><a href="{{.Site.PathPrefix}}/api/integration-guide/vue/">Vue</a></li>
+                <li><a href="{{.Site.PathPrefix}}/api/integration-guide/nodejs/">Node.js</a></li>
+            </ul>
+        </li>
         <li><a href="{{.Site.PathPrefix}}/api/reference/">API Reference</a></li>
         <li><a href="{{.Site.PathPrefix}}/api/examples/">Examples</a></li>
     </ul>

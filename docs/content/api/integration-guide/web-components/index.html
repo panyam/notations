@@ -1,0 +1,213 @@
+---
+title: "Web Components Integration"
+description: "Using notations-web for easy integration with any web application"
+---
+
+<p>The <code>notations-web</code> package provides ready-to-use web components that work with any JavaScript environment - vanilla JS, jQuery, or any framework.</p>
+
+<h2>Installation</h2>
+
+<pre><code>npm install notations notations-web</code></pre>
+
+<h2>Basic Usage</h2>
+
+<p>Set up notation rendering in your JavaScript:</p>
+
+<pre><code>import { NotationBlock } from "notations-web";
+import * as N from "notations";
+
+// Define how to create notation viewers
+function createViewer(container) {
+  const table = document.createElement("table");
+  table.classList.add("notation-table");
+  container.appendChild(table);
+  return new N.Carnatic.NotationView(table);
+}
+
+// Configure and process all &lt;notation&gt; tags
+const config = {
+  createViewer: createViewer,
+  cssClasses: {
+    sourceContainer: "bg-gray-100 p-4",
+    sourceCaption: "font-bold",
+    outputContainer: "p-4 bg-white"
+  }
+};
+
+document.querySelectorAll("notation").forEach(elem => {
+  new NotationBlock(elem, config);
+});
+</code></pre>
+
+<h3>HTML Notation Tags</h3>
+
+<p>Add notation directly in your HTML:</p>
+
+<pre><code>&lt;notation id="example1" showSource="true" caption="Basic Scale"&gt;
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+&lt;/notation&gt;</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<notation showSource="true" caption="Basic Scale">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>Tag Attributes</h2>
+
+<table class="docs-table">
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td>string</td>
+      <td>Unique identifier (auto-generated if not provided)</td>
+    </tr>
+    <tr>
+      <td><code>showSource</code></td>
+      <td>"true" | "false"</td>
+      <td>Whether to display the source code (default: "false")</td>
+    </tr>
+    <tr>
+      <td><code>caption</code></td>
+      <td>string</td>
+      <td>Caption text for the source code block</td>
+    </tr>
+    <tr>
+      <td><code>sourceFrom</code></td>
+      <td>string</td>
+      <td>ID of another element to read source from</td>
+    </tr>
+    <tr>
+      <td><code>height</code></td>
+      <td>string</td>
+      <td>Height constraint for the output</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Configuration Options</h2>
+
+<pre><code>interface NotationBlockConfig {
+  // Required: factory function to create notation viewers
+  createViewer: (container: HTMLDivElement) => NotationView;
+
+  // Optional: CSS classes for styling
+  cssClasses?: {
+    root?: string;              // Applied to root container
+    sourceContainer?: string;   // Applied to source code container
+    sourceCaption?: string;     // Applied to caption
+    sourceCode?: string;        // Applied to code element
+    outputLabel?: string;       // Applied to "Output:" label
+    outputContainer?: string;   // Applied to notation output
+  };
+}
+</code></pre>
+
+<h2>Styling Examples</h2>
+
+<h3>With Tailwind CSS</h3>
+
+<pre><code>const config = {
+  createViewer,
+  cssClasses: {
+    root: "rounded-lg shadow-md",
+    sourceContainer: "bg-white dark:bg-gray-800 rounded-t-lg p-4",
+    sourceCaption: "text-lg font-semibold text-gray-900 dark:text-gray-100",
+    sourceCode: "text-sm font-mono text-gray-800 dark:text-gray-200",
+    outputContainer: "overflow-auto bg-gray-50 dark:bg-gray-700 p-4"
+  }
+};
+</code></pre>
+
+<h3>With Custom CSS</h3>
+
+<pre><code>const config = {
+  createViewer,
+  cssClasses: {
+    root: "notation-block",
+    sourceContainer: "notation-source",
+    sourceCaption: "notation-caption",
+    outputContainer: "notation-output"
+  }
+};
+</code></pre>
+
+<pre><code>/* Your CSS */
+.notation-block {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.notation-source {
+  background: #f9fafb;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notation-caption {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.notation-output {
+  padding: 1rem;
+  overflow-x: auto;
+}
+</code></pre>
+
+<h2>Advanced: External Source</h2>
+
+<p>Load notation from a separate element:</p>
+
+<pre><code>&lt;script type="text/notation" id="varnam-source"&gt;
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+&lt;/script&gt;
+
+&lt;notation sourceFrom="varnam-source" showSource="true" caption="Varnam"&gt;
+&lt;/notation&gt;</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<notation showSource="true" caption="Varnam from External Source">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+</notation>
+
+<h2>Interactive Features</h2>
+
+<p>The NotationBlock component includes built-in interactivity:</p>
+
+<ul>
+  <li><strong>Copy Button</strong> - Click to copy notation source to clipboard</li>
+  <li><strong>Edit Mode</strong> - Click Edit to modify notation and see live updates</li>
+  <li><strong>Apply/Cancel</strong> - Confirm or discard your edits</li>
+</ul>
+
+<p>Try it yourself - click Edit on any notation block above!</p>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide Overview</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/react/">React Integration</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/vue/">Vue Integration</a></li>
+</ul>

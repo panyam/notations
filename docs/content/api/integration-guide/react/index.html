@@ -1,0 +1,325 @@
+---
+title: "React Integration"
+description: "Using the Notations library in React applications"
+---
+
+<p>This guide shows how to create React components for rendering Carnatic music notation.</p>
+
+<h2>Installation</h2>
+
+<pre><code>npm install notations</code></pre>
+
+<h2>Basic NotationViewer Component</h2>
+
+<p>Create a reusable React component for notation rendering:</p>
+
+<pre><code>// NotationViewer.jsx
+import React, { useEffect, useRef } from 'react';
+import * as N from 'notations';
+
+function NotationViewer({ source, className }) {
+  const containerRef = useRef(null);
+  const viewRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Create table element for notation
+    if (!viewRef.current) {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      containerRef.current.appendChild(table);
+      viewRef.current = new N.Carnatic.NotationView(table);
+    }
+
+    // Parse and render notation
+    const [notation, beatLayout, errors] = N.load(source);
+
+    if (errors.length === 0) {
+      viewRef.current.renderNotation(notation, beatLayout);
+    } else {
+      console.error('Notation errors:', errors);
+    }
+  }, [source]);
+
+  return &lt;div ref={containerRef} className={className} /&gt;;
+}
+
+export default NotationViewer;
+</code></pre>
+
+<h3>Usage</h3>
+
+<pre><code>import NotationViewer from './NotationViewer';
+
+function App() {
+  const notation = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+  `;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;My Composition&lt;/h1&gt;
+      &lt;NotationViewer source={notation} className="my-notation" /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+
+<p><strong>Expected Output:</strong></p>
+
+<notation caption="Basic Scale - React Output">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>Component with Source Display</h2>
+
+<p>A more complete component that shows source code and output:</p>
+
+<pre><code>// NotationBlock.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import * as N from 'notations';
+
+function NotationBlock({ source, caption, showSource = false }) {
+  const containerRef = useRef(null);
+  const viewRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedSource, setEditedSource] = useState(source);
+  const [currentSource, setCurrentSource] = useState(source);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    if (!viewRef.current) {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      containerRef.current.appendChild(table);
+      viewRef.current = new N.Carnatic.NotationView(table);
+    }
+
+    const [notation, beatLayout, errors] = N.load(currentSource);
+
+    if (errors.length === 0) {
+      viewRef.current.tableElement.innerHTML = '';
+      viewRef.current.renderNotation(notation, beatLayout);
+    }
+  }, [currentSource]);
+
+  const handleApply = () => {
+    setCurrentSource(editedSource);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedSource(currentSource);
+    setIsEditing(false);
+  };
+
+  return (
+    &lt;div className="notation-block"&gt;
+      {showSource && (
+        &lt;div className="notation-source"&gt;
+          {caption && &lt;div className="notation-caption"&gt;{caption}&lt;/div&gt;}
+          {isEditing ? (
+            &lt;&gt;
+              &lt;textarea
+                value={editedSource}
+                onChange={(e) => setEditedSource(e.target.value)}
+                className="notation-textarea"
+              /&gt;
+              &lt;div className="notation-actions"&gt;
+                &lt;button onClick={handleApply}&gt;Apply&lt;/button&gt;
+                &lt;button onClick={handleCancel}&gt;Cancel&lt;/button&gt;
+              &lt;/div&gt;
+            &lt;/&gt;
+          ) : (
+            &lt;&gt;
+              &lt;pre&gt;&lt;code&gt;{currentSource}&lt;/code&gt;&lt;/pre&gt;
+              &lt;button onClick={() => setIsEditing(true)}&gt;Edit&lt;/button&gt;
+            &lt;/&gt;
+          )}
+        &lt;/div&gt;
+      )}
+      &lt;div className="notation-output"&gt;
+        &lt;strong&gt;Output:&lt;/strong&gt;
+        &lt;div ref={containerRef} /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default NotationBlock;
+</code></pre>
+
+<h3>Usage with Editing</h3>
+
+<pre><code>import NotationBlock from './NotationBlock';
+
+function VarnamPage() {
+  const varnam = `
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+\\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+  `;
+
+  return (
+    &lt;NotationBlock
+      source={varnam}
+      caption="Ninnu Kori Varnam"
+      showSource={true}
+    /&gt;
+  );
+}
+</code></pre>
+
+<p><strong>Expected Output:</strong></p>
+
+<notation showSource="true" caption="Ninnu Kori Varnam">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S , R , | G , M , | P , D , | N , S. , ||
+Sh: ni , nnu , | ko , ri , | va , ra , | nam , ma , ||
+</notation>
+
+<h2>TypeScript Version</h2>
+
+<pre><code>// NotationViewer.tsx
+import React, { useEffect, useRef } from 'react';
+import * as N from 'notations';
+
+interface NotationViewerProps {
+  source: string;
+  className?: string;
+  onError?: (errors: N.ParseError[]) => void;
+}
+
+const NotationViewer: React.FC&lt;NotationViewerProps&gt; = ({
+  source,
+  className,
+  onError
+}) => {
+  const containerRef = useRef&lt;HTMLDivElement&gt;(null);
+  const viewRef = useRef&lt;N.Carnatic.NotationView | null&gt;(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    if (!viewRef.current) {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      containerRef.current.appendChild(table);
+      viewRef.current = new N.Carnatic.NotationView(table);
+    }
+
+    const [notation, beatLayout, errors] = N.load(source);
+
+    if (errors.length === 0) {
+      viewRef.current.tableElement.innerHTML = '';
+      viewRef.current.renderNotation(notation, beatLayout);
+    } else if (onError) {
+      onError(errors);
+    }
+  }, [source, onError]);
+
+  return &lt;div ref={containerRef} className={className} /&gt;;
+};
+
+export default NotationViewer;
+</code></pre>
+
+<h2>Error Handling</h2>
+
+<pre><code>function NotationWithErrors({ source }) {
+  const [errors, setErrors] = useState([]);
+
+  return (
+    &lt;div&gt;
+      &lt;NotationViewer
+        source={source}
+        onError={setErrors}
+      /&gt;
+      {errors.length > 0 && (
+        &lt;div className="error-display"&gt;
+          &lt;h4&gt;Parsing Errors:&lt;/h4&gt;
+          &lt;ul&gt;
+            {errors.map((err, i) => (
+              &lt;li key={i}&gt;
+                Line {err.line}, Col {err.column}: {err.message}
+              &lt;/li&gt;
+            ))}
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+
+<h2>CSS for React Components</h2>
+
+<pre><code>/* NotationViewer.css */
+.notation-block {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.notation-source {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notation-caption {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.notation-textarea {
+  width: 100%;
+  min-height: 150px;
+  font-family: monospace;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.notation-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.notation-output {
+  padding: 1rem;
+}
+
+.error-display {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.error-display h4 {
+  color: #dc2626;
+  margin: 0 0 0.5rem 0;
+}
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/">Integration Guide Overview</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/web-components/">Web Components</a></li>
+  <li><a href="{{.Site.PathPrefix}}/api/integration-guide/vue/">Vue Integration</a></li>
+</ul>
