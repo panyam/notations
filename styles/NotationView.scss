@@ -67,6 +67,13 @@
   fill: var(--notation-text-color);
 }
 
+/* HTML text elements (metadata, headings, markdown content) */
+.notationsContentRootTable,
+.rawBlockContentCell,
+.rawBlockContentCell * {
+  color: var(--notation-text-color);
+}
+
 /* ========================================
    Layout Styles
    ======================================== */
