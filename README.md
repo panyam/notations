@@ -1,42 +1,72 @@
-
 # Notations
 
-Notations is a Typescript library for rendering Carnatic music.  Notations comes with:
+A TypeScript library for parsing, modeling, and rendering Carnatic music notation.
 
-1. An API for representing and rendering carnatic music.
-2. A DSL and an accompanying parser for representing music in a simpler and intuitive way.
+**[Live Demo](https://notations.us)** | **[Documentation](https://panyam.github.io/notations/)**
+
+## Features
+
+- **DSL Parser** - Intuitive text-based notation format
+- **Flexible Rendering** - SVG-based output with CSS theming
+- **Framework Agnostic** - Works with React, Vue, vanilla JS, or any framework
+- **Light/Dark Mode** - Built-in theme support via CSS variables
+
+## Quick Start
+
+### Via CDN (no build tools required)
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css">
+<script src="https://unpkg.com/notations/dist/notations.umd.min.js"></script>
+
+<script>
+  const source = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+  `;
+
+  const container = document.getElementById('notation');
+  const [notation, beatLayout, errors] = Notations.load(source);
+
+  if (errors.length === 0) {
+    const view = new Notations.Carnatic.NotationView(container);
+    view.renderNotation(notation, beatLayout);
+  }
+</script>
+```
+
+### Via npm/pnpm
+
+```bash
+npm install notations
+```
+
+```typescript
+import * as N from 'notations';
+import 'notations/dist/NotationView.css';
+
+const source = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  const container = document.getElementById('notation');
+  const view = new N.Carnatic.NotationView(container);
+  view.renderNotation(notation, beatLayout);
+}
+```
 
 ## Documentation
 
-📚 **[Full Documentation](https://panyam.github.io/notations/)** - Tutorials, API reference, cookbook examples, and more.
+- **[Getting Started](https://panyam.github.io/notations/getting-started/)** - Installation and setup
+- **[Tutorials](https://panyam.github.io/notations/tutorials/)** - Learn the notation syntax
+- **[API Reference](https://panyam.github.io/notations/api/)** - Full API documentation
+- **[Integration Guide](https://panyam.github.io/notations/api/integration-guide/)** - React, Vue, Node.js integration
+- **[Styling & Theming](https://panyam.github.io/notations/api/styling/)** - Customize appearance with CSS variables
 
-# Getting Started
+## License
 
-## Installation
-
-```
-# Install Typescript
-npm i typescript
-
-# Install the library (in a folder that already contains your package.json file).
-npm install --save notations
-
-```
-
-## Example
-
-```
-import { NotationView } from notations;
-
-const element = document.getElementById("mydiv");
-const notationView = new NotationView(element);
-notationView.add(new Note("Ga"), new Space(),
-                 new Note("Ga"), new Space(),
-                 new Note("Ri"), new Space(),
-                 new Note("Ri"), new Space(),
-                 new Note("Sa"), new Note("Sa"), 
-                 new Note("Ri"), new Note("Ri"), 
-                 new Note("Ga"), new Note("Ga"), 
-                 new Note("Ri"), new Note("Ri"));
-```
-
+ISC
