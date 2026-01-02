@@ -23,8 +23,8 @@
         "url": "tutorials/02-commands/"
       },
       {
-        "name": "Embelishments",
-        "url": "tutorials/03-embelishments/"
+        "name": "Embellishments",
+        "url": "tutorials/03-embellishments/"
       },
       {
         "name": "Advanced",
@@ -38,16 +38,16 @@
     "icon": "book-open",
     "children": [
       {
-        "name": "DSL Syntax",
-        "url": "reference/dsl-syntax/"
+        "name": "Syntax",
+        "url": "reference/syntax/"
       },
       {
         "name": "Commands",
         "url": "reference/commands/"
       },
       {
-        "name": "Embelishments",
-        "url": "reference/embelishments/"
+        "name": "Embellishments",
+        "url": "reference/embellishments/"
       },
       {
         "name": "Cycles",
