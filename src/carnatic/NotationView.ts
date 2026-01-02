@@ -16,7 +16,10 @@ export class NotationView {
   markdownParser: (contents: string) => string;
   _beatLayout: GlobalBeatLayout;
 
-  constructor(public readonly rootElement: HTMLElement, public readonly config?: any) {
+  constructor(
+    public readonly rootElement: HTMLElement,
+    public readonly config?: any,
+  ) {
     this.loadChildViews();
   }
 

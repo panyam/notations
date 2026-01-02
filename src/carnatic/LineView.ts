@@ -14,7 +14,11 @@ export class LineView {
   // Vertical space between two rows (of multiple roles)
   rowSpacing = 10;
 
-  constructor(public readonly rootElement: SVGSVGElement, public line: Line, public readonly config?: any) {
+  constructor(
+    public readonly rootElement: SVGSVGElement,
+    public line: Line,
+    public readonly config?: any,
+  ) {
     // create the gElem for wrapping and adjusting to size
     this.gElem = TSU.DOM.createSVGNode("g", {
       parent: this.rootElement,

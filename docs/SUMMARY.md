@@ -9,7 +9,7 @@ This folder contains the complete documentation site for the Notations library, 
 - **Getting Started**: Installation guides and quick start tutorials
 - **Tutorials**: Progressive learning path (basics → commands → embellishments → advanced)
 - **Reference**: Complete syntax documentation for DSL commands, cycles, and embellishments
-- **Cookbook**: Real-world examples including:
+- **Examples**: Real-world notation examples including:
   - Basic Varnam (Ninnu Kori in Mohanam)
   - Complex Gamakas and embellishments
   - Ragam Tanam Pallavi structure
@@ -69,7 +69,7 @@ The documentation includes interactive notation examples with:
 - Gamakas: `(note kampitam)`, `(note jaru note)`, `(note~note)`
 
 ### File Organization
-- One folder per cookbook recipe
+- One folder per notation example
 - Index.html for section landing pages
 - Consistent front matter structure
 - Cross-linking between related pages
@@ -102,7 +102,7 @@ This command:
 ## Recent Updates
 
 ### November 2025
-- Added comprehensive cookbook examples (6 new pages)
+- Added comprehensive notation examples (6 new pages)
 - Implemented copy-to-clipboard feature
 - Implemented live edit mode with preview
 - Fixed static asset deployment issues

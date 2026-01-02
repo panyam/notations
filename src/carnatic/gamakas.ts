@@ -50,7 +50,10 @@ export class Gamaka {
 }
 
 export class JaaruGamaka extends Gamaka {
-  constructor(public readonly ascending = true, public readonly startingNote: null | Note = null) {
+  constructor(
+    public readonly ascending = true,
+    public readonly startingNote: null | Note = null,
+  ) {
     super(ascending ? GamakaType.Jaaru_Eetra : GamakaType.Jaaru_Irakka);
   }
 

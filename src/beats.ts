@@ -21,7 +21,7 @@ export class Beat {
   /** The atom contained in this beat */
   atom: Atom;
   protected atomIsPlaceholder = false;
-  
+
   /**
    * Creates a new Beat.
    * @param index The index of this beat in the sequence
@@ -69,7 +69,7 @@ export class Beat {
   get endOffset(): Fraction {
     return this.offset.plus(this.duration);
   }
-  
+
   /**
    * Checks if this beat is filled completely (no remaining space).
    */
@@ -161,7 +161,7 @@ export class BeatsBuilder {
 
   /** Callback for when a new beat is added */
   onBeatAdded: (beat: Beat) => void;
-  
+
   /** Callback for when a beat has been filled */
   onBeatFilled: (beat: Beat) => void;
 
@@ -463,11 +463,11 @@ export class GlobalBeatLayout {
   /**
    * Adds a line to the beat layout.
    * This ensures that a line is broken down into beats and added into a dedicated GridModel.
-   * 
+   *
    * A line must also be given the layout params by which the beat breakdown will happen.
    * This LayoutParams object does not have to be unique per line (this non-constraint allows
    * beats to be aligned across lines).
-   * 
+   *
    * @param line The line to add
    */
   addLine(line: Line): void {

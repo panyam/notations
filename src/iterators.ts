@@ -15,13 +15,13 @@ export class FlatAtom extends TimedEntity {
 
   /** Nesting depth of this atom in the original structure */
   depth: number;
-  
+
   /** Duration of this atom */
   duration: TSU.Num.Fraction;
-  
+
   /** Time offset of this atom */
   offset: TSU.Num.Fraction;
-  
+
   /** Whether this atom is a continuation of a previous atom */
   private isContinuation: boolean;
 
@@ -30,7 +30,10 @@ export class FlatAtom extends TimedEntity {
    * @param atom The leaf atom this flat atom represents
    * @param config Optional configuration with depth, duration, offset, and continuation info
    */
-  constructor(public atom: LeafAtom, config: any = null) {
+  constructor(
+    public atom: LeafAtom,
+    config: any = null,
+  ) {
     super((config = config || {}));
     this.depth = config.depth || 0;
     this.duration = config.duration || atom.duration;
@@ -235,11 +238,11 @@ export class WindowIterator {
 
   /**
    * Gets atoms to cover the specified duration.
-   * 
+   *
    * If the number of atoms left in the iterator is 0, an empty list
    * is returned. Otherwise, the duration of atoms returned will cover
    * the given duration even if padding with Space atoms is necessary.
-   * 
+   *
    * @param duration The duration to cover
    * @returns A tuple containing the array of atoms and whether the full duration was filled
    */
@@ -291,11 +294,11 @@ export class DurationIterator {
 
   /**
    * Gets atoms to cover the specified duration.
-   * 
+   *
    * If the number of atoms left in the iterator is 0, an empty list
    * is returned. Otherwise, the duration of atoms returned will cover
    * the given duration even if padding with Space atoms is necessary.
-   * 
+   *
    * @param duration The duration to cover
    * @returns A tuple containing the array of FlatAtoms and whether the full duration was filled
    */

@@ -5,12 +5,12 @@ const ONE = TSU.Num.Fraction.ONE;
 
 /**
  * Converts a cycle string into an array of bar strings.
- * 
+ *
  * A cycle is specified by a "|" delimited string in the format:
  * <bar1>|<bar2>|<bar3>....|<barN>
- * 
+ *
  * Empty bars are ignored.
- * 
+ *
  * @param cycleStr The cycle string to convert
  * @returns An array of bar strings
  */
@@ -24,7 +24,7 @@ export function cycleStrToBarsStrs(cycleStr: string): string[] {
 
 /**
  * Parses a tala pattern string into a Cycle object.
- * 
+ *
  * @param cycleStr The cycle string to parse
  * @returns A new Cycle object
  */
@@ -36,19 +36,19 @@ export function parseCycle(cycleStr: string): Cycle {
 
 /**
  * Parses a bar string into a Bar object.
- * 
+ *
  * A bar string is a space delimited string in the following format:
  * "<beat1> <spaces> <beat2> .... <beatN>"
- * 
+ *
  * beatX substring cannot contain "|" or spaces.
- * 
+ *
  * Each Beat string is in the following format:
  * "<length>(:<count>)?"  or "<length>?:<count>"
- * 
+ *
  * Both length and count are optional but at least one of them must be specified.
  * When not specified the other defaults to 1.
  * Length can also be a fraction of the form <num>"/"<den> (without spaces).
- * 
+ *
  * @param barStr The bar string to parse
  * @returns A new Bar object
  */
@@ -100,7 +100,7 @@ export function parseBar(barStr: string): Bar {
 
 /**
  * Parses a string into a syllable atom structure.
- * 
+ *
  * @param value The string to parse
  * @returns An atom representing the syllable structure
  */
@@ -131,7 +131,7 @@ export function parseSyllable(value: string): Atom {
 
 /**
  * Parses a property string in the format "key = value".
- * 
+ *
  * @param line The property string to parse
  * @returns A tuple containing the key and value
  * @throws Error if the property string is invalid
@@ -169,7 +169,7 @@ export class SparseArray<T> {
    * Returns the value at a given index.
    * If the value does not exist an optional creator method can be passed
    * to ensure that this value is also created and set at the given index.
-   * 
+   *
    * @param index The index to get the value at
    * @param creator Optional function to create a value if none exists
    * @returns The value at the index
@@ -186,7 +186,7 @@ export class SparseArray<T> {
 
   /**
    * Sets values at a specific index.
-   * 
+   *
    * @param index The index to set values at
    * @param values The values to set
    * @returns This array instance for method chaining
@@ -197,7 +197,7 @@ export class SparseArray<T> {
 
   /**
    * Removes values at a specific index.
-   * 
+   *
    * @param index The index to remove values at
    * @param count The number of values to remove, defaults to 1
    * @returns This array instance for method chaining
@@ -208,7 +208,7 @@ export class SparseArray<T> {
 
   /**
    * Splices values at a specific index.
-   * 
+   *
    * @param index The index to splice at
    * @param numToDelete The number of values to delete
    * @param valuesToInsert The values to insert

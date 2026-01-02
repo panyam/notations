@@ -12,13 +12,13 @@ import { Beat } from "./beats";
 export abstract class BeatView extends ElementShape<SVGGElement> implements GridCellView {
   /** Embellishments applied to this beat view */
   private _embelishments: Embelishment[];
-  
+
   /** View for the atom contained in this beat */
   atomView: AtomView;
-  
+
   /** Whether this view needs layout */
   needsLayout = true;
-  
+
   /**
    * Creates a new BeatView.
    * @param cell The grid cell this beat view belongs to
@@ -75,7 +75,7 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
    * @returns An array of embellishments
    */
   protected abstract createEmbelishments(): Embelishment[];
-  
+
   /**
    * Creates the atom view for this beat view.
    * @returns The created atom view

@@ -13,31 +13,31 @@ export class LayoutParams {
   private static counter = 0;
   /** Unique identifier for this layout parameters instance */
   readonly uuid = LayoutParams.counter++;
-  
+
   /** Duration of a single beat (multiplier for beat lengths) */
   beatDuration: number;
-  
+
   /** The cycle pattern to use for this layout */
   cycle: Cycle;
-  
+
   /** The pattern of line breaks to apply */
   protected _lineBreaks: number[];
-  
+
   /** Cache of row start offsets */
   private _rowStartOffsets: Fraction[];
-  
+
   /** Cache of row end offsets */
   private _rowEndOffsets: Fraction[];
-  
+
   /** Cache of row durations */
   private _rowDurations: Fraction[];
-  
+
   /** Total duration of the layout pattern */
   private _totalLayoutDuration;
-  
+
   /** Cached beat layout information */
   private _beatLayouts: [CyclePosition, Fraction][][];
-  
+
   /** Total number of beats across all layout lines */
   private _totalBeats: number;
 
@@ -100,12 +100,12 @@ export class LayoutParams {
 
   /**
    * Returns the "location" of a beat within a layout.
-   * 
+   *
    * Lines are broken into beats of notes and those beats are aligned as per
    * the specs in the LayoutParams (breaks). For example if the breaks param
    * stipulates [5, 5, 4] then we have 5 beats in the first 2 lines and 4 in
    * the last line.
-   * 
+   *
    * @param beat The beat to locate
    * @returns A tuple containing [layoutLine, layoutColumn, rowOffset]
    *         - layoutLine: The line in the layout break spec this beat falls in
@@ -182,7 +182,7 @@ export class LayoutParams {
   /**
    * Gets the line layout pattern - i.e., number of beats in each line - as a
    * repeating pattern.
-   * 
+   *
    * For example 4,2,4 indicates that the notes in our song should be
    * laid out 4 beats in line 1, 2 beats in line 2, 4 beats in line 3 and
    * 4 beats in line 4 and so on as long as there are more notes available

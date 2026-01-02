@@ -152,7 +152,7 @@ export class Entity {
    * Cloning is a two-part process:
    * 1. Creation of a new instance via this.newInstance()
    * 2. Copying of data into the new instance via this.copyTo()
-   * 
+   *
    * @returns A new instance of the same type with the same properties
    */
   clone(): this {

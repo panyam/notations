@@ -5,7 +5,7 @@ import * as TSU from "@panyam/tsutils";
  * A generic grid layout system for hosting child views (similar to GridBagLayout).
  * This provides a framework for hosting BeatViews in a structured grid arrangement,
  * with support for rows, columns, and alignment.
- * 
+ *
  * Grid "cells" can be referred to by cell indexes. Additionally, grid rows and
  * columns can have names (like in spreadsheets) so that even when rows and columns
  * are inserted, though indexes may change, the "addresses" remain fixed and immovable.
@@ -209,7 +209,7 @@ export interface GridCellView {
   width: number;
   /** Height of the view */
   height: number;
-  
+
   /**
    * Sets the bounds of the view.
    * @param x New x-coordinate, or null to keep current value
@@ -226,13 +226,13 @@ export interface GridCellView {
     h: number | null,
     applyLayout: boolean,
   ): [number | null, number | null, number | null, number | null];
-  
+
   /** Whether this view needs layout */
   readonly needsLayout: boolean;
-  
+
   /** The minimum size this view requires */
   readonly minSize: TSU.Geom.Size;
-  
+
   /** The bounding box of this view */
   readonly bbox: TSU.Geom.Rect;
 }
@@ -266,7 +266,11 @@ export class GridCell {
    * @param colIndex The column index of this cell
    * @param value Optional initial value for the cell
    */
-  constructor(public gridRow: GridRow, public colIndex: number, public value: any = null) {
+  constructor(
+    public gridRow: GridRow,
+    public colIndex: number,
+    public value: any = null,
+  ) {
     this.rowAlign = gridRow.defaultRowAlign;
   }
 
@@ -355,7 +359,10 @@ export class GridRow {
    * @param grid The grid this row belongs to
    * @param rowIndex The index of this row
    */
-  constructor(public grid: GridModel, public rowIndex: number) {
+  constructor(
+    public grid: GridModel,
+    public rowIndex: number,
+  ) {
     this.defaultRowAlign = new RowAlign();
     this.grid.addRowAlign(this.defaultRowAlign);
   }
@@ -466,7 +473,7 @@ export abstract class AlignedLine {
    * @param val The new offset value
    */
   abstract setOffset(val: number): void;
-  
+
   /**
    * Evaluates the maximum length required for this line.
    * @param changedCells Cells that have changed and need re-evaluation
@@ -559,7 +566,7 @@ export abstract class AlignedLine {
   prevLines = [] as this[];
   /** Lines that must be positioned after this line */
   nextLines = [] as this[];
-  
+
   /**
    * Adds a successor line to this line.
    * @param next The line to add as a successor

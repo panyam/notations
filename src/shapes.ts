@@ -3,7 +3,7 @@ import { ZERO, Atom, LeafAtom, Group } from "./core";
 
 /**
  * Base class for all renderable objects.
- * 
+ *
  * Shape caches properties like bounding boxes to improve performance,
  * since bounding box calculations can be expensive. This also allows
  * testing layouts and positioning without worrying about implementation details.
@@ -11,7 +11,7 @@ import { ZERO, Atom, LeafAtom, Group } from "./core";
 export abstract class Shape {
   private static idCounter = 0;
   readonly shapeId: number = Shape.idCounter++;
-  
+
   /**
    * Note that x and y coordinates are not always the x and y coordinates
    * of the bounding box.
@@ -58,13 +58,13 @@ export abstract class Shape {
    * @returns The refreshed bounding box
    */
   protected abstract refreshBBox(): TSU.Geom.Rect;
-  
+
   /**
    * Refreshes the minimum size of this shape.
    * @returns The refreshed minimum size
    */
   protected abstract refreshMinSize(): TSU.Geom.Size;
-  
+
   /**
    * Updates the bounds of this shape.
    * @param x New x coordinate, or null to keep current value
@@ -91,11 +91,11 @@ export abstract class Shape {
 
   /**
    * Sets the bounds of this shape.
-   * 
+   *
    * Note that null and NaN are valid values and mean the following:
    * - null: Don't change the value
    * - NaN: Set the value to null (use the bounding box's value)
-   * 
+   *
    * @param x New x coordinate, or null to keep current value
    * @param y New y coordinate, or null to keep current value
    * @param w New width, or null to keep current value
@@ -400,7 +400,7 @@ export abstract class LeafAtomView extends AtomView {
    * Returns the total duration of the atom rendered by this view.
    */
   get totalDuration(): TSU.Num.Fraction {
-    return this.leafAtom.duration
+    return this.leafAtom.duration;
   }
 }
 
@@ -421,13 +421,16 @@ export abstract class GroupView extends AtomView {
   needsLayout = true;
   /** Scale factor for this group */
   scaleFactor = 1.0;
-  
+
   /**
    * Creates a new GroupView.
    * @param group The group atom this view represents
    * @param config Optional configuration object
    */
-  constructor(public group: Group, config?: any) {
+  constructor(
+    public group: Group,
+    config?: any,
+  ) {
     super();
     this.atomSpacing = 5;
     this.setStyles(config || {});
@@ -437,7 +440,7 @@ export abstract class GroupView extends AtomView {
    * Returns the total duration of the group rendered by this view.
    */
   get totalDuration(): TSU.Num.Fraction {
-    return this.group.totalChildDuration
+    return this.group.totalChildDuration;
   }
 
   /**
@@ -539,19 +542,20 @@ export abstract class GroupView extends AtomView {
         av.setBounds(currX, currY, null, null, true);
         currX += this.atomSpacing + av.minSize.width;
       });
-    } else {    // currently this is disabled because "smaller" beats are not EXPANDED to what they could be
+    } else {
+      // currently this is disabled because "smaller" beats are not EXPANDED to what they could be
       // smart alignment based layout where X = F(offset)
       // we want an atom's X offset to be something like (atom.timeOffset / group.duration) * groupWidth
       const totalDur = this.group.totalChildDuration;
-      let currTime = ZERO
+      let currTime = ZERO;
       this.atomViews.forEach((av, index) => {
-        let newX = currTime.timesNum(this.minSize.width).divby(this.group.duration).floor
+        const newX = currTime.timesNum(this.minSize.width).divby(this.group.duration).floor;
         if (newX >= currX) {
-          currX = newX
+          currX = newX;
         }
         av.setBounds(currX, currY, null, null, true);
         currX += this.atomSpacing + av.minSize.width;
-        currTime = currTime.plus(av.totalDuration)
+        currTime = currTime.plus(av.totalDuration);
       });
     }
     this.invalidateBounds();

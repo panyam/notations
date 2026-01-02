@@ -20,7 +20,7 @@ docs/
 │   │   ├── 03-embelishments/     # Gamakas & ornaments
 │   │   └── 04-advanced/          # Advanced topics
 │   ├── reference/                # Complete syntax reference
-│   ├── cookbook/                 # Real-world examples
+│   ├── examples/                 # Real-world examples
 │   ├── api/                      # Developer API documentation
 │   └── contributing/             # Contributor guides
 ├── templates/                    # Go template files
@@ -218,7 +218,7 @@ cp -r docs/dist/docs/* ../gh-pages/
 3. **Examples**: Show usage for each feature
 4. **Cross-References**: Link to tutorials where concepts are taught
 
-### Writing Cookbook Examples
+### Writing Notation Examples
 
 1. **Real Compositions**: Use actual ragas, talas, compositions
 2. **Annotations**: Explain techniques used

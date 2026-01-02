@@ -23,7 +23,12 @@ export class CycleCursor {
    * @param beatIndex The starting beat index within the bar, defaults to 0
    * @param instance The starting instance index within the beat, defaults to 0
    */
-  constructor(public readonly cycle: Cycle, public barIndex = 0, public beatIndex = 0, public instance = 0) {}
+  constructor(
+    public readonly cycle: Cycle,
+    public barIndex = 0,
+    public beatIndex = 0,
+    public instance = 0,
+  ) {}
 
   /**
    * Advances the cursor to the next beat and returns the current position and beat length.
@@ -87,7 +92,7 @@ export class Bar extends TimedEntity {
 
   /** Name of the bar (e.g., "Laghu", "Dhrutam") */
   name: string;
-  
+
   /** Length/Duration of each beat in the bar */
   beatLengths: Fraction[] = [];
 
@@ -206,7 +211,7 @@ export class Cycle extends TimedEntity {
 
   /** Name of the cycle (e.g., "Adi Thalam") */
   name: string;
-  
+
   /** The bars that make up this cycle */
   bars: Bar[];
 
@@ -266,7 +271,7 @@ export class Cycle extends TimedEntity {
 
   /**
    * Given a global beat index, returns the position within the cycle.
-   * 
+   *
    * @param globalIndex The global beat index
    * @returns A tuple containing [cycle number, position, start offset]
    *         - cycle: The nth cycle in which the beat lies
@@ -310,7 +315,7 @@ export class Cycle extends TimedEntity {
 
   /**
    * Given a global offset, returns the position within the cycle.
-   * 
+   *
    * @param globalOffset The global time offset
    * @returns A tuple containing [cycle number, position, note offset, global index]
    *         - cycle: The nth cycle in which the offset lies
@@ -364,7 +369,7 @@ export class Cycle extends TimedEntity {
 
   /**
    * Creates an iterator that yields beats in sequence from a starting position.
-   * 
+   *
    * @param startBar The starting bar index, defaults to 0
    * @param startBeat The starting beat index, defaults to 0
    * @param startInstance The starting instance index, defaults to 0

@@ -122,7 +122,7 @@ export abstract class LeafAtom extends Atom {
    * Splits this atom at a certain duration.
    * If this atom's duration is longer than the given duration, it's truncated
    * to the given duration and a continuation space is returned.
-   * 
+   *
    * @param duration The duration at which to split the atom
    * @returns A new Space atom representing the spillover if needed, otherwise null
    */
@@ -167,7 +167,10 @@ export class Marker extends Entity {
    * @param text The text content of the marker
    * @param isBefore Whether the marker should appear before (true) or after (false) its associated atom
    */
-  constructor(public text: string, public isBefore = true) {
+  constructor(
+    public text: string,
+    public isBefore = true,
+  ) {
     super();
   }
 
@@ -210,7 +213,7 @@ export class Rest extends LeafAtom {
  */
 export class Space extends LeafAtom {
   readonly TYPE = "Space";
-  
+
   /**
    * Indicates whether this is a silent space or a continuation of the previous note.
    */
@@ -278,7 +281,7 @@ export class Space extends LeafAtom {
  */
 export class Literal extends LeafAtom {
   readonly TYPE: string = "Literal";
-  
+
   /**
    * The embellishments applied to this Literal.
    */
@@ -289,7 +292,10 @@ export class Literal extends LeafAtom {
    * @param value The string value of the literal
    * @param duration The duration of the literal, defaults to ONE (1/1)
    */
-  constructor(public value: string, duration = ONE) {
+  constructor(
+    public value: string,
+    duration = ONE,
+  ) {
     super(duration);
   }
 
@@ -456,7 +462,7 @@ export class Group extends Atom {
    * When false, the duration is absolute.
    */
   durationIsMultiplier = false;
-  
+
   /**
    * The list of atoms in this group.
    */
@@ -541,7 +547,7 @@ export class Group extends Atom {
    * Splits this group into two parts.
    * The first part (this group) fits within the given duration and everything else
    * longer than the given duration is returned as a new Group.
-   * 
+   *
    * @param requiredDuration The duration at which to split the group
    * @returns A new Group containing the atoms beyond the split point, or null if no split is needed
    */
@@ -629,7 +635,7 @@ export class Group extends Atom {
   /**
    * Inserts atoms before a given cursor atom.
    * If the cursor atom is null, the atoms are appended at the end.
-   * 
+   *
    * @param beforeAtom The atom before which to insert the new atoms, or null to append
    * @param adjustDuration Whether to adjust this group's duration based on the new atoms
    * @param atoms The atoms to insert
@@ -670,7 +676,7 @@ export class Group extends Atom {
 
   /**
    * Adds atoms to the end of this group's atom list.
-   * 
+   *
    * @param adjustDuration Whether to adjust this group's duration based on the new atoms
    * @param atoms The atoms to add
    * @returns This Group instance for method chaining
@@ -681,7 +687,7 @@ export class Group extends Atom {
 
   /**
    * Removes atoms from this group's child list.
-   * 
+   *
    * @param adjustDuration Whether to adjust this group's duration after removing atoms
    * @param atoms The atoms to remove
    * @returns This Group instance for method chaining
@@ -721,7 +727,7 @@ export class Line extends Entity {
    * Offset tells how many notes before or after the cycle this line's atoms start at.
    */
   offset: Fraction = ZERO;
-  
+
   /**
    * The roles contained in this line.
    */
@@ -840,7 +846,7 @@ export class Role extends Entity {
    * Whether this role represents notes by default.
    */
   defaultToNotes = true;
-  
+
   /**
    * The atoms in this role.
    */
@@ -851,7 +857,10 @@ export class Role extends Entity {
    * @param line The line this role belongs to
    * @param name The name of the role
    */
-  constructor(public readonly line: Line, public readonly name: string) {
+  constructor(
+    public readonly line: Line,
+    public readonly name: string,
+  ) {
     super();
   }
 

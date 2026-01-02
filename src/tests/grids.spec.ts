@@ -166,7 +166,7 @@ describe("Basic GridModel Tests", () => {
               c: 5,
               value: 10,
               y: 0,
-              h: 30,
+              h: 10,
             },
           ],
         },
@@ -179,9 +179,9 @@ describe("Basic GridModel Tests", () => {
     testGrid(false, g, {
       rows: [
         { r: 0, cells: [] },
-        { r: 1, cells: [{ r: 1, c: 5, value: "hello", y: 0, h: 30 }] },
+        { r: 1, cells: [{ r: 1, c: 5, value: "hello", y: 0, h: 10 }] },
         { r: 2, cells: [] },
-        { r: 3, cells: [{ r: 3, c: 3, value: "world", y: 0, h: 30 }] },
+        { r: 3, cells: [{ r: 3, c: 3, value: "world", y: 0, h: 10 }] },
         { r: 4, cells: [] },
         { r: 5, cells: [] },
       ],
@@ -199,11 +199,11 @@ describe("Basic GridModel Tests", () => {
     testGrid(false, g, {
       rows: [
         { r: 0, cells: [] },
-        { r: 1, cells: [{ r: 1, c: 1, value: 10.5, y: 0, h: 30 }] },
-        { r: 2, cells: [{ r: 2, c: 2, value: "Hello", y: 0, h: 30 }] },
-        { r: 3, cells: [{ r: 3, c: 3, value: "World", y: 0, h: 30 }] },
-        { r: 4, cells: [{ r: 4, c: 4, value: "testing", y: 0, h: 30 }] },
-        { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 0, h: 30 }] },
+        { r: 1, cells: [{ r: 1, c: 1, value: 10.5, y: 0, h: 10 }] },
+        { r: 2, cells: [{ r: 2, c: 2, value: "Hello", y: 0, h: 10 }] },
+        { r: 3, cells: [{ r: 3, c: 3, value: "World", y: 0, h: 10 }] },
+        { r: 4, cells: [{ r: 4, c: 4, value: "testing", y: 0, h: 10 }] },
+        { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 0, h: 10 }] },
       ],
       lastUpdatedAt: 0,
     });
@@ -216,11 +216,11 @@ describe("Basic GridModel Tests", () => {
     testGrid(false, g, {
       rows: [
         { r: 0, cells: [] },
-        { r: 1, cells: [{ r: 1, c: 1, value: 10.5, y: 0, h: 30, x: 0, w: 30 }] },
-        { r: 2, cells: [{ r: 2, c: 2, value: "Hello", y: 0, h: 30, x: 0, w: 30 }] },
-        { r: 3, cells: [{ r: 3, c: 3, value: "World", y: 0, h: 30, x: 0, w: 30 }] },
-        { r: 4, cells: [{ r: 4, c: 4, value: "testing", y: 0, h: 30, x: 0, w: 30 }] },
-        { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 0, h: 30, x: 0, w: 30 }] },
+        { r: 1, cells: [{ r: 1, c: 1, value: 10.5, y: 0, h: 10, x: 0, w: 20 }] },
+        { r: 2, cells: [{ r: 2, c: 2, value: "Hello", y: 0, h: 10, x: 0, w: 20 }] },
+        { r: 3, cells: [{ r: 3, c: 3, value: "World", y: 0, h: 10, x: 0, w: 20 }] },
+        { r: 4, cells: [{ r: 4, c: 4, value: "testing", y: 0, h: 10, x: 0, w: 20 }] },
+        { r: 5, cells: [{ r: 5, c: 5, value: "30", y: 0, h: 10, x: 0, w: 20 }] },
       ],
       lastUpdatedAt: 0,
     });

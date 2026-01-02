@@ -1,6 +1,6 @@
 {{# include "nav/TutorialsNav.html" #}}
 {{# include "nav/ReferenceNav.html" #}}
-{{# include "nav/CookbookNav.html" #}}
+{{# include "nav/ExamplesNav.html" #}}
 {{# include "nav/APINav.html" #}}
 {{# include "nav/ContributingNav.html" #}}
 
@@ -25,8 +25,8 @@
                 {{ template "TutorialsNav" . }}
             {{ else if (Contains $currentPath "/reference/") }}
                 {{ template "ReferenceNav" . }}
-            {{ else if (Contains $currentPath "/cookbook/") }}
-                {{ template "CookbookNav" . }}
+            {{ else if (Contains $currentPath "/examples/") }}
+                {{ template "ExamplesNav" . }}
             {{ else if (Contains $currentPath "/api/") }}
                 {{ template "APINav" . }}
             {{ else if (Contains $currentPath "/contributing/") }}
@@ -44,7 +44,7 @@
                     <ul>
                         <li><a href="{{.Site.PathPrefix}}/tutorials/">Tutorials</a></li>
                         <li><a href="{{.Site.PathPrefix}}/reference/">Reference</a></li>
-                        <li><a href="{{.Site.PathPrefix}}/cookbook/">Cookbook</a></li>
+                        <li><a href="{{.Site.PathPrefix}}/examples/">Examples</a></li>
                     </ul>
 
                     <h3>Developers</h3>

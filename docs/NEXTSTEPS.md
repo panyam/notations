@@ -1,25 +1,69 @@
 # Next Steps - Notations Documentation
 
+## Completed
+
+### Infrastructure (Phase 0-1) ✅
+- [x] Set up s3gen documentation framework
+- [x] Create docs/ directory structure with content/, templates/, static/
+- [x] Configure s3gen build workflow (main.go, go.mod, Makefile)
+- [x] Set up TypeScript components (DocsPage.ts, NotationViewer.ts)
+- [x] Configure webpack for JS bundling
+- [x] Deploy to GitHub Pages (https://panyam.github.io/notations/)
+- [x] Fix critical s3gen bug with JSON frontmatter parsing
+
+### Interactive Features ✅
+- [x] Copy-to-clipboard button for notation source
+- [x] Edit mode with live preview updates
+- [x] Apply/Cancel buttons for edit mode
+- [x] NotationBlock web component with source display
+
+### Content ✅
+- [x] Documentation homepage (index.html)
+- [x] Getting started section (installation guide)
+- [x] Examples section with 8 notation examples:
+  - Basic Varnam (Ninnu Kori in Mohanam)
+  - Complex Gamakas and embellishments
+  - Ragam Tanam Pallavi structure
+  - Tisram notation (3 notes per beat)
+  - Organizing long compositions
+  - Percussion notation (mridangam/tabla)
+  - Common Talas
+  - Different Speeds
+- [x] Tutorial section structure (basics, commands, embellishments, advanced)
+- [x] Reference section structure (syntax, commands, cycles, embellishments)
+- [x] API section structure (integration guide, reference, examples)
+- [x] Contributing section
+
+### Styling ✅
+- [x] Responsive design for mobile devices
+- [x] Dark code blocks for readability
+- [x] Navigation header with dropdowns
+- [x] Sidebar navigation per section
+
+---
+
 ## Immediate TODOs
 
 ### UI/UX Improvements
 - [ ] Fix button wrapping on narrow screens (keep copy/edit buttons on same line)
 - [ ] Add keyboard shortcuts for edit mode (Ctrl+Enter to apply, Esc to cancel)
-- [ ] Add error display in notation preview when DSL parsing fails
+- [ ] Add error display in notation preview when DSL parsing fails (currently only logs to console)
 - [ ] Add loading indicator during re-render
 
 ### Content Additions
-- [ ] Add more cookbook examples:
+- [ ] Add more notation examples:
   - Advanced korvai patterns
   - Notation for jathi variations
   - Chauka kala and other speed variations
   - Examples from different gharanas
+- [ ] Complete tutorial content (currently section structure exists but pages are stubs)
+- [ ] Complete reference documentation (syntax details, all commands, all embellishments)
 - [ ] Add video tutorials or animated examples
-- [ ] Create printable PDF versions of cookbook recipes
+- [ ] Create printable PDF versions of notation examples
 - [ ] Add search functionality across documentation
 
 ### Technical Improvements
-- [ ] Optimize webpack bundle size (currently 579 KB)
+- [ ] Optimize webpack bundle size (currently ~580 KB)
   - Consider code splitting
   - Lazy load notation parser
 - [ ] Fix s3gen static folder auto-copy issue
@@ -45,7 +89,7 @@
 
 ### Community
 - [ ] Set up discussion forum or Discord
-- [ ] Create contribution guidelines for new cookbook recipes
+- [ ] Create contribution guidelines for new notation examples
 - [ ] Add user-submitted examples gallery
 - [ ] Create template for submitting new examples
 

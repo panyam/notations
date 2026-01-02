@@ -56,9 +56,9 @@
     ]
   },
   {
-    "name": "Cookbook",
-    "url": "cookbook/",
-    "icon": "clipboard-list"
+    "name": "Examples",
+    "url": "examples/",
+    "icon": "music"
   },
   {
     "name": "API",

@@ -19,7 +19,10 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
   dotSpacing = 2.5;
   dotsElem: SVGGElement;
 
-  constructor(public readonly noteView: LeafAtomView, public readonly note: Note) {
+  constructor(
+    public readonly noteView: LeafAtomView,
+    public readonly note: Note,
+  ) {
     super(noteView);
     const rootElem = this.noteView.embRoot();
     const numDots = Math.abs(note.octave);
@@ -83,7 +86,10 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
 ////////// Carnatic embelishments
 export class LabelEmbelishment extends LeafAtomViewEmbelishment {
   labelElem: SVGTextElement;
-  constructor(public readonly label: string, public readonly atomView: LeafAtomView) {
+  constructor(
+    public readonly label: string,
+    public readonly atomView: LeafAtomView,
+  ) {
     super(atomView);
     const rootElem = this.atomView.embRoot();
     this.labelElem = TSU.DOM.createSVGNode("text", {
@@ -124,7 +130,10 @@ export class BeatStartLines extends Embelishment {
   barSpacing = 10;
   protected line: SVGLineElement;
 
-  constructor(public readonly source: BeatView, public readonly rootElement: SVGGraphicsElement) {
+  constructor(
+    public readonly source: BeatView,
+    public readonly rootElement: SVGGraphicsElement,
+  ) {
     super();
     this.line = TSU.DOM.createSVGNode("line", {
       doc: document,
@@ -170,7 +179,11 @@ export class BeatEndLines extends Embelishment {
   lineSpacing = 2;
   protected lines: SVGLineElement[];
 
-  constructor(public readonly source: BeatView, public readonly rootElement: SVGGraphicsElement, nLines = 1) {
+  constructor(
+    public readonly source: BeatView,
+    public readonly rootElement: SVGGraphicsElement,
+    nLines = 1,
+  ) {
     super();
     this.lines = [];
     for (let i = 0; i < nLines; i++) {
@@ -285,7 +298,10 @@ export class Orikkai extends LabelEmbelishment {
 
 export class Jaaru extends LeafAtomViewEmbelishment {
   pathElem: SVGPathElement;
-  constructor(public readonly jaaru: JaaruGamaka, public readonly atomView: LeafAtomView) {
+  constructor(
+    public readonly jaaru: JaaruGamaka,
+    public readonly atomView: LeafAtomView,
+  ) {
     super(atomView);
     // TODO - Create the "fancier" view
     // for now represent this with just a slant line (like a slash)

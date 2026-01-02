@@ -5,9 +5,9 @@ import { FlatAtom } from "./iterators";
 /**
  * Ensures uniform spacing between atoms in a beat.
  * This utility function adjusts the spacing between atoms to create a consistent,
- * evenly spaced visualization based on the least common multiple (LCM) of their 
+ * evenly spaced visualization based on the least common multiple (LCM) of their
  * duration denominators.
- * 
+ *
  * @param currOffset Current time offset at which to start
  * @param atoms Array of flat atoms to process
  * @param slotsPerBeat Number of slots per beat, defaults to 1

@@ -209,7 +209,7 @@ export abstract class LayoutParamCommand extends Command {}
 
 /**
  * Command for applying a named layout to the notation.
- * 
+ *
  * Saves the current layout with the given name.
  * Typically users can change layout params (currently cycle, APB and line layout)
  * with the \cycle, \layout and \beatDuration commands. Each time these are
