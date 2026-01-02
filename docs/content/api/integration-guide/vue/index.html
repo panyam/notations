@@ -98,7 +98,7 @@ Sh: sa ri ga ma pa dha ni sa
 &lt;template&gt;
   &lt;div class="notation-block"&gt;
     &lt;div v-if="showSource" class="notation-source"&gt;
-      &lt;div v-if="caption" class="notation-caption"&gt;{{ caption }}&lt;/div&gt;
+      &lt;div v-if="caption" class="notation-caption"&gt;&#123;&#123; caption &#125;&#125;&lt;/div&gt;
 
       &lt;template v-if="isEditing"&gt;
         &lt;textarea
@@ -112,7 +112,7 @@ Sh: sa ri ga ma pa dha ni sa
       &lt;/template&gt;
 
       &lt;template v-else&gt;
-        &lt;pre&gt;&lt;code&gt;{{ currentSource }}&lt;/code&gt;&lt;/pre&gt;
+        &lt;pre&gt;&lt;code&gt;&#123;&#123; currentSource &#125;&#125;&lt;/code&gt;&lt;/pre&gt;
         &lt;div class="notation-actions"&gt;
           &lt;button @click="copyToClipboard"&gt;Copy&lt;/button&gt;
           &lt;button @click="startEdit"&gt;Edit&lt;/button&gt;
@@ -314,7 +314,7 @@ watch(() =&gt; props.source, () =&gt; renderNotation());
       &lt;h4&gt;Parsing Errors:&lt;/h4&gt;
       &lt;ul&gt;
         &lt;li v-for="(err, i) in errors" :key="i"&gt;
-          Line {{ err.line }}, Col {{ err.column }}: {{ err.message }}
+          Line &#123;&#123; err.line &#125;&#125;, Col &#123;&#123; err.column &#125;&#125;: &#123;&#123; err.message &#125;&#125;
         &lt;/li&gt;
       &lt;/ul&gt;
     &lt;/div&gt;
