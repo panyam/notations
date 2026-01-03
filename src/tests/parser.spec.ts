@@ -771,3 +771,130 @@ describe("Marker Tests", () => {
     );
   });
 });
+
+describe("Block Syntax Tests", () => {
+  test("Command without block (backward compatible)", () => {
+    testV4(`\\cycle("|4|4|")`, false, [
+      {
+        name: "SetCycle",
+        index: 0,
+        params: [{ key: null, value: "|4|4|" }],
+      },
+    ]);
+  });
+
+  test("Command with empty block", () => {
+    testV4(`\\cycle("|4|4|") { }`, false, [
+      {
+        name: "Block(SetCycle)",
+        index: 0,
+        innerCommand: {
+          name: "SetCycle",
+          index: 0,
+          params: [{ key: null, value: "|4|4|" }],
+        },
+        blockCommands: [],
+      },
+    ]);
+  });
+
+  test("Command with block containing atoms", () => {
+    testV4(`\\cycle("|4|4|") { Sw: S R G M }`, false, [
+      {
+        name: "Block(SetCycle)",
+        index: 0,
+        innerCommand: {
+          name: "SetCycle",
+          index: 0,
+          params: [{ key: null, value: "|4|4|" }],
+        },
+        blockCommands: [
+          {
+            name: "ActivateRole",
+            index: 0,
+            params: [{ key: null, value: "sw" }],
+          },
+          {
+            name: "AddAtoms",
+            index: 1,
+            atoms: [
+              { type: "Literal", value: "S" },
+              { type: "Literal", value: "R" },
+              { type: "Literal", value: "G" },
+              { type: "Literal", value: "M" },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("Command with block containing nested command", () => {
+    testV4(`\\cycle("|4|4|") { \\beatDuration(2) Sw: S R }`, false, [
+      {
+        name: "Block(SetCycle)",
+        index: 0,
+        innerCommand: {
+          name: "SetCycle",
+          index: 0,
+          params: [{ key: null, value: "|4|4|" }],
+        },
+        blockCommands: [
+          {
+            name: "SetBeatDuration",
+            index: 0,
+            params: [{ key: null, value: 2 }],
+          },
+          {
+            name: "ActivateRole",
+            index: 1,
+            params: [{ key: null, value: "sw" }],
+          },
+          {
+            name: "AddAtoms",
+            index: 2,
+            atoms: [
+              { type: "Literal", value: "S" },
+              { type: "Literal", value: "R" },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("Multiple commands with some having blocks", () => {
+    testV4(`\\cycle("|8|") \\beatDuration(4) { Sw: A B C }`, false, [
+      {
+        name: "SetCycle",
+        index: 0,
+        params: [{ key: null, value: "|8|" }],
+      },
+      {
+        name: "Block(SetBeatDuration)",
+        index: 1,
+        innerCommand: {
+          name: "SetBeatDuration",
+          index: 0,
+          params: [{ key: null, value: 4 }],
+        },
+        blockCommands: [
+          {
+            name: "ActivateRole",
+            index: 1,
+            params: [{ key: null, value: "sw" }],
+          },
+          {
+            name: "AddAtoms",
+            index: 2,
+            atoms: [
+              { type: "Literal", value: "A" },
+              { type: "Literal", value: "B" },
+              { type: "Literal", value: "C" },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+});

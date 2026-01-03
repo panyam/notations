@@ -87,8 +87,13 @@ const [parser /*itemGraph*/] = G.newParser(
 
     Embedding -> SINGLE_LINE_RAW_STRING | MULTI_LINE_RAW_STRING ;
 
-    Command -> BSLASH_IDENT CommandParams ? { newCommand } ;
+    Command -> BSLASH_IDENT CommandParams ? OptBlock { newCommandWithBlock } ;
     CommandParams -> OPEN_PAREN ParamList ? CLOSE_PAREN { $2 } ;
+    OptBlock -> Block
+             | { nullBlock }
+             ;
+    Block -> BlockStart Elements CLOSE_BRACE { endBlock } ;
+    BlockStart -> OPEN_BRACE { beginBlock } ;
 
     ParamList -> ParamList COMMA Param { concatParamList } ;
     ParamList -> Param { newParamList };
@@ -257,13 +262,74 @@ const [parser /*itemGraph*/] = G.newParser(
  * Since our document (md or html etc) can contain multiple snippets
  * all these snippets are related
  */
+import { Block, BlockContainer } from "./block";
+
+/**
+ * Wrapper for a command that has a block of child commands.
+ * When applied, it creates a Block and applies child commands to it.
+ */
+export class BlockCommand extends Command {
+  readonly innerCommand: Command;
+  readonly blockCommands: Command[];
+
+  constructor(innerCommand: Command, blockCommands: Command[]) {
+    super(innerCommand.params);
+    this.innerCommand = innerCommand;
+    this.blockCommands = blockCommands;
+  }
+
+  get name(): string {
+    return `Block(${this.innerCommand.name})`;
+  }
+
+  debugValue(): any {
+    return {
+      name: this.name,
+      index: this.index,
+      innerCommand: this.innerCommand.debugValue(),
+      blockCommands: this.blockCommands.map((cmd) => cmd.debugValue()),
+    };
+  }
+
+  applyToNotation(notation: Notation): void {
+    // Create a new block
+    const block = new Block(this.innerCommand.name.toLowerCase(), notation);
+
+    // Apply the inner command to set block properties
+    this.innerCommand.applyToBlock(block);
+
+    // Apply all child commands to the block
+    for (const cmd of this.blockCommands) {
+      cmd.applyToBlock(block);
+    }
+
+    // Add the block to the notation
+    notation.addBlockItem(block);
+  }
+
+  applyToBlock(container: BlockContainer): void {
+    // Create a nested block
+    const block = new Block(this.innerCommand.name.toLowerCase(), container);
+
+    // Apply the inner command to set block properties
+    this.innerCommand.applyToBlock(block);
+
+    // Apply all child commands to the block
+    for (const cmd of this.blockCommands) {
+      cmd.applyToBlock(block);
+    }
+
+    // Add the block to the container
+    container.addBlockItem(block);
+  }
+}
+
 export class Parser {
   errors: (TLEX.TokenizerError | G.ParseError)[] = [];
   metadata: any = {};
   readonly commands: Command[] = [];
-  // readonly notation: Notation = new Notation();
-  // private runCommandFound = false;
-  // readonly parseTree = new PTNodeList("Snippet", null);
+  // Stack to track command indices when entering blocks
+  private blockStartStack: number[] = [];
 
   protected ruleHandlers = {
     newFraction: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
@@ -382,8 +448,36 @@ export class Parser {
       params.push(newParam);
       return params;
     },
-    newCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      return this.createCommand(children[0].value, children[1].value);
+    // Block handling semantic actions
+    beginBlock: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
+      // Push current command count to track where this block's commands start
+      this.blockStartStack.push(this.commands.length);
+      return null;
+    },
+    endBlock: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
+      // Pop the start index and extract commands added since then
+      const startIndex = this.blockStartStack.pop()!;
+      const blockCommands = this.commands.splice(startIndex);
+      return blockCommands;
+    },
+    nullBlock: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
+      // No block present
+      return null;
+    },
+    newCommandWithBlock: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const name = children[0].value;
+      const params = children[1].value;
+      const blockCommands = children[2].value as Command[] | null;
+
+      const innerCommand = this.createCommand(name, params);
+
+      if (blockCommands !== null) {
+        // Wrap in BlockCommand
+        return new BlockCommand(innerCommand, blockCommands);
+      } else {
+        // No block, return regular command
+        return innerCommand;
+      }
     },
     appendAtoms: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       const atoms = children[0].value as Atom[];

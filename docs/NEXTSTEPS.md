@@ -79,9 +79,11 @@
 ## Immediate TODOs
 
 ### Block-Based DSL (Phase 2) - In Progress
-- [ ] Update grammar with block rules in parser.ts
-  - Add grammar rules for `\command(...) { ... }` syntax
-  - OPEN_BRACE/CLOSE_BRACE tokens already exist but are unused
+- [x] Update grammar with block rules in parser.ts
+  - Added grammar rules for `\command(...) { ... }` syntax
+  - BlockCommand class wraps commands with block content
+  - Semantic actions: beginBlock, endBlock, nullBlock, newCommandWithBlock
+  - 5 new block syntax tests added and passing
 - [ ] Update existing commands for block support
 - [ ] Add new block commands: \section(), \group(), \repeat()
 - [ ] Update GlobalBeatLayout for recursive block processing

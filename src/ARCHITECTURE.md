@@ -61,6 +61,17 @@ LALR parser using Galore parser generator:
 - Generates Command objects
 - Applies commands to build Notation tree
 
+Block syntax support:
+- Grammar rules: `Command -> BSLASH_IDENT CommandParams ? OptBlock { newCommandWithBlock }`
+- `OptBlock -> Block | { nullBlock }` - Optional block after command
+- `Block -> BlockStart Elements CLOSE_BRACE { endBlock }` - Block with content
+- `BlockStart -> OPEN_BRACE { beginBlock }` - Triggers block start
+
+Key classes:
+- `BlockCommand` - Wraps a command with its block of child commands
+- Semantic actions use `blockStartStack` to track nested block boundaries
+- Commands inside blocks are collected and associated with the wrapping command
+
 ### Commands (`commands.ts`)
 Commands that modify the notation:
 - `SetCycle`, `SetBeatDuration`, `SetBreaks` - Layout commands

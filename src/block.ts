@@ -168,11 +168,7 @@ export class Block extends Entity implements BlockContainer {
    * @param parent The parent container
    * @param name Optional name for the block
    */
-  constructor(
-    blockType: string,
-    parent: BlockContainer,
-    name: TSU.Nullable<string> = null,
-  ) {
+  constructor(blockType: string, parent: BlockContainer, name: TSU.Nullable<string> = null) {
     super();
     this.blockType = blockType;
     this.name = name;
