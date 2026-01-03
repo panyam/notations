@@ -20,7 +20,7 @@
   "author": "Sriram Panyam",
   "license": "ISC",
   "peerDependencies": {
-    "notations": "^0.0.65"
+    "notations": "^0.0.69"
   },
   "devDependencies": {
     "notations": "file:../",

@@ -3,21 +3,32 @@ import { Entity } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
 import { LayoutParams } from "./layouts";
+import {
+  RoleDef,
+  RawBlock,
+  BlockContainer,
+  BlockItem,
+  Block,
+  isBlock,
+  isLine,
+  isRawBlock,
+  isBlockContainer,
+  findContainingBlock,
+} from "./block";
 
-/**
- * Definition of a role in the notation.
- * A role represents a specific voice or part in the music notation.
- */
-export class RoleDef {
-  /** Name of the role */
-  name = "";
-
-  /** Whether this role contains only notes (true) or can also contain syllables/text (false) */
-  notesOnly = false;
-
-  /** Index of this role in the notation */
-  index = 0;
-}
+// Re-export for backward compatibility
+export {
+  RoleDef,
+  RawBlock,
+  BlockContainer,
+  BlockItem,
+  Block,
+  isBlock,
+  isLine,
+  isRawBlock,
+  isBlockContainer,
+  findContainingBlock,
+};
 
 /**
  * Type representing a command parameter with optional key and value.
@@ -105,33 +116,18 @@ export abstract class Command extends Entity {
    * @param notation The notation to apply this command to
    */
   abstract applyToNotation(notebook: Notation): void;
-}
-
-/**
- * Represents a raw block of content in the notation.
- * Raw blocks can contain arbitrary content like markdown, HTML, etc.
- */
-export class RawBlock extends Entity {
-  readonly TYPE: string = "RawBlock";
 
   /**
-   * Creates a new RawBlock.
-   * @param content The content of the block
-   * @param contentType The type of content (e.g., "md" for markdown)
+   * Applies this command to a block container.
+   * By default, delegates to applyToNotation for backward compatibility.
+   * Subclasses can override for block-specific behavior.
+   * @param container The block container to apply this command to
    */
-  constructor(
-    public content: string,
-    public contentType: string = "md",
-  ) {
-    super();
-  }
-
-  /**
-   * Returns a debug-friendly representation of this raw block.
-   * @returns An object containing debug information
-   */
-  debugValue(): any {
-    return { ...super.debugValue(), content: this.content, contentType: this.contentType };
+  applyToBlock(container: BlockContainer): void {
+    if (container instanceof Notation) {
+      this.applyToNotation(container);
+    }
+    // For non-Notation containers, subclasses should implement specific behavior
   }
 }
 
@@ -156,28 +152,129 @@ export class MetaData {
 
 /**
  * The main class representing a complete notation.
- * Notation contains all the elements, settings, and layout information for a piece of music.
+ * Notation implements BlockContainer as the root of the block hierarchy.
+ * It contains all the elements, settings, and layout information for a piece of music.
  */
-export class Notation extends Entity {
+export class Notation extends Entity implements BlockContainer {
   readonly TYPE = "Notation";
   private _unnamedLayoutParams: LayoutParams[] = [];
   private _namedLayoutParams = new Map<string, LayoutParams>();
   private _currRoleDef: TSU.Nullable<RoleDef> = null;
 
-  /** Roles defined in this notation */
-  roles: RoleDef[] = [];
+  // ============================================
+  // BlockContainer implementation
+  // ============================================
 
-  /** Blocks (lines or raw blocks) in this notation */
-  blocks: (Line | RawBlock)[] = [];
+  /** Child items (blocks, lines, raw blocks) */
+  readonly blockItems: BlockItem[] = [];
 
-  /** Current beat duration multiplier */
-  currentAPB = 1;
+  /** Local cycle (same as currentCycle for backward compatibility) */
+  localCycle: TSU.Nullable<Cycle> = Cycle.DEFAULT;
 
-  /** Current cycle pattern */
-  currentCycle: Cycle = Cycle.DEFAULT;
+  /** Local atoms per beat (same as currentAPB for backward compatibility) */
+  localAtomsPerBeat: TSU.Nullable<number> = 1;
 
-  /** Current line breaks pattern */
-  currentBreaks: number[] = [];
+  /** Local line breaks (same as currentBreaks for backward compatibility) */
+  localBreaks: TSU.Nullable<number[]> = [];
+
+  /** Roles defined locally in this notation */
+  readonly localRoles = new Map<string, RoleDef>();
+
+  /**
+   * Notation is always the root, so parentBlock is always null.
+   */
+  get parentBlock(): TSU.Nullable<BlockContainer> {
+    return null;
+  }
+
+  /**
+   * Gets the effective cycle. Since Notation is root, returns localCycle.
+   */
+  get cycle(): TSU.Nullable<Cycle> {
+    return this.localCycle;
+  }
+
+  /**
+   * Gets the effective atoms per beat. Since Notation is root, returns localAtomsPerBeat.
+   */
+  get atomsPerBeat(): number {
+    return this.localAtomsPerBeat ?? 1;
+  }
+
+  /**
+   * Gets the effective line breaks. Since Notation is root, returns localBreaks.
+   */
+  get breaks(): number[] {
+    return this.localBreaks ?? [];
+  }
+
+  /**
+   * Gets a role by name from localRoles.
+   * @param name The role name to look up
+   */
+  getRole(name: string): TSU.Nullable<RoleDef> {
+    return this.localRoles.get(name.toLowerCase()) ?? null;
+  }
+
+  // ============================================
+  // Backward compatibility aliases
+  // ============================================
+
+  /**
+   * @deprecated Use blockItems instead
+   * Legacy accessor for blocks array.
+   */
+  get blocks(): BlockItem[] {
+    return this.blockItems;
+  }
+
+  /**
+   * @deprecated Use localAtomsPerBeat instead
+   * Legacy accessor for current atoms per beat.
+   */
+  get currentAPB(): number {
+    return this.localAtomsPerBeat ?? 1;
+  }
+
+  set currentAPB(value: number) {
+    this.localAtomsPerBeat = value;
+  }
+
+  /**
+   * @deprecated Use localCycle instead
+   * Legacy accessor for current cycle.
+   */
+  get currentCycle(): Cycle {
+    return this.localCycle ?? Cycle.DEFAULT;
+  }
+
+  set currentCycle(value: Cycle) {
+    this.localCycle = value;
+  }
+
+  /**
+   * @deprecated Use localBreaks instead
+   * Legacy accessor for current breaks.
+   */
+  get currentBreaks(): number[] {
+    return this.localBreaks ?? [];
+  }
+
+  set currentBreaks(value: number[]) {
+    this.localBreaks = value;
+  }
+
+  /**
+   * @deprecated Use localRoles instead
+   * Legacy accessor for roles array.
+   */
+  get roles(): RoleDef[] {
+    return Array.from(this.localRoles.values());
+  }
+
+  // ============================================
+  // Other properties
+  // ============================================
 
   /** Metadata associated with this notation */
   metadata = new Map<string, MetaData>();
@@ -200,11 +297,20 @@ export class Notation extends Entity {
   }
 
   /**
+   * Adds a child item to this notation (BlockContainer implementation).
+   * @param item The item to add (Block, Line, or RawBlock)
+   */
+  addBlockItem(item: BlockItem): void {
+    item.setParent(this as unknown as Entity);
+    this.blockItems.push(item);
+  }
+
+  /**
    * Adds a line to this notation.
    * @param line The line to add
    */
   addLine(line: Line): void {
-    this.blocks.push(line);
+    this.addBlockItem(line);
   }
 
   /**
@@ -213,9 +319,10 @@ export class Notation extends Entity {
    * @returns The index of the removed line, or -1 if not found
    */
   removeLine(line: Line): number {
-    const index = this.blocks.findIndex((l) => l == line);
+    const index = this.blockItems.findIndex((l) => l === line);
     if (index >= 0) {
-      this.blocks.splice(index, 1);
+      this.blockItems.splice(index, 1);
+      line.setParent(null);
     }
     return index;
   }
@@ -225,7 +332,7 @@ export class Notation extends Entity {
    * @param raw The raw block to add
    */
   addRawBlock(raw: RawBlock): void {
-    this.blocks.push(raw);
+    this.addBlockItem(raw);
     this.resetLine();
   }
 
@@ -267,14 +374,12 @@ export class Notation extends Entity {
    */
   getRoleDef(name: string): TSU.Nullable<RoleDef> {
     name = name.trim().toLowerCase();
-    if (name == "") {
-      return this.roles[this.roles.length - 1] || null;
+    if (name === "") {
+      // Return the last added role if name is empty
+      const roles = Array.from(this.localRoles.values());
+      return roles[roles.length - 1] || null;
     }
-    for (let i = 0; i < this.roles.length; i++) {
-      const rd = this.roles[i];
-      if (name == rd.name) return rd;
-    }
-    return null;
+    return this.localRoles.get(name) ?? null;
   }
 
   /**
@@ -286,21 +391,18 @@ export class Notation extends Entity {
    */
   newRoleDef(name: string, notesOnly = false): RoleDef {
     name = name.trim().toLowerCase();
-    if (name.trim() == "") {
+    if (name === "") {
       throw new Error("Role name cannot be empty");
     }
-    const roleDef = this.getRoleDef(name);
-    if (roleDef != null) {
-      throw new Error("Role already exists");
-      // roleDef.notesOnly = notesOnly;
-      // return roleDef;
+    if (this.localRoles.has(name)) {
+      throw new Error("Role already exists: " + name);
     }
     // create new and add
     const rd = new RoleDef();
     rd.name = name;
     rd.notesOnly = notesOnly;
-    rd.index = this.roles.length;
-    this.roles.push(rd);
+    rd.index = this.localRoles.size;
+    this.localRoles.set(name, rd);
 
     return rd;
   }
@@ -310,10 +412,11 @@ export class Notation extends Entity {
    */
   get currRoleDef(): RoleDef | null {
     if (this._currRoleDef == null) {
-      if (this.roles.length == 0) {
+      const roles = Array.from(this.localRoles.values());
+      if (roles.length === 0) {
         return null;
       } else {
-        this._currRoleDef = this.roles[this.roles.length - 1];
+        this._currRoleDef = roles[roles.length - 1];
       }
     }
     return this._currRoleDef;

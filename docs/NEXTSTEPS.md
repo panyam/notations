@@ -60,9 +60,33 @@
 - [x] API Integration Guide: React, Vue, Node.js, Web Components - all complete
 - [x] Contributing guide: Setup, workflow, areas to help
 
+### Block-Based DSL Foundation (Phase 1) ✅
+- [x] Add parent references to Entity base class
+- [x] Remove unused children methods from Entity (cleaner separation)
+- [x] Create BlockContainer interface with:
+  - blockItems, parentBlock properties
+  - localCycle, localAtomsPerBeat, localBreaks, localRoles
+  - Property inheritance via tree walking (cycle, atomsPerBeat, breaks, getRole)
+- [x] Create Block class implementing BlockContainer
+- [x] Create RoleDef and RawBlock classes in block.ts
+- [x] Add type guards: isBlock, isLine, isRawBlock, isBlockContainer
+- [x] Update Notation to implement BlockContainer
+- [x] Add applyToBlock() method to Command base class
+- [x] Maintain backward compatibility (blocks, currentAPB, currentCycle, etc.)
+
 ---
 
 ## Immediate TODOs
+
+### Block-Based DSL (Phase 2) - In Progress
+- [ ] Update grammar with block rules in parser.ts
+  - Add grammar rules for `\command(...) { ... }` syntax
+  - OPEN_BRACE/CLOSE_BRACE tokens already exist but are unused
+- [ ] Update existing commands for block support
+- [ ] Add new block commands: \section(), \group(), \repeat()
+- [ ] Update GlobalBeatLayout for recursive block processing
+- [ ] Update NotationView for block rendering
+- [ ] Update notation/web components
 
 ### Test Fixes (Priority)
 - [ ] Fix grid test expectations in `src/tests/grids.spec.ts`

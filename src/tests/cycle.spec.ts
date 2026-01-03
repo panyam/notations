@@ -28,35 +28,23 @@ const TEST_CYCLE1 = new Cycle({
 });
 
 describe("Entity Tests", () => {
-  test("Children", () => {
-    class Ent extends Entity {
-      _children: Entity[] = [];
-      children(): Entity[] {
-        return this._children;
-      }
-    }
-    const parent = new Ent();
+  test("Parent references", () => {
+    const parent = new Entity();
     const child = new Entity();
-    parent.setChildAt(0, child);
-    expect(parent.indexOfChild(child)).toBe(0);
+    expect(child.parent).toBeNull();
+    child.setParent(parent);
+    expect(child.parent).toBe(parent);
+    child.setParent(null);
+    expect(child.parent).toBeNull();
   });
 
-  /*
-  test("Metadata", () => {
-    let parent = new Entity();
-    expect(parent.getMetadata("hello")).toBeNull();
-    parent.setMetadata("hello", "world");
-    expect(parent.getMetadata("hello")).toBe("world");
-
-    parent = new Entity();
-    parent.metadata["hello"] = 5;
-    const child = new Entity();
-    child.parent = parent;
-    expect(parent.getMetadata("hello")).toBe(5);
-    expect(child.getMetadata("hello", false)).toBe(null);
-    expect(child.getMetadata("hello")).toBe(5);
+  test("Clone and equals", () => {
+    const entity = new Entity();
+    const clone = entity.clone();
+    expect(clone).not.toBe(entity);
+    expect(clone.equals(entity)).toBe(true);
+    expect(clone.uuid).not.toBe(entity.uuid);
   });
-  */
 });
 
 describe("Cycle tests", () => {
