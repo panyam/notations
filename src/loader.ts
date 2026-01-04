@@ -1,6 +1,5 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
-import { Line } from "./core";
 import { GlobalBeatLayout } from "./beats";
 import { Parser } from "./parser";
 import { Notation } from "./notation";
@@ -32,16 +31,9 @@ export function load(
   const [notation, errors] = parse(codeText);
   const parseTime = performance.now();
 
-  // Create Line Beats
-  for (const block of notation.blocks) {
-    if (block.TYPE == "Line" && !(block as Line).isEmpty) {
-      const line = block as Line;
-      // LP should exist by now
-      // Probably because this is an empty line and AddAtoms was not called
-      TSU.assert(line.layoutParams != null, "Layout params for a non empty line *SHOULD* exist");
-      beatLayout.addLine(line);
-    }
-  }
+  // Process all blocks recursively using block.children()
+  // This handles nested blocks like \repeat { }, \section { }, etc.
+  beatLayout.processBlock(notation);
 
   const buildTime = performance.now();
   if (config.log) {

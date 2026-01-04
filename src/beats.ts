@@ -4,6 +4,7 @@ import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";
 import { GridModel, GridRow, GridCell, ColAlign, GridLayoutGroup } from "./grids";
+import { Block, BlockItem, isLine, isBlock } from "./notation";
 
 type Fraction = TSU.Num.Fraction;
 const ZERO = TSU.Num.Fraction.ZERO;
@@ -475,6 +476,35 @@ export class GlobalBeatLayout {
     gridModel.eventHub?.startBatchMode();
     this.lineToRoleBeats(line, gridModel);
     gridModel.eventHub?.commitBatch();
+  }
+
+  /**
+   * Recursively processes a block and its children to build beat layouts.
+   * Uses block.children() to get expanded children (e.g., RepeatBlock expands to N copies).
+   *
+   * @param block The block to process
+   */
+  processBlock(block: Block): void {
+    for (const child of block.children()) {
+      this.processBlockItem(child);
+    }
+  }
+
+  /**
+   * Processes a single block item (Block, Line, or RawBlock).
+   *
+   * @param item The item to process
+   */
+  protected processBlockItem(item: BlockItem): void {
+    if (isLine(item)) {
+      const line = item as Line;
+      if (!line.isEmpty && line.layoutParams != null) {
+        this.addLine(line);
+      }
+    } else if (isBlock(item)) {
+      this.processBlock(item as Block);
+    }
+    // RawBlocks are ignored (no beat layout for raw content)
   }
 
   /**

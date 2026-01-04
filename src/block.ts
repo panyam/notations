@@ -82,7 +82,7 @@ export function isRawBlock(item: BlockItem): item is RawBlock {
  * Block = Command + Children (unified model)
  */
 export class Block extends Entity {
-  readonly TYPE = "Block";
+  readonly TYPE: string = "Block";
 
   /** The type of block (e.g., "section", "repeat", "cycle") */
   readonly blockType: string;
@@ -102,9 +102,9 @@ export class Block extends Entity {
   // Store parent reference (Block or null for root)
   private _parentBlock: TSU.Nullable<Block> = null;
 
-  // State tracking for command application
-  private _currRoleDef: TSU.Nullable<RoleDef> = null;
-  private _currentLine: TSU.Nullable<Line> = null;
+  // State tracking for command application (protected for Notation override)
+  protected _currRoleDef: TSU.Nullable<RoleDef> = null;
+  protected _currentLine: TSU.Nullable<Line> = null;
 
   /**
    * Creates a new Block.

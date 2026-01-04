@@ -16,16 +16,7 @@ export class RawEmbedding extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    const raw = new RawBlock(this.rawContents);
-    notation.addRawBlock(raw);
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Adds a raw block to the container.
    */
   applyToBlock(container: Block): void {
@@ -39,12 +30,14 @@ export class RawEmbedding extends Command {
  */
 export class MetaData extends Command {
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
+   * Applies this command to a block.
+   * Only works on Notation (metadata is a Notation-specific feature).
    */
-  applyToNotation(notation: Notation): void {
-    // Create the role - ensure that we have a role
-    notation.addMetaData(this.meta);
+  applyToBlock(container: Block): void {
+    if (container instanceof Notation) {
+      container.addMetaData(this.meta);
+    }
+    // No-op for non-Notation blocks
   }
 
   /**
@@ -75,17 +68,7 @@ export class MetaData extends Command {
  */
 export class ActivateRole extends Command {
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    // Create the role - ensure that we have a role
-    notation.setCurrRole(this.roleName);
-    // const line = notation.ensureLine();
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Sets the current role in the container.
    */
   applyToBlock(container: Block): void {
@@ -132,32 +115,7 @@ export class AddAtoms extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    let roleDef = notation.currRoleDef;
-    if (roleDef == null) {
-      // By default create a role for swaras
-      roleDef = notation.newRoleDef("Sw", true);
-      // throw new Error("Current role is invalid");
-    }
-    // Ensure a line exists
-    const lpForLine = notation.currentLine.layoutParams;
-    if (lpForLine == null) {
-      notation.currentLine.layoutParams = notation.layoutParams;
-    } else {
-      TSU.assert(
-        lpForLine == notation.layoutParams,
-        "Layout parameters have changed so a new line should have been started",
-      );
-    }
-    const finalised = this.atoms;
-    notation.currentLine.addAtoms(roleDef.name, roleDef.notesOnly, ...finalised);
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Adds atoms to the current line in the container.
    */
   applyToBlock(container: Block): void {
@@ -168,6 +126,18 @@ export class AddAtoms extends Command {
     }
     // Get or create the current line
     const line = container.currentLine;
+    // For Notation, also handle layoutParams
+    if (container instanceof Notation) {
+      const lpForLine = line.layoutParams;
+      if (lpForLine == null) {
+        line.layoutParams = container.layoutParams;
+      } else {
+        TSU.assert(
+          lpForLine == container.layoutParams,
+          "Layout parameters have changed so a new line should have been started",
+        );
+      }
+    }
     // Add atoms to the line
     line.addAtoms(roleDef.name, roleDef.notesOnly, ...this.atoms);
   }
@@ -178,20 +148,7 @@ export class AddAtoms extends Command {
  */
 export class CreateLine extends Command {
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    // We are not calling a newLine here just to avoid
-    // a series of \line commands creating wasteful empty lines
-    // TODO - how do we consider offsets in line create
-    const line = notation.newLine();
-    line.offset = this.offset;
-    line.marginText = this.marginText;
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Creates a new line in the container.
    */
   applyToBlock(container: Block): void {
@@ -227,17 +184,7 @@ export class CreateLine extends Command {
  */
 export class CreateRole extends Command {
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    // Create the role
-    const name = this.getParamAt(0);
-    notation.newRoleDef(name, this.notesOnly);
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Creates a role definition local to the container.
    */
   applyToBlock(container: Block): void {
@@ -326,12 +273,15 @@ export class ApplyLayout extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
+   * Applies this command to a block.
+   * Named layouts are Notation-specific; no-op for other blocks.
    */
-  applyToNotation(notation: Notation): void {
-    const value = this.params[0].value;
-    notation.ensureNamedLayoutParams(value);
+  applyToBlock(container: Block): void {
+    if (container instanceof Notation) {
+      const value = this.params[0].value;
+      container.ensureNamedLayoutParams(value);
+    }
+    // No-op for non-Notation blocks (named layouts are Notation-specific)
   }
 }
 
@@ -362,20 +312,14 @@ export class SetBreaks extends LayoutParamCommand {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    notation.currentBreaks = this.pattern;
-    notation.resetLayoutParams();
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Sets the local breaks on the container.
    */
   applyToBlock(container: Block): void {
     container.localBreaks = this.pattern;
+    if (container instanceof Notation) {
+      container.resetLayoutParams();
+    }
   }
 }
 
@@ -384,25 +328,17 @@ export class SetBreaks extends LayoutParamCommand {
  */
 export class SetCycle extends LayoutParamCommand {
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    const value = this.params[0].value;
-    // TODO - move the parsing to validation
-    const cycle = parseCycle(value);
-    notation.currentCycle = cycle;
-    notation.resetLayoutParams();
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Sets the local cycle on the container.
    */
   applyToBlock(container: Block): void {
     const value = this.params[0].value;
+    // TODO - move the parsing to validation
     const cycle = parseCycle(value);
     container.localCycle = cycle;
+    if (container instanceof Notation) {
+      container.resetLayoutParams();
+    }
   }
 }
 
@@ -428,20 +364,14 @@ export class SetBeatDuration extends LayoutParamCommand {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  applyToNotation(notation: Notation): void {
-    notation.currentAPB = this.beatDuration;
-    notation.resetLayoutParams();
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * Sets the local atoms per beat on the container.
    */
   applyToBlock(container: Block): void {
     container.localAtomsPerBeat = this.beatDuration;
+    if (container instanceof Notation) {
+      container.resetLayoutParams();
+    }
   }
 }
 
@@ -470,16 +400,7 @@ export class Section extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * This is a no-op as sections require blocks.
-   */
-  applyToNotation(_notation: Notation): void {
-    // No-op: sections only make sense with block syntax
-    // The BlockCommand wrapper handles block creation
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * No-op: SectionBlock handles the section behavior.
    */
   applyToBlock(_container: Block): void {
@@ -502,15 +423,7 @@ export class ScopedGroup extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * This is a no-op as groups require blocks.
-   */
-  applyToNotation(_notation: Notation): void {
-    // No-op: groups only make sense with block syntax
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * No additional properties to set for basic groups.
    */
   applyToBlock(_container: Block): void {
@@ -551,15 +464,7 @@ export class Repeat extends Command {
   }
 
   /**
-   * Applies this command to a notation.
-   * This is a no-op as repeats require blocks.
-   */
-  applyToNotation(_notation: Notation): void {
-    // No-op: repeats only make sense with block syntax
-  }
-
-  /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * No-op: RepeatBlock handles the repeat behavior.
    */
   applyToBlock(_container: Block): void {

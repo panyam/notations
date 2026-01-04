@@ -94,10 +94,22 @@
   - Parser's BlockCommand.createBlock() creates appropriate subclass
   - No command property indirection - subclasses ARE commands
 
-### Block-Based DSL (Phase 3) - In Progress
-- [ ] Make Notation extend Block (Notation is root Block)
-- [ ] Consolidate applyToNotation into applyToBlock
-- [ ] Update GlobalBeatLayout to use block.children() for recursive processing
+### Block-Based DSL (Phase 3) - Complete
+- [x] Make Notation extend Block (Notation is root Block)
+  - Notation now extends Block with blockType="notation", parent=null
+  - Constructor sets default values: localCycle=DEFAULT, localAtomsPerBeat=1, localBreaks=[]
+  - Backward compatible aliases: blocks, currentCycle, currentAPB, currentBreaks
+- [x] Consolidate applyToNotation into applyToBlock
+  - All commands now use applyToBlock() as primary method
+  - applyToNotation() is deprecated, delegates to applyToBlock()
+  - Notation-specific behavior uses `instanceof Notation` checks
+- [x] Update GlobalBeatLayout to use block.children() for recursive processing
+  - Added processBlock(block: Block) method
+  - Recursively processes children using block.children()
+  - Properly handles RepeatBlock expansion and nested structures
+  - loader.ts now uses beatLayout.processBlock(notation)
+
+### Block-Based DSL (Phase 4) - Pending
 - [ ] Update NotationView for block rendering
 - [ ] Update notation/web components
 

@@ -47,12 +47,11 @@ Key types:
 **Block Subclasses Pattern**: Each block type is its own subclass that directly implements the behavior via `children()`. This eliminates indirection - Block subclasses ARE commands.
 
 ### Notation Model (`notation.ts`)
-Root container (will extend Block in future):
-- `blockItems` - Child blocks, lines, raw blocks
-- `localRoles` - Role definitions
-- `localCycle`, `localAtomsPerBeat`, `localBreaks` - Layout properties
-- `metadata` - Key-value metadata
-- Backward compatible: `blocks`, `currentCycle`, `currentAPB`, `currentBreaks`
+Root container that extends Block:
+- Inherits `blockItems`, `localRoles`, `localCycle`, `localAtomsPerBeat`, `localBreaks` from Block
+- Adds `metadata` - Key-value metadata for the notation
+- Adds `layoutParams` management (named/unnamed layout params)
+- Backward compatible aliases: `blocks`, `currentCycle`, `currentAPB`, `currentBreaks`
 
 ### Core Types (`core.ts`)
 Musical elements:
@@ -88,12 +87,14 @@ Commands that modify the notation:
 - `CreateLine`, `CreateRole` - Structure commands
 - `AddAtoms` - Content commands
 - `Section`, `Repeat`, `ScopedGroup` - Block-only commands (configuration)
-- Each has `applyToNotation()` and `applyToBlock()` methods
+- All commands implement `applyToBlock(container: Block)` as the primary method
+- `applyToNotation()` is deprecated and delegates to `applyToBlock()`
 
 ### Layout Engine
 - `beats.ts` - Beat, BeatColumn, BeatColDAG, GlobalBeatLayout
 - `grids.ts` - GridModel, GridCell for visual layout
 - `layouts.ts` - LayoutParams for cycle/beat configuration
+- `GlobalBeatLayout.processBlock()` - Recursively processes blocks using `children()`
 
 ### Rendering (`carnatic/`)
 SVG renderers for Carnatic notation:
@@ -120,12 +121,16 @@ This enables:
 
 ## Design Decisions
 
-1. **Block subclasses pattern** - Each block type (SectionBlock, RepeatBlock, etc.) is a subclass that directly implements behavior. No indirection through a `command` property.
+1. **Notation extends Block** - Notation is the root Block of the hierarchy (`parent = null`). This unifies the model so the same methods work on any container.
 
-2. **Property inheritance is lazy** - Properties resolve at access time by walking up the tree, not eagerly copied at parse time.
+2. **Block subclasses pattern** - Each block type (SectionBlock, RepeatBlock, etc.) is a subclass that directly implements behavior. No indirection through a `command` property.
 
-3. **Commands have dual apply methods** - `applyToNotation()` for backward compatibility, `applyToBlock()` for block-scoped behavior. (Will be unified when Notation extends Block.)
+3. **Property inheritance is lazy** - Properties resolve at access time by walking up the tree, not eagerly copied at parse time.
 
-4. **RoleDef and RawBlock in block.ts** - Centralizes block-related types and avoids circular dependencies.
+4. **Commands use applyToBlock** - All commands implement `applyToBlock(container: Block)` as the primary method. Since Notation extends Block, this works uniformly. Notation-specific behavior uses `instanceof` checks.
 
-5. **Parser creates Block subclasses directly** - `BlockCommand.createBlock()` maps inner command types to appropriate Block subclasses.
+5. **RoleDef and RawBlock in block.ts** - Centralizes block-related types and avoids circular dependencies.
+
+6. **Parser creates Block subclasses directly** - `BlockCommand.createBlock()` maps inner command types to appropriate Block subclasses.
+
+7. **Layout engine uses processBlock** - `GlobalBeatLayout.processBlock()` recursively processes blocks using `children()`, enabling nested structures like `\repeat { }` to be properly expanded.

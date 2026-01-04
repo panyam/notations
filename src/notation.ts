@@ -122,22 +122,20 @@ export abstract class Command extends Entity {
   }
 
   /**
-   * Applies this command to a notation.
-   * @param notation The notation to apply this command to
-   */
-  abstract applyToNotation(notebook: Notation): void;
-
-  /**
-   * Applies this command to a block.
-   * By default, delegates to applyToNotation for backward compatibility.
-   * Subclasses can override for block-specific behavior.
+   * Applies this command to a block (the primary method).
+   * Since Notation extends Block, this works for both.
    * @param container The block to apply this command to
    */
-  applyToBlock(container: Block): void {
-    if (container instanceof Notation) {
-      this.applyToNotation(container);
-    }
-    // For non-Notation containers, subclasses should implement specific behavior
+  abstract applyToBlock(container: Block): void;
+
+  /**
+   * @deprecated Use applyToBlock instead
+   * Applies this command to a notation.
+   * Default implementation delegates to applyToBlock.
+   * @param notation The notation to apply this command to
+   */
+  applyToNotation(notation: Notation): void {
+    this.applyToBlock(notation);
   }
 }
 
@@ -164,69 +162,34 @@ export class MetaData {
  * The main class representing a complete notation.
  * Notation is the root Block of the notation hierarchy.
  * It contains all the elements, settings, and layout information for a piece of music.
- *
- * TODO: Make Notation extend Block for full unification.
- * For now, it duplicates Block's interface to maintain compatibility.
  */
-export class Notation extends Entity {
+export class Notation extends Block {
   readonly TYPE = "Notation";
+
+  // ============================================
+  // Notation-specific properties
+  // ============================================
+
+  /** Metadata associated with this notation */
+  metadata = new Map<string, MetaData>();
+
+  /** Handler for missing roles */
+  onMissingRole: (name: string) => RoleDef | null = (name) => this.newRoleDef(name, name == "sw");
+
+  /** Layout parameters management */
   private _unnamedLayoutParams: LayoutParams[] = [];
   private _namedLayoutParams = new Map<string, LayoutParams>();
-  private _currRoleDef: TSU.Nullable<RoleDef> = null;
-
-  // ============================================
-  // Block-like properties (TODO: extend Block)
-  // ============================================
-
-  /** Child items (blocks, lines, raw blocks) */
-  readonly blockItems: BlockItem[] = [];
-
-  /** Local cycle (same as currentCycle for backward compatibility) */
-  localCycle: TSU.Nullable<Cycle> = Cycle.DEFAULT;
-
-  /** Local atoms per beat (same as currentAPB for backward compatibility) */
-  localAtomsPerBeat: TSU.Nullable<number> = 1;
-
-  /** Local line breaks (same as currentBreaks for backward compatibility) */
-  localBreaks: TSU.Nullable<number[]> = [];
-
-  /** Roles defined locally in this notation */
-  readonly localRoles = new Map<string, RoleDef>();
+  private _layoutParams: LayoutParams | null = null;
 
   /**
-   * Notation is always the root, so parentBlock is always null.
+   * Creates a new Notation.
    */
-  get parentBlock(): TSU.Nullable<Block> {
-    return null;
-  }
-
-  /**
-   * Gets the effective cycle. Since Notation is root, returns localCycle.
-   */
-  get cycle(): TSU.Nullable<Cycle> {
-    return this.localCycle;
-  }
-
-  /**
-   * Gets the effective atoms per beat. Since Notation is root, returns localAtomsPerBeat.
-   */
-  get atomsPerBeat(): number {
-    return this.localAtomsPerBeat ?? 1;
-  }
-
-  /**
-   * Gets the effective line breaks. Since Notation is root, returns localBreaks.
-   */
-  get breaks(): number[] {
-    return this.localBreaks ?? [];
-  }
-
-  /**
-   * Gets a role by name from localRoles.
-   * @param name The role name to look up
-   */
-  getRole(name: string): TSU.Nullable<RoleDef> {
-    return this.localRoles.get(name.toLowerCase()) ?? null;
+  constructor() {
+    super("notation", null);
+    // Set default values for root notation
+    this.localCycle = Cycle.DEFAULT;
+    this.localAtomsPerBeat = 1;
+    this.localBreaks = [];
   }
 
   // ============================================
@@ -286,14 +249,8 @@ export class Notation extends Entity {
   }
 
   // ============================================
-  // Other properties
+  // Layout parameters management
   // ============================================
-
-  /** Metadata associated with this notation */
-  metadata = new Map<string, MetaData>();
-
-  /** Handler for missing roles */
-  onMissingRole: (name: string) => RoleDef | null = (name) => this.newRoleDef(name, name == "sw");
 
   /**
    * Gets the unnamed layout parameters.
@@ -310,194 +267,6 @@ export class Notation extends Entity {
   }
 
   /**
-   * Adds a child item to this notation (BlockContainer implementation).
-   * @param item The item to add (Block, Line, or RawBlock)
-   */
-  addBlockItem(item: BlockItem): void {
-    item.setParent(this as unknown as Entity);
-    this.blockItems.push(item);
-  }
-
-  /**
-   * Adds a line to this notation.
-   * @param line The line to add
-   */
-  addLine(line: Line): void {
-    this.addBlockItem(line);
-  }
-
-  /**
-   * Removes a line from this notation.
-   * @param line The line to remove
-   * @returns The index of the removed line, or -1 if not found
-   */
-  removeLine(line: Line): number {
-    const index = this.blockItems.findIndex((l) => l === line);
-    if (index >= 0) {
-      this.blockItems.splice(index, 1);
-      line.setParent(null);
-    }
-    return index;
-  }
-
-  /**
-   * Adds a raw block to this notation.
-   * @param raw The raw block to add
-   */
-  addRawBlock(raw: RawBlock): void {
-    this.addBlockItem(raw);
-    this.resetLine();
-  }
-
-  /**
-   * Adds metadata to this notation.
-   * @param meta The metadata to add
-   * @param addBlock Whether to add a corresponding raw block, defaults to true
-   */
-  addMetaData(meta: MetaData, addBlock = true): void {
-    if (addBlock && !this.metadata.has(meta.key)) {
-      // Add a new raw block here
-      // set this by key so even if metadata changes we can
-      // get latest value of it
-      const raw = new RawBlock(meta.key, "metadata");
-      this.addRawBlock(raw);
-    }
-    this.metadata.set(meta.key, meta);
-  }
-
-  /**
-   * Returns a debug-friendly representation of this notation.
-   * @returns An object containing debug information
-   */
-  debugValue(): any {
-    return {
-      ...super.debugValue,
-      roles: this.roles,
-      blocks: this.blocks.map((b) => b.debugValue()),
-      currentAPB: this.currentAPB,
-      currentCycle: this.currentCycle?.uuid,
-      currentBreaks: this.currentBreaks,
-    };
-  }
-
-  /**
-   * Gets a role definition by name.
-   * @param name The name of the role
-   * @returns The role definition, or null if not found
-   */
-  getRoleDef(name: string): TSU.Nullable<RoleDef> {
-    name = name.trim().toLowerCase();
-    if (name === "") {
-      // Return the last added role if name is empty
-      const roles = Array.from(this.localRoles.values());
-      return roles[roles.length - 1] || null;
-    }
-    return this.localRoles.get(name) ?? null;
-  }
-
-  /**
-   * Creates a new role definition.
-   * @param name The name of the role
-   * @param notesOnly Whether the role contains only notes, defaults to false
-   * @returns The created role definition
-   * @throws Error if the name is empty or the role already exists
-   */
-  newRoleDef(name: string, notesOnly = false): RoleDef {
-    name = name.trim().toLowerCase();
-    if (name === "") {
-      throw new Error("Role name cannot be empty");
-    }
-    if (this.localRoles.has(name)) {
-      throw new Error("Role already exists: " + name);
-    }
-    // create new and add
-    const rd = new RoleDef();
-    rd.name = name;
-    rd.notesOnly = notesOnly;
-    rd.index = this.localRoles.size;
-    this.localRoles.set(name, rd);
-
-    return rd;
-  }
-
-  /**
-   * Gets the current role definition.
-   */
-  get currRoleDef(): RoleDef | null {
-    if (this._currRoleDef == null) {
-      const roles = Array.from(this.localRoles.values());
-      if (roles.length === 0) {
-        return null;
-      } else {
-        this._currRoleDef = roles[roles.length - 1];
-      }
-    }
-    return this._currRoleDef;
-  }
-
-  /**
-   * Sets the current role by name.
-   * @param name The name of the role to set as current
-   * @throws Error if the name is empty or the role is not found
-   */
-  setCurrRole(name: string): void {
-    name = name.trim().toLowerCase();
-    if (name.trim() == "") {
-      throw new Error("Role name cannot be empty");
-    }
-    const roleDef = this.getRoleDef(name) || (this.onMissingRole ? this.onMissingRole(name) || null : null);
-    if (roleDef == null) {
-      throw new Error("Role not found: " + name);
-    }
-    this._currRoleDef = roleDef;
-  }
-
-  // Gets the current line, creating it if needed
-  private _currentLine: Line | null = null;
-
-  /**
-   * Gets the current line, creating it if needed.
-   */
-  get currentLine(): Line {
-    if (this._currentLine == null) {
-      return this.newLine();
-    }
-    return this._currentLine;
-  }
-
-  /**
-   * Resets the current line pointer to null.
-   */
-  resetLine(): void {
-    this._currentLine = null;
-  }
-
-  /**
-   * Creates a new line and makes it the current line.
-   * @returns The newly created line
-   */
-  newLine(): Line {
-    if (this._currentLine && this._currentLine.isEmpty) {
-      // then remove it first instead of adding another
-      // so we dont have a string of empty lines
-      this.removeLine(this._currentLine);
-    }
-    this._currentLine = new Line();
-    this.addLine(this._currentLine);
-    return this._currentLine;
-  }
-
-  private _layoutParams: LayoutParams | null = null;
-
-  /**
-   * Resets the current layout parameters to null.
-   */
-  resetLayoutParams(): void {
-    this._layoutParams = null;
-    this.resetLine();
-  }
-
-  /**
    * Gets the current layout parameters, creating or finding an appropriate one if needed.
    */
   get layoutParams(): LayoutParams {
@@ -510,6 +279,14 @@ export class Notation extends Entity {
       }
     }
     return this._layoutParams;
+  }
+
+  /**
+   * Resets the current layout parameters to null.
+   */
+  resetLayoutParams(): void {
+    this._layoutParams = null;
+    this.resetLine();
   }
 
   /**
@@ -566,5 +343,185 @@ export class Notation extends Entity {
         );
       }) || null
     );
+  }
+
+  // ============================================
+  // Overridden methods
+  // ============================================
+
+  /**
+   * Sets the current role by name.
+   * Uses onMissingRole callback for auto-creation of missing roles.
+   * @param name The name of the role to set as current
+   * @throws Error if the name is empty or the role is not found
+   */
+  setCurrRole(name: string): void {
+    name = name.trim().toLowerCase();
+    if (name.trim() == "") {
+      throw new Error("Role name cannot be empty");
+    }
+    const roleDef = this.getRole(name) || (this.onMissingRole ? this.onMissingRole(name) || null : null);
+    if (roleDef == null) {
+      throw new Error("Role not found: " + name);
+    }
+    this._currRoleDef = roleDef;
+  }
+
+  /**
+   * Gets a role definition by name.
+   * Handles empty name by returning the last added role.
+   * @param name The name of the role
+   * @returns The role definition, or null if not found
+   */
+  getRoleDef(name: string): TSU.Nullable<RoleDef> {
+    name = name.trim().toLowerCase();
+    if (name === "") {
+      // Return the last added role if name is empty
+      const roles = Array.from(this.localRoles.values());
+      return roles[roles.length - 1] || null;
+    }
+    return this.localRoles.get(name) ?? null;
+  }
+
+  /**
+   * Creates a new role definition.
+   * @param name The name of the role
+   * @param notesOnly Whether the role contains only notes, defaults to false
+   * @returns The created role definition
+   * @throws Error if the name is empty or the role already exists
+   */
+  newRoleDef(name: string, notesOnly = false): RoleDef {
+    name = name.trim().toLowerCase();
+    if (name === "") {
+      throw new Error("Role name cannot be empty");
+    }
+    if (this.localRoles.has(name)) {
+      throw new Error("Role already exists: " + name);
+    }
+    // create new and add
+    const rd = new RoleDef();
+    rd.name = name;
+    rd.notesOnly = notesOnly;
+    rd.index = this.localRoles.size;
+    this.localRoles.set(name, rd);
+
+    return rd;
+  }
+
+  // ============================================
+  // Additional methods
+  // ============================================
+
+  /**
+   * Adds a line to this notation.
+   * @param line The line to add
+   */
+  addLine(line: Line): void {
+    this.addBlockItem(line);
+  }
+
+  /**
+   * Removes a line from this notation.
+   * @param line The line to remove
+   * @returns The index of the removed line, or -1 if not found
+   */
+  removeLine(line: Line): number {
+    return this.removeBlockItem(line);
+  }
+
+  /**
+   * Adds a raw block to this notation.
+   * @param raw The raw block to add
+   */
+  addRawBlock(raw: RawBlock): void {
+    this.addBlockItem(raw);
+    this.resetLine();
+  }
+
+  /**
+   * Adds metadata to this notation.
+   * @param meta The metadata to add
+   * @param addBlock Whether to add a corresponding raw block, defaults to true
+   */
+  addMetaData(meta: MetaData, addBlock = true): void {
+    if (addBlock && !this.metadata.has(meta.key)) {
+      // Add a new raw block here
+      // set this by key so even if metadata changes we can
+      // get latest value of it
+      const raw = new RawBlock(meta.key, "metadata");
+      this.addRawBlock(raw);
+    }
+    this.metadata.set(meta.key, meta);
+  }
+
+  /**
+   * Resets the current line pointer to null.
+   */
+  resetLine(): void {
+    this._currentLine = null;
+  }
+
+  /**
+   * Returns a debug-friendly representation of this notation.
+   * Uses Notation-specific property names for backward compatibility.
+   * @returns An object containing debug information
+   */
+  debugValue(): any {
+    // Use Notation-specific names (blocks, currentCycle, etc.)
+    // instead of Block names (blockItems, localCycle, etc.)
+    // to maintain backward compatibility with existing tests
+    return {
+      blocks: this.blocks.map((b) => b.debugValue()),
+      currentAPB: this.currentAPB,
+      currentBreaks: this.currentBreaks,
+      currentCycle: this.currentCycle?.uuid,
+      roles: this.roles,
+    };
+  }
+
+  // Need protected access to _currRoleDef for setCurrRole override
+  protected _currRoleDef: TSU.Nullable<RoleDef> = null;
+
+  /**
+   * Gets the current role definition.
+   */
+  get currRoleDef(): RoleDef | null {
+    if (this._currRoleDef == null) {
+      const roles = Array.from(this.localRoles.values());
+      if (roles.length === 0) {
+        return null;
+      } else {
+        this._currRoleDef = roles[roles.length - 1];
+      }
+    }
+    return this._currRoleDef;
+  }
+
+  // Need protected access to _currentLine for resetLine
+  protected _currentLine: Line | null = null;
+
+  /**
+   * Gets the current line, creating it if needed.
+   */
+  get currentLine(): Line {
+    if (this._currentLine == null) {
+      return this.newLine();
+    }
+    return this._currentLine;
+  }
+
+  /**
+   * Creates a new line and makes it the current line.
+   * @returns The newly created line
+   */
+  newLine(): Line {
+    if (this._currentLine && this._currentLine.isEmpty) {
+      // then remove it first instead of adding another
+      // so we dont have a string of empty lines
+      this.removeLine(this._currentLine);
+    }
+    this._currentLine = new Line();
+    this.addLine(this._currentLine);
+    return this._currentLine;
   }
 }
