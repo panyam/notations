@@ -1,6 +1,6 @@
 {
   "name": "notations-docs",
-  "version": "0.0.69",
+  "version": "0.0.70",
   "description": "Documentation site for the Notations library",
   "private": true,
   "scripts": {
