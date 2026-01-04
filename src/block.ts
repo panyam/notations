@@ -73,84 +73,24 @@ export function isRawBlock(item: BlockItem): item is RawBlock {
 }
 
 /**
- * Interface for entities that can contain blocks and have scoped properties.
- * Both Notation and Block implement this interface.
- *
- * Note: We use `blockItems` instead of `children` and `parentBlock` instead of `parent`
- * to avoid conflicts with Entity's existing members.
- *
- * Properties are resolved lazily by walking up the tree when not set locally.
- */
-export interface BlockContainer {
-  /** Parent container in the block hierarchy */
-  readonly parentBlock: TSU.Nullable<BlockContainer>;
-
-  /** Child items (blocks, lines, raw blocks) */
-  readonly blockItems: BlockItem[];
-
-  // ============================================
-  // Local properties (only what's set directly on this container)
-  // ============================================
-
-  /** Cycle set directly on this container, if any */
-  localCycle: TSU.Nullable<Cycle>;
-
-  /** Atoms per beat set directly on this container, if any */
-  localAtomsPerBeat: TSU.Nullable<number>;
-
-  /** Line breaks set directly on this container, if any */
-  localBreaks: TSU.Nullable<number[]>;
-
-  /** Roles defined directly on this container */
-  readonly localRoles: Map<string, RoleDef>;
-
-  // ============================================
-  // Resolved properties (walk up tree if not set locally)
-  // ============================================
-
-  /** Gets the effective cycle (local or inherited from parent) */
-  get cycle(): TSU.Nullable<Cycle>;
-
-  /** Gets the effective atoms per beat (local or inherited, default 1) */
-  get atomsPerBeat(): number;
-
-  /** Gets the effective line breaks (local or inherited) */
-  get breaks(): number[];
-
-  /**
-   * Gets a role definition by name, walking up the tree if not found locally.
-   * @param name The name of the role
-   */
-  getRole(name: string): TSU.Nullable<RoleDef>;
-
-  // ============================================
-  // Child management
-  // ============================================
-
-  /**
-   * Adds a child item to this container.
-   * @param item The item to add
-   */
-  addBlockItem(item: BlockItem): void;
-}
-
-/**
  * Represents a scoped block created by a command with braces.
  * For example: \section("Pallavi") { ... }
  *
- * Blocks inherit properties from their parent container and can override them locally.
+ * Blocks inherit properties from their parent Block and can override them locally.
  * Properties are resolved lazily by walking up the tree.
+ *
+ * Block = Command + Children (unified model)
  */
-export class Block extends Entity implements BlockContainer {
+export class Block extends Entity {
   readonly TYPE = "Block";
 
-  /** The type of block (e.g., "section", "group", "repeat") */
+  /** The type of block (e.g., "section", "repeat", "cycle") */
   readonly blockType: string;
 
   /** Optional name for the block (e.g., section name) */
   readonly name: TSU.Nullable<string>;
 
-  /** Child items in this block */
+  /** Child items (before expansion by subclasses) */
   readonly blockItems: BlockItem[] = [];
 
   // Local properties
@@ -159,30 +99,42 @@ export class Block extends Entity implements BlockContainer {
   localBreaks: TSU.Nullable<number[]> = null;
   readonly localRoles = new Map<string, RoleDef>();
 
-  // Store parent reference
-  private _parentBlock: TSU.Nullable<BlockContainer> = null;
+  // Store parent reference (Block or null for root)
+  private _parentBlock: TSU.Nullable<Block> = null;
+
+  // State tracking for command application
+  private _currRoleDef: TSU.Nullable<RoleDef> = null;
+  private _currentLine: TSU.Nullable<Line> = null;
 
   /**
    * Creates a new Block.
    * @param blockType The type of block (e.g., "section", "group")
-   * @param parent The parent container
+   * @param parent The parent block (null for root)
    * @param name Optional name for the block
    */
-  constructor(blockType: string, parent: BlockContainer, name: TSU.Nullable<string> = null) {
+  constructor(blockType: string, parent: TSU.Nullable<Block> = null, name: TSU.Nullable<string> = null) {
     super();
     this.blockType = blockType;
     this.name = name;
     this._parentBlock = parent;
     // Also set Entity's parent for tree traversal
-    if (parent && "setParent" in parent) {
-      this.setParent(parent as unknown as Entity);
+    if (parent) {
+      this.setParent(parent);
     }
   }
 
   /**
-   * Gets the parent container.
+   * Returns the expanded children for layout iteration.
+   * Subclasses can override this to transform children (e.g., Repeat, Section).
    */
-  get parentBlock(): TSU.Nullable<BlockContainer> {
+  children(): BlockItem[] {
+    return this.blockItems;
+  }
+
+  /**
+   * Gets the parent block.
+   */
+  get parentBlock(): TSU.Nullable<Block> {
     return this._parentBlock;
   }
 
@@ -232,6 +184,71 @@ export class Block extends Entity implements BlockContainer {
       return local;
     }
     return this.parentBlock?.getRole(name) ?? null;
+  }
+
+  // ============================================
+  // State tracking for command application
+  // ============================================
+
+  /**
+   * Gets the current role definition.
+   * Falls back to parent's current role or the last defined role.
+   */
+  get currRoleDef(): TSU.Nullable<RoleDef> {
+    if (this._currRoleDef !== null) {
+      return this._currRoleDef;
+    }
+    // Fall back to parent's current role
+    if (this.parentBlock) {
+      return this.parentBlock.currRoleDef;
+    }
+    // Or use the last locally defined role
+    const roles = Array.from(this.localRoles.values());
+    return roles.length > 0 ? roles[roles.length - 1] : null;
+  }
+
+  /**
+   * Sets the current role by name.
+   * If the role doesn't exist, tries to create it via the root container's onMissingRole.
+   * @param name The name of the role to activate
+   * @throws Error if the role is not found and cannot be created
+   */
+  setCurrRole(name: string): void {
+    name = name.trim().toLowerCase();
+    if (name === "") {
+      throw new Error("Role name cannot be empty");
+    }
+    let roleDef = this.getRole(name);
+    // If role not found, try auto-creation
+    if (roleDef == null) {
+      // Create the role locally in this block
+      // Default: "sw" is notes-only, others are not
+      roleDef = this.newRoleDef(name, name === "sw");
+    }
+    this._currRoleDef = roleDef;
+  }
+
+  /**
+   * Gets the current line, creating one if needed.
+   */
+  get currentLine(): Line {
+    if (this._currentLine === null) {
+      return this.newLine();
+    }
+    return this._currentLine;
+  }
+
+  /**
+   * Creates a new line in this block.
+   */
+  newLine(): Line {
+    if (this._currentLine !== null && this._currentLine.isEmpty) {
+      // Remove empty line before creating new one
+      this.removeBlockItem(this._currentLine);
+    }
+    this._currentLine = new Line();
+    this.addBlockItem(this._currentLine);
+    return this._currentLine;
   }
 
   /**
@@ -311,24 +328,131 @@ export class Block extends Entity implements BlockContainer {
 }
 
 /**
- * Type guard to check if an entity is a BlockContainer.
- */
-export function isBlockContainer(entity: Entity): entity is Entity & BlockContainer {
-  return "blockItems" in entity && "cycle" in entity;
-}
-
-/**
  * Helper function to find the containing block of an entity by walking up the tree.
  * @param entity The entity to start from
- * @returns The containing BlockContainer, or null if not found
+ * @returns The containing Block, or null if not found
  */
-export function findContainingBlock(entity: Entity): TSU.Nullable<BlockContainer> {
+export function findContainingBlock(entity: Entity): TSU.Nullable<Block> {
   let current: TSU.Nullable<Entity> = entity.parent;
   while (current !== null) {
-    if (isBlockContainer(current)) {
+    if (current instanceof Block) {
       return current;
     }
     current = current.parent;
   }
   return null;
+}
+
+// ============================================
+// Block Subclasses
+// ============================================
+
+/**
+ * A section block with a heading.
+ * Expands children to include a heading RawBlock followed by the content.
+ *
+ * Usage: \section("Pallavi") { ... }
+ */
+export class SectionBlock extends Block {
+  constructor(sectionName: string, parent: TSU.Nullable<Block> = null) {
+    super("section", parent, sectionName);
+  }
+
+  /**
+   * Expands children to include a heading RawBlock.
+   */
+  children(): BlockItem[] {
+    const heading = new RawBlock(`# ${this.name}`, "md");
+    return [heading, ...this.blockItems];
+  }
+}
+
+/**
+ * A repeat block that expands its children N times.
+ *
+ * Usage: \repeat(2) { ... }
+ */
+export class RepeatBlock extends Block {
+  /** Number of times to repeat (0 = visual markers only) */
+  readonly repeatCount: number;
+
+  constructor(repeatCount: number, parent: TSU.Nullable<Block> = null) {
+    super("repeat", parent);
+    this.repeatCount = repeatCount;
+  }
+
+  /**
+   * Expands children by repeating them N times.
+   * If count is 0, returns children as-is (visual repeat markers only).
+   */
+  children(): BlockItem[] {
+    if (this.repeatCount <= 0) {
+      return this.blockItems;
+    }
+    const expanded: BlockItem[] = [];
+    for (let i = 0; i < this.repeatCount; i++) {
+      expanded.push(...this.blockItems);
+    }
+    return expanded;
+  }
+}
+
+/**
+ * A cycle block that sets localCycle for scoped notation.
+ *
+ * Usage: \cycle("|4|4|") { ... }
+ */
+export class CycleBlock extends Block {
+  constructor(cycle: Cycle, parent: TSU.Nullable<Block> = null) {
+    super("cycle", parent);
+    this.localCycle = cycle;
+  }
+}
+
+/**
+ * A beat duration block that sets localAtomsPerBeat for scoped notation.
+ *
+ * Usage: \beatDuration(2) { ... }
+ */
+export class BeatDurationBlock extends Block {
+  constructor(atomsPerBeat: number, parent: TSU.Nullable<Block> = null) {
+    super("beatduration", parent);
+    this.localAtomsPerBeat = atomsPerBeat;
+  }
+}
+
+/**
+ * A breaks block that sets localBreaks for scoped notation.
+ *
+ * Usage: \breaks(4, 2, 2) { ... }
+ */
+export class BreaksBlock extends Block {
+  constructor(breaks: number[], parent: TSU.Nullable<Block> = null) {
+    super("breaks", parent);
+    this.localBreaks = breaks;
+  }
+}
+
+/**
+ * A role block that creates a local role definition.
+ *
+ * Usage: \role("Vocals", notes=false) { ... }
+ */
+export class RoleBlock extends Block {
+  constructor(roleName: string, notesOnly: boolean, parent: TSU.Nullable<Block> = null) {
+    super("role", parent);
+    // Create the role locally
+    this.newRoleDef(roleName, notesOnly);
+  }
+}
+
+/**
+ * A group block for organizing notation without special semantics.
+ *
+ * Usage: \group("optional-name") { ... }
+ */
+export class GroupBlock extends Block {
+  constructor(groupName: string | null, parent: TSU.Nullable<Block> = null) {
+    super("group", parent, groupName);
+  }
 }

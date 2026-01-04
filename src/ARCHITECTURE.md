@@ -14,7 +14,7 @@ Base class for all notation entities with:
 - Debug value generation
 
 Note: Child management is NOT in Entity. Each container type defines its own:
-- `BlockContainer.blockItems` for blocks/lines/raw blocks
+- `Block.blockItems` for blocks/lines/raw blocks
 - `Line.roles` for roles
 - `Group.atoms` for atoms
 
@@ -22,23 +22,32 @@ Note: Child management is NOT in Entity. Each container type defines its own:
 Block-based scoping for hierarchical notation structure:
 
 ```
-BlockContainer (interface)
-├── Notation (root implementation)
-└── Block (nested block implementation)
-    ├── blockItems: BlockItem[] (Block | Line | RawBlock)
-    ├── localCycle, localAtomsPerBeat, localBreaks, localRoles
-    └── Property inheritance via parentBlock walking
+Block (base class)
+├── blockItems: BlockItem[] (Block | Line | RawBlock)
+├── localCycle, localAtomsPerBeat, localBreaks, localRoles
+├── Property inheritance via parentBlock walking
+└── children(): BlockItem[] (for layout iteration)
+
+Block Subclasses:
+├── SectionBlock - Prepends heading RawBlock to children
+├── RepeatBlock - Returns children N times
+├── CycleBlock - Sets localCycle
+├── BeatDurationBlock - Sets localAtomsPerBeat
+├── BreaksBlock - Sets localBreaks
+├── RoleBlock - Creates local role definition
+└── GroupBlock - Organizational grouping
 ```
 
 Key types:
-- `BlockContainer` - Interface for containers with scoped properties
-- `Block` - Scoped block created by commands with braces
+- `Block` - Base block class, subclassed for specific behaviors
 - `RoleDef` - Role definition (name, notesOnly, index)
 - `RawBlock` - Non-music content (markdown, metadata)
 - `BlockItem` - Union type: Block | Line | RawBlock
 
+**Block Subclasses Pattern**: Each block type is its own subclass that directly implements the behavior via `children()`. This eliminates indirection - Block subclasses ARE commands.
+
 ### Notation Model (`notation.ts`)
-Root container implementing BlockContainer:
+Root container (will extend Block in future):
 - `blockItems` - Child blocks, lines, raw blocks
 - `localRoles` - Role definitions
 - `localCycle`, `localAtomsPerBeat`, `localBreaks` - Layout properties
@@ -68,7 +77,8 @@ Block syntax support:
 - `BlockStart -> OPEN_BRACE { beginBlock }` - Triggers block start
 
 Key classes:
-- `BlockCommand` - Wraps a command with its block of child commands
+- `BlockCommand` - Creates appropriate Block subclass based on inner command type
+- `BlockCommand.createBlock()` - Factory method that creates SectionBlock, RepeatBlock, etc.
 - Semantic actions use `blockStartStack` to track nested block boundaries
 - Commands inside blocks are collected and associated with the wrapping command
 
@@ -77,6 +87,7 @@ Commands that modify the notation:
 - `SetCycle`, `SetBeatDuration`, `SetBreaks` - Layout commands
 - `CreateLine`, `CreateRole` - Structure commands
 - `AddAtoms` - Content commands
+- `Section`, `Repeat`, `ScopedGroup` - Block-only commands (configuration)
 - Each has `applyToNotation()` and `applyToBlock()` methods
 
 ### Layout Engine
@@ -109,10 +120,12 @@ This enables:
 
 ## Design Decisions
 
-1. **BlockContainer uses `blockItems`/`parentBlock`** instead of `children`/`parent` to avoid conflicts with Entity's generic parent reference.
+1. **Block subclasses pattern** - Each block type (SectionBlock, RepeatBlock, etc.) is a subclass that directly implements behavior. No indirection through a `command` property.
 
 2. **Property inheritance is lazy** - Properties resolve at access time by walking up the tree, not eagerly copied at parse time.
 
-3. **Commands have dual apply methods** - `applyToNotation()` for backward compatibility, `applyToBlock()` for block-scoped behavior.
+3. **Commands have dual apply methods** - `applyToNotation()` for backward compatibility, `applyToBlock()` for block-scoped behavior. (Will be unified when Notation extends Block.)
 
-4. **RoleDef and RawBlock moved to block.ts** - Centralizes block-related types and avoids circular dependencies.
+4. **RoleDef and RawBlock in block.ts** - Centralizes block-related types and avoids circular dependencies.
+
+5. **Parser creates Block subclasses directly** - `BlockCommand.createBlock()` maps inner command types to appropriate Block subclasses.

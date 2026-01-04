@@ -78,15 +78,26 @@
 
 ## Immediate TODOs
 
-### Block-Based DSL (Phase 2) - In Progress
+### Block-Based DSL (Phase 2) - Complete
 - [x] Update grammar with block rules in parser.ts
   - Added grammar rules for `\command(...) { ... }` syntax
   - BlockCommand class wraps commands with block content
   - Semantic actions: beginBlock, endBlock, nullBlock, newCommandWithBlock
   - 5 new block syntax tests added and passing
-- [ ] Update existing commands for block support
-- [ ] Add new block commands: \section(), \group(), \repeat()
-- [ ] Update GlobalBeatLayout for recursive block processing
+- [x] Update existing commands for block support
+  - All commands have applyToBlock() methods
+- [x] Add new block commands: \section(), \group(), \repeat()
+  - Section, ScopedGroup, Repeat command classes added
+- [x] Block subclasses pattern implemented:
+  - SectionBlock, RepeatBlock, CycleBlock, BeatDurationBlock, BreaksBlock, RoleBlock, GroupBlock
+  - Each subclass overrides children() for specific behavior
+  - Parser's BlockCommand.createBlock() creates appropriate subclass
+  - No command property indirection - subclasses ARE commands
+
+### Block-Based DSL (Phase 3) - In Progress
+- [ ] Make Notation extend Block (Notation is root Block)
+- [ ] Consolidate applyToNotation into applyToBlock
+- [ ] Update GlobalBeatLayout to use block.children() for recursive processing
 - [ ] Update NotationView for block rendering
 - [ ] Update notation/web components
 

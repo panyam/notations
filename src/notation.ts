@@ -6,13 +6,18 @@ import { LayoutParams } from "./layouts";
 import {
   RoleDef,
   RawBlock,
-  BlockContainer,
   BlockItem,
   Block,
+  SectionBlock,
+  RepeatBlock,
+  CycleBlock,
+  BeatDurationBlock,
+  BreaksBlock,
+  RoleBlock,
+  GroupBlock,
   isBlock,
   isLine,
   isRawBlock,
-  isBlockContainer,
   findContainingBlock,
 } from "./block";
 
@@ -20,13 +25,18 @@ import {
 export {
   RoleDef,
   RawBlock,
-  BlockContainer,
   BlockItem,
   Block,
+  SectionBlock,
+  RepeatBlock,
+  CycleBlock,
+  BeatDurationBlock,
+  BreaksBlock,
+  RoleBlock,
+  GroupBlock,
   isBlock,
   isLine,
   isRawBlock,
-  isBlockContainer,
   findContainingBlock,
 };
 
@@ -118,12 +128,12 @@ export abstract class Command extends Entity {
   abstract applyToNotation(notebook: Notation): void;
 
   /**
-   * Applies this command to a block container.
+   * Applies this command to a block.
    * By default, delegates to applyToNotation for backward compatibility.
    * Subclasses can override for block-specific behavior.
-   * @param container The block container to apply this command to
+   * @param container The block to apply this command to
    */
-  applyToBlock(container: BlockContainer): void {
+  applyToBlock(container: Block): void {
     if (container instanceof Notation) {
       this.applyToNotation(container);
     }
@@ -152,17 +162,20 @@ export class MetaData {
 
 /**
  * The main class representing a complete notation.
- * Notation implements BlockContainer as the root of the block hierarchy.
+ * Notation is the root Block of the notation hierarchy.
  * It contains all the elements, settings, and layout information for a piece of music.
+ *
+ * TODO: Make Notation extend Block for full unification.
+ * For now, it duplicates Block's interface to maintain compatibility.
  */
-export class Notation extends Entity implements BlockContainer {
+export class Notation extends Entity {
   readonly TYPE = "Notation";
   private _unnamedLayoutParams: LayoutParams[] = [];
   private _namedLayoutParams = new Map<string, LayoutParams>();
   private _currRoleDef: TSU.Nullable<RoleDef> = null;
 
   // ============================================
-  // BlockContainer implementation
+  // Block-like properties (TODO: extend Block)
   // ============================================
 
   /** Child items (blocks, lines, raw blocks) */
@@ -183,7 +196,7 @@ export class Notation extends Entity implements BlockContainer {
   /**
    * Notation is always the root, so parentBlock is always null.
    */
-  get parentBlock(): TSU.Nullable<BlockContainer> {
+  get parentBlock(): TSU.Nullable<Block> {
     return null;
   }
 

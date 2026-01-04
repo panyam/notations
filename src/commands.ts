@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Atom } from "./core";
 import { parseCycle } from "./utils";
-import { Command, RawBlock, Notation, MetaData as Meta } from "./notation";
+import { Command, RawBlock, Notation, MetaData as Meta, BlockItem, Block } from "./notation";
 
 /**
  * Command for embedding raw content in the notation.
@@ -22,6 +22,15 @@ export class RawEmbedding extends Command {
   applyToNotation(notation: Notation): void {
     const raw = new RawBlock(this.rawContents);
     notation.addRawBlock(raw);
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Adds a raw block to the container.
+   */
+  applyToBlock(container: Block): void {
+    const raw = new RawBlock(this.rawContents);
+    container.addBlockItem(raw);
   }
 }
 
@@ -73,6 +82,14 @@ export class ActivateRole extends Command {
     // Create the role - ensure that we have a role
     notation.setCurrRole(this.roleName);
     // const line = notation.ensureLine();
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Sets the current role in the container.
+   */
+  applyToBlock(container: Block): void {
+    container.setCurrRole(this.roleName);
   }
 
   /**
@@ -138,6 +155,22 @@ export class AddAtoms extends Command {
     const finalised = this.atoms;
     notation.currentLine.addAtoms(roleDef.name, roleDef.notesOnly, ...finalised);
   }
+
+  /**
+   * Applies this command to a block container.
+   * Adds atoms to the current line in the container.
+   */
+  applyToBlock(container: Block): void {
+    let roleDef = container.currRoleDef;
+    if (roleDef == null) {
+      // By default create a role for swaras
+      roleDef = container.newRoleDef("Sw", true);
+    }
+    // Get or create the current line
+    const line = container.currentLine;
+    // Add atoms to the line
+    line.addAtoms(roleDef.name, roleDef.notesOnly, ...this.atoms);
+  }
 }
 
 /**
@@ -153,6 +186,16 @@ export class CreateLine extends Command {
     // a series of \line commands creating wasteful empty lines
     // TODO - how do we consider offsets in line create
     const line = notation.newLine();
+    line.offset = this.offset;
+    line.marginText = this.marginText;
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Creates a new line in the container.
+   */
+  applyToBlock(container: Block): void {
+    const line = container.newLine();
     line.offset = this.offset;
     line.marginText = this.marginText;
   }
@@ -191,6 +234,15 @@ export class CreateRole extends Command {
     // Create the role
     const name = this.getParamAt(0);
     notation.newRoleDef(name, this.notesOnly);
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Creates a role definition local to the container.
+   */
+  applyToBlock(container: Block): void {
+    const name = this.getParamAt(0);
+    container.newRoleDef(name, this.notesOnly);
   }
 
   /**
@@ -317,6 +369,14 @@ export class SetBreaks extends LayoutParamCommand {
     notation.currentBreaks = this.pattern;
     notation.resetLayoutParams();
   }
+
+  /**
+   * Applies this command to a block container.
+   * Sets the local breaks on the container.
+   */
+  applyToBlock(container: Block): void {
+    container.localBreaks = this.pattern;
+  }
 }
 
 /**
@@ -333,6 +393,16 @@ export class SetCycle extends LayoutParamCommand {
     const cycle = parseCycle(value);
     notation.currentCycle = cycle;
     notation.resetLayoutParams();
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Sets the local cycle on the container.
+   */
+  applyToBlock(container: Block): void {
+    const value = this.params[0].value;
+    const cycle = parseCycle(value);
+    container.localCycle = cycle;
   }
 }
 
@@ -364,5 +434,135 @@ export class SetBeatDuration extends LayoutParamCommand {
   applyToNotation(notation: Notation): void {
     notation.currentAPB = this.beatDuration;
     notation.resetLayoutParams();
+  }
+
+  /**
+   * Applies this command to a block container.
+   * Sets the local atoms per beat on the container.
+   */
+  applyToBlock(container: Block): void {
+    container.localAtomsPerBeat = this.beatDuration;
+  }
+}
+
+/**
+ * Command for creating a named section in the notation.
+ * Sections are organizational blocks with a name that can be displayed as headers.
+ *
+ * Usage: \section("Pallavi") { ... }
+ */
+export class Section extends Command {
+  /**
+   * Gets the name of the section.
+   */
+  get sectionName(): string {
+    return this.getParamAt(0) || "";
+  }
+
+  /**
+   * Validates the parameters for this command.
+   * @throws Error if parameters are invalid
+   */
+  validateParams(): void {
+    if (this.params.length < 1 || typeof this.params[0].value !== "string") {
+      throw new Error("section command must contain a string name");
+    }
+  }
+
+  /**
+   * Applies this command to a notation.
+   * This is a no-op as sections require blocks.
+   */
+  applyToNotation(_notation: Notation): void {
+    // No-op: sections only make sense with block syntax
+    // The BlockCommand wrapper handles block creation
+  }
+
+  /**
+   * Applies this command to a block container.
+   * No-op: SectionBlock handles the section behavior.
+   */
+  applyToBlock(_container: Block): void {
+    // SectionBlock handles section semantics
+  }
+}
+
+/**
+ * Command for creating a grouping/scope block without specific semantics.
+ * Groups are useful for visually organizing notation or applying shared properties.
+ *
+ * Usage: \group("optional-name") { ... }
+ */
+export class ScopedGroup extends Command {
+  /**
+   * Gets the optional name of the group.
+   */
+  get groupName(): string {
+    return this.getParamAt(0) || "";
+  }
+
+  /**
+   * Applies this command to a notation.
+   * This is a no-op as groups require blocks.
+   */
+  applyToNotation(_notation: Notation): void {
+    // No-op: groups only make sense with block syntax
+  }
+
+  /**
+   * Applies this command to a block container.
+   * No additional properties to set for basic groups.
+   */
+  applyToBlock(_container: Block): void {
+    // No additional properties
+  }
+}
+
+/**
+ * Command for creating a repeated section in the notation.
+ * Repeats can specify a count for how many times the content should repeat.
+ *
+ * Usage: \repeat(2) { ... } or \repeat() { ... } for visual repeat markers
+ */
+export class Repeat extends Command {
+  /**
+   * Gets the number of times to repeat.
+   * Returns 0 if not specified (meaning visual repeat markers only).
+   */
+  get count(): number {
+    const count = this.getParamAt(0);
+    if (typeof count === "number") {
+      return count;
+    }
+    return 0;
+  }
+
+  /**
+   * Validates the parameters for this command.
+   * @throws Error if parameters are invalid
+   */
+  validateParams(): void {
+    if (this.params.length > 0) {
+      const count = this.params[0].value;
+      if (typeof count !== "number" || count < 0) {
+        throw new Error("repeat command count must be a non-negative number");
+      }
+    }
+  }
+
+  /**
+   * Applies this command to a notation.
+   * This is a no-op as repeats require blocks.
+   */
+  applyToNotation(_notation: Notation): void {
+    // No-op: repeats only make sense with block syntax
+  }
+
+  /**
+   * Applies this command to a block container.
+   * No-op: RepeatBlock handles the repeat behavior.
+   */
+  applyToBlock(_container: Block): void {
+    // RepeatBlock handles repeat semantics
   }
 }

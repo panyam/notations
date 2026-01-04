@@ -14,6 +14,9 @@ import {
   ActivateRole,
   CreateRole,
   CreateLine,
+  Section,
+  ScopedGroup,
+  Repeat,
 } from "./commands";
 
 // TODO - Make this plugable from the client instead of hard coded
@@ -262,11 +265,21 @@ const [parser /*itemGraph*/] = G.newParser(
  * Since our document (md or html etc) can contain multiple snippets
  * all these snippets are related
  */
-import { Block, BlockContainer } from "./block";
+import {
+  Block,
+  SectionBlock,
+  RepeatBlock,
+  CycleBlock,
+  BeatDurationBlock,
+  BreaksBlock,
+  RoleBlock,
+  GroupBlock,
+} from "./block";
+import { parseCycle } from "./utils";
 
 /**
  * Wrapper for a command that has a block of child commands.
- * When applied, it creates a Block and applies child commands to it.
+ * When applied, it creates the appropriate Block subclass and applies child commands to it.
  */
 export class BlockCommand extends Command {
   readonly innerCommand: Command;
@@ -282,6 +295,34 @@ export class BlockCommand extends Command {
     return `Block(${this.innerCommand.name})`;
   }
 
+  /**
+   * Creates the appropriate Block subclass based on the inner command type.
+   */
+  private createBlock(parent: Block): Block {
+    const cmd = this.innerCommand;
+
+    if (cmd instanceof Section) {
+      return new SectionBlock(cmd.sectionName, parent);
+    } else if (cmd instanceof Repeat) {
+      return new RepeatBlock(cmd.count, parent);
+    } else if (cmd instanceof SetCycle) {
+      const cycle = parseCycle(cmd.getParamAt(0));
+      return new CycleBlock(cycle, parent);
+    } else if (cmd instanceof SetBeatDuration) {
+      return new BeatDurationBlock(cmd.beatDuration, parent);
+    } else if (cmd instanceof SetBreaks) {
+      return new BreaksBlock(cmd.pattern, parent);
+    } else if (cmd instanceof CreateRole) {
+      const roleName = cmd.getParamAt(0);
+      return new RoleBlock(roleName, cmd.notesOnly, parent);
+    } else if (cmd instanceof ScopedGroup) {
+      return new GroupBlock(cmd.groupName || null, parent);
+    } else {
+      // Generic block for other commands
+      return new Block(cmd.name.toLowerCase(), parent);
+    }
+  }
+
   debugValue(): any {
     return {
       name: this.name,
@@ -292,11 +333,9 @@ export class BlockCommand extends Command {
   }
 
   applyToNotation(notation: Notation): void {
-    // Create a new block
-    const block = new Block(this.innerCommand.name.toLowerCase(), notation);
-
-    // Apply the inner command to set block properties
-    this.innerCommand.applyToBlock(block);
+    // Create the appropriate Block subclass
+    // Cast notation as Block since Notation will extend Block
+    const block = this.createBlock(notation as unknown as Block);
 
     // Apply all child commands to the block
     for (const cmd of this.blockCommands) {
@@ -307,12 +346,9 @@ export class BlockCommand extends Command {
     notation.addBlockItem(block);
   }
 
-  applyToBlock(container: BlockContainer): void {
-    // Create a nested block
-    const block = new Block(this.innerCommand.name.toLowerCase(), container);
-
-    // Apply the inner command to set block properties
-    this.innerCommand.applyToBlock(block);
+  applyToBlock(container: Block): void {
+    // Create the appropriate Block subclass
+    const block = this.createBlock(container);
 
     // Apply all child commands to the block
     for (const cmd of this.blockCommands) {
@@ -549,6 +585,12 @@ export class Parser {
       return new SetBreaks(params);
     } else if (lName == "cycle") {
       return new SetCycle(params);
+    } else if (lName == "section") {
+      return new Section(params);
+    } else if (lName == "group") {
+      return new ScopedGroup(params);
+    } else if (lName == "repeat") {
+      return new Repeat(params);
     } else {
       // Try to set this as the current role
       throw new Error("Invalid command: " + lName);

@@ -5,6 +5,7 @@ import * as TSU from "@panyam/tsutils";
 import { Line } from "../core";
 import { Parser } from "../parser";
 import { RawBlock, Command, Notation, MetaData } from "../notation";
+import { Block, isBlock, isLine } from "../block";
 
 function fromCommands(cmds: Command[], out: Notation | null = null): Notation {
   if (!out) out = new Notation();
@@ -472,5 +473,111 @@ describe("Testing Applying Commands after Parsing", () => {
         },
       ],
     });
+  });
+});
+
+describe("Block Command Application Tests", () => {
+  test("Block with cycle sets localCycle", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|4|4|") {
+          Sw: S R G M
+        }
+      `,
+    );
+    // Should have one block at top level
+    expect(notation.blocks.length).toBe(1);
+    const block = notation.blocks[0];
+    expect(isBlock(block)).toBe(true);
+    if (isBlock(block)) {
+      // Block should have localCycle set
+      expect(block.localCycle).not.toBeNull();
+      expect(block.localCycle?.beatCount).toBe(8); // |4|4| has 8 beats (4+4)
+      // Block should contain a line with atoms
+      expect(block.blockItems.length).toBe(1);
+      expect(isLine(block.blockItems[0])).toBe(true);
+      const line = block.blockItems[0] as Line;
+      expect(line.roles.length).toBe(1);
+      expect(line.roles[0].atoms.length).toBe(4); // S R G M
+    }
+  });
+
+  test("Block with beatDuration sets localAtomsPerBeat", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \beatDuration(4) {
+          Sw: A B
+        }
+      `,
+    );
+    expect(notation.blocks.length).toBe(1);
+    const block = notation.blocks[0];
+    expect(isBlock(block)).toBe(true);
+    if (isBlock(block)) {
+      expect(block.localAtomsPerBeat).toBe(4);
+      expect(block.atomsPerBeat).toBe(4); // Should inherit correctly
+    }
+  });
+
+  test("Block with role creates local role", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|8|") {
+          \role("Vocals", notes = false)
+          Vocals: sa ri ga ma
+        }
+      `,
+    );
+    expect(notation.blocks.length).toBe(1);
+    const block = notation.blocks[0];
+    expect(isBlock(block)).toBe(true);
+    if (isBlock(block)) {
+      // Role should be in block's localRoles
+      expect(block.localRoles.has("vocals")).toBe(true);
+      expect(block.localRoles.get("vocals")?.notesOnly).toBe(false);
+      // But NOT in notation's localRoles
+      expect(notation.localRoles.has("vocals")).toBe(false);
+    }
+  });
+
+  test("Nested blocks inherit properties", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|8|") {
+          \beatDuration(2) {
+            Sw: A B
+          }
+        }
+      `,
+    );
+    expect(notation.blocks.length).toBe(1);
+    const outerBlock = notation.blocks[0];
+    expect(isBlock(outerBlock)).toBe(true);
+    if (isBlock(outerBlock)) {
+      expect(outerBlock.localCycle).not.toBeNull();
+      // Inner block should be nested
+      expect(outerBlock.blockItems.length).toBe(1);
+      const innerBlock = outerBlock.blockItems[0];
+      expect(isBlock(innerBlock)).toBe(true);
+      if (isBlock(innerBlock)) {
+        expect(innerBlock.localAtomsPerBeat).toBe(2);
+        // Inner block should inherit cycle from outer
+        expect(innerBlock.cycle).toBe(outerBlock.localCycle);
+      }
+    }
+  });
+
+  test("Command without block applies to notation directly", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|4|")
+        Sw: S R
+      `,
+    );
+    // Cycle should be set on notation, not in a block
+    expect(notation.currentCycle?.beatCount).toBe(4); // |4| has 4 beats
+    // Line should be directly in notation's blocks (not wrapped in a Block)
+    expect(notation.blocks.length).toBe(1);
+    expect(isLine(notation.blocks[0])).toBe(true);
   });
 });
