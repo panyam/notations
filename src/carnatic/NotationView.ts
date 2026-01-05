@@ -2,9 +2,25 @@ import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock, Block, BlockItem, isLine, isBlock, isRawBlock } from "../notation";
 import { Beat, GlobalBeatLayout } from "../beats";
-import { GridCell, GridCellView } from "../grids";
+import { GridCell, GridCellView, GridLayoutGroup, LayoutChangeEvent } from "../grids";
 import { Line } from "../core";
 import { BeatView, MarkerView } from "./beatviews";
+
+/**
+ * Configuration options for NotationView.
+ */
+export interface NotationViewConfig {
+  /**
+   * Optional shared GridLayoutGroup for column alignment across multiple NotationViews.
+   * When provided, this view will share column widths with other views using the same group.
+   */
+  sharedGridLayoutGroup?: GridLayoutGroup;
+
+  /**
+   * Optional markdown parser for RawBlock content.
+   */
+  markdownParser?: (contents: string) => string;
+}
 
 export class NotationView {
   headerElement: HTMLDivElement;
@@ -16,11 +32,17 @@ export class NotationView {
   markdownParser: (contents: string) => string;
   _beatLayout: GlobalBeatLayout;
 
+  /** Unsubscribe function for layout change listener */
+  private layoutChangeUnsubscribe: (() => void) | null = null;
+
   constructor(
     public readonly rootElement: HTMLElement,
-    public readonly config?: any,
+    public readonly config?: NotationViewConfig,
   ) {
     this.loadChildViews();
+    if (config?.markdownParser) {
+      this.markdownParser = config.markdownParser;
+    }
   }
 
   get beatLayout(): GlobalBeatLayout {

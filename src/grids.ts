@@ -2,6 +2,28 @@ import * as TSU from "@panyam/tsutils";
 // import * as kiwi from "@lume/kiwi";
 
 /**
+ * Event emitted when layout changes occur in a GridLayoutGroup.
+ * Subscribers can use this to update their views incrementally.
+ */
+export interface LayoutChangeEvent {
+  /** The range of rows affected by the change */
+  affectedRowRange: { start: number; end: number } | null;
+  /** The range of columns affected by the change */
+  affectedColRange: { start: number; end: number } | null;
+  /** Whether column widths changed (requires horizontal re-layout) */
+  columnWidthsChanged: boolean;
+  /** Whether row heights changed (requires vertical re-layout) */
+  rowHeightsChanged: boolean;
+  /** The grid models that were affected */
+  affectedGridModels: GridModel[];
+}
+
+/**
+ * Callback type for layout change subscribers.
+ */
+export type LayoutChangeCallback = (event: LayoutChangeEvent) => void;
+
+/**
  * A generic grid layout system for hosting child views (similar to GridBagLayout).
  * This provides a framework for hosting BeatViews in a structured grid arrangement,
  * with support for rows, columns, and alignment.
@@ -740,6 +762,42 @@ export class GridLayoutGroup {
   /** The grid models managed by this layout group */
   gridModels = [] as GridModel[];
 
+  /** Subscribers to layout change events */
+  private layoutChangeSubscribers = new Set<LayoutChangeCallback>();
+
+  /**
+   * Subscribes to layout change events.
+   * @param callback Function to call when layout changes
+   * @returns Unsubscribe function
+   */
+  onLayoutChange(callback: LayoutChangeCallback): () => void {
+    this.layoutChangeSubscribers.add(callback);
+    return () => {
+      this.layoutChangeSubscribers.delete(callback);
+    };
+  }
+
+  /**
+   * Notifies all subscribers of a layout change.
+   * @param event The layout change event
+   */
+  protected notifyLayoutChange(event: LayoutChangeEvent): void {
+    for (const callback of this.layoutChangeSubscribers) {
+      try {
+        callback(event);
+      } catch (e) {
+        console.error("Error in layout change callback:", e);
+      }
+    }
+  }
+
+  /**
+   * Gets the number of layout change subscribers.
+   */
+  get subscriberCount(): number {
+    return this.layoutChangeSubscribers.size;
+  }
+
   /**
    * Event handler for processing events from grid models.
    */
@@ -824,8 +882,9 @@ export class GridLayoutGroup {
   /**
    * Forces a full refresh of the layout.
    * This recalculates all row and column sizes and positions.
+   * @param notify Whether to notify subscribers of the change (default: true)
    */
-  refreshLayout() {
+  refreshLayout(notify = true): void {
     const changedRowAligns = {} as any;
     const changedColAligns = {} as any;
 
@@ -849,35 +908,107 @@ export class GridLayoutGroup {
 
     this.doBfsLayout(this.startingRows, changedRowAligns);
     this.doBfsLayout(this.startingCols, changedColAligns);
+
+    // Notify subscribers of full refresh
+    if (notify && this.layoutChangeSubscribers.size > 0) {
+      this.notifyLayoutChange({
+        affectedRowRange: null, // null means all rows
+        affectedColRange: null, // null means all columns
+        columnWidthsChanged: true,
+        rowHeightsChanged: true,
+        affectedGridModels: this.gridModels,
+      });
+    }
   }
 
   /**
    * Applies model events to update the layout.
    * @param events The events to process
    */
-  protected applyModelEvents(events: TSU.Events.TEvent[]) {
+  protected applyModelEvents(events: TSU.Events.TEvent[]): void {
     // As the grid model changes (cell content changed, cleared etc) we need
     // to refresh our layout based on this.
     // As a first step the new height and width of all changed cells is
     // evaluted to see which rows and/or columns are affected (and need to be
     // resized/repositioned).
-    const [changedRowAligns, changedColAligns] = this.changesForEvents(events);
+    const [changedRowAligns, changedColAligns, affectedGridModels] = this.changesForEvents(events);
+    const hadRowChanges = Object.keys(changedRowAligns).length > 0;
+    const hadColChanges = Object.keys(changedColAligns).length > 0;
+
     this.doBfsLayout(this.startingRows, changedRowAligns);
     this.doBfsLayout(this.startingCols, changedColAligns);
+
+    // Notify subscribers of incremental changes
+    if (this.layoutChangeSubscribers.size > 0 && (hadRowChanges || hadColChanges)) {
+      // Calculate affected ranges from the changed alignments
+      const affectedRowRange = this.calculateAffectedRowRange(changedRowAligns);
+      const affectedColRange = this.calculateAffectedColRange(changedColAligns);
+
+      this.notifyLayoutChange({
+        affectedRowRange,
+        affectedColRange,
+        columnWidthsChanged: hadColChanges,
+        rowHeightsChanged: hadRowChanges,
+        affectedGridModels: affectedGridModels,
+      });
+    }
+  }
+
+  /**
+   * Calculates the range of affected rows from changed row alignments.
+   * Returns null if no rows changed or range cannot be determined.
+   */
+  protected calculateAffectedRowRange(changedRowAligns: any): { start: number; end: number } | null {
+    let minRow = Infinity;
+    let maxRow = -Infinity;
+
+    for (const alignId in changedRowAligns) {
+      const { cells } = changedRowAligns[alignId];
+      for (const cell of cells) {
+        const rowIndex = cell.gridRow.rowIndex;
+        minRow = Math.min(minRow, rowIndex);
+        maxRow = Math.max(maxRow, rowIndex);
+      }
+    }
+
+    if (minRow === Infinity) return null;
+    return { start: minRow, end: maxRow };
+  }
+
+  /**
+   * Calculates the range of affected columns from changed column alignments.
+   * Returns null if no columns changed or range cannot be determined.
+   */
+  protected calculateAffectedColRange(changedColAligns: any): { start: number; end: number } | null {
+    let minCol = Infinity;
+    let maxCol = -Infinity;
+
+    for (const alignId in changedColAligns) {
+      const { cells } = changedColAligns[alignId];
+      for (const cell of cells) {
+        const colIndex = cell.colIndex;
+        minCol = Math.min(minCol, colIndex);
+        maxCol = Math.max(maxCol, colIndex);
+      }
+    }
+
+    if (minCol === Infinity) return null;
+    return { start: minCol, end: maxCol };
   }
 
   /**
    * Determines which rows and columns need to be updated based on events.
    * @param events The events to process
-   * @returns A tuple containing the changed row and column alignments
+   * @returns A tuple containing the changed row alignments, column alignments, and affected grid models
    */
-  protected changesForEvents(events: TSU.Events.TEvent[]): [any, any] {
+  protected changesForEvents(events: TSU.Events.TEvent[]): [any, any, GridModel[]] {
     // Step 1 - topologically sort RowAligns of changed cells
     // Step 2 - topologically sort ColAligns of changed cells
     // Step 3 -
     const cellVisited = {} as any;
     const changedRowAligns = {} as any;
     const changedColAligns = {} as any;
+    const affectedGridModelsSet = new Set<GridModel>();
     // Going in reverse means we only get the latest event affecting a cell
     // instead of going through every change.
     // Later on we can revisit this if the events are edge triggered instead
@@ -888,7 +1019,8 @@ export class GridLayoutGroup {
       if (cellVisited[loc]) continue;
       cellVisited[loc] = true;
       const [row, col] = loc.split(":").map((x: string) => parseInt(x));
-      const gridModel = event.source;
+      const gridModel = event.source as GridModel;
+      affectedGridModelsSet.add(gridModel);
       const cell = gridModel.getRow(row).cellAt(col);
       if (cell) {
         // TODO - For now we are marking both row and col as having
@@ -911,7 +1043,7 @@ export class GridLayoutGroup {
         changedColAligns[cell.colAlign.uuid]["cells"].push(cell);
       }
     }
-    return [changedRowAligns, changedColAligns];
+    return [changedRowAligns, changedColAligns, Array.from(affectedGridModelsSet)];
   }
 
   /**

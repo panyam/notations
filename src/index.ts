@@ -3,6 +3,7 @@ export * from "./cycle";
 export * from "./core";
 export * from "./iterators";
 export * from "./layouts";
+export * from "./grids";
 export * from "./beats";
 export * from "./notation";
 export * from "./parser";

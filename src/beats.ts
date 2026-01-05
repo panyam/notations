@@ -430,7 +430,16 @@ export class GlobalBeatLayout {
   /** Map of layout parameter IDs to beat column DAGs */
   beatColDAGsByLP = new Map<LPID, BeatColDAG>();
   /** The global layout group for all grid models */
-  readonly gridLayoutGroup = new GridLayoutGroup();
+  readonly gridLayoutGroup: GridLayoutGroup;
+
+  /**
+   * Creates a new GlobalBeatLayout.
+   * @param sharedGridLayoutGroup Optional shared GridLayoutGroup for column alignment across multiple views.
+   *                               If not provided, a new GridLayoutGroup is created internally.
+   */
+  constructor(sharedGridLayoutGroup?: GridLayoutGroup) {
+    this.gridLayoutGroup = sharedGridLayoutGroup ?? new GridLayoutGroup();
+  }
 
   /**
    * Gets the GridModel associated with a particular line, creating one if it doesn't exist.
