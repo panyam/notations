@@ -182,8 +182,12 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
 - [ ] Add search functionality across documentation
 
 ### Technical Improvements
-- [ ] Optimize webpack bundle size (currently ~580 KB)
-  - Consider code splitting
+- [x] Optimize webpack bundle size (464 KB → 261 KB, 44% reduction)
+  - Replaced `gray-matter` with `yaml` package (removed esprima dependency)
+  - Added `webpack-bundle-analyzer` for future analysis (`--env analyze`)
+  - Remaining size from: galore+tlex (~220 KB), @panyam/tsutils (~30 KB)
+- [ ] Further bundle optimization
+  - Consider code splitting for parser
   - Lazy load notation parser
 - [ ] Fix s3gen static folder auto-copy issue
 - [ ] Add automated testing for notation examples

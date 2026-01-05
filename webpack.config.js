@@ -1,8 +1,21 @@
 const path = require("path");
 const webpack = require("webpack");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === "production";
+  const analyze = env && env.analyze;
+
+  const plugins = [
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"],
+    }),
+  ];
+
+  if (analyze) {
+    plugins.push(new BundleAnalyzerPlugin());
+  }
+
   return {
     devtool: isProd ? "source-map" : "inline-source-map",
     entry: {
@@ -24,11 +37,7 @@ module.exports = (env, argv) => {
         buffer: require.resolve("buffer"),
       },
     },
-    plugins: [
-      new webpack.ProvidePlugin({
-        Buffer: ["buffer", "Buffer"],
-      }),
-    ],
+    plugins,
     module: {
       rules: [{ test: /\.t|js$/, use: "babel-loader" }],
     },

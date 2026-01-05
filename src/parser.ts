@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import matter from "gray-matter";
+import YAML from "yaml";
 import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group, Marker } from "./core";
 import { Notation, MetaData as Meta, Command, CmdParam } from "./notation";
 import {
@@ -526,7 +526,7 @@ export class Parser {
       const fm = children[0].value;
       // console.log("Child 0: ", fm);
       // console.log("Child 1: ", children[1].value);
-      const { data } = matter("---\n" + fm + "\n---");
+      const data = YAML.parse(fm);
       console.log("Parsed FM: ", data);
       this.metadata = data;
       return children[1].value;

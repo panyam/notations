@@ -134,3 +134,19 @@ This enables:
 6. **Parser creates Block subclasses directly** - `BlockCommand.createBlock()` maps inner command types to appropriate Block subclasses.
 
 7. **Layout engine uses processBlock** - `GlobalBeatLayout.processBlock()` recursively processes blocks using `children()`, enabling nested structures like `\repeat { }` to be properly expanded.
+
+## Build & Bundle
+
+### Dependencies
+- **galore** + **tlex** - Parser generator and lexer (~220 KB bundled)
+- **@panyam/tsutils** - Utility library (~30 KB bundled)
+- **yaml** - YAML front-matter parsing (~50 KB bundled, replaced heavier gray-matter)
+- **@lume/kiwi** - Constraint solver for layouts
+
+### Bundle Analysis
+Run `webpack --mode=production --env analyze` to open interactive bundle visualization.
+
+The UMD bundle (`dist/notations.umd.min.js`) is ~261 KB minified. Main contributors:
+- Parser infrastructure (galore, tlex): ~220 KB
+- yaml package: ~50 KB
+- Library code: ~15-20 KB

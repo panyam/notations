@@ -16,7 +16,9 @@ module.exports = {
     "<rootDir>/tests/mocks.ts",
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-  // moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths /*, { prefix: '<rootDir>/' } */),
+  moduleNameMapper: {
+    "^yaml$": "<rootDir>/node_modules/yaml/dist/index.js",
+  },
   transform: {
     "^.+\\.jsx?$": "babel-jest", // Adding this line solved the issue
     "^.+\\.(ts|tsx)?$": "ts-jest",
