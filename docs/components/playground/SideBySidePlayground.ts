@@ -16,6 +16,7 @@ import "../../../styles/NotationView.scss";
 (window as any).N = N;
 
 const LAYOUT_STORAGE_KEY = "notations-playground-layout";
+const LAYOUT_VERSION = 3; // Increment to force layout reset on structure changes
 
 // Sample notations for the dropdown
 interface SampleNotation {
@@ -138,7 +139,8 @@ export class SideBySidePlayground {
     if (!this.dockview) return;
     try {
       const layout = this.dockview.toJSON();
-      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+      const data = { version: LAYOUT_VERSION, layout };
+      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
       console.warn("Failed to save layout:", e);
     }
@@ -149,8 +151,13 @@ export class SideBySidePlayground {
     try {
       const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
       if (saved) {
-        const layout = JSON.parse(saved);
-        this.dockview.fromJSON(layout);
+        const data = JSON.parse(saved);
+        // Check version - if outdated, reset to defaults
+        if (data.version !== LAYOUT_VERSION) {
+          localStorage.removeItem(LAYOUT_STORAGE_KEY);
+          return false;
+        }
+        this.dockview.fromJSON(data.layout);
         return true;
       }
     } catch (e) {
@@ -158,6 +165,13 @@ export class SideBySidePlayground {
       localStorage.removeItem(LAYOUT_STORAGE_KEY);
     }
     return false;
+  }
+
+  private resetLayout(): void {
+    // Clear saved layout
+    localStorage.removeItem(LAYOUT_STORAGE_KEY);
+    // Reload the page to reinitialize with default layout
+    window.location.reload();
   }
 
   private createComponent(options: any): IContentRenderer {
@@ -179,14 +193,28 @@ export class SideBySidePlayground {
   private createDefaultLayout(): void {
     if (!this.dockview) return;
 
-    // Editor panel (left, 50%)
+    // Get container dimensions for proportional sizing
+    const container = document.getElementById("dockview-container");
+    const containerHeight = container?.clientHeight || 600;
+    const containerWidth = container?.clientWidth || 800;
+
+    // Editor panel (top left)
     this.dockview.addPanel({
       id: "editor",
       component: "editor",
       title: "Editor",
     });
 
-    // Output panel (right, 50%)
+    // Console panel (bottom, full width) - add BEFORE output
+    // so it creates a vertical split at the root level
+    this.dockview.addPanel({
+      id: "console",
+      component: "console",
+      title: "Console",
+      position: { direction: "below", referencePanel: "editor" },
+    });
+
+    // Output panel (top right) - splits the top row
     this.dockview.addPanel({
       id: "output",
       component: "output",
@@ -194,13 +222,24 @@ export class SideBySidePlayground {
       position: { direction: "right", referencePanel: "editor" },
     });
 
-    // Console panel (bottom)
-    this.dockview.addPanel({
-      id: "console",
-      component: "console",
-      title: "Console",
-      position: { direction: "below", referencePanel: "output" },
-    });
+    // Set sizes using the group API
+    // Console should be 20% height, so editor row gets 80%
+    const editorPanel = this.dockview.getPanel("editor");
+    const consolePanel = this.dockview.getPanel("console");
+    const outputPanel = this.dockview.getPanel("output");
+
+    // Set console height to 20% of container
+    if (consolePanel?.group?.api) {
+      consolePanel.group.api.setSize({ height: Math.floor(containerHeight * 0.1) });
+    }
+
+    // Set editor and output to 50% width each
+    if (editorPanel?.group?.api) {
+      editorPanel.group.api.setSize({ width: Math.floor(containerWidth * 0.5) });
+    }
+    if (outputPanel?.group?.api) {
+      outputPanel.group.api.setSize({ width: Math.floor(containerWidth * 0.5) });
+    }
   }
 
   private createEditorPanel(): IContentRenderer {
@@ -229,6 +268,10 @@ export class SideBySidePlayground {
         // Setup render button
         const renderBtn = element.querySelector("#render-btn");
         renderBtn?.addEventListener("click", () => this.render());
+
+        // Setup reset layout button
+        const resetLayoutBtn = element.querySelector("#reset-layout-btn");
+        resetLayoutBtn?.addEventListener("click", () => this.resetLayout());
 
         // Create SideBySideEditor config
         const config: SideBySideEditorConfig = {

@@ -20,6 +20,7 @@ bodyClass: "playground-page"
                 <option value="basic-scale">Basic Scale</option>
             </select>
             <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
+            <button id="reset-layout-btn" class="btn btn-sm" title="Reset to default layout">Reset Layout</button>
         </div>
         <div id="editor-container" class="editor-container"></div>
     </div>
@@ -104,6 +105,7 @@ bodyClass: "playground-page"
     border: 1px solid var(--color-border, #e0e0e0);
     border-radius: 4px;
     background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
     cursor: pointer;
     font-size: 0.875rem;
     transition: all 0.15s ease;
@@ -111,6 +113,16 @@ bodyClass: "playground-page"
 
 .btn:hover {
     background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #555);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
 }
 
 .btn-primary {
