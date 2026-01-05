@@ -151,6 +151,10 @@ export class NotebookPlayground {
       if (this.consoleOutput) this.consoleOutput.innerHTML = "";
     });
 
+    // Setup View All button
+    const viewAllBtn = document.getElementById("view-all-btn");
+    viewAllBtn?.addEventListener("click", () => this.openViewAll());
+
     // Get container
     this.container = document.getElementById("notebook-container");
     if (this.container) {
@@ -447,6 +451,102 @@ ${cell.source}`;
     line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
     this.consoleOutput.appendChild(line);
     this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
+  }
+
+  private openViewAll(): void {
+    const fullSource = this.buildFullSource();
+    const [notation, beatLayout, errors] = N.load(fullSource, { log: false });
+
+    if (errors.length > 0) {
+      this.log(`Cannot view all: ${errors[0].message || errors[0]}`, "error");
+      return;
+    }
+
+    // Open a new window
+    const viewWindow = window.open("", "_blank", "width=900,height=700");
+    if (!viewWindow) {
+      this.log("Failed to open new window (popup blocked?)", "error");
+      return;
+    }
+
+    // Get current theme
+    const isDark = document.documentElement.classList.contains("dark");
+
+    // Write the HTML document
+    viewWindow.document.write(`
+<!DOCTYPE html>
+<html class="${isDark ? "dark" : ""}">
+<head>
+  <title>${this.currentSample?.label || "Notation"} - View All</title>
+  <style>
+    :root {
+      --notation-stroke-color: black;
+      --notation-fill-color: transparent;
+      --notation-text-color: #1a1a1a;
+      --notation-border-color: gray;
+    }
+    :root.dark {
+      --notation-stroke-color: #e5e5e5;
+      --notation-fill-color: transparent;
+      --notation-text-color: #f0f0f0;
+      --notation-border-color: #555;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: ${isDark ? "#121212" : "#fff"};
+      color: ${isDark ? "#e0e0e0" : "#333"};
+    }
+    h1 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+      border-bottom: 1px solid ${isDark ? "#333" : "#e0e0e0"};
+      padding-bottom: 1rem;
+    }
+    #notation-container {
+      overflow-x: auto;
+    }
+    .notationsContentRootTable {
+      border-top: solid 1px var(--notation-border-color);
+      width: 100%;
+    }
+    .notationsContentRootTable text,
+    .atomViewTextRoot {
+      fill: var(--notation-text-color);
+    }
+    .lineAnnotationCell {
+      padding: 10px;
+      vertical-align: top;
+    }
+    .lineContentCell {
+      padding: 5px 0;
+    }
+    .lineRootSVG {
+      overflow: visible;
+    }
+    .bar-start-line, .bar-end-line {
+      stroke: var(--notation-stroke-color);
+    }
+  </style>
+</head>
+<body>
+  <h1>${this.currentSample?.label || "Notation"}</h1>
+  <div id="notation-container"></div>
+</body>
+</html>
+    `);
+    viewWindow.document.close();
+
+    // Render notation into the new window
+    const container = viewWindow.document.getElementById("notation-container");
+    if (container) {
+      const notationView = new N.Carnatic.NotationView(container);
+      notationView.renderNotation(notation, beatLayout);
+    }
+
+    this.log("Opened full notation in new window", "info");
   }
 }
 
