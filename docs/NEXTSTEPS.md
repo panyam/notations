@@ -127,10 +127,16 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
 - [x] Update NotationView with NotationViewConfig interface
 - [x] Export grids module from main index.ts
 
-#### Phase 2: Core Library - Incremental Updates
-- [ ] Track which lines are affected by column changes
-- [ ] Only re-render affected range
-- [ ] Optimize for common case (edit doesn't change column widths)
+#### Phase 2: Change Detection - Complete
+- [x] Inline O(1) change detection during layout pass
+  - `previousColumnWidths`/`previousRowHeights` maps track previous dimensions
+  - `checkAndUpdateLength()` compares during `doBfsLayout()` - no extra traversal
+- [x] `columnWidthsChanged`/`rowHeightsChanged` flags now report actual changes
+- [x] Enables subscribers to skip re-render when dimensions unchanged
+
+**Future: Full Incremental Re-render** (deferred until performance becomes critical)
+- View-to-GridModel mapping for selective notification
+- Partial re-render in NotationView for affected line ranges only
 
 #### Phase 3-8: Web Components (Pending)
 - [ ] Create types/notebook.ts with interfaces

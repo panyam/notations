@@ -765,6 +765,12 @@ export class GridLayoutGroup {
   /** Subscribers to layout change events */
   private layoutChangeSubscribers = new Set<LayoutChangeCallback>();
 
+  /** Previous column widths by ColAlign uuid - for detecting actual changes */
+  private previousColumnWidths = new Map<number, number>();
+
+  /** Previous row heights by RowAlign uuid - for detecting actual changes */
+  private previousRowHeights = new Map<number, number>();
+
   /**
    * Subscribes to layout change events.
    * @param callback Function to call when layout changes
@@ -906,16 +912,17 @@ export class GridLayoutGroup {
       }
     }
 
-    this.doBfsLayout(this.startingRows, changedRowAligns);
-    this.doBfsLayout(this.startingCols, changedColAligns);
+    // Pass the previous dimension maps for O(1) inline change detection
+    const rowHeightsChanged = this.doBfsLayout(this.startingRows, changedRowAligns, this.previousRowHeights);
+    const columnWidthsChanged = this.doBfsLayout(this.startingCols, changedColAligns, this.previousColumnWidths);
 
     // Notify subscribers of full refresh
     if (notify && this.layoutChangeSubscribers.size > 0) {
       this.notifyLayoutChange({
         affectedRowRange: null, // null means all rows
         affectedColRange: null, // null means all columns
-        columnWidthsChanged: true,
-        rowHeightsChanged: true,
+        columnWidthsChanged,
+        rowHeightsChanged,
         affectedGridModels: this.gridModels,
       });
     }
@@ -935,8 +942,9 @@ export class GridLayoutGroup {
     const hadRowChanges = Object.keys(changedRowAligns).length > 0;
     const hadColChanges = Object.keys(changedColAligns).length > 0;
 
-    this.doBfsLayout(this.startingRows, changedRowAligns);
-    this.doBfsLayout(this.startingCols, changedColAligns);
+    // Pass the previous dimension maps for O(1) inline change detection
+    const rowHeightsChanged = this.doBfsLayout(this.startingRows, changedRowAligns, this.previousRowHeights);
+    const columnWidthsChanged = this.doBfsLayout(this.startingCols, changedColAligns, this.previousColumnWidths);
 
     // Notify subscribers of incremental changes
     if (this.layoutChangeSubscribers.size > 0 && (hadRowChanges || hadColChanges)) {
@@ -947,8 +955,8 @@ export class GridLayoutGroup {
       this.notifyLayoutChange({
         affectedRowRange,
         affectedColRange,
-        columnWidthsChanged: hadColChanges,
-        rowHeightsChanged: hadRowChanges,
+        columnWidthsChanged,
+        rowHeightsChanged,
         affectedGridModels: affectedGridModels,
       });
     }
@@ -994,6 +1002,23 @@ export class GridLayoutGroup {
 
     if (minCol === Infinity) return null;
     return { start: minCol, end: maxCol };
+  }
+
+  /**
+   * Checks if an alignment's maxLength changed from previous value.
+   * Updates the stored previous value. O(1) cost.
+   * @param align The alignment to check
+   * @param previousMap Map storing previous lengths
+   * @returns true if length changed (or is new)
+   */
+  private checkAndUpdateLength<T extends AlignedLine>(
+    align: T,
+    previousMap: Map<number, number>,
+  ): boolean {
+    const previous = previousMap.get(align.uuid);
+    const current = align.maxLength;
+    previousMap.set(align.uuid, current);
+    return previous === undefined || previous !== current;
   }
 
   /**
@@ -1065,20 +1090,34 @@ export class GridLayoutGroup {
    * Performs a breadth-first layout of aligned lines.
    * @param startingLines The lines to start from
    * @param changedAligns Map of alignment IDs to changed alignments
+   * @param previousLengths Map to track previous lengths for change detection
+   * @returns true if any dimension (width/height) actually changed
    */
-  protected doBfsLayout<T extends AlignedLine>(startingLines: T[], changedAligns: any) {
+  protected doBfsLayout<T extends AlignedLine>(
+    startingLines: T[],
+    changedAligns: any,
+    previousLengths?: Map<number, number>,
+  ): boolean {
     // 1. start from the starting lines and do a BF traversal
     // 2. If a line not visited (ie laid out):
     //      if it is in the changedAlign list then reval its length (w/h)
     //      set its offset and length if either width or offset has changed
     //      offset can be thought of changed if the preceding line's offset has changed
     // first do above for rows
-    if (!this.getCellView) return;
+    if (!this.getCellView) return false;
+    let anyDimensionChanged = false;
+
     for (const alignId in changedAligns) {
       const val = changedAligns[alignId];
       this.ensureGetCellView(val.align);
       val.align.evalMaxLength(val.cells);
+
+      // Check if this alignment's length actually changed (O(1))
+      if (previousLengths && this.checkAndUpdateLength(val.align, previousLengths)) {
+        anyDimensionChanged = true;
+      }
     }
+
     let lineQueue = [] as [null | T, T][];
     const visitedLines = {} as any;
     for (const line of startingLines) lineQueue.push([null, line]);
@@ -1111,5 +1150,7 @@ export class GridLayoutGroup {
       }
       lineQueue = nextQueue;
     }
+
+    return anyDimensionChanged;
   }
 }
