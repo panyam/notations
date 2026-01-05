@@ -109,9 +109,13 @@
   - Properly handles RepeatBlock expansion and nested structures
   - loader.ts now uses beatLayout.processBlock(notation)
 
-### Block-Based DSL (Phase 4) - Pending
-- [ ] Update NotationView for block rendering
-- [ ] Update notation/web components
+### Block-Based DSL (Phase 4) - Complete
+- [x] Update NotationView for block rendering
+  - Added processBlock() and processBlockItem() methods
+  - Uses block.children() for recursive rendering
+  - Properly handles nested blocks (SectionBlock, RepeatBlock, etc.)
+- [x] Update notation/web components
+  - No changes needed - components consume NotationView which is now block-aware
 
 ### Test Fixes (Priority)
 - [ ] Fix grid test expectations in `src/tests/grids.spec.ts`

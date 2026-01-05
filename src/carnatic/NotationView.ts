@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
-import { Notation, RawBlock } from "../notation";
+import { Notation, RawBlock, Block, BlockItem, isLine, isBlock, isRawBlock } from "../notation";
 import { Beat, GlobalBeatLayout } from "../beats";
 import { GridCell, GridCellView } from "../grids";
 import { Line } from "../core";
@@ -133,18 +133,10 @@ export class NotationView {
    * Key thing is here is an opportunity to perform any batch rendering as needed.
    */
   refreshLayout(): void {
-    const lines = [] as Line[];
     const lineViews = [] as LineView[];
-    for (const block of this.notation.blocks) {
-      if (block.TYPE == "RawBlock") {
-        // Add the markdown here
-        this.renderBlock(block as RawBlock);
-      } else {
-        lines.push(block as Line);
-        const lineView = this.ensureLineView(block as Line);
-        lineViews.push(lineView);
-      }
-    }
+
+    // Recursively process the notation (which is a Block) and collect LineViews
+    this.processBlock(this.notation, lineViews);
 
     const now = performance.now();
     for (const lineView of lineViews) {
@@ -156,10 +148,42 @@ export class NotationView {
     for (const lineView of lineViews) {
       lineView.wrapToSize();
     }
+  }
 
-    // now that all spacing has been calculated
-    // go through all
-    // for (const beatView of this.beatViews.values()) { beatView.refreshLayout(); }
+  /**
+   * Recursively processes a block and its children for rendering.
+   * Uses block.children() to get expanded children (e.g., RepeatBlock expands to N copies).
+   *
+   * @param block The block to process
+   * @param lineViews Array to collect LineViews for batch layout
+   */
+  protected processBlock(block: Block, lineViews: LineView[]): void {
+    for (const child of block.children()) {
+      this.processBlockItem(child, lineViews);
+    }
+  }
+
+  /**
+   * Processes a single block item (Block, Line, or RawBlock) for rendering.
+   *
+   * @param item The item to process
+   * @param lineViews Array to collect LineViews for batch layout
+   */
+  protected processBlockItem(item: BlockItem, lineViews: LineView[]): void {
+    if (isRawBlock(item)) {
+      // Render raw content (markdown, metadata)
+      this.renderBlock(item as RawBlock);
+    } else if (isLine(item)) {
+      // Render line
+      const line = item as Line;
+      if (!line.isEmpty) {
+        const lineView = this.ensureLineView(line);
+        lineViews.push(lineView);
+      }
+    } else if (isBlock(item)) {
+      // Recursively process nested block
+      this.processBlock(item as Block, lineViews);
+    }
   }
 
   renderBlock(raw: RawBlock): void {
