@@ -138,13 +138,17 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
 - View-to-GridModel mapping for selective notification
 - Partial re-render in NotationView for affected line ranges only
 
-#### Phase 3-8: Web Components (Pending)
-- [ ] Create types/notebook.ts with interfaces
-- [ ] Create utils/cellFactory.ts (BlockItem → CellModel)
-- [ ] Create NotebookView.ts (container, owns shared GridLayoutGroup)
-- [ ] Create NotebookCell.ts (cell header, preview/edit modes)
-- [ ] Create cell operation components (CellControls, AddCellButton)
-- [ ] Polish: CSS, exports, tests
+#### Phase 3-8: Web Components - Complete
+- [x] types/notebook.ts - CellModel, CellState, NotebookConfig interfaces
+- [x] utils/cellFactory.ts - Block hierarchy to CellModel conversion
+- [x] NotebookView.ts - Main container with shared GridLayoutGroup
+- [x] NotebookCell.ts - Individual cell with preview/edit modes
+- [x] utils/sourceSerializer.ts - Cell tree back to notation source
+- [x] styles/notebook.css - Default styles with dark mode support
+
+#### Next Steps
+- [ ] Create SideBySideEditor component for reusable editor layout
+- [ ] Add playground demos to documentation (side-by-side and notebook-style)
 
 ### Test Fixes ✅
 - [x] Fix grid test expectations in `src/tests/grids.spec.ts`

@@ -1,0 +1,446 @@
+/**
+ * Default styles for NotebookView and NotebookCell components.
+ *
+ * These styles can be imported or used as a reference for custom styling.
+ * All classes use the .notebook- prefix to avoid conflicts.
+ */
+
+/* ============================================
+   NotebookView Container
+   ============================================ */
+
+.notebook-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* ============================================
+   Cell Container
+   ============================================ */
+
+.notebook-cell {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.notebook-cell:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notebook-cell-editing {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-cell-error {
+  border-color: #f44336;
+}
+
+.notebook-cell-collapsed > .notebook-cell-children {
+  display: none;
+}
+
+/* Depth indentation */
+.notebook-cell-depth-1 {
+  margin-left: 1.5rem;
+}
+
+.notebook-cell-depth-2 {
+  margin-left: 3rem;
+}
+
+.notebook-cell-depth-3 {
+  margin-left: 4.5rem;
+}
+
+/* ============================================
+   Cell Header
+   ============================================ */
+
+.notebook-cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  gap: 0.5rem;
+}
+
+.notebook-cell-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Type badges */
+.notebook-cell-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.badge-notation {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.badge-section {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.badge-repeat {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.badge-cycle {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-beatduration {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.badge-breaks {
+  background: #efebe9;
+  color: #5d4037;
+}
+
+.badge-role {
+  background: #e0f7fa;
+  color: #00838f;
+}
+
+.badge-group {
+  background: #f5f5f5;
+  color: #616161;
+}
+
+.badge-line {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+
+.badge-rawblock {
+  background: #fafafa;
+  color: #757575;
+}
+
+.badge-unknown {
+  background: #eeeeee;
+  color: #9e9e9e;
+}
+
+/* Cell name */
+.notebook-cell-name {
+  font-weight: 500;
+  color: #424242;
+  font-size: 0.875rem;
+}
+
+/* Child count */
+.notebook-cell-child-count {
+  color: #9e9e9e;
+  font-size: 0.75rem;
+}
+
+/* ============================================
+   Cell Controls
+   ============================================ */
+
+.notebook-cell-controls {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Buttons */
+.notebook-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #616161;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notebook-btn:hover {
+  background: #f5f5f5;
+  border-color: #bdbdbd;
+}
+
+.notebook-btn:active {
+  background: #eeeeee;
+}
+
+.notebook-expand-btn {
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+}
+
+.notebook-expand-btn:hover {
+  background: #e0e0e0;
+}
+
+.notebook-edit-btn:hover {
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+.notebook-delete-btn:hover {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.notebook-move-btn {
+  padding: 0.25rem 0.375rem;
+}
+
+.notebook-apply-btn {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+.notebook-apply-btn:hover {
+  background: #43a047;
+  border-color: #43a047;
+}
+
+.notebook-cancel-btn:hover {
+  border-color: #9e9e9e;
+}
+
+/* ============================================
+   Cell Content
+   ============================================ */
+
+.notebook-cell-content {
+  padding: 0.75rem;
+  min-height: 2rem;
+}
+
+/* RawBlock content */
+.notebook-rawblock-content {
+  line-height: 1.6;
+  color: #424242;
+}
+
+.notebook-rawblock-content h1,
+.notebook-rawblock-content h2,
+.notebook-rawblock-content h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* Notation preview placeholder */
+.notebook-notation-preview {
+  color: #9e9e9e;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* Notation view */
+.notebook-notation-view {
+  overflow-x: auto;
+}
+
+/* ============================================
+   Edit Mode
+   ============================================ */
+
+.notebook-edit-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.notebook-edit-textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* ============================================
+   Error Display
+   ============================================ */
+
+.notebook-cell-error-message {
+  padding: 0.5rem 0.75rem;
+  background: #ffebee;
+  color: #c62828;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #ef9a9a;
+}
+
+/* ============================================
+   Children Container
+   ============================================ */
+
+.notebook-cell-children {
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   Add Cell Button
+   ============================================ */
+
+.notebook-add-cell-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9e9e9e;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notebook-add-cell-btn:hover {
+  border-color: #2196f3;
+  color: #2196f3;
+  background: #e3f2fd;
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .notebook-view {
+    background: #121212;
+  }
+
+  .notebook-cell {
+    background: #1e1e1e;
+    border-color: #333;
+  }
+
+  .notebook-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .notebook-cell-header {
+    background: #252525;
+    border-color: #333;
+  }
+
+  .notebook-cell-name {
+    color: #e0e0e0;
+  }
+
+  .notebook-btn {
+    background: #333;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .notebook-btn:hover {
+    background: #444;
+    border-color: #555;
+  }
+
+  .notebook-cell-content {
+    color: #e0e0e0;
+  }
+
+  .notebook-rawblock-content {
+    color: #e0e0e0;
+  }
+
+  .notebook-edit-textarea {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .notebook-edit-textarea:focus {
+    border-color: #64b5f6;
+  }
+
+  .notebook-cell-children {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+
+  .notebook-add-cell-btn {
+    border-color: #444;
+    color: #757575;
+  }
+
+  .notebook-add-cell-btn:hover {
+    border-color: #64b5f6;
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+  }
+
+  .notebook-cell-error-message {
+    background: #4a1515;
+    color: #ef9a9a;
+    border-color: #6b2020;
+  }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+  .notebook-view {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .notebook-cell-header {
+    flex-wrap: wrap;
+  }
+
+  .notebook-cell-controls {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+  }
+
+  .notebook-cell-depth-1,
+  .notebook-cell-depth-2,
+  .notebook-cell-depth-3 {
+    margin-left: 0.5rem;
+  }
+}
