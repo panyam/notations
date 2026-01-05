@@ -4,6 +4,16 @@
   "description": "Web components for the Notations library - interactive notation blocks, editors, and viewers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./dockview": {
+      "import": "./dist/dockview.js",
+      "types": "./dist/dockview.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -20,9 +30,16 @@
   "author": "Sriram Panyam",
   "license": "ISC",
   "peerDependencies": {
-    "notations": "^0.0.69"
+    "notations": "^0.0.70",
+    "dockview-core": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "dockview-core": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "dockview-core": "^4.13.1",
     "notations": "file:../",
     "typescript": "^5.2.2"
   },
