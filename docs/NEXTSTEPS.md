@@ -148,7 +148,11 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
 
 #### Next Steps
 - [x] Create SideBySideEditor component for reusable editor layout
-- [ ] Add playground demos to documentation (side-by-side with DockView, notebook-style)
+- [x] Add playground demos to documentation
+  - SideBySidePlayground: DockView-based layout with resizable editor/output/console panels
+  - NotebookPlayground: Cell-based editing with drag-and-drop reordering
+  - View All button opens complete notation in new window
+  - Full dark mode support
 - [ ] Update notation/web to use SideBySideEditor in its DockView layout
   - Validate that SideBySideEditor has all needed methods
   - May need to add: line highlighting, cursor position tracking, undo/redo hooks
