@@ -6,3 +6,4 @@ export { default as NotebookCell, NotebookCellConfig } from "./components/Notebo
 // Export notebook types and utilities
 export * from "./types/notebook";
 export * from "./utils/cellFactory";
+export * from "./utils/sourceSerializer";
