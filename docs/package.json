@@ -26,6 +26,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "dockview-core": "^4.13.1",
     "notations": "file:../",
     "notations-web": "file:../web-components"
   }

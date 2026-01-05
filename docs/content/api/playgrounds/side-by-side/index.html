@@ -1,0 +1,198 @@
+---
+title: "Side-by-Side Editor Playground"
+description: "Interactive side-by-side notation editor with resizable panels"
+useSideBySidePlayground: true
+fullWidth: true
+hideFooter: true
+bodyClass: "playground-page"
+---
+
+<div id="playground-container" class="playground-container">
+    <!-- DockView will be initialized here -->
+    <div id="dockview-container" class="dockview-container" style="height: calc(100vh - 60px);"></div>
+</div>
+
+<!-- Hidden panel templates -->
+<div style="display: none;">
+    <div id="editor-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <select id="sample-select" class="sample-select">
+                <option value="basic-scale">Basic Scale</option>
+            </select>
+            <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
+        </div>
+        <div id="editor-container" class="editor-container"></div>
+    </div>
+
+    <div id="output-panel-template" class="panel-content">
+        <div id="output-container" class="output-container"></div>
+    </div>
+
+    <div id="console-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="clear-console-btn" class="btn btn-sm">Clear</button>
+        </div>
+        <div id="console-output" class="console-output"></div>
+    </div>
+</div>
+
+<style>
+.playground-page {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.playground-container {
+    width: 100%;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.dockview-container {
+    width: 100%;
+    height: 100%;
+}
+
+.main-content-full {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.panel-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--color-bg, #fff);
+}
+
+.dark .panel-content {
+    background: var(--color-bg-dark, #1e1e1e);
+}
+
+.panel-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .panel-toolbar {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.sample-select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    font-size: 0.875rem;
+}
+
+.dark .sample-select {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.editor-container {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.output-container {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 1rem;
+}
+
+.console-output {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.5rem;
+    font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    font-size: 0.75rem;
+    background: var(--color-bg, #fff);
+}
+
+.dark .console-output {
+    background: var(--color-bg-dark, #1a1a1a);
+}
+
+.console-line {
+    padding: 0.125rem 0;
+    border-bottom: 1px solid var(--color-border, #f0f0f0);
+}
+
+.dark .console-line {
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-info {
+    color: var(--color-text, #424242);
+}
+
+.dark .console-info {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.console-error {
+    color: #f44336;
+}
+
+.playground-editor {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0.75rem;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .playground-editor {
+    background: var(--color-bg-dark, #1e1e1e);
+    color: var(--color-text-dark, #e0e0e0);
+}
+</style>

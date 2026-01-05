@@ -1,0 +1,491 @@
+---
+title: "Notebook Editor Playground"
+description: "Interactive notebook-style notation editor with cell-based editing"
+useNotebookPlayground: true
+fullWidth: true
+hideFooter: true
+bodyClass: "playground-page"
+---
+
+<div id="notebook-playground-container" class="notebook-playground-container">
+    <div class="notebook-toolbar">
+        <div class="toolbar-left">
+            <label>
+                Sample:
+                <select id="sample-select" class="sample-select">
+                    <option value="varnam">Varnam Structure</option>
+                </select>
+            </label>
+        </div>
+        <div class="toolbar-right">
+            <button id="view-all-btn" class="btn btn-primary">View All</button>
+            <span class="toolbar-hint">Click on cells to edit. Drag to reorder.</span>
+        </div>
+    </div>
+
+    <div class="notebook-main">
+        <div id="notebook-container" class="notebook-container"></div>
+
+        <div class="console-panel">
+            <div class="console-header">
+                <span>Console</span>
+                <button id="clear-console-btn" class="btn btn-sm">Clear</button>
+            </div>
+            <div id="console-output" class="console-output"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.playground-page {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.notebook-playground-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.main-content-full {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.notebook-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .notebook-toolbar {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toolbar-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #757575);
+}
+
+.dark .toolbar-hint {
+    color: var(--color-text-muted-dark, #9e9e9e);
+}
+
+.sample-select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    font-size: 0.875rem;
+}
+
+.dark .sample-select {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.notebook-container {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+    background: var(--color-bg, #fff);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dark .notebook-container {
+    background: var(--color-bg-dark, #121212);
+}
+
+/* Cell styles */
+.notebook-cell {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    background: var(--color-bg, #fff);
+    overflow: visible;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.dark .notebook-cell {
+    background: var(--color-bg-dark, #1e1e1e);
+    border-color: var(--color-border-dark, #333);
+}
+
+.notebook-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .notebook-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.notebook-cell-editing {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-cell.dragging {
+    opacity: 0.5;
+}
+
+.notebook-cell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-secondary, #f8f9fa);
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .notebook-cell-header {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.notebook-cell-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notebook-drag-handle {
+    cursor: grab;
+    color: var(--color-text-muted, #999);
+    font-size: 1rem;
+    user-select: none;
+    padding: 0 0.25rem;
+}
+
+.notebook-drag-handle:hover {
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-drag-handle:hover {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-cell-name {
+    font-weight: 500;
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-cell-name {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-cell-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.notebook-btn {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #666);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.dark .notebook-btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #ccc);
+}
+
+.notebook-btn:hover {
+    background: var(--color-bg-hover, #f0f0f0);
+}
+
+.dark .notebook-btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.notebook-edit-btn:hover {
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.notebook-delete-btn:hover {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.notebook-apply-btn {
+    background: #4caf50;
+    border-color: #4caf50;
+    color: white;
+}
+
+.notebook-apply-btn:hover {
+    background: #43a047;
+}
+
+.notebook-cancel-btn:hover {
+    border-color: #9e9e9e;
+}
+
+.notebook-cell-content {
+    padding: 0.75rem;
+}
+
+.notebook-cell-preview {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+/* Let notation content determine cell height naturally */
+.notebook-cell-preview .notation-container {
+    min-height: 40px;
+}
+
+.notebook-cell-preview svg,
+.notebook-cell-preview .lineRootSVG {
+    overflow: visible;
+}
+
+.notebook-cell-preview .notationsContentRootTable {
+    width: 100%;
+}
+
+/* Ensure table cells don't clip SVG content */
+.notebook-cell-preview .lineContentCell {
+    overflow: visible;
+    height: auto;
+}
+
+.notebook-cell-error {
+    color: #f44336;
+    padding: 0.5rem;
+    background: #ffebee;
+    border-radius: 4px;
+}
+
+.dark .notebook-cell-error {
+    background: #4a1515;
+}
+
+.notebook-name-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-name-input {
+    background: var(--color-bg-dark, #2d2d2d);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-edit-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-edit-textarea {
+    background: var(--color-bg-dark, #2d2d2d);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-edit-textarea:focus,
+.notebook-name-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-add-cell-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-text-muted, #999);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.notebook-add-cell-btn:hover {
+    border-color: #2196f3;
+    color: #2196f3;
+    background: rgba(33, 150, 243, 0.05);
+}
+
+.dark .notebook-add-cell-btn {
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-muted-dark, #666);
+}
+
+.dark .notebook-add-cell-btn:hover {
+    border-color: #64b5f6;
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+}
+
+/* Notation table within cells */
+.notebook-cell .notation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.notebook-cell .notation-table td {
+    padding: 0.25rem 0.5rem;
+    vertical-align: top;
+}
+
+.console-panel {
+    width: 300px;
+    border-left: 1px solid var(--color-border, #e0e0e0);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .console-panel {
+    background: var(--color-bg-secondary-dark, #1a1a1a);
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.dark .console-header {
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-output {
+    flex: 1;
+    overflow: auto;
+    padding: 0.5rem;
+    font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    font-size: 0.75rem;
+}
+
+.console-line {
+    padding: 0.125rem 0;
+    border-bottom: 1px solid var(--color-border, #f0f0f0);
+}
+
+.dark .console-line {
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-info {
+    color: var(--color-text, #424242);
+}
+
+.dark .console-info {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.console-error {
+    color: #f44336;
+}
+
+.btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notebook-main {
+        flex-direction: column;
+    }
+
+    .console-panel {
+        width: 100%;
+        height: 200px;
+        border-left: none;
+        border-top: 1px solid var(--color-border, #e0e0e0);
+    }
+
+    .dark .console-panel {
+        border-top-color: var(--color-border-dark, #333);
+    }
+}
+</style>

@@ -124,13 +124,18 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: white;
+    background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     min-width: 200px;
     z-index: 1000;
     margin-top: 0.5rem;
+}
+
+:root.dark .nav-dropdown,
+[data-theme="dark"] .nav-dropdown {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
 .nav-item:hover .nav-dropdown {
@@ -198,6 +203,29 @@ body {
 /* Main Content */
 .main-content {
     min-width: 0;
+}
+
+/* Full-width content for playgrounds */
+.main-content-full {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-content-full .content {
+    max-width: none;
+    width: 100%;
+}
+
+.main-content-full .content-header,
+.main-content-full .content-footer {
+    display: none;
+}
+
+.main-content-full .content-body {
+    width: 100%;
+    height: 100%;
 }
 
 .content {

@@ -12,6 +12,8 @@ module.exports = (_env, options) => {
     devtool: "source-map",
     entry: {
       DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
+      SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
+      NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
     },
     module: {
       rules: [
@@ -78,6 +80,28 @@ module.exports = (_env, options) => {
         chunks: ["DocsPage"],
         filename: path.resolve(__dirname, "./templates/gen.DocsPage.html"),
         templateContent: "",
+        minify: { collapseWhitespace: false },
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ["SideBySidePlayground"],
+        filename: path.resolve(__dirname, "./templates/gen.SideBySidePlayground.html"),
+        templateContent: ({ htmlWebpackPlugin }) =>
+          htmlWebpackPlugin.tags.headTags
+            .filter(tag => tag.tagName === 'script')
+            .map(tag => `<script defer src="${tag.attributes.src}"></script>`)
+            .join('\n'),
+        inject: false,
+        minify: { collapseWhitespace: false },
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ["NotebookPlayground"],
+        filename: path.resolve(__dirname, "./templates/gen.NotebookPlayground.html"),
+        templateContent: ({ htmlWebpackPlugin }) =>
+          htmlWebpackPlugin.tags.headTags
+            .filter(tag => tag.tagName === 'script')
+            .map(tag => `<script defer src="${tag.attributes.src}"></script>`)
+            .join('\n'),
+        inject: false,
         minify: { collapseWhitespace: false },
       }),
     ],

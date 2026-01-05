@@ -30,10 +30,16 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{.Site.PathPrefix}}/static/images/favicon.png">
 </head>
-<body>
+<body class="{{ if .FrontMatter.bodyClass }}{{ .FrontMatter.bodyClass }}{{ end }}">
     <!-- Header -->
     {{ template "Header" . }}
 
+    {{ if .FrontMatter.fullWidth }}
+    <!-- Full width content (for playgrounds) -->
+    <main class="main-content-full">
+        {{ template "Content" . }}
+    </main>
+    {{ else }}
     <div class="page-container">
         <!-- Sidebar -->
         {{ template "Sidebar" . }}
@@ -43,12 +49,21 @@
             {{ template "Content" . }}
         </main>
     </div>
+    {{ end }}
 
     <!-- Footer -->
+    {{ if not .FrontMatter.hideFooter }}
     {{ template "Footer" . }}
+    {{ end }}
 
     <!-- JavaScript will be injected here by webpack-generated template -->
+    {{ if .FrontMatter.useSideBySidePlayground }}
+    {{# include "gen.SideBySidePlayground.html" #}}
+    {{ else if .FrontMatter.useNotebookPlayground }}
+    {{# include "gen.NotebookPlayground.html" #}}
+    {{ else }}
     {{# include "gen.DocsPage.html" #}}
+    {{ end }}
 
     <!-- Tabbed examples component -->
     <script src="{{.Site.PathPrefix}}/static/js/tabbed-examples.js"></script>

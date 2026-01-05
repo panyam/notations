@@ -74,6 +74,10 @@
         "url": "api/integration-guide/"
       },
       {
+        "name": "Playgrounds",
+        "url": "api/playgrounds/"
+      },
+      {
         "name": "API Reference",
         "url": "api/reference/"
       },

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      dockview-core:
+        specifier: ^4.13.1
+        version: 4.13.1
       notations:
         specifier: file:../
         version: file:..
@@ -1002,6 +1005,9 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
 
+  dockview-core@4.13.1:
+    resolution: {integrity: sha512-+7vR0ZEoL8CNck6NqDVUMqBT22niwBu5CMMI137dZ3c8NDc7c5Si+3dGEqQgM4lNtHBLAtvypo1C4p21J2wkiQ==}
+
   dom-converter@0.2.0:
     resolution: {integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==}
 
@@ -1397,7 +1403,7 @@ packages:
   notations-web@file:../web-components:
     resolution: {directory: ../web-components, type: directory}
     peerDependencies:
-      notations: ^0.0.65
+      notations: ^0.0.69
 
   notations@file:..:
     resolution: {directory: .., type: directory}
@@ -2949,6 +2955,8 @@ snapshots:
 
   detect-libc@1.0.3:
     optional: true
+
+  dockview-core@4.13.1: {}
 
   dom-converter@0.2.0:
     dependencies:

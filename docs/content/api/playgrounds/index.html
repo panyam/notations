@@ -1,0 +1,184 @@
+---
+title: "Playgrounds"
+description: "Interactive demos for the Notations library"
+---
+
+<p>Try out the Notations library in these interactive playgrounds. Edit notation source and see the results in real-time.</p>
+
+<h2>Available Playgrounds</h2>
+
+<div class="playground-cards">
+    <div class="playground-card">
+        <h3><a href="{{.Site.PathPrefix}}/api/playgrounds/side-by-side/">Side-by-Side Editor</a></h3>
+        <p>A resizable two-panel layout with the source editor on the left and rendered notation on the right. Uses DockView for flexible panel management.</p>
+        <ul>
+            <li>Drag panel dividers to resize</li>
+            <li>Rearrange panels by dragging tabs</li>
+            <li>Console panel shows parse results</li>
+        </ul>
+        <a href="{{.Site.PathPrefix}}/api/playgrounds/side-by-side/" class="btn btn-primary">Open Side-by-Side Playground</a>
+    </div>
+
+    <div class="playground-card">
+        <h3><a href="{{.Site.PathPrefix}}/api/playgrounds/notebook/">Notebook Editor</a></h3>
+        <p>A cell-based editor where each notation block becomes an editable cell. Similar to Jupyter notebooks but for music notation.</p>
+        <ul>
+            <li>Click cells to edit inline</li>
+            <li>Nested sections displayed hierarchically</li>
+            <li>Shared column alignment across cells</li>
+        </ul>
+        <a href="{{.Site.PathPrefix}}/api/playgrounds/notebook/" class="btn btn-primary">Open Notebook Playground</a>
+    </div>
+</div>
+
+<h2>What You Can Do</h2>
+
+<p>Both playgrounds let you:</p>
+
+<ul>
+    <li><strong>Edit notation source</strong> - Write or modify Carnatic music notation using the DSL</li>
+    <li><strong>See live rendering</strong> - Watch notation render as you type or on demand</li>
+    <li><strong>Try sample notations</strong> - Load pre-built examples to learn the syntax</li>
+    <li><strong>Debug parsing</strong> - View console messages for parse errors and timing</li>
+</ul>
+
+<h2>Choosing a Playground</h2>
+
+<table class="docs-table">
+    <thead>
+        <tr>
+            <th>Use Case</th>
+            <th>Recommended Playground</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Quick experimentation with notation syntax</td>
+            <td>Side-by-Side Editor</td>
+        </tr>
+        <tr>
+            <td>Working with long compositions with sections</td>
+            <td>Notebook Editor</td>
+        </tr>
+        <tr>
+            <td>Learning the DSL with examples</td>
+            <td>Either (both have samples)</td>
+        </tr>
+        <tr>
+            <td>Editing individual sections independently</td>
+            <td>Notebook Editor</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>See Also</h2>
+
+<ul>
+    <li><a href="{{.Site.PathPrefix}}/tutorials/01-basics/">Basic Tutorial</a> - Learn the notation syntax</li>
+    <li><a href="{{.Site.PathPrefix}}/reference/syntax/">Syntax Reference</a> - Complete DSL specification</li>
+    <li><a href="{{.Site.PathPrefix}}/examples/">Examples</a> - Real-world notation examples</li>
+</ul>
+
+<style>
+.playground-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.playground-card {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .playground-card {
+    background: var(--color-bg-secondary-dark, #1e1e1e);
+    border-color: var(--color-border-dark, #333);
+}
+
+.playground-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.playground-card h3 a {
+    color: var(--color-primary, #2196f3);
+    text-decoration: none;
+}
+
+.playground-card h3 a:hover {
+    text-decoration: underline;
+}
+
+.playground-card p {
+    color: var(--color-text-secondary, #666);
+    margin-bottom: 1rem;
+}
+
+.dark .playground-card p {
+    color: var(--color-text-secondary-dark, #aaa);
+}
+
+.playground-card ul {
+    margin-bottom: 1rem;
+    padding-left: 1.25rem;
+}
+
+.playground-card li {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+    text-decoration: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+    color: white;
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.dark .btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.dark .btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+</style>
