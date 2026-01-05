@@ -147,8 +147,11 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
 - [x] styles/notebook.css - Default styles with dark mode support
 
 #### Next Steps
-- [ ] Create SideBySideEditor component for reusable editor layout
-- [ ] Add playground demos to documentation (side-by-side and notebook-style)
+- [x] Create SideBySideEditor component for reusable editor layout
+- [ ] Add playground demos to documentation (side-by-side with DockView, notebook-style)
+- [ ] Update notation/web to use SideBySideEditor in its DockView layout
+  - Validate that SideBySideEditor has all needed methods
+  - May need to add: line highlighting, cursor position tracking, undo/redo hooks
 
 ### Test Fixes ✅
 - [x] Fix grid test expectations in `src/tests/grids.spec.ts`
