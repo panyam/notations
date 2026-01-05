@@ -153,9 +153,12 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
   - NotebookPlayground: Cell-based editing with drag-and-drop reordering
   - View All button opens complete notation in new window
   - Full dark mode support
-- [ ] Update notation/web to use SideBySideEditor in its DockView layout
-  - Validate that SideBySideEditor has all needed methods
-  - May need to add: line highlighting, cursor position tracking, undo/redo hooks
+- [x] Update notation/web to use SideBySideEditor in its DockView layout
+  - Created DockViewPlayground component wrapping SideBySideEditor with DockView
+  - Separate import path (`notations-web/dockview`) keeps DockView out of main bundle
+  - Optional peer dependency for dockview-core
+  - Includes: resizable panels, layout persistence, console logging, dark mode support
+  - Future: Can combine NotebookView + output in DockView for notebook-style playground
 
 ### Test Fixes ✅
 - [x] Fix grid test expectations in `src/tests/grids.spec.ts`
