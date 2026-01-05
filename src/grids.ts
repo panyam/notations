@@ -1011,10 +1011,7 @@ export class GridLayoutGroup {
    * @param previousMap Map storing previous lengths
    * @returns true if length changed (or is new)
    */
-  private checkAndUpdateLength<T extends AlignedLine>(
-    align: T,
-    previousMap: Map<number, number>,
-  ): boolean {
+  private checkAndUpdateLength<T extends AlignedLine>(align: T, previousMap: Map<number, number>): boolean {
     const previous = previousMap.get(align.uuid);
     const current = align.maxLength;
     previousMap.set(align.uuid, current);

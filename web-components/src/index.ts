@@ -1,6 +1,9 @@
 // Export all web components
 export { default as NotationBlock, NotationBlockConfig } from "./components/NotationBlock";
 
+// Export notebook types
+export * from "./types/notebook";
+
 // Future exports:
-// export { default as NotationEditor } from "./components/NotationEditor";
-// export { default as NotationViewer } from "./components/NotationViewer";
+// export { default as NotebookView } from "./components/NotebookView";
+// export { default as NotebookCell } from "./components/NotebookCell";
