@@ -117,12 +117,33 @@
 - [x] Update notation/web components
   - No changes needed - components consume NotationView which is now block-aware
 
-### Test Fixes (Priority)
-- [ ] Fix grid test expectations in `src/tests/grids.spec.ts`
-  - Heights are 20 less than expected (padding changed from 30 to 10 total)
-  - Need to update h values: 54→34, 55→35, 51→31, etc.
-  - Need to update y values (cumulative heights)
-  - Affects "Basic GridView Tests" (3 failing tests)
+### Notebook-Style Cell UI (In Progress)
+Goal: Notebook-style editing where each Block becomes an editable cell with shared column alignment.
+
+#### Phase 1: Shared GridLayoutGroup - Complete
+- [x] Add subscription mechanism to GridLayoutGroup (onLayoutChange, notifyLayoutChange)
+- [x] Add LayoutChangeEvent with affected row/column ranges
+- [x] Make GridLayoutGroup injectable into GlobalBeatLayout
+- [x] Update NotationView with NotationViewConfig interface
+- [x] Export grids module from main index.ts
+
+#### Phase 2: Core Library - Incremental Updates
+- [ ] Track which lines are affected by column changes
+- [ ] Only re-render affected range
+- [ ] Optimize for common case (edit doesn't change column widths)
+
+#### Phase 3-8: Web Components (Pending)
+- [ ] Create types/notebook.ts with interfaces
+- [ ] Create utils/cellFactory.ts (BlockItem → CellModel)
+- [ ] Create NotebookView.ts (container, owns shared GridLayoutGroup)
+- [ ] Create NotebookCell.ts (cell header, preview/edit modes)
+- [ ] Create cell operation components (CellControls, AddCellButton)
+- [ ] Polish: CSS, exports, tests
+
+### Test Fixes ✅
+- [x] Fix grid test expectations in `src/tests/grids.spec.ts`
+  - Heights updated for padding changes
+  - All tests now pass
 
 ### UI/UX Improvements
 - [ ] Fix button wrapping on narrow screens (keep copy/edit buttons on same line)
