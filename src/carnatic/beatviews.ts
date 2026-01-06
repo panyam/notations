@@ -72,10 +72,34 @@ export class BeatView extends BeatViewBase {
     return createAtomView(this.element, this.beat.atom, this.beat.role.defaultToNotes);
   }
 
+  /**
+   * Refreshes the layout of this beat view.
+   *
+   * This method propagates the column width from the grid layout system to
+   * the atomView, enabling duration-based positioning within beats to use
+   * consistent widths across the entire column.
+   *
+   * ### Width Propagation Flow:
+   * ```
+   * ColAlign.setOffset() → BeatView.setBounds(width) → atomView.setBounds(width)
+   *                                                  → atomView.refreshLayout()
+   * ```
+   *
+   * This ensures that atoms within different beats of the same column are
+   * aligned based on their time offset, creating a visually consistent grid.
+   */
   refreshLayout(): void {
     const newX = this.hasX ? this._x : 0;
     const newY = this.hasY ? this._y : 0;
     this.element.setAttribute("transform", "translate(" + newX + "," + newY + ")");
+
+    // Propagate column width to atomView for duration-based layout
+    // This enables global alignment across beats in the same column
+    if (this.hasWidth && this.atomView) {
+      this.atomView.setBounds(0, 0, this.width, null, false);
+      this.atomView.refreshLayout();
+    }
+
     this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
     this.invalidateBounds();

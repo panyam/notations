@@ -421,6 +421,13 @@ export abstract class GroupView extends AtomView {
   needsLayout = true;
   /** Scale factor for this group */
   scaleFactor = 1.0;
+  /**
+   * When true, shows continuation markers (",") for atoms with duration > 1
+   * instead of just leaving empty space.
+   */
+  showContinuationMarkers = true;
+  /** SVG elements for continuation markers */
+  protected continuationMarkerElements: SVGTextElement[] = [];
 
   /**
    * Creates a new GroupView.
@@ -480,17 +487,70 @@ export abstract class GroupView extends AtomView {
   }
 
   /**
-   * Refreshes the minimum size of this group.
+   * Refreshes the minimum size of this group using duration-based width calculation.
+   *
+   * ## Duration-Based Width Algorithm
+   *
+   * This algorithm ensures atoms with extended durations receive proportionally
+   * more horizontal space. For example, with `\beatDuration(4)` and input `S 2 R G M`:
+   * - S has duration 1, R has duration 2, G has duration 1
+   * - R should visually occupy twice the horizontal space of S or G
+   *
+   * ### Algorithm Steps:
+   *
+   * 1. **Calculate width per duration unit**: For each atom, compute the visual width
+   *    needed per unit of duration: `(visualWidth + spacing) / duration`
+   *
+   * 2. **Find maximum**: Take the maximum width-per-duration across all atoms.
+   *    This ensures every atom has enough space for its visual content.
+   *
+   * 3. **Scale by total duration**: Multiply the max width-per-duration by the
+   *    group's total duration to get the final group width.
+   *
+   * ### Example:
+   * ```
+   * Atoms: S(dur=1, width=10px), R(dur=2, width=10px), G(dur=1, width=10px)
+   * Spacing: 5px
+   *
+   * Width per duration:
+   *   S: (10 + 5) / 1 = 15 px/unit
+   *   R: (10 + 5) / 2 = 7.5 px/unit
+   *   G: (10 + 5) / 1 = 15 px/unit
+   *
+   * Max width per duration: 15 px/unit
+   * Total duration: 1 + 2 + 1 = 4 units
+   * Group width: 15 * 4 = 60px
+   *
+   * Positioning:
+   *   S at x=0 (time 0/4 * 60 = 0)
+   *   R at x=15 (time 1/4 * 60 = 15)
+   *   G at x=45 (time 3/4 * 60 = 45)
+   * ```
+   *
    * @returns The refreshed minimum size
    */
   protected refreshMinSize(): TSU.Geom.Size {
-    let totalWidth = 0;
     let maxHeight = 0;
-    this.atomViews.forEach((av, index) => {
+
+    // Step 1: Calculate width per duration unit for each atom
+    let minWidthPerDuration = 0;
+    this.atomViews.forEach((av) => {
       const ms = av.minSize;
-      totalWidth += ms.width + this.atomSpacing;
+      const dur = av.totalDuration;
+      if (!dur.isZero) {
+        const durValue = dur.num / dur.den;
+        const widthPerDur = (ms.width + this.atomSpacing) / durValue;
+        // Step 2: Track maximum width per duration
+        minWidthPerDuration = Math.max(minWidthPerDuration, widthPerDur);
+      }
       maxHeight = Math.max(maxHeight, ms.height);
     });
+
+    // Step 3: Scale by total duration
+    const totalDuration = this.group.totalChildDuration;
+    const totalDurValue = totalDuration.num / totalDuration.den;
+    const totalWidth = minWidthPerDuration * totalDurValue;
+
     return new TSU.Geom.Size(totalWidth * this.scaleFactor, maxHeight * this.scaleFactor);
   }
 
@@ -519,8 +579,47 @@ export abstract class GroupView extends AtomView {
   }
 
   /**
-   * Refreshes the layout of this group.
-   * Updates the position and size of the group and its child atoms.
+   * Refreshes the layout of this group using duration-based positioning.
+   *
+   * ## Duration-Based Positioning Algorithm
+   *
+   * Atoms are positioned at x-coordinates proportional to their time offset
+   * within the group's total duration. This ensures that atoms with extended
+   * durations visually occupy the correct amount of horizontal space.
+   *
+   * ### Width Source Priority:
+   *
+   * 1. **Column width** (preferred): If width was set via `setBounds()` from the
+   *    grid layout system (ColAlign), use that width. This enables global alignment
+   *    across all beats in the same column.
+   *
+   * 2. **Minimum size**: Fall back to `minSize.width` calculated by `refreshMinSize()`.
+   *
+   * ### Positioning Formula:
+   * ```
+   * xPosition = (timeOffset / totalDuration) * groupWidth
+   * ```
+   *
+   * ### Continuation Markers:
+   *
+   * When `showContinuationMarkers` is true (default), atoms with duration > 1
+   * will have "," markers rendered at each additional time slot. For example,
+   * an atom with duration 2 will show "R ," instead of "R   ".
+   *
+   * This helps users visually understand that the note continues through
+   * multiple time slots without relying on empty space alone.
+   *
+   * ### Example:
+   * ```
+   * Input: S 2 R G (with beatDuration=4)
+   * Group width: 60px, Total duration: 4 units
+   *
+   * Positioning:
+   *   S at x=0   (time 0, offset 0/4 * 60 = 0)
+   *   R at x=15  (time 1, offset 1/4 * 60 = 15)
+   *   "," at x=30 (continuation marker for R at time 2)
+   *   G at x=45  (time 3, offset 3/4 * 60 = 45)
+   * ```
    */
   refreshLayout(): void {
     let transform = "translate(" + this.x + "," + this.y + ")";
@@ -528,39 +627,74 @@ export abstract class GroupView extends AtomView {
       transform += " scale(" + this.scaleFactor + ")";
     }
     this.groupElement.setAttribute("transform", transform);
-    // if (this.widthChanged) {
-    // All our atoms have to be laid out between startX and endX
-    // old way of doing where we just set dx between atom views
-    // this worked when atomviews were single glyphs. But
-    // as atomViews can be complex (eg with accents and pre/post
-    // spaces etc) explicitly setting x/y may be important
-    let currX = 0;
-    const currY = 0; // null; // this.y; //  + 10;
 
-    if (true) {
-      this.atomViews.forEach((av, index) => {
-        av.setBounds(currX, currY, null, null, true);
-        currX += this.atomSpacing + av.minSize.width;
-      });
-    } else {
-      // currently this is disabled because "smaller" beats are not EXPANDED to what they could be
-      // smart alignment based layout where X = F(offset)
-      // we want an atom's X offset to be something like (atom.timeOffset / group.duration) * groupWidth
-      const totalDur = this.group.totalChildDuration;
-      let currTime = ZERO;
-      this.atomViews.forEach((av, index) => {
-        const newX = currTime.timesNum(this.minSize.width).divby(this.group.duration).floor;
-        if (newX >= currX) {
-          currX = newX;
+    const currY = 0;
+    const totalDur = this.group.totalChildDuration;
+
+    // Width source priority: column width (for global alignment) > minSize
+    const unscaledMinWidth = this.minSize.width / this.scaleFactor;
+    const groupWidth = this.hasWidth ? this.width / this.scaleFactor : unscaledMinWidth;
+
+    // Clear existing continuation markers before re-rendering
+    this.clearContinuationMarkers();
+
+    // Position each atom based on its time offset
+    let currTime = ZERO;
+    this.atomViews.forEach((av, index) => {
+      // Calculate x position: xPos = (currTime / totalDur) * groupWidth
+      const xPos = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
+      av.setBounds(xPos, currY, null, null, true);
+
+      // Render continuation markers for atoms with duration > 1
+      if (this.showContinuationMarkers && !totalDur.isZero) {
+        const atomDur = av.totalDuration;
+        const durValue = atomDur.num / atomDur.den;
+        if (durValue > 1) {
+          // Render one marker at each additional time slot within the atom's duration
+          const numMarkers = Math.floor(durValue) - 1;
+          for (let i = 1; i <= numMarkers; i++) {
+            // Marker time = currTime + (atomDuration * i / floor(duration))
+            const markerTime = currTime.plus(atomDur.timesNum(i).divbyNum(Math.floor(durValue)));
+            const markerX = markerTime.timesNum(groupWidth).divby(totalDur).floor;
+            this.renderContinuationMarker(markerX, currY);
+          }
         }
-        av.setBounds(currX, currY, null, null, true);
-        currX += this.atomSpacing + av.minSize.width;
-        currTime = currTime.plus(av.totalDuration);
-      });
-    }
+      }
+
+      currTime = currTime.plus(av.totalDuration);
+    });
+
     this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
     this.invalidateBounds();
+  }
+
+  /**
+   * Clears all continuation marker elements.
+   */
+  protected clearContinuationMarkers(): void {
+    for (const el of this.continuationMarkerElements) {
+      el.remove();
+    }
+    this.continuationMarkerElements = [];
+  }
+
+  /**
+   * Renders a continuation marker (",") at the specified position.
+   * @param x X position for the marker
+   * @param y Y position for the marker
+   */
+  protected renderContinuationMarker(x: number, y: number): void {
+    const marker = TSU.DOM.createSVGNode("text", {
+      parent: this.groupElement,
+      attrs: {
+        class: "continuationMarker",
+        x: x.toString(),
+        y: y.toString(),
+      },
+      text: ",",
+    }) as SVGTextElement;
+    this.continuationMarkerElements.push(marker);
   }
 
   /**
@@ -587,6 +721,7 @@ export abstract class GroupView extends AtomView {
    */
   setStyles(config: any): void {
     if ("atomSpacing" in config) this.atomSpacing = config.atomSpacing;
+    if ("showContinuationMarkers" in config) this.showContinuationMarkers = config.showContinuationMarkers;
     this.needsLayout = true;
   }
 }

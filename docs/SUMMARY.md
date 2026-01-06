@@ -73,6 +73,29 @@ The documentation includes interactive notation examples with:
 - `Sw:` for swaras, `Sh:` for sahitya, `Pe:` for percussion
 - `\line()` for section labels
 - Gamakas: `(note kampitam)`, `(note jaru note)`, `(note~note)`
+- Duration prefixes: `2 R` makes R have duration 2 (twice as long)
+
+### Rendering Architecture (Duration-Based Layout)
+
+The rendering system uses a duration-based layout algorithm to ensure atoms with
+extended durations are visually proportional to their musical time:
+
+**Width Calculation** (`GroupView.refreshMinSize()`):
+1. For each atom, calculate: `widthPerDuration = (visualWidth + spacing) / duration`
+2. Take the maximum `widthPerDuration` across all atoms
+3. Total group width = `maxWidthPerDuration × totalDuration`
+
+**Positioning** (`GroupView.refreshLayout()`):
+1. Use column width from grid layout (for global alignment) or fall back to minSize
+2. Position each atom at: `x = (timeOffset / totalDuration) × groupWidth`
+3. Optionally render "," continuation markers for atoms with duration > 1
+
+**Width Flow**:
+```
+ColAlign.evalMaxLength() → cellView.minSize.width (determines column width)
+ColAlign.setOffset() → BeatView.setBounds(columnWidth) → GroupView.setBounds(columnWidth)
+                     → GroupView.refreshLayout() uses columnWidth for positioning
+```
 
 ### File Organization
 - One folder per notation example
@@ -108,6 +131,13 @@ This command:
 ## Recent Updates
 
 ### January 2026
+- **Duration-Based Layout Algorithm**: Atoms within beats are now positioned proportionally
+  to their musical duration, ensuring notes with extended durations (e.g., `2 R`) visually
+  occupy the correct amount of horizontal space
+- **Continuation Markers**: Notes with duration > 1 now display "," markers at each
+  additional time slot (configurable via `showContinuationMarkers` flag)
+- **Global Column Alignment**: BeatView propagates column width to GroupView, enabling
+  atoms across different beats in the same column to align based on time offset
 - Refactored SideBySidePlayground to use DockViewPlayground as core
 - Enhanced DockViewPlayground with layout versioning, console visibility API
 - Added synchronized scrolling between editor and output panels
