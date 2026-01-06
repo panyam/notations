@@ -12,7 +12,7 @@ description: "Applying multiple embellishments and ornamentations in phrases"
 <notation id="basic-gamaka" showSource="true" caption="Basic Gamaka">
 \cycle("|4|2|2|")
 \beatDuration(4)
-S (R~G) M P
+S [ R ~G/ M ] P
 </notation>
 
 <h2>Kampitam (Oscillation)</h2>
@@ -22,7 +22,7 @@ S (R~G) M P
 <notation id="kampitam" showSource="true" caption="Kampitam on Ga">
 \cycle("|4|2|2|")
 \beatDuration(4)
-S R (G kampitam) M , P D N S.
+S R [ ~ G ] M , P D N S.
 </notation>
 
 <h2>Jaru (Glide)</h2>
@@ -32,7 +32,7 @@ S R (G kampitam) M , P D N S.
 <notation id="jaru" showSource="true" caption="Jaru from Pa to Dha">
 \cycle("|4|2|2|")
 \beatDuration(4)
-S R G M , (P jaru D) N S.
+S R G M , [ P ~/ D ] N S.
 </notation>
 
 <h2>Multiple Gamakas in a Phrase</h2>
@@ -42,7 +42,7 @@ S R G M , (P jaru D) N S.
 <notation id="multi-gamaka" showSource="true" caption="Shankarabharanam Phrase">
 \cycle("|4|2|2|")
 \beatDuration(4)
-(S jaru R) (G kampitam) M , (P~D) (N kampitam) S. , (S. jaru D) N P , (M kampitam) G R S
+[S ~/ R] [ ~ G ] M , [ P ~D/ ~ N ] S. , [ S. ~/ D ] N P , ~ M G R S
 </notation>
 
 <h2>Gamaka Patterns in Different Ragas</h2>
@@ -52,8 +52,7 @@ S R G M , (P jaru D) N S.
 <notation id="kalyani-gamaka" showSource="true" caption="Kalyani Characteristic Phrase">
 \cycle("|4|2|2|")
 \beatDuration(4)
-\accidentals(M#)
-(N jaru S.) (M# kampitam) G , (M#~P) D N , (S. jaru D) N P , M# G (M#~P) D
+N ~ S. ~ M ^ 2  G ,  M ^ 2 ~P/ D N , S. ~\ D N P , M ^ * G  M ^ * ~ P D
 </notation>
 
 <h3>Todi</h3>
@@ -61,10 +60,10 @@ S R G M , (P jaru D) N S.
 <notation id="todi-gamaka" showSource="true" caption="Todi Characteristic Phrase">
 \cycle("|4|2|2|")
 \beatDuration(4)
-\accidentals(R- G- D-)
-(S jaru R-) (G- kampitam) M , (P jaru D-) N S. , (R-~G-) M P , (D- kampitam) N S
+S ~/ R G ~/ M , P ~/ N S. , R ~ G  M P , ~ D  N S
 </notation>
 
+<!--
 <h2>Advanced: Nested Gamakas</h2>
 
 <p>Complex phrases with multiple embellishments on groups of notes:</p>
@@ -102,6 +101,7 @@ SRG (RGM~GMP) MPD PDN , (DNS.~S.D) S.DP DPN PNM
   <li>Listen to masters to understand proper gamaka application</li>
   <li>Practice slowly before attempting gamakas at higher speeds</li>
 </ul>
+-->
 
 <h2>See Also</h2>
 

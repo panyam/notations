@@ -64,6 +64,16 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
     return out;
   }
 
+  /**
+   * Returns the horizontal offset from the atom's origin to where the note glyph starts.
+   * This is the total width of left embellishments (e.g., Jaaru symbols).
+   */
+  get glyphOffset(): number {
+    return (
+      this.leftSlot.reduce((a, b) => a + b.minSize.width, 0) + this.leftSlot.length // Padding of 1 per embellishment
+    );
+  }
+
   protected updateBounds(
     x: null | number,
     y: null | number,

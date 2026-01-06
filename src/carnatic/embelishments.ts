@@ -66,8 +66,8 @@ export class OctaveIndicator extends LeafAtomViewEmbelishment {
   protected updateBounds(
     x: null | number,
     y: null | number,
-    w: null | number,
-    h: null | number,
+    _w: null | number,
+    _h: null | number,
   ): [number | null, number | null, number | null, number | null] {
     if (x == null) x = this.x;
     if (y == null) y = this.y;
@@ -233,10 +233,10 @@ export class BeatEndLines extends Embelishment {
   }
 
   protected updateBounds(
-    x: null | number,
-    y: null | number,
-    w: null | number,
-    h: null | number,
+    _x: null | number,
+    _y: null | number,
+    _w: null | number,
+    _h: null | number,
   ): [number | null, number | null, number | null, number | null] {
     return [null, null, null, null];
   }
@@ -339,9 +339,9 @@ export class Jaaru extends LeafAtomViewEmbelishment {
 
   protected updateBounds(
     x: null | number,
-    y: null | number,
-    w: null | number,
-    h: null | number,
+    _y: null | number,
+    _w: null | number,
+    _h: null | number,
   ): [number | null, number | null, number | null, number | null] {
     return [x, null, null, null];
   }

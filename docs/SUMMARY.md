@@ -87,8 +87,9 @@ extended durations are visually proportional to their musical time:
 
 **Positioning** (`GroupView.refreshLayout()`):
 1. Use column width from grid layout (for global alignment) or fall back to minSize
-2. Position each atom at: `x = (timeOffset / totalDuration) × groupWidth`
-3. Optionally render "," continuation markers for atoms with duration > 1
+2. Calculate glyph position: `glyphX = (timeOffset / totalDuration) × groupWidth`
+3. Adjust for left embellishments: `atomX = glyphX - glyphOffset` (ensures note glyph aligns at time position)
+4. Optionally render "," continuation markers for atoms with duration > 1
 
 **Width Flow**:
 ```
@@ -138,6 +139,9 @@ This command:
   additional time slot (configurable via `showContinuationMarkers` flag)
 - **Global Column Alignment**: BeatView propagates column width to GroupView, enabling
   atoms across different beats in the same column to align based on time offset
+- **Glyph Offset for Embellishments**: Left embellishments (e.g., Jaaru `~G/`) no longer
+  cause note overlap. The `glyphOffset` property accounts for embellishment width when
+  positioning atoms, ensuring the note glyph aligns at its correct time position
 - Refactored SideBySidePlayground to use DockViewPlayground as core
 - Enhanced DockViewPlayground with layout versioning, console visibility API
 - Added synchronized scrolling between editor and output panels

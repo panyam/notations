@@ -364,6 +364,18 @@ export abstract class AtomView extends Shape {
   abstract get totalDuration(): TSU.Num.Fraction;
 
   /**
+   * Returns the horizontal offset from the atom's origin to where the note glyph starts.
+   * This accounts for left embellishments that appear before the note.
+   * Used by GroupView to align note glyphs at their correct time positions.
+   *
+   * Default is 0 (glyph starts at origin). Subclasses with left embellishments
+   * should override to return the width of left-side decorations.
+   */
+  get glyphOffset(): number {
+    return 0;
+  }
+
+  /**
    * Creates the SVG elements needed for this atom view.
    * @param parent The parent SVG element to attach to
    */
@@ -641,8 +653,11 @@ export abstract class GroupView extends AtomView {
     // Position each atom based on its time offset
     let currTime = ZERO;
     this.atomViews.forEach((av, index) => {
-      // Calculate x position: xPos = (currTime / totalDur) * groupWidth
-      const xPos = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
+      // Calculate where the NOTE GLYPH should appear based on time offset
+      const glyphX = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
+      // Subtract glyphOffset so left embellishments don't push the glyph past its time position
+      // The atom origin is placed earlier, so the glyph ends up at the correct time position
+      const xPos = Math.max(0, glyphX - av.glyphOffset);
       av.setBounds(xPos, currY, null, null, true);
 
       // Render continuation markers for atoms with duration > 1
