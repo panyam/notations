@@ -625,4 +625,38 @@ describe("Block Command Application Tests", () => {
     expect(lineOutside.layoutParams).not.toBeNull();
     expect(lineOutside.layoutParams.beatDuration).toBe(4);
   });
+
+  test("Raw blocks and lines maintain document order", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|4|2|2|")
+        \beatDuration(4)
+
+        > #### Section 1
+
+        Sw: S R G M
+
+        > #### Section 2
+
+        Sw: P D N S.
+      `,
+    );
+
+    // Should have 4 items in order: RawBlock, Line, RawBlock, Line
+    expect(notation.blocks.length).toBe(4);
+
+    // First: RawBlock with "#### Section 1"
+    expect(notation.blocks[0].TYPE).toBe("RawBlock");
+    expect((notation.blocks[0] as RawBlock).content).toContain("Section 1");
+
+    // Second: Line
+    expect(isLine(notation.blocks[1])).toBe(true);
+
+    // Third: RawBlock with "#### Section 2"
+    expect(notation.blocks[2].TYPE).toBe("RawBlock");
+    expect((notation.blocks[2] as RawBlock).content).toContain("Section 2");
+
+    // Fourth: Line
+    expect(isLine(notation.blocks[3])).toBe(true);
+  });
 });

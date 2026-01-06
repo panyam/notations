@@ -7,7 +7,7 @@ import "dockview-core/dist/styles/dockview.css";
 
 import * as N from "notations";
 import { SideBySideEditor, SideBySideEditorConfig } from "notations-web";
-import * as NV from "../NotationViewer";
+import { createMarkdownParser } from "../NotationViewer";
 
 // Import core notation styles
 import "../../../styles/NotationView.scss";
@@ -277,6 +277,7 @@ export class SideBySidePlayground {
         const config: SideBySideEditorConfig = {
           debounceDelay: 0, // Manual render via button
           syncScroll: false, // We manage scroll separately in dockview
+          markdownParser: createMarkdownParser(), // Use markdown-it for raw block rendering
           onSourceChange: (source) => {
             this.log(`Source changed (${source.length} chars)`, "info");
           },

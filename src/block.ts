@@ -251,9 +251,7 @@ export class Block extends Entity {
     return (
       this._unnamedLayoutParams.find((lp) => {
         return (
-          lp.beatDuration == this.atomsPerBeat &&
-          effectiveCycle.equals(lp.cycle) &&
-          lp.lineBreaksEqual(this.breaks)
+          lp.beatDuration == this.atomsPerBeat && effectiveCycle.equals(lp.cycle) && lp.lineBreaksEqual(this.breaks)
         );
       }) || null
     );

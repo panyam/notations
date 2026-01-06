@@ -1,15 +1,22 @@
 import * as N from "notations";
 const MarkdownIt = require("markdown-it");
 
-export function createViewer(rootElement: HTMLElement): N.Carnatic.NotationView {
-  const notationView = new N.Carnatic.NotationView(rootElement);
-  notationView.markdownParser = (contents: string) => {
-    const md = new MarkdownIt({
-      html: true,
-    });
+/**
+ * Creates a markdown parser function using markdown-it.
+ */
+export function createMarkdownParser(): (contents: string) => string {
+  const md = new MarkdownIt({
+    html: true,
+  });
+  return (contents: string) => {
     const tokens = md.parse(contents.trim(), {});
     return md.renderer.render(tokens, { langPrefix: "v4_" });
   };
+}
+
+export function createViewer(rootElement: HTMLElement): N.Carnatic.NotationView {
+  const notationView = new N.Carnatic.NotationView(rootElement);
+  notationView.markdownParser = createMarkdownParser();
   return notationView;
 }
 

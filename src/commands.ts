@@ -17,11 +17,14 @@ export class RawEmbedding extends Command {
 
   /**
    * Applies this command to a block.
-   * Adds a raw block to the container.
+   * Adds a raw block to the container and resets the current line
+   * so subsequent notation starts a new line.
    */
   applyToBlock(container: Block): void {
     const raw = new RawBlock(this.rawContents);
     container.addBlockItem(raw);
+    // Reset the current line so subsequent notation starts fresh
+    container.resetLine();
   }
 }
 
