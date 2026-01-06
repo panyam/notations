@@ -10,7 +10,7 @@ description: "Learn the fundamentals of the Notations DSL"
 <p>Swaras are written as text tokens without spaces:</p>
 
 <notation id="basic-swaras" showSource="true" caption="Basic Swaras">
-S R G M P D N
+S R G M P D N S. S. N D P M G R S
 </notation>
 
 <p>Common swaras:</p>
@@ -32,7 +32,7 @@ S R G M P D N
 <p>Add dots before or after a note (without spaces) to indicate octaves:</p>
 
 <notation id="octaves" showSource="true" caption="Octaves">
-...sa ..ri .ga ma pa da. ni. sa.. ri..
+...pa ...da ...ni ..sa ..ri ..ga ma pa pa. da. ni. sa.. ri.. ga.. ma.. pa..
 </notation>
 
 <ul>
@@ -48,7 +48,8 @@ S R G M P D N
 <p>Spaces indicate empty durations where the previous note continues. Use commas:</p>
 
 <notation id="spacing" showSource="true" caption="Notes with Spaces">
-S , R , , G
+, S , R , , G M; P ; 
+D N S. ,
 </notation>
 
 <p>In this example:</p>
@@ -63,7 +64,9 @@ S , R , , G
 <p>Use semicolon for double space:</p>
 
 <notation id="double-space" showSource="true" caption="Double Spaces">
-S ; R , , G
+S ; R ; G ,
+M ; P ; D , 
+N , ; S. ; , 
 </notation>
 
 <h2 id="groups">Groups</h2>
@@ -71,10 +74,11 @@ S ; R , , G
 <p>Square brackets group multiple notes into a single beat:</p>
 
 <notation id="groups" showSource="true" caption="Grouped Notes">
-S [R G] M [P D N] S.
+S [R G [ S R G ] ] M [P D N] S.
 </notation>
 
-<p>Here, R and G share one beat, and P, D, and N share one beat.</p>
+<p>Here, R and G share one beat, and P, D, and N share one beat.   You dont need to do the mental math.  Just write 
+it and let notations figure out where they land.</p>
 
 <h2 id="multiple-lines-roles">Multiple Lines (Roles)</h2>
 

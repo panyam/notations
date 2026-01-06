@@ -12,16 +12,27 @@ description: "Learn about commands for controlling notation behavior"
 <notation id="beat-duration-1" showSource="true" caption="One Note per Beat">
 \beatDuration(1)
 S R G M P D N S.
+S. N D P M G R S
 </notation>
 
 <notation id="beat-duration-2" showSource="true" caption="Two Notes per Beat">
 \beatDuration(2)
 S R G M P D N S.
+S. N D P M G R S
 </notation>
 
 <notation id="beat-duration-4" showSource="true" caption="Four Notes per Beat (Second Speed)">
 \beatDuration(4)
-S R G M P D N S.
+    S S R - S S R - S R     S S R R     G G M M       
+    R R G - R R G - R G     R R G G     M M P P       
+    G G M - G G M - G M     G G M M     P P D D       
+    M M P - M M P - M P     M M P P     D D N N       
+    P P D - P P D - P D     P P D D     N N S. S.       
+    S. S. N - S. S. N - S. N     S. S. N N     D D P P       
+    N N D - N N D - N D     N N D D     P P M M       
+    D D P - D D P - D P     D D P P     M M G G       
+    P P M - P P M - P M     P P M M     G G R R       
+    M M G - M M G - M G     M M G G     R R S S     
 </notation>
 
 <p>This is commonly used to notate different speeds in Carnatic music without changing the actual notation.</p>
@@ -42,9 +53,25 @@ S 2 R G M
 <p>The <code>\cycle</code> command defines the rhythmic pattern (tala). A cycle is made of multiple bars, each with a specified number of beats:</p>
 
 <notation id="cycle-basic" showSource="true" caption="Adi Tala">
-\cycle("|4|2|2|")
 \beatDuration(4)
-S R G M P D N S. , S. N D P M G R S
+\cycle("|4|2|2|")
+
+> ##### Pallavi
+
+Sw:
+s , , r g , p , d , s. , n , d , p , d p m g r s r s .n .d s , , ,
+
+
+Sh:
+Ra , , ra Vē , nu , Go , pa , ba , la , Ra , ji tha Sa th gu na ja ya she , la ,
+
+> ##### Charanam 1
+
+Sw:
+s , , r g , p , m , , g - p , d , r. , , s. n , d, p , , m g , r ,
+
+Sh:
+Sa , , ra sa , ksha , nē , , ra mē , mi , mA , , ru ba , da , kO , , rva lē , ra ,
 </notation>
 
 <p>The pattern <code>"|4|2|2|"</code> means:</p>
