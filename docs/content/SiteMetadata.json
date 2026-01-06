@@ -1,7 +1,7 @@
 {
   "siteName": "Notations Library Documentation",
   "siteDescription": "Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation",
-  "version": "0.0.70",
+  "version": "1.0.0",
   "author": "Sriram Panyam",
   "repository": "https://github.com/panyam/notations",
   "license": "ISC",
