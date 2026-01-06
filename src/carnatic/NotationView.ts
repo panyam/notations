@@ -40,9 +40,8 @@ export class NotationView {
     public readonly config?: NotationViewConfig,
   ) {
     this.loadChildViews();
-    if (config?.markdownParser) {
-      this.markdownParser = config.markdownParser;
-    }
+    // Default to identity function if no markdown parser provided
+    this.markdownParser = config?.markdownParser ?? ((content) => content);
   }
 
   get beatLayout(): GlobalBeatLayout {

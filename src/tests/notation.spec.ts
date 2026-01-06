@@ -580,4 +580,49 @@ describe("Block Command Application Tests", () => {
     expect(notation.blocks.length).toBe(1);
     expect(isLine(notation.blocks[0])).toBe(true);
   });
+
+  test("Lines inside section blocks get layoutParams from the section's scope", () => {
+    const [cmds, notation] = testV4(
+      String.raw`
+        \cycle("|4|2|2|")
+        \beatDuration(4)
+
+        \section("test") {
+          \line("Arohanam")
+          Sw: S R G M
+        }
+
+        \line("Avarohanam")
+        Sw: S. N D P
+      `,
+    );
+
+    // Should have a section block and a line at the top level
+    expect(notation.blocks.length).toBe(2);
+
+    // First item is a section block
+    const sectionBlock = notation.blocks[0];
+    expect(isBlock(sectionBlock)).toBe(true);
+    if (isBlock(sectionBlock)) {
+      expect(sectionBlock.blockType).toBe("section");
+      // Section should contain one line
+      expect(sectionBlock.blockItems.length).toBe(1);
+      const lineInSection = sectionBlock.blockItems[0] as Line;
+      expect(isLine(lineInSection)).toBe(true);
+
+      // The line inside the section should have layoutParams set
+      expect(lineInSection.layoutParams).not.toBeNull();
+      expect(lineInSection.layoutParams).toBeDefined();
+
+      // layoutParams should match the section's effective values
+      expect(lineInSection.layoutParams.beatDuration).toBe(4);
+      expect(lineInSection.layoutParams.cycle.beatCount).toBe(8); // |4|2|2| = 4+2+2 = 8
+    }
+
+    // Second item is a line directly in notation
+    const lineOutside = notation.blocks[1] as Line;
+    expect(isLine(lineOutside)).toBe(true);
+    expect(lineOutside.layoutParams).not.toBeNull();
+    expect(lineOutside.layoutParams.beatDuration).toBe(4);
+  });
 });

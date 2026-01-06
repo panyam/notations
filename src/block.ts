@@ -2,6 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import { Entity } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
+import { LayoutParams } from "./layouts";
 
 /**
  * Definition of a role in a block context.
@@ -174,6 +175,114 @@ export class Block extends Entity {
     return this.parentBlock?.breaks ?? [];
   }
 
+  // ============================================
+  // Layout parameters management
+  // ============================================
+
+  /** Layout parameters caching for this block scope */
+  private _unnamedLayoutParams: LayoutParams[] = [];
+  private _namedLayoutParams = new Map<string, LayoutParams>();
+  private _layoutParams: LayoutParams | null = null;
+
+  /**
+   * Gets the unnamed layout parameters for this block.
+   */
+  get unnamedLayoutParams(): ReadonlyArray<LayoutParams> {
+    return this._unnamedLayoutParams;
+  }
+
+  /**
+   * Gets the named layout parameters for this block.
+   */
+  get namedLayoutParams(): ReadonlyMap<string, LayoutParams> {
+    return this._namedLayoutParams;
+  }
+
+  /**
+   * Gets the current layout parameters for this block scope.
+   * Uses the effective cycle, atomsPerBeat, and breaks from tree walking.
+   * Creates or finds a matching LayoutParams if needed.
+   */
+  get layoutParams(): LayoutParams {
+    if (this._layoutParams == null) {
+      // Find or create layout params matching current effective values
+      this._layoutParams = this.findUnnamedLayoutParams();
+      if (this._layoutParams == null) {
+        this._layoutParams = this.snapshotLayoutParams();
+        this._unnamedLayoutParams.push(this._layoutParams);
+      }
+    }
+    return this._layoutParams;
+  }
+
+  /**
+   * Resets the current layout parameters to null.
+   * Called when layout-affecting properties change.
+   */
+  resetLayoutParams(): void {
+    this._layoutParams = null;
+    this.resetLine();
+  }
+
+  /**
+   * Creates a snapshot of the current layout parameters.
+   * @returns A new LayoutParams object with the current effective settings
+   */
+  protected snapshotLayoutParams(): LayoutParams {
+    const effectiveCycle = this.cycle;
+    if (effectiveCycle == null) {
+      throw new Error("Cannot create layout params: no cycle defined");
+    }
+    return new LayoutParams({
+      cycle: effectiveCycle,
+      beatDuration: this.atomsPerBeat,
+      layout: this.breaks,
+    });
+  }
+
+  /**
+   * Finds an unnamed layout parameters object that matches the current effective settings.
+   * @returns Matching layout parameters, or null if none found
+   */
+  protected findUnnamedLayoutParams(): LayoutParams | null {
+    const effectiveCycle = this.cycle;
+    if (effectiveCycle == null) return null;
+
+    return (
+      this._unnamedLayoutParams.find((lp) => {
+        return (
+          lp.beatDuration == this.atomsPerBeat &&
+          effectiveCycle.equals(lp.cycle) &&
+          lp.lineBreaksEqual(this.breaks)
+        );
+      }) || null
+    );
+  }
+
+  /**
+   * Ensures that named layout parameters with the given name exist.
+   * @param name The name of the layout parameters
+   * @returns The layout parameters
+   */
+  ensureNamedLayoutParams(name: string): LayoutParams {
+    let lp = this._namedLayoutParams.get(name) || null;
+    if (lp == null || this._layoutParams != lp) {
+      if (lp == null) {
+        // Create new named layout params
+        lp = this.snapshotLayoutParams();
+        this._namedLayoutParams.set(name, lp);
+      } else {
+        // Copy named LPs attributes into our locals
+        this.localCycle = lp.cycle;
+        this.localAtomsPerBeat = lp.beatDuration;
+        this.localBreaks = lp.lineBreaks;
+      }
+      this._layoutParams = lp;
+      this.resetLine();
+    }
+    return this._layoutParams!;
+  }
+
   /**
    * Gets a role definition by name, walking up the tree if not found locally.
    * @param name The name of the role
@@ -249,6 +358,14 @@ export class Block extends Entity {
     this._currentLine = new Line();
     this.addBlockItem(this._currentLine);
     return this._currentLine;
+  }
+
+  /**
+   * Resets the current line pointer to null.
+   * Called when layout parameters change to force a new line.
+   */
+  resetLine(): void {
+    this._currentLine = null;
   }
 
   /**

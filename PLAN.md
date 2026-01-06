@@ -496,30 +496,30 @@ Update `docs/content/api/` with:
 ## Implementation Order
 
 ### Sprint 1: Foundation
-- [ ] Add Block class to core.ts
-- [ ] Add parent references to Entity
-- [ ] Implement BlockContainer interface
+- [x] Add Block class to core.ts (moved to block.ts)
+- [x] Add parent references to Entity
+- [x] Implement BlockContainer interface
 
 ### Sprint 2: Parser
-- [ ] Update grammar with block rules
-- [ ] Modify createCommand() for block creation
-- [ ] Update Command interface with applyToBlock()
+- [x] Update grammar with block rules
+- [x] Modify createCommand() for block creation
+- [x] Update Command interface with applyToBlock()
 
 ### Sprint 3: Commands
-- [ ] Update all existing commands for block support
-- [ ] Add \section() command
-- [ ] Add \group() command
-- [ ] Add \repeat() command (optional)
+- [x] Update all existing commands for block support
+- [x] Add \section() command
+- [x] Add \group() command
+- [x] Add \repeat() command
 
 ### Sprint 4: Layout Engine
-- [ ] Update GlobalBeatLayout for recursive processing
-- [ ] Modify BeatColDAG for block context
-- [ ] Update LayoutParams resolution
+- [x] Update GlobalBeatLayout for recursive processing
+- [x] Modify BeatColDAG for block context
+- [x] Update LayoutParams resolution (moved to Block class with proper scoping)
 
 ### Sprint 5: Rendering
-- [ ] Update NotationView for block rendering
-- [ ] Add section header rendering
-- [ ] Update LineView for block context
+- [x] Update NotationView for block rendering
+- [x] Add section header rendering
+- [x] Update LineView for block context
 
 ### Sprint 6: notation/web
 - [ ] Update NotationViewer for new structure

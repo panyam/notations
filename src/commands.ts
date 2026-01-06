@@ -126,17 +126,15 @@ export class AddAtoms extends Command {
     }
     // Get or create the current line
     const line = container.currentLine;
-    // For Notation, also handle layoutParams
-    if (container instanceof Notation) {
-      const lpForLine = line.layoutParams;
-      if (lpForLine == null) {
-        line.layoutParams = container.layoutParams;
-      } else {
-        TSU.assert(
-          lpForLine == container.layoutParams,
-          "Layout parameters have changed so a new line should have been started",
-        );
-      }
+    // Set layoutParams from the container's scope (Block or Notation)
+    const lpForLine = line.layoutParams;
+    if (lpForLine == null) {
+      line.layoutParams = container.layoutParams;
+    } else {
+      TSU.assert(
+        lpForLine == container.layoutParams,
+        "Layout parameters have changed so a new line should have been started",
+      );
     }
     // Add atoms to the line
     line.addAtoms(roleDef.name, roleDef.notesOnly, ...this.atoms);

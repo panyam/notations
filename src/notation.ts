@@ -2,7 +2,6 @@ import * as TSU from "@panyam/tsutils";
 import { Entity } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
-import { LayoutParams } from "./layouts";
 import {
   RoleDef,
   RawBlock,
@@ -176,11 +175,6 @@ export class Notation extends Block {
   /** Handler for missing roles */
   onMissingRole: (name: string) => RoleDef | null = (name) => this.newRoleDef(name, name == "sw");
 
-  /** Layout parameters management */
-  private _unnamedLayoutParams: LayoutParams[] = [];
-  private _namedLayoutParams = new Map<string, LayoutParams>();
-  private _layoutParams: LayoutParams | null = null;
-
   /**
    * Creates a new Notation.
    */
@@ -246,103 +240,6 @@ export class Notation extends Block {
    */
   get roles(): RoleDef[] {
     return Array.from(this.localRoles.values());
-  }
-
-  // ============================================
-  // Layout parameters management
-  // ============================================
-
-  /**
-   * Gets the unnamed layout parameters.
-   */
-  get unnamedLayoutParams(): ReadonlyArray<LayoutParams> {
-    return this._unnamedLayoutParams;
-  }
-
-  /**
-   * Gets the named layout parameters.
-   */
-  get namedLayoutParams(): ReadonlyMap<string, LayoutParams> {
-    return this._namedLayoutParams;
-  }
-
-  /**
-   * Gets the current layout parameters, creating or finding an appropriate one if needed.
-   */
-  get layoutParams(): LayoutParams {
-    if (this._layoutParams == null) {
-      // create it or find one that matches current params
-      this._layoutParams = this.findUnnamedLayoutParams();
-      if (this._layoutParams == null) {
-        this._layoutParams = this.snapshotLayoutParams();
-        this._unnamedLayoutParams.push(this._layoutParams);
-      }
-    }
-    return this._layoutParams;
-  }
-
-  /**
-   * Resets the current layout parameters to null.
-   */
-  resetLayoutParams(): void {
-    this._layoutParams = null;
-    this.resetLine();
-  }
-
-  /**
-   * Ensures that named layout parameters with the given name exist.
-   * Creates them if they don't exist, or updates current layout parameters to match.
-   *
-   * @param name The name of the layout parameters
-   * @returns The layout parameters
-   */
-  ensureNamedLayoutParams(name: string): LayoutParams {
-    let lp = this._namedLayoutParams.get(name) || null;
-    if (lp == null || this._layoutParams != lp) {
-      // no change so go ahead
-      if (lp == null) {
-        // does not exist so create one by re-snapshotting it
-        // and saving it
-        lp = this.snapshotLayoutParams();
-        this._namedLayoutParams.set(name, lp);
-      } else {
-        // copy named LPs attributes into our locals
-        this.currentCycle = lp.cycle;
-        this.currentAPB = lp.beatDuration;
-        this.currentBreaks = lp.lineBreaks;
-      }
-      this._layoutParams = lp;
-      this.resetLine(); // since layout params have changed
-    }
-    return this._layoutParams;
-  }
-
-  /**
-   * Creates a snapshot of the current layout parameters.
-   * @returns A new LayoutParams object with the current settings
-   */
-  protected snapshotLayoutParams(): LayoutParams {
-    return new LayoutParams({
-      cycle: this.currentCycle,
-      beatDuration: this.currentAPB,
-      layout: this.currentBreaks,
-    });
-  }
-
-  /**
-   * Finds an unnamed layout parameters object that matches the current settings.
-   * @returns Matching layout parameters, or null if none found
-   */
-  protected findUnnamedLayoutParams(): LayoutParams | null {
-    return (
-      this._unnamedLayoutParams.find((lp) => {
-        return (
-          lp.beatDuration == this.currentAPB &&
-          this.currentCycle.equals(lp.cycle) &&
-          lp.lineBreaksEqual(this.currentBreaks)
-        );
-      }) || null
-    );
   }
 
   // ============================================

@@ -307,6 +307,14 @@ export class SideBySidePlayground {
           this.sideBySideEditor.editorElement.style.border = "none";
           this.sideBySideEditor.editorElement.style.outline = "none";
 
+          // Add keyboard shortcut: Ctrl/Cmd/Alt + Enter to render
+          this.sideBySideEditor.editorElement.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey || e.altKey)) {
+              e.preventDefault();
+              this.render();
+            }
+          });
+
           editorContainer.appendChild(this.sideBySideEditor.editorElement);
         }
       },
