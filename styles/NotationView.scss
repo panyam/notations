@@ -75,6 +75,28 @@
 }
 
 /* ========================================
+   Role-specific Styles
+   ======================================== */
+
+/* Swara (Sw) role - blue in light theme for distinction from Sahitya */
+.role_sw text {
+  fill: #2563eb; /* Blue-600 */
+}
+
+/* Dark mode - red for swara */
+:root.dark .role_sw text,
+[data-theme="dark"] .role_sw text {
+  fill: #ef4444; /* Red-500 */
+}
+
+/* System preference fallback for dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) .role_sw text {
+    fill: #ef4444; /* Red-500 */
+  }
+}
+
+/* ========================================
    Layout Styles
    ======================================== */
 
