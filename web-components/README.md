@@ -124,11 +124,82 @@ npm run build
 npm run watch
 ```
 
-## Future Components
+### SideBySideEditor
 
-- `NotationEditor`: Interactive editor with live preview
-- `NotationViewer`: Standalone viewer component
-- More to come!
+Editor and output components with synchronized scrolling.
+
+```typescript
+import { SideBySideEditor, SideBySideEditorConfig } from "notations-web";
+
+const config: SideBySideEditorConfig = {
+  initialSource: "S R G M P",
+  syncScroll: true,
+  debounceDelay: 300,
+  onSourceChange: (source) => console.log("Changed:", source),
+  onNotationParsed: (notation, beatLayout) => console.log("Parsed"),
+  onParseError: (errors) => console.error(errors),
+};
+
+const editor = new SideBySideEditor(config);
+
+// Place elements in your layout
+leftPanel.appendChild(editor.editorElement);
+rightPanel.appendChild(editor.outputElement);
+
+// Programmatic control
+editor.source = "new source";
+editor.render();
+```
+
+### DockViewPlayground
+
+Complete playground with resizable DockView panels (editor, output, console).
+
+```typescript
+import { DockViewPlayground, DockViewPlaygroundConfig } from "notations-web";
+
+const config: DockViewPlaygroundConfig = {
+  initialSource: "S R G M P",
+  showConsole: true,
+  persistLayout: true,
+  storageKey: "my-playground-layout",
+  layoutVersion: 1,  // Increment to force layout reset
+  syncScroll: true,
+  markdownParser: (content) => marked.parse(content),
+  onSourceChange: (source) => console.log("Changed"),
+  onNotationParsed: (notation, beatLayout) => console.log("Parsed"),
+  onParseError: (errors) => console.error(errors),
+};
+
+const playground = new DockViewPlayground(container, config);
+
+// Console API
+playground.log("Hello!", "info");
+playground.showConsole();
+playground.hideConsole();
+playground.toggleConsole();
+playground.clearConsole();
+
+// Other methods
+playground.source = "new source";
+playground.render();
+playground.resetLayout();
+```
+
+#### CSS Theming
+
+DockViewPlayground uses CSS classes for theming. Define styles for:
+
+```css
+/* Panel backgrounds */
+.dvp-panel { background: #fff; color: #333; }
+.dark .dvp-panel { background: #1e1e1e; color: #e0e0e0; }
+
+/* Console elements */
+.dvp-console-header { border-bottom: 1px solid #e0e0e0; }
+.dvp-console-clear-btn { background: #fff; border: 1px solid #ddd; }
+.dvp-console-output { /* styles */ }
+```
 
 ## License
 

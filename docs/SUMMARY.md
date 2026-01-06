@@ -47,6 +47,12 @@ The documentation includes interactive notation examples with:
   - Interactive editing with live preview
   - Clipboard integration
   - Responsive behavior
+- **DockViewPlayground**: Reusable playground with DockView-based resizable panels
+  - Configurable: syncScroll, markdownParser, layoutVersion, showConsole
+  - Layout persistence to localStorage with version tracking
+  - Console visibility API: showConsole(), hideConsole(), toggleConsole()
+  - CSS class-based theming via `.dvp-panel`, `.dvp-console-*` classes
+- **SideBySideEditor**: Editor + output with synchronized scrolling
 
 ### Path Configuration
 - PathPrefix: `/notations` for GitHub Pages subdomain hosting
@@ -100,6 +106,13 @@ This command:
 4. Force-pushes to gh-pages branch
 
 ## Recent Updates
+
+### January 2026
+- Refactored SideBySidePlayground to use DockViewPlayground as core
+- Enhanced DockViewPlayground with layout versioning, console visibility API
+- Added synchronized scrolling between editor and output panels
+- Fixed light/dark mode theming for DockView panels
+- Exported DockViewPlayground from notations-web package
 
 ### November 2025
 - Added comprehensive notation examples (6 new pages)
