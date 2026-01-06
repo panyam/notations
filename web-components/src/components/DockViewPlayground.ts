@@ -25,7 +25,7 @@ export interface DockViewPlaygroundConfig {
   initialSource?: string;
 
   /**
-   * Whether to show the console panel.
+   * Whether to show the console panel initially.
    * @default true
    */
   showConsole?: boolean;
@@ -41,6 +41,23 @@ export interface DockViewPlaygroundConfig {
    * @default "notations-playground-layout"
    */
   storageKey?: string;
+
+  /**
+   * Layout version number. Increment to force layout reset when structure changes.
+   * @default 1
+   */
+  layoutVersion?: number;
+
+  /**
+   * Whether to enable scroll synchronization between editor and output.
+   * @default true
+   */
+  syncScroll?: boolean;
+
+  /**
+   * Optional markdown parser for RawBlock content.
+   */
+  markdownParser?: (content: string) => string;
 
   /**
    * SideBySideEditor configuration options.
@@ -82,6 +99,8 @@ const DEFAULT_CONFIG: DockViewPlaygroundConfig = {
   showConsole: true,
   persistLayout: true,
   storageKey: "notations-playground-layout",
+  layoutVersion: 1,
+  syncScroll: true,
 };
 
 /**
@@ -138,6 +157,7 @@ export default class DockViewPlayground {
   constructor(container: HTMLElement, config: DockViewPlaygroundConfig = {}) {
     this.container = container;
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this._consoleVisible = this.config.showConsole ?? true;
 
     this.init();
   }
@@ -205,17 +225,101 @@ export default class DockViewPlayground {
   }
 
   /**
+   * Resets the layout to defaults.
+   * Clears persisted layout and recreates the default layout.
+   */
+  resetLayout(): void {
+    if (this.config.storageKey) {
+      localStorage.removeItem(this.config.storageKey);
+    }
+    if (this.dockview) {
+      this.dockview.clear();
+      this.createDefaultLayout();
+    }
+  }
+
+  // Console visibility API
+
+  /** Whether the console is currently visible */
+  private _consoleVisible: boolean;
+
+  /**
+   * Returns whether the console panel is currently visible.
+   */
+  isConsoleVisible(): boolean {
+    return this._consoleVisible;
+  }
+
+  /**
+   * Shows the console panel.
+   */
+  showConsole(): void {
+    if (this._consoleVisible || !this.dockview) return;
+
+    // Add console below editor (spans full width at bottom)
+    this.dockview.addPanel({
+      id: "console",
+      component: "console",
+      title: "Console",
+      position: { direction: "below", referencePanel: "editor" },
+    });
+
+    // Set console to ~10% height
+    const consolePanel = this.dockview.getPanel("console");
+    const containerHeight = this.container.clientHeight || 600;
+    if (consolePanel?.group?.api) {
+      consolePanel.group.api.setSize({ height: Math.floor(containerHeight * 0.1) });
+    }
+
+    this._consoleVisible = true;
+  }
+
+  /**
+   * Hides the console panel.
+   */
+  hideConsole(): void {
+    if (!this._consoleVisible || !this.dockview) return;
+
+    const consolePanel = this.dockview.getPanel("console");
+    if (consolePanel) {
+      consolePanel.api.close();
+    }
+    this._consoleVisible = false;
+  }
+
+  /**
+   * Toggles the console panel visibility.
+   * @returns The new visibility state.
+   */
+  toggleConsole(): boolean {
+    if (this._consoleVisible) {
+      this.hideConsole();
+    } else {
+      this.showConsole();
+    }
+    return this._consoleVisible;
+  }
+
+  /**
    * Initializes the playground.
    */
   private init(): void {
-    // Apply theme class
+    // Ensure container has proper sizing for DockView
+    // DockView requires explicit height on its container
+    if (!this.container.style.height && !this.container.offsetHeight) {
+      this.container.style.height = "100%";
+    }
+    this.container.style.width = this.container.style.width || "100%";
+
+    // Apply theme class (preserve existing classes)
     const isDark = this.isDarkMode();
-    this.container.className = isDark ? "dockview-theme-dark" : "dockview-theme-light";
+    this.container.classList.add(isDark ? "dockview-theme-dark" : "dockview-theme-light");
 
     // Watch for theme changes
     const observer = new MutationObserver(() => {
       const dark = this.isDarkMode();
-      this.container.className = dark ? "dockview-theme-dark" : "dockview-theme-light";
+      this.container.classList.remove("dockview-theme-dark", "dockview-theme-light");
+      this.container.classList.add(dark ? "dockview-theme-dark" : "dockview-theme-light");
     });
     observer.observe(document.documentElement, {
       attributes: true,
@@ -261,7 +365,11 @@ export default class DockViewPlayground {
     if (!this.dockview || !this.config.storageKey) return;
     try {
       const layout = this.dockview.toJSON();
-      localStorage.setItem(this.config.storageKey, JSON.stringify(layout));
+      const data = {
+        version: this.config.layoutVersion,
+        layout,
+      };
+      localStorage.setItem(this.config.storageKey, JSON.stringify(data));
     } catch (e) {
       console.warn("Failed to save layout:", e);
     }
@@ -275,8 +383,13 @@ export default class DockViewPlayground {
     try {
       const saved = localStorage.getItem(this.config.storageKey);
       if (saved) {
-        const layout = JSON.parse(saved);
-        this.dockview.fromJSON(layout);
+        const data = JSON.parse(saved);
+        // Check version - if outdated or missing, reset to defaults
+        if (data.version !== this.config.layoutVersion) {
+          localStorage.removeItem(this.config.storageKey);
+          return false;
+        }
+        this.dockview.fromJSON(data.layout);
         return true;
       }
     } catch (e) {
@@ -309,18 +422,35 @@ export default class DockViewPlayground {
 
   /**
    * Creates the default layout.
+   * Layout: Editor and Output side by side on top (80% height),
+   * Console spanning full width on bottom (20% height).
    */
   private createDefaultLayout(): void {
     if (!this.dockview) return;
 
-    // Editor panel (left)
+    // Get container dimensions for proportional sizing
+    const containerHeight = this.container.clientHeight || 600;
+    const containerWidth = this.container.clientWidth || 800;
+
+    // Editor panel (top left)
     this.dockview.addPanel({
       id: "editor",
       component: "editor",
       title: "Editor",
     });
 
-    // Output panel (right)
+    // Console panel (bottom, full width) - add BEFORE output
+    // so it creates a vertical split at the root level
+    if (this._consoleVisible) {
+      this.dockview.addPanel({
+        id: "console",
+        component: "console",
+        title: "Console",
+        position: { direction: "below", referencePanel: "editor" },
+      });
+    }
+
+    // Output panel (top right) - splits the top row
     this.dockview.addPanel({
       id: "output",
       component: "output",
@@ -328,14 +458,22 @@ export default class DockViewPlayground {
       position: { direction: "right", referencePanel: "editor" },
     });
 
-    // Console panel (bottom, optional)
-    if (this.config.showConsole) {
-      this.dockview.addPanel({
-        id: "console",
-        component: "console",
-        title: "Console",
-        position: { direction: "below", referencePanel: "output" },
-      });
+    // Set sizes using the group API
+    const editorPanel = this.dockview.getPanel("editor");
+    const consolePanel = this.dockview.getPanel("console");
+    const outputPanel = this.dockview.getPanel("output");
+
+    // Set console height to ~10% of container
+    if (consolePanel?.group?.api) {
+      consolePanel.group.api.setSize({ height: Math.floor(containerHeight * 0.1) });
+    }
+
+    // Set editor and output to 50% width each
+    if (editorPanel?.group?.api) {
+      editorPanel.group.api.setSize({ width: Math.floor(containerWidth * 0.5) });
+    }
+    if (outputPanel?.group?.api) {
+      outputPanel.group.api.setSize({ width: Math.floor(containerWidth * 0.5) });
     }
   }
 
@@ -344,6 +482,7 @@ export default class DockViewPlayground {
    */
   private createEditorPanel(): IContentRenderer {
     const element = document.createElement("div");
+    element.className = "dvp-panel dvp-editor-panel";
     element.style.cssText = "display: flex; flex-direction: column; height: 100%; padding: 0.5rem;";
 
     return {
@@ -353,7 +492,8 @@ export default class DockViewPlayground {
         const editorConfig: SideBySideEditorConfig = {
           initialSource: this.config.initialSource,
           debounceDelay: 300,
-          syncScroll: false, // We manage scroll separately in dockview
+          syncScroll: this.config.syncScroll,
+          markdownParser: this.config.markdownParser,
           ...this.config.editorConfig,
           onSourceChange: (source) => {
             this.log(`Source changed (${source.length} chars)`, "info");
@@ -403,6 +543,7 @@ export default class DockViewPlayground {
    */
   private createOutputPanel(): IContentRenderer {
     const element = document.createElement("div");
+    element.className = "dvp-panel dvp-output-panel";
     element.style.cssText = "display: flex; flex-direction: column; height: 100%;";
 
     return {
@@ -429,6 +570,7 @@ export default class DockViewPlayground {
    */
   private createConsolePanel(): IContentRenderer {
     const element = document.createElement("div");
+    element.className = "dvp-panel dvp-console-panel";
     element.style.cssText = "display: flex; flex-direction: column; height: 100%;";
 
     return {
@@ -436,32 +578,32 @@ export default class DockViewPlayground {
       init: (_params: Parameters) => {
         // Console header
         const header = document.createElement("div");
+        header.className = "dvp-console-header";
         header.style.cssText = `
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0.25rem 0.5rem;
-          border-bottom: 1px solid var(--dv-separator-border, #ddd);
           font-size: 0.75rem;
         `;
 
         const clearBtn = document.createElement("button");
+        clearBtn.className = "dvp-console-clear-btn";
         clearBtn.textContent = "Clear";
         clearBtn.style.cssText = `
           padding: 0.125rem 0.5rem;
           font-size: 0.75rem;
-          border: 1px solid var(--dv-separator-border, #ddd);
           border-radius: 3px;
-          background: transparent;
           cursor: pointer;
         `;
-        clearBtn.addEventListener("click", () => this.clearConsole());
+        clearBtn.onclick = () => this.clearConsole();
         header.appendChild(clearBtn);
 
         element.appendChild(header);
 
         // Console output
         this.consoleOutput = document.createElement("div");
+        this.consoleOutput.className = "dvp-console-output";
         this.consoleOutput.style.cssText = `
           flex: 1;
           overflow: auto;

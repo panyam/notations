@@ -8,33 +8,16 @@ bodyClass: "playground-page"
 ---
 
 <div id="playground-container" class="playground-container">
+    <!-- Toolbar -->
+    <div id="playground-toolbar" class="playground-toolbar">
+        <select id="sample-select" class="sample-select">
+            <option value="basic-scale">Basic Scale</option>
+        </select>
+        <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
+        <button id="reset-layout-btn" class="btn btn-sm" title="Reset to default layout">Reset Layout</button>
+    </div>
     <!-- DockView will be initialized here -->
-    <div id="dockview-container" class="dockview-container" style="height: calc(100vh - 60px);"></div>
-</div>
-
-<!-- Hidden panel templates -->
-<div style="display: none;">
-    <div id="editor-panel-template" class="panel-content">
-        <div class="panel-toolbar">
-            <select id="sample-select" class="sample-select">
-                <option value="basic-scale">Basic Scale</option>
-            </select>
-            <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
-            <button id="reset-layout-btn" class="btn btn-sm" title="Reset to default layout">Reset Layout</button>
-        </div>
-        <div id="editor-container" class="editor-container"></div>
-    </div>
-
-    <div id="output-panel-template" class="panel-content">
-        <div id="output-container" class="output-container"></div>
-    </div>
-
-    <div id="console-panel-template" class="panel-content">
-        <div class="panel-toolbar">
-            <button id="clear-console-btn" class="btn btn-sm">Clear</button>
-        </div>
-        <div id="console-output" class="console-output"></div>
-    </div>
+    <div id="dockview-container" class="dockview-container"></div>
 </div>
 
 <style>
@@ -45,45 +28,39 @@ bodyClass: "playground-page"
 }
 
 .playground-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: calc(100vh - 60px);
     overflow: hidden;
 }
 
+.playground-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-secondary, #f8f9fa);
+    flex-shrink: 0;
+}
+
+.dark .playground-toolbar {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
 .dockview-container {
-    width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
+    /* DockView requires explicit height - toolbar is ~41px */
+    height: calc(100% - 41px);
 }
 
 .main-content-full {
     padding: 0;
     margin: 0;
     max-width: none;
-}
-
-.panel-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: var(--color-bg, #fff);
-}
-
-.dark .panel-content {
-    background: var(--color-bg-dark, #1e1e1e);
-}
-
-.panel-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--color-border, #e0e0e0);
-    background: var(--color-bg-secondary, #f8f9fa);
-}
-
-.dark .panel-toolbar {
-    background: var(--color-bg-secondary-dark, #252525);
-    border-color: var(--color-border-dark, #333);
 }
 
 .sample-select {
@@ -141,54 +118,6 @@ bodyClass: "playground-page"
     font-size: 0.75rem;
 }
 
-.editor-container {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.output-container {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 1rem;
-}
-
-.console-output {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 0.5rem;
-    font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
-    font-size: 0.75rem;
-    background: var(--color-bg, #fff);
-}
-
-.dark .console-output {
-    background: var(--color-bg-dark, #1a1a1a);
-}
-
-.console-line {
-    padding: 0.125rem 0;
-    border-bottom: 1px solid var(--color-border, #f0f0f0);
-}
-
-.dark .console-line {
-    border-color: var(--color-border-dark, #333);
-}
-
-.console-info {
-    color: var(--color-text, #424242);
-}
-
-.dark .console-info {
-    color: var(--color-text-dark, #e0e0e0);
-}
-
-.console-error {
-    color: #f44336;
-}
-
 .playground-editor {
     width: 100%;
     height: 100%;
@@ -206,5 +135,44 @@ bodyClass: "playground-page"
 .dark .playground-editor {
     background: var(--color-bg-dark, #1e1e1e);
     color: var(--color-text-dark, #e0e0e0);
+}
+
+/* DockViewPlayground panel styles */
+.dvp-panel {
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .dvp-panel {
+    background: var(--color-bg-dark, #1e1e1e);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dvp-console-header {
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .dvp-console-header {
+    border-color: var(--color-border-dark, #333);
+}
+
+.dvp-console-clear-btn {
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+    border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .dvp-console-clear-btn {
+    background: var(--color-bg-dark, #333);
+    color: var(--color-text-dark, #e0e0e0);
+    border-color: var(--color-border-dark, #555);
+}
+
+.dvp-console-clear-btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .dvp-console-clear-btn:hover {
+    background: var(--color-bg-hover-dark, #444);
 }
 </style>

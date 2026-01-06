@@ -3,6 +3,7 @@ export { default as NotationBlock, NotationBlockConfig } from "./components/Nota
 export { default as NotebookView } from "./components/NotebookView";
 export { default as NotebookCell, NotebookCellConfig } from "./components/NotebookCell";
 export { default as SideBySideEditor, SideBySideEditorConfig } from "./components/SideBySideEditor";
+export { default as DockViewPlayground, DockViewPlaygroundConfig } from "./components/DockViewPlayground";
 
 // Export notebook types and utilities
 export * from "./types/notebook";
