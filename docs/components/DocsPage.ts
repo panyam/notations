@@ -1,4 +1,4 @@
-import { NotationBlock, NotationBlockConfig } from "notations-web";
+import { NotationBlock, NotationBlockConfig } from "notations/web";
 import * as N from "notations";
 import * as NV from "./NotationViewer";
 

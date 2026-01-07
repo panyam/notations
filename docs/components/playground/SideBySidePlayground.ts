@@ -7,7 +7,7 @@
  * - Keyboard shortcuts
  */
 
-import { DockViewPlayground, DockViewPlaygroundConfig } from "notations-web";
+import { DockViewPlayground, DockViewPlaygroundConfig } from "notations/web/dockview";
 import "dockview-core/dist/styles/dockview.css";
 
 import * as N from "notations";

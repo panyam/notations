@@ -5,13 +5,12 @@
  * of cells, each representing a Block from the notation.
  */
 
-import * as N from "notations";
-import {
-  NotebookConfig,
-  CellModel,
-  CellOperations,
-  LayoutChangeEvent,
-} from "../types/notebook";
+import { load } from "../../loader";
+import { NotationView } from "../../carnatic";
+import { GridLayoutGroup } from "../../grids";
+import { Notation } from "../../notation";
+import { isBlock, isLine, isRawBlock, Block, RawBlock } from "../../block";
+import { NotebookConfig, CellModel, CellOperations, LayoutChangeEvent } from "../types/notebook";
 import {
   createCellModels,
   findCellById,
@@ -48,10 +47,10 @@ export default class NotebookView implements CellOperations {
   readonly config: NotebookConfig;
 
   /** Shared grid layout group for column alignment */
-  readonly gridLayoutGroup: N.GridLayoutGroup;
+  readonly gridLayoutGroup: GridLayoutGroup;
 
   /** The current notation */
-  private notation: N.Notation | null = null;
+  private notation: Notation | null = null;
 
   /** The full notation source */
   private notationSource: string = "";
@@ -63,7 +62,7 @@ export default class NotebookView implements CellOperations {
   private cellElements = new Map<string, HTMLElement>();
 
   /** Map of cell ID to its NotationView (for notation cells) */
-  private cellNotationViews = new Map<string, N.Carnatic.NotationView>();
+  private cellNotationViews = new Map<string, NotationView>();
 
   /** Unsubscribe function for layout change listener */
   private layoutChangeUnsubscribe: (() => void) | null = null;
@@ -86,7 +85,7 @@ export default class NotebookView implements CellOperations {
     container.appendChild(this.rootElement);
 
     // Create or use shared grid layout group
-    this.gridLayoutGroup = this.config.sharedGridLayoutGroup ?? new N.GridLayoutGroup();
+    this.gridLayoutGroup = this.config.sharedGridLayoutGroup ?? new GridLayoutGroup();
 
     // Subscribe to layout changes
     this.layoutChangeUnsubscribe = this.gridLayoutGroup.onLayoutChange((event) => {
@@ -103,7 +102,7 @@ export default class NotebookView implements CellOperations {
     this.notationSource = source;
 
     // Parse the notation
-    const [notation, beatLayout, errors] = N.load(source, { log: false });
+    const [notation, beatLayout, errors] = load(source, { log: false });
 
     if (errors.length > 0) {
       console.error("Notation parse errors:", errors);
@@ -128,7 +127,7 @@ export default class NotebookView implements CellOperations {
   /**
    * Gets the current notation.
    */
-  getNotation(): N.Notation | null {
+  getNotation(): Notation | null {
     return this.notation;
   }
 
@@ -237,8 +236,8 @@ export default class NotebookView implements CellOperations {
     header.appendChild(badge);
 
     // Name (if block has a name)
-    if (N.isBlock(cell.blockItem)) {
-      const block = cell.blockItem as N.Block;
+    if (isBlock(cell.blockItem)) {
+      const block = cell.blockItem as Block;
       if (block.name) {
         const name = document.createElement("span");
         name.className = "notebook-cell-name";
@@ -301,9 +300,9 @@ export default class NotebookView implements CellOperations {
    * Renders cell content in preview mode.
    */
   private renderCellPreviewMode(cell: CellModel, container: HTMLElement): void {
-    if (N.isRawBlock(cell.blockItem)) {
+    if (isRawBlock(cell.blockItem)) {
       // Render RawBlock content (markdown or plain text)
-      const rawBlock = cell.blockItem as N.RawBlock;
+      const rawBlock = cell.blockItem as RawBlock;
       const content = document.createElement("div");
       content.className = "notebook-rawblock-content";
 
@@ -313,14 +312,14 @@ export default class NotebookView implements CellOperations {
         content.textContent = rawBlock.content;
       }
       container.appendChild(content);
-    } else if (N.isLine(cell.blockItem) || N.isBlock(cell.blockItem)) {
+    } else if (isLine(cell.blockItem) || isBlock(cell.blockItem)) {
       // Render notation content using NotationView
       const viewContainer = document.createElement("div");
       viewContainer.className = "notebook-notation-view";
       container.appendChild(viewContainer);
 
       // Create NotationView sharing the grid layout group
-      const notationView = new N.Carnatic.NotationView(viewContainer, {
+      const notationView = new NotationView(viewContainer, {
         sharedGridLayoutGroup: this.gridLayoutGroup,
         markdownParser: this.config.markdownParser,
       });
@@ -523,7 +522,7 @@ export default class NotebookView implements CellOperations {
    */
   insertCell(index: number, source: string): CellModel {
     // Create a new RawBlock for the cell
-    const rawBlock = new N.RawBlock(source, "notation");
+    const rawBlock = new RawBlock(source, "notation");
 
     // Create cell model
     const cell: CellModel = {

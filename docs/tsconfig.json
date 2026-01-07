@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2019", "es2015", "dom", "dom.Iterable"],
     "module": "es2015",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "outDir": "./dist/",
@@ -23,6 +23,6 @@
     "target": "es2015",
     "resolveJsonModule": true
   },
-  "include": ["./components/*.ts"],
+  "include": ["./components/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

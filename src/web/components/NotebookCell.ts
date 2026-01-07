@@ -5,13 +5,8 @@
  * preview/edit modes, controls, and optional nested children.
  */
 
-import * as N from "notations";
-import {
-  CellModel,
-  CellTypeBadge,
-  getCellTypeBadge,
-  NotebookCssClasses,
-} from "../types/notebook";
+import { isBlock, isLine, isRawBlock, Block, RawBlock } from "../../block";
+import { CellModel, CellTypeBadge, getCellTypeBadge, NotebookCssClasses } from "../types/notebook";
 
 /**
  * Configuration for NotebookCell.
@@ -169,8 +164,8 @@ export default class NotebookCell {
     leftSide.appendChild(badge);
 
     // Name (if block has one)
-    if (N.isBlock(this.cell.blockItem)) {
-      const block = this.cell.blockItem as N.Block;
+    if (isBlock(this.cell.blockItem)) {
+      const block = this.cell.blockItem as Block;
       if (block.name) {
         const nameSpan = document.createElement("span");
         nameSpan.className = "notebook-cell-name";
@@ -304,8 +299,8 @@ export default class NotebookCell {
    * Renders preview mode content.
    */
   private renderPreviewMode(container: HTMLElement): void {
-    if (N.isRawBlock(this.cell.blockItem)) {
-      const rawBlock = this.cell.blockItem as N.RawBlock;
+    if (isRawBlock(this.cell.blockItem)) {
+      const rawBlock = this.cell.blockItem as RawBlock;
       const contentDiv = document.createElement("div");
       contentDiv.className = "notebook-rawblock-content";
 
@@ -320,10 +315,10 @@ export default class NotebookCell {
       const preview = document.createElement("div");
       preview.className = "notebook-notation-preview";
 
-      if (N.isLine(this.cell.blockItem)) {
+      if (isLine(this.cell.blockItem)) {
         preview.textContent = "[Line content]";
-      } else if (N.isBlock(this.cell.blockItem)) {
-        const block = this.cell.blockItem as N.Block;
+      } else if (isBlock(this.cell.blockItem)) {
+        const block = this.cell.blockItem as Block;
         const itemCount = block.blockItems.length;
         preview.textContent = `[${block.blockType}: ${itemCount} item${itemCount !== 1 ? "s" : ""}]`;
       }

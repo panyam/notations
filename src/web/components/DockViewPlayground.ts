@@ -13,7 +13,8 @@
 
 import { DockviewComponent, DockviewApi, IContentRenderer, Parameters } from "dockview-core";
 import SideBySideEditor, { SideBySideEditorConfig } from "./SideBySideEditor";
-import * as N from "notations";
+import { Notation } from "../../notation";
+import { GlobalBeatLayout } from "../../beats";
 
 /**
  * Configuration for DockViewPlayground.
@@ -72,7 +73,7 @@ export interface DockViewPlaygroundConfig {
   /**
    * Callback when notation is successfully parsed.
    */
-  onNotationParsed?: (notation: N.Notation, beatLayout: N.GlobalBeatLayout) => void;
+  onNotationParsed?: (notation: Notation, beatLayout: GlobalBeatLayout) => void;
 
   /**
    * Callback when parsing fails.

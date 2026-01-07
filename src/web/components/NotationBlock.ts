@@ -1,8 +1,9 @@
-import * as N from "notations";
+import { load } from "../../loader";
+import { NotationView } from "../../carnatic";
 
 export interface NotationBlockConfig {
   /** Function to create a notation viewer - allows different implementations */
-  createViewer: (container: HTMLDivElement) => N.Carnatic.NotationView;
+  createViewer: (container: HTMLDivElement) => NotationView;
 
   /** CSS classes to apply to various elements */
   cssClasses?: {
@@ -21,7 +22,7 @@ export default class NotationBlock {
   caption = "";
   height: string;
   newRoot: HTMLDivElement;
-  notationView: N.Carnatic.NotationView;
+  notationView: NotationView;
   showSource: boolean;
   isEditing = false;
   editTextarea: HTMLTextAreaElement | null = null;
@@ -29,7 +30,7 @@ export default class NotationBlock {
 
   constructor(
     public readonly container: HTMLElement,
-    public readonly config: NotationBlockConfig
+    public readonly config: NotationBlockConfig,
   ) {
     this.id = (container.getAttribute("id") || "").trim();
     this.caption = (container.getAttribute("caption") || "").trim();
@@ -85,7 +86,7 @@ export default class NotationBlock {
           </div>
           <div class="notation-source" id="notationSource_${this.id}">
             <pre class="notation-source-pre">
-              <code class="${codeClass}" id="sourceCode_${this.id}">${sourceLines.map(x => `<span>${x}</span>`).join("\n")}</code>
+              <code class="${codeClass}" id="sourceCode_${this.id}">${sourceLines.map((x) => `<span>${x}</span>`).join("\n")}</code>
             </pre>
             <textarea class="notation-edit-textarea" id="editTextarea_${this.id}" style="display: none;"></textarea>
           </div>
@@ -153,7 +154,7 @@ export default class NotationBlock {
     // Clear previous render to avoid appending multiple times
     this.notationView.tableElement.innerHTML = "";
 
-    const [notation, beatLayout, errors, timings] = N.load(fullContents, { log: true });
+    const [notation, beatLayout, errors, timings] = load(fullContents, { log: true });
 
     if (errors.length > 0) {
       console.log("Errors: ", errors);
@@ -266,7 +267,7 @@ export default class NotationBlock {
     // Update source code display
     if (this.sourceCodeElement) {
       const sourceLines = this.source.split("\n");
-      this.sourceCodeElement.innerHTML = sourceLines.map(x => `<span>${x}</span>`).join("\n");
+      this.sourceCodeElement.innerHTML = sourceLines.map((x) => `<span>${x}</span>`).join("\n");
     }
 
     // Re-render notation

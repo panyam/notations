@@ -11,7 +11,11 @@
  * DockView, or any other layout system).
  */
 
-import * as N from "notations";
+import { load } from "../../loader";
+import { NotationView } from "../../carnatic";
+import { GridLayoutGroup } from "../../grids";
+import { Notation } from "../../notation";
+import { GlobalBeatLayout } from "../../beats";
 
 /**
  * Configuration for SideBySideEditor.
@@ -43,7 +47,7 @@ export interface SideBySideEditorConfig {
   /**
    * Callback when notation is successfully parsed.
    */
-  onNotationParsed?: (notation: N.Notation, beatLayout: N.GlobalBeatLayout) => void;
+  onNotationParsed?: (notation: Notation, beatLayout: GlobalBeatLayout) => void;
 
   /**
    * Callback when parsing fails.
@@ -53,7 +57,7 @@ export interface SideBySideEditorConfig {
   /**
    * Optional shared GridLayoutGroup for column alignment.
    */
-  sharedGridLayoutGroup?: N.GridLayoutGroup;
+  sharedGridLayoutGroup?: GridLayoutGroup;
 
   /**
    * Optional markdown parser for RawBlock content.
@@ -103,16 +107,16 @@ export default class SideBySideEditor {
   readonly outputElement: HTMLDivElement;
 
   /** The NotationView instance */
-  readonly notationView: N.Carnatic.NotationView;
+  readonly notationView: NotationView;
 
   /** Configuration */
   readonly config: SideBySideEditorConfig;
 
   /** Current notation (after successful parse) */
-  private notation: N.Notation | null = null;
+  private notation: Notation | null = null;
 
   /** Current beat layout (after successful parse) */
-  private beatLayout: N.GlobalBeatLayout | null = null;
+  private beatLayout: GlobalBeatLayout | null = null;
 
   /** Debounce timer */
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -150,7 +154,7 @@ export default class SideBySideEditor {
     }
 
     // Create NotationView
-    this.notationView = new N.Carnatic.NotationView(this.outputElement, {
+    this.notationView = new NotationView(this.outputElement, {
       sharedGridLayoutGroup: this.config.sharedGridLayoutGroup,
       markdownParser: this.config.markdownParser,
     });
@@ -182,14 +186,14 @@ export default class SideBySideEditor {
   /**
    * Gets the current notation (null if parse failed).
    */
-  getNotation(): N.Notation | null {
+  getNotation(): Notation | null {
     return this.notation;
   }
 
   /**
    * Gets the current beat layout (null if parse failed).
    */
-  getBeatLayout(): N.GlobalBeatLayout | null {
+  getBeatLayout(): GlobalBeatLayout | null {
     return this.beatLayout;
   }
 
@@ -204,7 +208,7 @@ export default class SideBySideEditor {
     this.notationView.clear();
 
     // Parse
-    const [notation, beatLayout, errors] = N.load(source, { log: false });
+    const [notation, beatLayout, errors] = load(source, { log: false });
 
     if (errors.length > 0) {
       this.notation = null;
@@ -349,8 +353,7 @@ export default class SideBySideEditor {
     const end = this.editorElement.selectionEnd;
     const value = this.editorElement.value;
 
-    this.editorElement.value =
-      value.substring(0, start) + text + value.substring(end);
+    this.editorElement.value = value.substring(0, start) + text + value.substring(end);
 
     // Move cursor after inserted text
     this.editorElement.selectionStart = start + text.length;
@@ -367,10 +370,7 @@ export default class SideBySideEditor {
     return {
       start: this.editorElement.selectionStart,
       end: this.editorElement.selectionEnd,
-      text: this.editorElement.value.substring(
-        this.editorElement.selectionStart,
-        this.editorElement.selectionEnd
-      ),
+      text: this.editorElement.value.substring(this.editorElement.selectionStart, this.editorElement.selectionEnd),
     };
   }
 

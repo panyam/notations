@@ -5,14 +5,11 @@
  * a parallel tree of CellModel objects suitable for the notebook UI.
  */
 
-import type { BlockItem, Block, Line, RawBlock, Notation } from "notations";
-import { isBlock, isLine, isRawBlock } from "notations";
-import {
-  CellModel,
-  CellState,
-  createDefaultCellState,
-  generateCellId,
-} from "../types/notebook";
+import type { BlockItem, Block, RawBlock } from "../../block";
+import type { Line } from "../../core";
+import type { Notation } from "../../notation";
+import { isBlock, isLine, isRawBlock } from "../../block";
+import { CellModel, CellState, createDefaultCellState, generateCellId } from "../types/notebook";
 
 /**
  * Options for cell factory.
@@ -59,10 +56,7 @@ const DEFAULT_OPTIONS: CellFactoryOptions = {
  * @param options Factory options
  * @returns Array of top-level CellModel objects
  */
-export function createCellModels(
-  notation: Notation,
-  options: Partial<CellFactoryOptions> = {},
-): CellModel[] {
+export function createCellModels(notation: Notation, options: Partial<CellFactoryOptions> = {}): CellModel[] {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
   // Create the root cell for the notation itself
@@ -80,10 +74,7 @@ export function createCellModels(
  * @param options Factory options
  * @returns The root CellModel representing the entire notation
  */
-export function createCellModelWithRoot(
-  notation: Notation,
-  options: Partial<CellFactoryOptions> = {},
-): CellModel {
+export function createCellModelWithRoot(notation: Notation, options: Partial<CellFactoryOptions> = {}): CellModel {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   return createCellForBlock(notation, 0, opts, null);
 }
@@ -290,10 +281,7 @@ export function getVisibleCells(cells: CellModel[]): CellModel[] {
  * @param updates Partial state updates
  * @returns A new CellModel with updated state
  */
-export function updateCellState(
-  cell: CellModel,
-  updates: Partial<CellState>,
-): CellModel {
+export function updateCellState(cell: CellModel, updates: Partial<CellState>): CellModel {
   return {
     ...cell,
     state: {

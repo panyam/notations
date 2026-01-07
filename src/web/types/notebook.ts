@@ -5,8 +5,9 @@
  * where each Block becomes a cell with preview/edit modes.
  */
 
-import type { BlockItem, Block, Notation } from "notations";
-import type { GridLayoutGroup, LayoutChangeEvent } from "notations";
+import type { BlockItem, Block } from "../../block";
+import type { Notation } from "../../notation";
+import type { GridLayoutGroup, LayoutChangeEvent } from "../../grids";
 
 // Re-export for convenience
 export type { LayoutChangeEvent };

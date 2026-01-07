@@ -13,10 +13,7 @@ importers:
         version: 4.13.1
       notations:
         specifier: file:../
-        version: file:..
-      notations-web:
-        specifier: file:../web-components
-        version: file:../web-components(dockview-core@4.13.1)(notations@file:..)
+        version: file:..(dockview-core@4.13.1)
     devDependencies:
       '@babel/core':
         specifier: ^7.23.0
@@ -1376,17 +1373,13 @@ packages:
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
-  notations-web@file:../web-components:
-    resolution: {directory: ../web-components, type: directory}
+  notations@file:..:
+    resolution: {directory: .., type: directory}
     peerDependencies:
       dockview-core: ^4.0.0
-      notations: ^0.0.70
     peerDependenciesMeta:
       dockview-core:
         optional: true
-
-  notations@file:..:
-    resolution: {directory: .., type: directory}
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
@@ -3273,18 +3266,14 @@ snapshots:
 
   node-releases@2.0.27: {}
 
-  notations-web@file:../web-components(dockview-core@4.13.1)(notations@file:..):
-    dependencies:
-      notations: file:..
-    optionalDependencies:
-      dockview-core: 4.13.1
-
-  notations@file:..:
+  notations@file:..(dockview-core@4.13.1):
     dependencies:
       '@lume/kiwi': 0.4.4
       '@panyam/tsutils': 0.0.71
       galore: 1.0.3
       yaml: 2.8.2
+    optionalDependencies:
+      dockview-core: 4.13.1
     transitivePeerDependencies:
       - debug
 

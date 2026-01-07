@@ -5,8 +5,9 @@
  * preserving formatting and structure where possible.
  */
 
-import type { BlockItem, Block, Line, RawBlock } from "notations";
-import { isBlock, isLine, isRawBlock } from "notations";
+import type { BlockItem, Block, RawBlock } from "../../block";
+import type { Line } from "../../core";
+import { isBlock, isLine, isRawBlock } from "../../block";
 import { CellModel } from "../types/notebook";
 
 /**
@@ -45,10 +46,7 @@ const DEFAULT_OPTIONS: SerializerOptions = {
  * @param options Serialization options
  * @returns The serialized notation source
  */
-export function serializeCells(
-  cells: CellModel[],
-  options: SerializerOptions = {},
-): string {
+export function serializeCells(cells: CellModel[], options: SerializerOptions = {}): string {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const parts: string[] = [];
 
@@ -70,11 +68,7 @@ export function serializeCells(
  * @param options Serialization options
  * @returns The serialized source
  */
-export function serializeCell(
-  cell: CellModel,
-  depth: number,
-  options: SerializerOptions,
-): string {
+export function serializeCell(cell: CellModel, depth: number, options: SerializerOptions): string {
   const indent = options.indent!.repeat(depth);
 
   // If preserving unmodified and cell has source, use it directly
@@ -102,11 +96,7 @@ export function serializeCell(
  * @param options Serialization options
  * @returns The serialized source
  */
-export function serializeBlockItem(
-  item: BlockItem,
-  depth: number,
-  options: SerializerOptions,
-): string {
+export function serializeBlockItem(item: BlockItem, depth: number, options: SerializerOptions): string {
   if (isRawBlock(item)) {
     return serializeRawBlock(item as RawBlock, depth, options);
   }
@@ -125,11 +115,7 @@ export function serializeBlockItem(
 /**
  * Serializes a RawBlock to source.
  */
-function serializeRawBlock(
-  rawBlock: RawBlock,
-  depth: number,
-  options: SerializerOptions,
-): string {
+function serializeRawBlock(rawBlock: RawBlock, depth: number, options: SerializerOptions): string {
   const indent = options.indent!.repeat(depth);
   const content = rawBlock.content;
 
@@ -157,11 +143,7 @@ function serializeRawBlock(
  * Note: This is a simplified serialization. Full Line serialization
  * would need to reconstruct atoms, spaces, embellishments, etc.
  */
-function serializeLine(
-  line: Line,
-  depth: number,
-  options: SerializerOptions,
-): string {
+function serializeLine(line: Line, depth: number, options: SerializerOptions): string {
   const indent = options.indent!.repeat(depth);
 
   // For now, return a placeholder
@@ -173,11 +155,7 @@ function serializeLine(
 /**
  * Serializes a Block to source.
  */
-function serializeBlock(
-  block: Block,
-  depth: number,
-  options: SerializerOptions,
-): string {
+function serializeBlock(block: Block, depth: number, options: SerializerOptions): string {
   const indent = options.indent!.repeat(depth);
   const childIndent = options.indent!.repeat(depth + 1);
   const parts: string[] = [];
@@ -210,10 +188,11 @@ function serializeBlockHeader(block: Block): string {
     case "section":
       return `\\section("${block.name || ""}")`;
 
-    case "repeat":
+    case "repeat": {
       // RepeatBlock has repeatCount property
       const repeatCount = (block as any).repeatCount ?? 1;
       return `\\repeat(${repeatCount})`;
+    }
 
     case "cycle":
       // CycleBlock has localCycle
@@ -234,10 +213,11 @@ function serializeBlockHeader(block: Block): string {
       }
       return "\\breaks()";
 
-    case "role":
+    case "role": {
       // Get first role name from localRoles
       const roleName = Array.from(block.localRoles.keys())[0] || "";
       return `\\role("${roleName}")`;
+    }
 
     case "group":
       if (block.name) {
@@ -313,10 +293,7 @@ export function validateCellSource(source: string): {
  * @param fullSource The full notation source
  * @returns Source range or null if not found
  */
-export function findCellSourceRange(
-  cell: CellModel,
-  fullSource: string,
-): { start: number; end: number } | null {
+export function findCellSourceRange(cell: CellModel, fullSource: string): { start: number; end: number } | null {
   // This is a simplified implementation
   // Full implementation would need source position tracking in the parser
 
