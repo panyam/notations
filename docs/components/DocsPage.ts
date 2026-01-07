@@ -1,5 +1,5 @@
-import { NotationBlock, NotationBlockConfig } from "notations/web";
-import * as N from "notations";
+import { NotationBlock, NotationBlockConfig } from "../../src/web";
+import * as N from "../../src";
 import * as NV from "./NotationViewer";
 
 // Import core notation styles (CSS variables for theming)

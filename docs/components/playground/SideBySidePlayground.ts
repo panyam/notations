@@ -7,10 +7,10 @@
  * - Keyboard shortcuts
  */
 
-import { DockViewPlayground, DockViewPlaygroundConfig } from "notations/web/dockview";
+import { DockViewPlayground, DockViewPlaygroundConfig } from "../../../src/web/dockview";
 import "dockview-core/dist/styles/dockview.css";
 
-import * as N from "notations";
+import * as N from "../../../src";
 import { createMarkdownParser } from "../NotationViewer";
 
 // Import core notation styles

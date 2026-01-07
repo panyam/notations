@@ -5,7 +5,7 @@
  * Cells can be reordered via drag and drop.
  */
 
-import * as N from "notations";
+import * as N from "../../../src";
 import * as NV from "../NotationViewer";
 
 // Import core notation styles

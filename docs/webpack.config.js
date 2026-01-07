@@ -8,28 +8,30 @@ const SITE_PATH_PREFIX = "/notations";
 
 module.exports = (_env, options) => {
   const isDevelopment = options.mode == "development";
+  const rootDir = path.resolve(__dirname, "..");
+
   return {
     devtool: "source-map",
     entry: {
-      DocsPage: path.join(__dirname, "./docs/components/DocsPage.ts"),
-      SideBySidePlayground: path.join(__dirname, "./docs/components/playground/SideBySidePlayground.ts"),
-      NotebookPlayground: path.join(__dirname, "./docs/components/playground/NotebookPlayground.ts"),
+      DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
+      SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
+      NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
     },
     module: {
       rules: [
         {
           test: /\.js$/,
-          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "docs/dist")],
+          exclude: [path.resolve(rootDir, "node_modules"), path.resolve(__dirname, "dist")],
           use: ["babel-loader"],
         },
         {
           test: /\.ts$/,
-          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "docs/dist")],
-          include: [path.resolve(__dirname, "docs/components")],
+          exclude: [path.resolve(rootDir, "node_modules"), path.resolve(__dirname, "dist"), path.resolve(rootDir, "src/tests")],
+          include: [path.resolve(__dirname, "components"), path.resolve(rootDir, "src")],
           use: [
             {
               loader: "ts-loader",
-              options: { configFile: "tsconfig-docs.json" },
+              options: { configFile: path.resolve(__dirname, "tsconfig.json") },
             },
           ],
         },
@@ -61,7 +63,7 @@ module.exports = (_env, options) => {
       },
     },
     output: {
-      path: path.resolve(__dirname, "./docs/static/js/gen/"),
+      path: path.resolve(__dirname, "./static/js/gen/"),
       publicPath: SITE_PATH_PREFIX + "/static/js/gen/",
       filename: "[name].[contenthash].js",
       library: ["notations", "[name]"],
@@ -76,13 +78,13 @@ module.exports = (_env, options) => {
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         chunks: ["DocsPage"],
-        filename: path.resolve(__dirname, "./docs/templates/gen.DocsPage.html"),
+        filename: path.resolve(__dirname, "./templates/gen.DocsPage.html"),
         templateContent: "",
         minify: { collapseWhitespace: false },
       }),
       new HtmlWebpackPlugin({
         chunks: ["SideBySidePlayground"],
-        filename: path.resolve(__dirname, "./docs/templates/gen.SideBySidePlayground.html"),
+        filename: path.resolve(__dirname, "./templates/gen.SideBySidePlayground.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
             .filter((tag) => tag.tagName === "script")
@@ -93,7 +95,7 @@ module.exports = (_env, options) => {
       }),
       new HtmlWebpackPlugin({
         chunks: ["NotebookPlayground"],
-        filename: path.resolve(__dirname, "./docs/templates/gen.NotebookPlayground.html"),
+        filename: path.resolve(__dirname, "./templates/gen.NotebookPlayground.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
             .filter((tag) => tag.tagName === "script")

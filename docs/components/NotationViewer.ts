@@ -1,4 +1,5 @@
-import * as N from "notations";
+import { load } from "../../src/loader";
+import { NotationView } from "../../src/carnatic";
 const MarkdownIt = require("markdown-it");
 
 /**
@@ -14,13 +15,13 @@ export function createMarkdownParser(): (contents: string) => string {
   };
 }
 
-export function createViewer(rootElement: HTMLElement): N.Carnatic.NotationView {
-  const notationView = new N.Carnatic.NotationView(rootElement);
+export function createViewer(rootElement: HTMLElement): NotationView {
+  const notationView = new NotationView(rootElement);
   notationView.markdownParser = createMarkdownParser();
   return notationView;
 }
 
-export function initViewerDiv(elemSelector: string, codeSelector: string): N.Carnatic.NotationView | null {
+export function initViewerDiv(elemSelector: string, codeSelector: string): NotationView | null {
   const elem = document.querySelector(elemSelector) as HTMLDivElement;
   const codeElem = document.querySelector(codeSelector) || null;
   if (codeElem != null && codeElem.textContent != null && codeElem.textContent.trim() != "") {
@@ -31,7 +32,7 @@ export function initViewerDiv(elemSelector: string, codeSelector: string): N.Car
     } catch (e) {
       console.log("Content is plain string: ", e);
     }
-    const [notation, beatLayout, errors] = N.load(contents, { log: true });
+    const [notation, beatLayout, errors] = load(contents, { log: true });
     if (errors.length > 0) {
       console.log("Errors: ", errors);
     } else {

@@ -13,7 +13,7 @@
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "outDir": "./docs/dist/",
+    "outDir": "./dist/",
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
@@ -23,6 +23,6 @@
     "target": "es2015",
     "resolveJsonModule": true
   },
-  "include": ["./docs/components/**/*.ts"],
-  "exclude": ["node_modules", "docs/dist"]
+  "include": ["./components/**/*.ts", "../src/**/*.ts"],
+  "exclude": ["../node_modules", "dist", "../src/tests"]
 }
