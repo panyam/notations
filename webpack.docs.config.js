@@ -4,34 +4,32 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 // This should match the PathPrefix in main.go
-const SITE_PATH_PREFIX = "/notations"
+const SITE_PATH_PREFIX = "/notations";
 
 module.exports = (_env, options) => {
   const isDevelopment = options.mode == "development";
   return {
     devtool: "source-map",
     entry: {
-      DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
-      SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
-      NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
+      DocsPage: path.join(__dirname, "./docs/components/DocsPage.ts"),
+      SideBySidePlayground: path.join(__dirname, "./docs/components/playground/SideBySidePlayground.ts"),
+      NotebookPlayground: path.join(__dirname, "./docs/components/playground/NotebookPlayground.ts"),
     },
     module: {
       rules: [
         {
           test: /\.js$/,
-          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "dist")],
+          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "docs/dist")],
           use: ["babel-loader"],
         },
         {
           test: /\.ts$/,
-          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "dist")],
-          include: [
-            path.resolve(__dirname, "components")
-          ],
+          exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "docs/dist")],
+          include: [path.resolve(__dirname, "docs/components")],
           use: [
             {
               loader: "ts-loader",
-              options: { configFile: "tsconfig.json" },
+              options: { configFile: "tsconfig-docs.json" },
             },
           ],
         },
@@ -63,7 +61,7 @@ module.exports = (_env, options) => {
       },
     },
     output: {
-      path: path.resolve(__dirname, "./static/js/gen/"),
+      path: path.resolve(__dirname, "./docs/static/js/gen/"),
       publicPath: SITE_PATH_PREFIX + "/static/js/gen/",
       filename: "[name].[contenthash].js",
       library: ["notations", "[name]"],
@@ -73,34 +71,34 @@ module.exports = (_env, options) => {
     },
     plugins: [
       new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer'],
+        Buffer: ["buffer", "Buffer"],
       }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         chunks: ["DocsPage"],
-        filename: path.resolve(__dirname, "./templates/gen.DocsPage.html"),
+        filename: path.resolve(__dirname, "./docs/templates/gen.DocsPage.html"),
         templateContent: "",
         minify: { collapseWhitespace: false },
       }),
       new HtmlWebpackPlugin({
         chunks: ["SideBySidePlayground"],
-        filename: path.resolve(__dirname, "./templates/gen.SideBySidePlayground.html"),
+        filename: path.resolve(__dirname, "./docs/templates/gen.SideBySidePlayground.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
-            .filter(tag => tag.tagName === 'script')
-            .map(tag => `<script defer src="${tag.attributes.src}"></script>`)
-            .join('\n'),
+            .filter((tag) => tag.tagName === "script")
+            .map((tag) => `<script defer src="${tag.attributes.src}"></script>`)
+            .join("\n"),
         inject: false,
         minify: { collapseWhitespace: false },
       }),
       new HtmlWebpackPlugin({
         chunks: ["NotebookPlayground"],
-        filename: path.resolve(__dirname, "./templates/gen.NotebookPlayground.html"),
+        filename: path.resolve(__dirname, "./docs/templates/gen.NotebookPlayground.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
-            .filter(tag => tag.tagName === 'script')
-            .map(tag => `<script defer src="${tag.attributes.src}"></script>`)
-            .join('\n'),
+            .filter((tag) => tag.tagName === "script")
+            .map((tag) => `<script defer src="${tag.attributes.src}"></script>`)
+            .join("\n"),
         inject: false,
         minify: { collapseWhitespace: false },
       }),

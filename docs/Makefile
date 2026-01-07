@@ -9,7 +9,7 @@ run:
 	NOTATIONS_DOCS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
 
 webpack:
-	pnpm build
+	cd .. && npm run build:docs
 
 checklinks:
 	@if [ x"${NUM_LINKED_GOMODS}" != "x0" ]; then	\
