@@ -151,11 +151,11 @@ const [parser /*itemGraph*/] = G.newParser(
     Fraction -> NUMBER SLASH NUMBER { newFraction } ;
     `,
   {
-    allowLeftRecursion: true,
     debug: "",
     type: "lalr",
+    leftRecursive: true,
     tokenHandlers: {
-      toEmbelishment: (token: TLEX.Token, tape: TLEX.Tape, owner: Parser) => {
+      toEmbelishment: (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => {
         const [emb, pre] = owner.parseEmbelishment(token.value);
         if (emb == null) {
           console.log("Skipping Embelishment: ", token.value);
@@ -174,23 +174,23 @@ const [parser /*itemGraph*/] = G.newParser(
         token.tag = pre ? "PRE_EMB" : "POST_EMB";
         return token;
       },
-      toCommandName: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toCommandName: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         token.value = token.value.substring(1);
         return token;
       },
-      toBoolean: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toBoolean: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         token.value = token.value == "true";
         return token;
       },
-      toNumber: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toNumber: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         token.value = parseInt(token.value);
         return token;
       },
-      toString: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toString: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         token.value = token.value.substring(1, token.value.length - 1);
         return token;
       },
-      toMarker: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toMarker: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         if (token.tag != "PRE_MARKER" && token.tag != "POST_MARKER") {
           throw new Error("Invalid token for converting to note: " + token.tag);
         }
@@ -203,7 +203,7 @@ const [parser /*itemGraph*/] = G.newParser(
         token.value = new Marker(markerText, isBefore);
         return token;
       },
-      toOctavedNote: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toOctavedNote: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         if (token.tag == "DOTS_IDENT") {
           const octave = token.positions[1][1] - token.positions[1][0];
           const note = token.value.substring(octave);
@@ -217,21 +217,21 @@ const [parser /*itemGraph*/] = G.newParser(
         }
         return token;
       },
-      toRoleSelector: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toRoleSelector: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         token.value = token.value.substring(0, token.value.length - 1);
         return token;
       },
-      toLineAnnotation: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toLineAnnotation: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         // skip the initial "!"
         token.value = token.value.substring(1);
         return token;
       },
-      toSingleLineRawString: (token: TLEX.Token, _tape: TLEX.Tape, _owner: any) => {
+      toSingleLineRawString: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
         // skip the initial ">"
         token.value = token.value.substring(1);
         return token;
       },
-      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.Tape, _owner: any) => {
+      toMultiLineRawString: (token: TLEX.Token, tape: TLEX.TapeInterface, _owner: any) => {
         // consume everything until "#<N times> as start
         const hashes = tape.substring(token.positions[1][0], token.positions[1][1]);
         const endPat = '"' + hashes;
@@ -243,7 +243,7 @@ const [parser /*itemGraph*/] = G.newParser(
         token.value = tape.substring(startPos, endPos);
         return token;
       },
-      toFrontMatter: (token: TLEX.Token, tape: TLEX.Tape, _owner: any) => {
+      toFrontMatter: (token: TLEX.Token, tape: TLEX.TapeInterface, _owner: any) => {
         // skip the initial ">"
         const endPat = "\n---";
         const startPos = tape.index;
