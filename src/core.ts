@@ -542,7 +542,9 @@ export class Group extends Atom {
   copyTo(another: this): void {
     super.copyTo(another);
     another.durationIsMultiplier = this.durationIsMultiplier;
-    this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
+    for (const atom of this.atoms.values()) {
+      another.atoms.add(atom.clone());
+    }
   }
 
   /**
@@ -675,7 +677,9 @@ export class Group extends Atom {
    */
   get totalChildDuration(): Fraction {
     let out = ZERO;
-    this.atoms.forEach((atom) => (out = out.plus(atom.duration)));
+    for (const atom of this.atoms.values()) {
+      out = out.plus(atom.duration);
+    }
     return out;
   }
 
@@ -692,20 +696,18 @@ export class Group extends Atom {
     adjustDuration = adjustDuration && !this.durationIsMultiplier;
     const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
 
-    // Calculate insertion index for event (before adding)
-    // ValueList doesn't have indexOf/length, so we compute by iteration
-    let insertIndex = 0;
+    // Calculate insertion index for event notification
+    let insertIndex: number;
     if (beforeAtom) {
-      this.atoms.forEach((a) => {
-        if (a === beforeAtom) return false; // stop iteration
+      // Find index of beforeAtom using for loop
+      insertIndex = 0;
+      for (const a of this.atoms.values()) {
+        if (a === beforeAtom) break;
         insertIndex++;
-        return true;
-      });
+      }
     } else {
-      this.atoms.forEach(() => {
-        insertIndex++;
-        return true;
-      });
+      // Appending to end - use size property
+      insertIndex = this.atoms.size;
     }
 
     // Track which atoms were actually added (excluding REST atoms)
