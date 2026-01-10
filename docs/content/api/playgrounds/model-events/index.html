@@ -167,14 +167,21 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
         if (atom.octave > 0) text += "'".repeat(atom.octave);
         if (atom.octave < 0) text = ",".repeat(-atom.octave) + text;
         return text;
+      } else if (atom.TYPE === 'Literal') {
+        // Literals are notes parsed without role context
+        return atom.value;
+      } else if (atom.TYPE === 'Syllable') {
+        return atom.value;
       } else if (atom.TYPE === 'Space') {
         return atom.isSilent ? '~' : ',';
+      } else if (atom.TYPE === 'Rest') {
+        return '-';
       } else if (atom.TYPE === 'Group') {
         const parts = [];
         atom.atoms.forEach(function(a) { parts.push(getAtomText(a)); return true; });
         return '[' + parts.join(' ') + ']';
       }
-      return '_';
+      return atom.TYPE || '_';
     }
 
     function updateDisplay() {
