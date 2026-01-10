@@ -99,6 +99,8 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
   <tr><td><code>2 S</code></td><td>Duration prefix (S has duration 2)</td></tr>
 </table>
 
+<p class="note"><strong>Note:</strong> In this demo, atoms are parsed as <code>Literal</code> tokens without role context. In a full notation document, literals are converted to <code>Note</code> or <code>Syllable</code> based on the role (e.g., <code>Sw:</code> for swaras). This demo focuses on the Observer pattern, so raw literals are used directly.</p>
+
 <h2>See Also</h2>
 
 <ul>
@@ -321,6 +323,9 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
       // Move caret after inserted atoms
       caretIndex += atoms.length;
 
+      // Clear input after successful insert
+      notationInput.value = '';
+
       if (!group.eventsEnabled) {
         logEvent('info', '(Events disabled - no notification sent)');
         updateDisplay();
@@ -345,6 +350,9 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 
       // Move caret to end
       caretIndex = countAtoms();
+
+      // Clear input after successful append
+      notationInput.value = '';
 
       if (!group.eventsEnabled) {
         logEvent('info', '(Events disabled - no notification sent)');
@@ -742,5 +750,20 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 
 .dark .syntax-table td:first-child {
   background: #2d2d2d;
+}
+
+.note {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.dark .note {
+  background: #332b00;
+  border-color: #ffc107;
 }
 </style>
