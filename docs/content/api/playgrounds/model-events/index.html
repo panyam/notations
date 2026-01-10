@@ -65,9 +65,11 @@ group.enableEvents();
 function parseNotation(input: string): Atom[] {
   const parser = new Parser();
   parser.parse(input);
-  // Extract atoms from the first line's first role
+  // Extract atoms from AddAtoms commands
   const atoms: Atom[] = [];
-  // ... extract atoms from parser.notation
+  parser.commands.forEach(cmd => {
+    if (cmd.atoms) atoms.push(...cmd.atoms);
+  });
   return atoms;
 }
 
@@ -247,21 +249,19 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
         const parser = new N.Parser();
         parser.parse(input);
 
-        // Extract atoms from the parsed result
+        // Extract atoms from AddAtoms commands in parser.commands
         const atoms = [];
+        parser.commands.forEach(function(cmd) {
+          // AddAtoms commands have an atoms array
+          if (cmd.atoms && Array.isArray(cmd.atoms)) {
+            cmd.atoms.forEach(function(atom) {
+              atoms.push(atom);
+            });
+          }
+        });
 
-        if (parser.notation && parser.notation.blockItems) {
-          parser.notation.blockItems.forEach(function(block) {
-            if (block.TYPE === 'Line' && block.roles) {
-              block.roles.forEach(function(role) {
-                if (role.atoms) {
-                  role.atoms.forEach(function(atom) {
-                    atoms.push(atom);
-                  });
-                }
-              });
-            }
-          });
+        if (atoms.length === 0 && parser.errors.length > 0) {
+          logEvent('error', 'Parse errors: ' + parser.errors.map(function(e) { return e.message; }).join(', '));
         }
 
         return atoms;
