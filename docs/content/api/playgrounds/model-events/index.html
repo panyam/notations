@@ -3,7 +3,7 @@ title: "Model Events Demo"
 description: "Interactive demo for the Observer pattern and model change events"
 ---
 
-<p>This interactive demo shows how the Observer pattern works in the Notations library. Add, insert, or remove atoms and watch the event log update in real-time.</p>
+<p>This interactive demo shows how the Observer pattern works in the Notations library. Parse notation input, insert at any position using the caret, and watch the event log update in real-time.</p>
 
 <h2>Interactive Demo</h2>
 
@@ -11,17 +11,22 @@ description: "Interactive demo for the Observer pattern and model change events"
   <div class="demo-controls">
     <h3>Controls</h3>
     <div class="control-group">
-      <label>Note Value:</label>
-      <input type="text" id="note-value" value="S" maxlength="3" class="demo-input">
+      <label>Notation Input:</label>
+      <input type="text" id="notation-input" value="S R G M" class="demo-input wide" placeholder="e.g., S , R , [ G M P ] D N S.">
+      <small class="input-hint">Enter notes, spaces (,), groups ([...]), etc.</small>
     </div>
     <div class="control-group">
       <label>Actions:</label>
       <div class="button-group">
-        <button id="btn-add" class="btn btn-primary">Add Note</button>
-        <button id="btn-insert" class="btn btn-secondary">Insert at Start</button>
-        <button id="btn-remove-last" class="btn btn-danger">Remove Last</button>
-        <button id="btn-clear" class="btn btn-outline">Clear All</button>
+        <button id="btn-insert" class="btn btn-primary">Insert at Caret</button>
+        <button id="btn-append" class="btn btn-secondary">Append to End</button>
       </div>
+    </div>
+    <div class="control-group inline-group">
+      <label>Remove Count:</label>
+      <input type="number" id="remove-count" value="1" min="1" max="100" class="demo-input small">
+      <button id="btn-remove" class="btn btn-danger">Remove at Caret</button>
+      <button id="btn-clear" class="btn btn-outline">Clear All</button>
     </div>
     <div class="control-group">
       <label>
@@ -33,16 +38,17 @@ description: "Interactive demo for the Observer pattern and model change events"
 
   <div class="demo-output">
     <div class="demo-section">
-      <h3>Current Atoms</h3>
+      <h3>Current Atoms <span id="caret-info" class="caret-info">(Click to set caret position)</span></h3>
       <div id="atoms-display" class="atoms-container">
-        <span class="empty-message">No atoms yet</span>
+        <span class="caret-indicator active" data-index="0"></span>
+        <span class="empty-message">No atoms yet - caret at position 0</span>
       </div>
     </div>
 
     <div class="demo-section">
       <h3>Event Log</h3>
       <div id="event-log" class="event-log">
-        <div class="log-entry info">Observer registered. Ready to receive events.</div>
+        <div class="log-entry info">Observer registered. Click between atoms to set caret position.</div>
       </div>
     </div>
   </div>
@@ -50,104 +56,46 @@ description: "Interactive demo for the Observer pattern and model change events"
 
 <h2>How It Works</h2>
 
-<p>The demo creates a <code>Group</code> and registers a <code>GroupObserver</code>:</p>
+<p>The demo creates a <code>Group</code> and registers a <code>GroupObserver</code>. It uses the <code>Parser</code> to parse notation input into atoms:</p>
 
 <pre><code class="language-typescript">const group = new Group();
 group.enableEvents();
 
-const observer: GroupObserver = {
-  onAtomsAdded: (g, atoms, index) => {
-    log(`ADD: ${atoms.length} atom(s) at index ${index}`);
-  },
-  onAtomsInserted: (g, atoms, index) => {
-    log(`INSERT: ${atoms.length} atom(s) at index ${index}`);
-  },
-  onAtomsRemoved: (g, atoms) => {
-    log(`REMOVE: ${atoms.length} atom(s)`);
-  }
-};
+// Parse notation input into atoms
+function parseNotation(input: string): Atom[] {
+  const parser = new Parser();
+  parser.parse(input);
+  // Extract atoms from the first line's first role
+  const atoms: Atom[] = [];
+  // ... extract atoms from parser.notation
+  return atoms;
+}
 
-group.addObserver(observer);
+// Insert at caret position
+const atomAtCaret = getAtomAtIndex(caretIndex);
+group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 </code></pre>
 
 <h2>Try It Yourself</h2>
 
 <ol>
-  <li><strong>Add a note</strong> - Click "Add Note" to append a note to the end</li>
-  <li><strong>Insert a note</strong> - Click "Insert at Start" to insert at position 0</li>
-  <li><strong>Remove a note</strong> - Click "Remove Last" to remove the last note</li>
-  <li><strong>Toggle events</strong> - Uncheck "Events Enabled" to see that modifications still work but no events fire</li>
+  <li><strong>Set the caret</strong> - Click between atoms to position the caret (shown as a blinking line)</li>
+  <li><strong>Enter notation</strong> - Type notation like <code>S R G</code> or <code>[ P D N ]</code> or <code>S , , R</code></li>
+  <li><strong>Insert at caret</strong> - Click "Insert at Caret" to insert parsed atoms at the caret position</li>
+  <li><strong>Remove at caret</strong> - Set the count and click "Remove at Caret" to remove atoms starting at the caret</li>
+  <li><strong>Toggle events</strong> - Uncheck "Events Enabled" to see modifications without event notifications</li>
 </ol>
 
-<h2>Code Example</h2>
+<h2>Notation Syntax</h2>
 
-<p>Here's the complete code for this demo:</p>
-
-<pre><code class="language-typescript">import { Group, Note, Atom, GroupObserver } from 'notations';
-
-// Create a group with events enabled
-const group = new Group();
-group.enableEvents();
-
-// Track atoms for UI display
-function displayAtoms() {
-  const atoms: string[] = [];
-  group.atoms.forEach(atom => {
-    if (atom.TYPE === 'Note') {
-      atoms.push((atom as Note).value);
-    }
-  });
-  return atoms;
-}
-
-// Create observer with all handlers
-const observer: GroupObserver&lt;Atom, Group&gt; = {
-  onAtomsAdded: (g, atoms, index) => {
-    const values = atoms.map(a => (a as Note).value).join(', ');
-    console.log(`ADD: ${values} at index ${index}`);
-  },
-
-  onAtomsInserted: (g, atoms, index) => {
-    const values = atoms.map(a => (a as Note).value).join(', ');
-    console.log(`INSERT: ${values} at index ${index}`);
-  },
-
-  onAtomsRemoved: (g, atoms) => {
-    const values = atoms.map(a => (a as Note).value).join(', ');
-    console.log(`REMOVE: ${values}`);
-  }
-};
-
-// Register observer
-const unsubscribe = group.addObserver(observer);
-
-// Add atoms
-group.addAtoms(false, new Note("S"), new Note("R"));
-// Output: ADD: S, R at index 0
-
-// Insert at start
-const first = group.atoms.first;
-if (first) {
-  group.insertAtomsAt(first, false, new Note("G"));
-  // Output: INSERT: G at index 0
-}
-
-// Remove an atom
-const last = group.atoms.last;
-if (last) {
-  group.removeAtoms(false, last);
-  // Output: REMOVE: R
-}
-
-// Disable events
-group.disableEvents();
-group.addAtoms(false, new Note("M")); // No event fired
-
-// Re-enable events
-group.enableEvents();
-group.addAtoms(false, new Note("P"));
-// Output: ADD: P at index 3
-</code></pre>
+<table class="syntax-table">
+  <tr><td><code>S R G M</code></td><td>Individual notes</td></tr>
+  <tr><td><code>S.</code> or <code>S'</code></td><td>Higher octave</td></tr>
+  <tr><td><code>.S</code> or <code>S,</code></td><td>Lower octave</td></tr>
+  <tr><td><code>,</code> or <code>_</code></td><td>Space/silence</td></tr>
+  <tr><td><code>[ G M P ]</code></td><td>Group (atoms share duration)</td></tr>
+  <tr><td><code>2 S</code></td><td>Duration prefix (S has duration 2)</td></tr>
+</table>
 
 <h2>See Also</h2>
 
@@ -157,9 +105,8 @@ group.addAtoms(false, new Note("P"));
 </ul>
 
 <script>
-// Demo implementation
+// Enhanced Demo implementation with caret and parsing
 (function() {
-  // Wait for N (notations library) to be available
   function initDemo() {
     if (typeof N === 'undefined') {
       setTimeout(initDemo, 100);
@@ -171,8 +118,12 @@ group.addAtoms(false, new Note("P"));
 
     const atomsDisplay = document.getElementById('atoms-display');
     const eventLog = document.getElementById('event-log');
-    const noteInput = document.getElementById('note-value');
+    const notationInput = document.getElementById('notation-input');
+    const removeCountInput = document.getElementById('remove-count');
     const eventsCheckbox = document.getElementById('events-enabled');
+    const caretInfo = document.getElementById('caret-info');
+
+    let caretIndex = 0;
 
     function logEvent(type, message) {
       const entry = document.createElement('div');
@@ -180,26 +131,143 @@ group.addAtoms(false, new Note("P"));
       const time = new Date().toLocaleTimeString();
       entry.innerHTML = '<span class="log-time">[' + time + ']</span> ' + message;
       eventLog.insertBefore(entry, eventLog.firstChild.nextSibling);
-
-      // Keep only last 20 entries
-      while (eventLog.children.length > 21) {
+      while (eventLog.children.length > 25) {
         eventLog.removeChild(eventLog.lastChild);
       }
     }
 
+    // Get atom at a specific index in the ValueList
+    function getAtomAtIndex(index) {
+      let i = 0;
+      let result = null;
+      group.atoms.forEach(function(atom) {
+        if (i === index) {
+          result = atom;
+          return false; // stop iteration
+        }
+        i++;
+        return true;
+      });
+      return result;
+    }
+
+    // Count atoms in the group
+    function countAtoms() {
+      let count = 0;
+      group.atoms.forEach(function() { count++; return true; });
+      return count;
+    }
+
+    // Get atom display text
+    function getAtomText(atom) {
+      if (atom.TYPE === 'Note') {
+        let text = atom.value;
+        if (atom.octave > 0) text += "'".repeat(atom.octave);
+        if (atom.octave < 0) text = ",".repeat(-atom.octave) + text;
+        return text;
+      } else if (atom.TYPE === 'Space') {
+        return atom.isSilent ? '~' : ',';
+      } else if (atom.TYPE === 'Group') {
+        const parts = [];
+        atom.atoms.forEach(function(a) { parts.push(getAtomText(a)); return true; });
+        return '[' + parts.join(' ') + ']';
+      }
+      return '_';
+    }
+
     function updateDisplay() {
       atomsDisplay.innerHTML = '';
-      let hasAtoms = false;
-      group.atoms.forEach(function(atom) {
-        hasAtoms = true;
-        const span = document.createElement('span');
-        span.className = 'atom-badge';
-        span.textContent = atom.TYPE === 'Note' ? atom.value : '_';
-        span.dataset.uuid = atom.uuid;
-        atomsDisplay.appendChild(span);
+      const atomCount = countAtoms();
+
+      // Clamp caret to valid range
+      if (caretIndex > atomCount) caretIndex = atomCount;
+      if (caretIndex < 0) caretIndex = 0;
+
+      // Create caret at position 0
+      const caret0 = document.createElement('span');
+      caret0.className = 'caret-indicator' + (caretIndex === 0 ? ' active' : '');
+      caret0.dataset.index = '0';
+      caret0.addEventListener('click', function(e) {
+        e.stopPropagation();
+        setCaretPosition(0);
       });
-      if (!hasAtoms) {
-        atomsDisplay.innerHTML = '<span class="empty-message">No atoms yet</span>';
+      atomsDisplay.appendChild(caret0);
+
+      if (atomCount === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'empty-message';
+        empty.textContent = 'No atoms yet';
+        atomsDisplay.appendChild(empty);
+      } else {
+        let idx = 0;
+        group.atoms.forEach(function(atom) {
+          // Atom badge
+          const span = document.createElement('span');
+          span.className = 'atom-badge';
+          span.textContent = getAtomText(atom);
+          span.dataset.uuid = atom.uuid;
+          span.dataset.index = idx;
+          span.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Click on atom sets caret after it
+            setCaretPosition(parseInt(this.dataset.index) + 1);
+          });
+          atomsDisplay.appendChild(span);
+
+          idx++;
+
+          // Caret indicator after this atom
+          const caret = document.createElement('span');
+          caret.className = 'caret-indicator' + (caretIndex === idx ? ' active' : '');
+          caret.dataset.index = idx;
+          caret.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setCaretPosition(parseInt(this.dataset.index));
+          });
+          atomsDisplay.appendChild(caret);
+
+          return true;
+        });
+      }
+
+      caretInfo.textContent = '(Caret at position ' + caretIndex + ' of ' + atomCount + ')';
+    }
+
+    function setCaretPosition(index) {
+      caretIndex = index;
+      updateDisplay();
+      logEvent('info', 'Caret moved to position <strong>' + index + '</strong>');
+    }
+
+    // Parse notation input into atoms
+    function parseNotation(input) {
+      if (!input.trim()) return [];
+
+      try {
+        const parser = new N.Parser();
+        parser.parse(input);
+
+        // Extract atoms from the parsed result
+        const atoms = [];
+
+        if (parser.notation && parser.notation.blockItems) {
+          parser.notation.blockItems.forEach(function(block) {
+            if (block.TYPE === 'Line' && block.roles) {
+              block.roles.forEach(function(role) {
+                if (role.atoms) {
+                  role.atoms.forEach(function(atom) {
+                    atoms.push(atom);
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        return atoms;
+      } catch (e) {
+        logEvent('error', 'Parse error: ' + e.message);
+        return [];
       }
     }
 
@@ -207,63 +275,118 @@ group.addAtoms(false, new Note("P"));
     const observer = {
       onAtomsAdded: function(g, atoms, index) {
         const values = [];
-        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
         logEvent('add', '<strong>ADD:</strong> ' + values.join(', ') + ' at index ' + index);
         updateDisplay();
       },
       onAtomsInserted: function(g, atoms, index) {
         const values = [];
-        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
         logEvent('insert', '<strong>INSERT:</strong> ' + values.join(', ') + ' at index ' + index);
         updateDisplay();
       },
       onAtomsRemoved: function(g, atoms) {
         const values = [];
-        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
         logEvent('remove', '<strong>REMOVE:</strong> ' + values.join(', '));
         updateDisplay();
       }
     };
     group.addObserver(observer);
 
-    // Event handlers
-    document.getElementById('btn-add').addEventListener('click', function() {
-      const value = noteInput.value.trim() || 'S';
-      group.addAtoms(false, new N.Note(value));
-      if (!group.eventsEnabled) {
-        logEvent('info', '(Events disabled - no notification sent)');
-        updateDisplay();
-      }
-    });
-
+    // Insert at caret
     document.getElementById('btn-insert').addEventListener('click', function() {
-      const value = noteInput.value.trim() || 'S';
-      const first = group.atoms.first;
-      group.insertAtomsAt(first, false, new N.Note(value));
+      const input = notationInput.value.trim();
+      if (!input) {
+        logEvent('warning', 'No notation input');
+        return;
+      }
+
+      const atoms = parseNotation(input);
+      if (atoms.length === 0) {
+        logEvent('warning', 'No atoms parsed from input');
+        return;
+      }
+
+      const atomAtCaret = getAtomAtIndex(caretIndex);
+      group.insertAtomsAt(atomAtCaret, false, ...atoms);
+
+      // Move caret after inserted atoms
+      caretIndex += atoms.length;
+
       if (!group.eventsEnabled) {
         logEvent('info', '(Events disabled - no notification sent)');
         updateDisplay();
       }
     });
 
-    document.getElementById('btn-remove-last').addEventListener('click', function() {
-      const last = group.atoms.last;
-      if (last) {
-        group.removeAtoms(false, last);
+    // Append to end
+    document.getElementById('btn-append').addEventListener('click', function() {
+      const input = notationInput.value.trim();
+      if (!input) {
+        logEvent('warning', 'No notation input');
+        return;
+      }
+
+      const atoms = parseNotation(input);
+      if (atoms.length === 0) {
+        logEvent('warning', 'No atoms parsed from input');
+        return;
+      }
+
+      group.addAtoms(false, ...atoms);
+
+      // Move caret to end
+      caretIndex = countAtoms();
+
+      if (!group.eventsEnabled) {
+        logEvent('info', '(Events disabled - no notification sent)');
+        updateDisplay();
+      }
+    });
+
+    // Remove at caret
+    document.getElementById('btn-remove').addEventListener('click', function() {
+      const count = parseInt(removeCountInput.value) || 1;
+      const atomCount = countAtoms();
+
+      if (atomCount === 0) {
+        logEvent('warning', 'No atoms to remove');
+        return;
+      }
+
+      if (caretIndex >= atomCount) {
+        logEvent('warning', 'Caret is at end, no atoms after it to remove');
+        return;
+      }
+
+      // Collect atoms to remove starting at caret
+      const toRemove = [];
+      let idx = 0;
+      group.atoms.forEach(function(atom) {
+        if (idx >= caretIndex && toRemove.length < count) {
+          toRemove.push(atom);
+        }
+        idx++;
+        return true;
+      });
+
+      if (toRemove.length > 0) {
+        group.removeAtoms(false, ...toRemove);
         if (!group.eventsEnabled) {
           logEvent('info', '(Events disabled - no notification sent)');
           updateDisplay();
         }
-      } else {
-        logEvent('warning', 'No atoms to remove');
       }
     });
 
+    // Clear all
     document.getElementById('btn-clear').addEventListener('click', function() {
       const toRemove = [];
-      group.atoms.forEach(function(a) { toRemove.push(a); });
+      group.atoms.forEach(function(a) { toRemove.push(a); return true; });
       if (toRemove.length > 0) {
-        group.removeAtoms.apply(group, [false].concat(toRemove));
+        group.removeAtoms(false, ...toRemove);
+        caretIndex = 0;
         if (!group.eventsEnabled) {
           logEvent('info', '(Events disabled - no notification sent)');
           updateDisplay();
@@ -271,6 +394,7 @@ group.addAtoms(false, new Note("P"));
       }
     });
 
+    // Events toggle
     eventsCheckbox.addEventListener('change', function() {
       if (this.checked) {
         group.enableEvents();
@@ -278,6 +402,13 @@ group.addAtoms(false, new Note("P"));
       } else {
         group.disableEvents();
         logEvent('info', 'Events <strong>disabled</strong>');
+      }
+    });
+
+    // Enter key in input triggers insert
+    notationInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-insert').click();
       }
     });
 
@@ -333,12 +464,43 @@ group.addAtoms(false, new Note("P"));
   font-weight: normal;
 }
 
+.inline-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.inline-group label {
+  margin-bottom: 0;
+}
+
 .demo-input {
   padding: 0.5rem;
   border: 1px solid var(--color-border, #ccc);
   border-radius: 4px;
   font-size: 1rem;
-  width: 80px;
+  font-family: monospace;
+}
+
+.demo-input.wide {
+  width: 100%;
+  max-width: 400px;
+}
+
+.demo-input.small {
+  width: 60px;
+}
+
+.input-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.dark .input-hint {
+  color: #999;
 }
 
 .button-group {
@@ -415,11 +577,23 @@ group.addAtoms(false, new Note("P"));
   font-size: 1rem;
 }
 
+.caret-info {
+  font-weight: normal;
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+.dark .caret-info {
+  color: #999;
+}
+
 .atoms-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 40px;
+  align-items: center;
+  gap: 2px;
+  min-height: 50px;
   padding: 0.75rem;
   background: white;
   border: 1px solid var(--color-border, #ddd);
@@ -444,12 +618,46 @@ group.addAtoms(false, new Note("P"));
   font-family: monospace;
   font-weight: 600;
   color: #1565c0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.atom-badge:hover {
+  background: #bbdefb;
+  transform: scale(1.05);
 }
 
 .dark .atom-badge {
   background: #1e3a5f;
   border-color: #2196f3;
   color: #90caf9;
+}
+
+.dark .atom-badge:hover {
+  background: #2a4a6f;
+}
+
+.caret-indicator {
+  width: 4px;
+  height: 32px;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.caret-indicator:hover {
+  background: rgba(33, 150, 243, 0.3);
+}
+
+.caret-indicator.active {
+  background: #2196f3;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
 }
 
 .empty-message {
@@ -497,7 +705,35 @@ group.addAtoms(false, new Note("P"));
   color: #ffc107;
 }
 
+.log-entry.error {
+  color: #f44336;
+}
+
 .log-time {
   color: #666;
+}
+
+.syntax-table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.syntax-table td {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ddd);
+}
+
+.syntax-table td:first-child {
+  font-family: monospace;
+  background: var(--color-bg-secondary, #f5f5f5);
+}
+
+.dark .syntax-table td {
+  border-color: #444;
+}
+
+.dark .syntax-table td:first-child {
+  background: #2d2d2d;
 }
 </style>
