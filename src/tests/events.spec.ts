@@ -1,13 +1,6 @@
 import { Group, Note, Space, Role, Line, ZERO, ONE, Atom } from "../core";
 import { Block } from "../block";
-import {
-  AtomChangeType,
-  RoleChangeType,
-  GroupObserver,
-  RoleObserver,
-  LineObserver,
-  BlockObserver,
-} from "../events";
+import { AtomChangeType, RoleChangeType, GroupObserver, RoleObserver, LineObserver, BlockObserver } from "../events";
 
 describe("Model Change Events - Observer Pattern", () => {
   describe("Group events", () => {
