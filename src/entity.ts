@@ -8,6 +8,11 @@ import * as TSU from "@panyam/tsutils";
  * Note: Child management is intentionally NOT included here. Each container type
  * (BlockContainer, Line, Group, etc.) defines its own child management with
  * appropriate types.
+ *
+ * Observer Pattern:
+ * Each observable entity subclass (Group, Role, Line, Block) manages its own
+ * typed observer list. This provides type safety and clear contracts between
+ * observables and observers.
  */
 export class Entity {
   readonly TYPE: string = "Entity";
@@ -19,11 +24,10 @@ export class Entity {
   protected _parent: TSU.Nullable<Entity> = null;
 
   /**
-   * Optional event hub for emitting change events.
-   * Subclasses that need to emit events should initialize this.
-   * Using composition rather than inheritance to avoid affecting all entities.
+   * Whether events/observer notifications are enabled for this entity.
+   * Subclasses check this flag before notifying observers.
    */
-  eventHub: TSU.Nullable<TSU.Events.EventHub> = null;
+  protected _eventsEnabled = false;
 
   /**
    * Creates a new Entity.
@@ -35,36 +39,29 @@ export class Entity {
   }
 
   /**
-   * Enables event emission for this entity.
-   * Call this to set up the event hub for entities that need to emit changes.
+   * Enables observer notifications for this entity.
+   * Call this to activate change notifications on entities that support them.
    * @returns This entity for method chaining
    */
   enableEvents(): this {
-    if (!this.eventHub) {
-      this.eventHub = new TSU.Events.EventHub();
-    }
+    this._eventsEnabled = true;
     return this;
   }
 
   /**
-   * Emits an event if the event hub is enabled.
-   * @param event The event name
-   * @param payload The event payload
+   * Disables observer notifications for this entity.
+   * @returns This entity for method chaining
    */
-  protected emit(event: string, payload: any): void {
-    this.eventHub?.emit(event, this, payload);
+  disableEvents(): this {
+    this._eventsEnabled = false;
+    return this;
   }
 
   /**
-   * Subscribes to an event on this entity.
-   * @param event The event name
-   * @param handler The event handler
-   * @returns Unsubscribe function, or undefined if events not enabled
+   * Checks if events/observer notifications are enabled.
    */
-  on(event: string, handler: (e: TSU.Events.TEvent) => void): (() => void) | undefined {
-    if (!this.eventHub) return undefined;
-    this.eventHub.on(event, handler);
-    return () => this.eventHub?.removeOn(event, handler);
+  get eventsEnabled(): boolean {
+    return this._eventsEnabled;
   }
 
   /**
