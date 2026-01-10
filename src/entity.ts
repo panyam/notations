@@ -19,12 +19,52 @@ export class Entity {
   protected _parent: TSU.Nullable<Entity> = null;
 
   /**
+   * Optional event hub for emitting change events.
+   * Subclasses that need to emit events should initialize this.
+   * Using composition rather than inheritance to avoid affecting all entities.
+   */
+  eventHub: TSU.Nullable<TSU.Events.EventHub> = null;
+
+  /**
    * Creates a new Entity.
    * @param config Optional configuration object
    */
   constructor(config: any = null) {
     config = config || {};
     if (config.metadata) throw new Error("See where metadata is being passed");
+  }
+
+  /**
+   * Enables event emission for this entity.
+   * Call this to set up the event hub for entities that need to emit changes.
+   * @returns This entity for method chaining
+   */
+  enableEvents(): this {
+    if (!this.eventHub) {
+      this.eventHub = new TSU.Events.EventHub();
+    }
+    return this;
+  }
+
+  /**
+   * Emits an event if the event hub is enabled.
+   * @param event The event name
+   * @param payload The event payload
+   */
+  protected emit(event: string, payload: any): void {
+    this.eventHub?.emit(event, this, payload);
+  }
+
+  /**
+   * Subscribes to an event on this entity.
+   * @param event The event name
+   * @param handler The event handler
+   * @returns Unsubscribe function, or undefined if events not enabled
+   */
+  on(event: string, handler: (e: TSU.Events.TEvent) => void): (() => void) | undefined {
+    if (!this.eventHub) return undefined;
+    this.eventHub.on(event, handler);
+    return () => this.eventHub?.removeOn(event, handler);
   }
 
   /**

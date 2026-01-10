@@ -3,6 +3,7 @@ import { Entity } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
 import { LayoutParams } from "./layouts";
+import { ModelEvents, BlockItemChangeType, BlockItemChangeEvent } from "./events";
 
 /**
  * Definition of a role in a block context.
@@ -396,8 +397,17 @@ export class Block extends Entity {
    * @param item The item to add
    */
   addBlockItem(item: BlockItem): void {
+    const index = this.blockItems.length;
     item.setParent(this);
     this.blockItems.push(item);
+
+    // Emit event for added item
+    const event: BlockItemChangeEvent<BlockItem> = {
+      type: BlockItemChangeType.ADD,
+      item: item,
+      index: index,
+    };
+    this.emit(ModelEvents.ITEMS_CHANGED, event);
   }
 
   /**
@@ -410,6 +420,14 @@ export class Block extends Entity {
     if (index >= 0) {
       this.blockItems.splice(index, 1);
       item.setParent(null);
+
+      // Emit event for removed item
+      const event: BlockItemChangeEvent<BlockItem> = {
+        type: BlockItemChangeType.REMOVE,
+        item: item,
+        index: index,
+      };
+      this.emit(ModelEvents.ITEMS_CHANGED, event);
     }
     return index;
   }
