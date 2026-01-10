@@ -1,0 +1,770 @@
+---
+title: "Model Events Demo"
+description: "Interactive demo for the Observer pattern and model change events"
+---
+
+<p>This interactive demo shows how the Observer pattern works in the Notations library. Parse notation input, insert at any position using the caret, and watch the event log update in real-time.</p>
+
+<h2>Interactive Demo</h2>
+
+<div id="model-events-demo" class="demo-container">
+  <div class="demo-controls">
+    <h3>Controls</h3>
+    <div class="control-group">
+      <label>Notation Input:</label>
+      <input type="text" id="notation-input" value="S R G M" class="demo-input wide" placeholder="e.g., S , R , [ G M P ] D N S.">
+      <small class="input-hint">Enter notes, spaces (,), groups ([...]), etc.</small>
+    </div>
+    <div class="control-group">
+      <label>Actions:</label>
+      <div class="button-group">
+        <button id="btn-insert" class="btn btn-primary">Insert at Caret</button>
+        <button id="btn-append" class="btn btn-secondary">Append to End</button>
+      </div>
+    </div>
+    <div class="control-group inline-group">
+      <label>Remove Count:</label>
+      <input type="number" id="remove-count" value="1" min="1" max="100" class="demo-input small">
+      <button id="btn-remove" class="btn btn-danger">Remove at Caret</button>
+      <button id="btn-clear" class="btn btn-outline">Clear All</button>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="events-enabled" checked>
+        Events Enabled
+      </label>
+    </div>
+  </div>
+
+  <div class="demo-output">
+    <div class="demo-section">
+      <h3>Current Atoms <span id="caret-info" class="caret-info">(Click to set caret position)</span></h3>
+      <div id="atoms-display" class="atoms-container">
+        <span class="caret-indicator active" data-index="0"></span>
+        <span class="empty-message">No atoms yet - caret at position 0</span>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h3>Event Log</h3>
+      <div id="event-log" class="event-log">
+        <div class="log-entry info">Observer registered. Click between atoms to set caret position.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>How It Works</h2>
+
+<p>The demo creates a <code>Group</code> and registers a <code>GroupObserver</code>. It uses the <code>Parser</code> to parse notation input into atoms:</p>
+
+<pre><code class="language-typescript">const group = new Group();
+group.enableEvents();
+
+// Parse notation input into atoms
+function parseNotation(input: string): Atom[] {
+  const parser = new Parser();
+  parser.parse(input);
+  // Extract atoms from AddAtoms commands
+  const atoms: Atom[] = [];
+  parser.commands.forEach(cmd => {
+    if (cmd.atoms) atoms.push(...cmd.atoms);
+  });
+  return atoms;
+}
+
+// Insert at caret position
+const atomAtCaret = getAtomAtIndex(caretIndex);
+group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
+</code></pre>
+
+<h2>Try It Yourself</h2>
+
+<ol>
+  <li><strong>Set the caret</strong> - Click between atoms to position the caret (shown as a blinking line)</li>
+  <li><strong>Enter notation</strong> - Type notation like <code>S R G</code> or <code>[ P D N ]</code> or <code>S , , R</code></li>
+  <li><strong>Insert at caret</strong> - Click "Insert at Caret" to insert parsed atoms at the caret position</li>
+  <li><strong>Remove at caret</strong> - Set the count and click "Remove at Caret" to remove atoms starting at the caret</li>
+  <li><strong>Toggle events</strong> - Uncheck "Events Enabled" to see modifications without event notifications</li>
+</ol>
+
+<h2>Notation Syntax</h2>
+
+<table class="syntax-table">
+  <tr><td><code>S R G M</code></td><td>Individual notes</td></tr>
+  <tr><td><code>S.</code> or <code>S'</code></td><td>Higher octave</td></tr>
+  <tr><td><code>.S</code> or <code>S,</code></td><td>Lower octave</td></tr>
+  <tr><td><code>,</code> or <code>_</code></td><td>Space/silence</td></tr>
+  <tr><td><code>[ G M P ]</code></td><td>Group (atoms share duration)</td></tr>
+  <tr><td><code>2 S</code></td><td>Duration prefix (S has duration 2)</td></tr>
+</table>
+
+<p class="note"><strong>Note:</strong> In this demo, atoms are parsed as <code>Literal</code> tokens without role context. In a full notation document, literals are converted to <code>Note</code> or <code>Syllable</code> based on the role (e.g., <code>Sw:</code> for swaras). This demo focuses on the Observer pattern, so raw literals are used directly.</p>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/observer-pattern/">Observer Pattern API</a> - Complete API reference</li>
+  <li><a href="{{.Site.PathPrefix}}/api/playgrounds/">All Playgrounds</a> - More interactive demos</li>
+</ul>
+
+<script>
+// Enhanced Demo implementation with caret and parsing
+(function() {
+  function initDemo() {
+    if (typeof N === 'undefined') {
+      setTimeout(initDemo, 100);
+      return;
+    }
+
+    const group = new N.Group();
+    group.enableEvents();
+
+    const atomsDisplay = document.getElementById('atoms-display');
+    const eventLog = document.getElementById('event-log');
+    const notationInput = document.getElementById('notation-input');
+    const removeCountInput = document.getElementById('remove-count');
+    const eventsCheckbox = document.getElementById('events-enabled');
+    const caretInfo = document.getElementById('caret-info');
+
+    let caretIndex = 0;
+
+    function logEvent(type, message) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = '<span class="log-time">[' + time + ']</span> ' + message;
+      eventLog.insertBefore(entry, eventLog.firstChild.nextSibling);
+      while (eventLog.children.length > 25) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Get atom at a specific index in the ValueList
+    function getAtomAtIndex(index) {
+      let i = 0;
+      let result = null;
+      group.atoms.forEach(function(atom) {
+        if (i === index) {
+          result = atom;
+          return false; // stop iteration
+        }
+        i++;
+        return true;
+      });
+      return result;
+    }
+
+    // Count atoms in the group
+    function countAtoms() {
+      let count = 0;
+      group.atoms.forEach(function() { count++; return true; });
+      return count;
+    }
+
+    // Get atom display text
+    function getAtomText(atom) {
+      if (atom.TYPE === 'Note') {
+        let text = atom.value;
+        if (atom.octave > 0) text += "'".repeat(atom.octave);
+        if (atom.octave < 0) text = ",".repeat(-atom.octave) + text;
+        return text;
+      } else if (atom.TYPE === 'Literal') {
+        // Literals are notes parsed without role context
+        return atom.value;
+      } else if (atom.TYPE === 'Syllable') {
+        return atom.value;
+      } else if (atom.TYPE === 'Space') {
+        return atom.isSilent ? '~' : ',';
+      } else if (atom.TYPE === 'Rest') {
+        return '-';
+      } else if (atom.TYPE === 'Group') {
+        const parts = [];
+        atom.atoms.forEach(function(a) { parts.push(getAtomText(a)); return true; });
+        return '[' + parts.join(' ') + ']';
+      }
+      return atom.TYPE || '_';
+    }
+
+    function updateDisplay() {
+      atomsDisplay.innerHTML = '';
+      const atomCount = countAtoms();
+
+      // Clamp caret to valid range
+      if (caretIndex > atomCount) caretIndex = atomCount;
+      if (caretIndex < 0) caretIndex = 0;
+
+      // Create caret at position 0
+      const caret0 = document.createElement('span');
+      caret0.className = 'caret-indicator' + (caretIndex === 0 ? ' active' : '');
+      caret0.dataset.index = '0';
+      caret0.addEventListener('click', function(e) {
+        e.stopPropagation();
+        setCaretPosition(0);
+      });
+      atomsDisplay.appendChild(caret0);
+
+      if (atomCount === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'empty-message';
+        empty.textContent = 'No atoms yet';
+        atomsDisplay.appendChild(empty);
+      } else {
+        let idx = 0;
+        group.atoms.forEach(function(atom) {
+          // Atom badge
+          const span = document.createElement('span');
+          span.className = 'atom-badge';
+          span.textContent = getAtomText(atom);
+          span.dataset.uuid = atom.uuid;
+          span.dataset.index = idx;
+          span.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Click on atom sets caret after it
+            setCaretPosition(parseInt(this.dataset.index) + 1);
+          });
+          atomsDisplay.appendChild(span);
+
+          idx++;
+
+          // Caret indicator after this atom
+          const caret = document.createElement('span');
+          caret.className = 'caret-indicator' + (caretIndex === idx ? ' active' : '');
+          caret.dataset.index = idx;
+          caret.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setCaretPosition(parseInt(this.dataset.index));
+          });
+          atomsDisplay.appendChild(caret);
+
+          return true;
+        });
+      }
+
+      caretInfo.textContent = '(Caret at position ' + caretIndex + ' of ' + atomCount + ')';
+    }
+
+    function setCaretPosition(index) {
+      caretIndex = index;
+      updateDisplay();
+      logEvent('info', 'Caret moved to position <strong>' + index + '</strong>');
+    }
+
+    // Parse notation input into atoms
+    function parseNotation(input) {
+      if (!input.trim()) return [];
+
+      try {
+        const parser = new N.Parser();
+        parser.parse(input);
+
+        // Extract atoms from AddAtoms commands in parser.commands
+        const atoms = [];
+        parser.commands.forEach(function(cmd) {
+          // AddAtoms commands have an atoms array
+          if (cmd.atoms && Array.isArray(cmd.atoms)) {
+            cmd.atoms.forEach(function(atom) {
+              atoms.push(atom);
+            });
+          }
+        });
+
+        if (atoms.length === 0 && parser.errors.length > 0) {
+          logEvent('error', 'Parse errors: ' + parser.errors.map(function(e) { return e.message; }).join(', '));
+        }
+
+        return atoms;
+      } catch (e) {
+        logEvent('error', 'Parse error: ' + e.message);
+        return [];
+      }
+    }
+
+    // Register observer
+    const observer = {
+      onAtomsAdded: function(g, atoms, index) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
+        logEvent('add', '<strong>ADD:</strong> ' + values.join(', ') + ' at index ' + index);
+        updateDisplay();
+      },
+      onAtomsInserted: function(g, atoms, index) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
+        logEvent('insert', '<strong>INSERT:</strong> ' + values.join(', ') + ' at index ' + index);
+        updateDisplay();
+      },
+      onAtomsRemoved: function(g, atoms) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(getAtomText(a)); });
+        logEvent('remove', '<strong>REMOVE:</strong> ' + values.join(', '));
+        updateDisplay();
+      }
+    };
+    group.addObserver(observer);
+
+    // Insert at caret
+    document.getElementById('btn-insert').addEventListener('click', function() {
+      const input = notationInput.value.trim();
+      if (!input) {
+        logEvent('warning', 'No notation input');
+        return;
+      }
+
+      const atoms = parseNotation(input);
+      if (atoms.length === 0) {
+        logEvent('warning', 'No atoms parsed from input');
+        return;
+      }
+
+      // Clear input and calculate new caret position BEFORE insert
+      // (observer's updateDisplay will use the updated caret)
+      notationInput.value = '';
+      const newCaretPos = caretIndex + atoms.length;
+
+      const atomAtCaret = getAtomAtIndex(caretIndex);
+      caretIndex = newCaretPos;
+      group.insertAtomsAt(atomAtCaret, false, ...atoms);
+
+      if (!group.eventsEnabled) {
+        logEvent('info', '(Events disabled - no notification sent)');
+        updateDisplay();
+      }
+    });
+
+    // Append to end
+    document.getElementById('btn-append').addEventListener('click', function() {
+      const input = notationInput.value.trim();
+      if (!input) {
+        logEvent('warning', 'No notation input');
+        return;
+      }
+
+      const atoms = parseNotation(input);
+      if (atoms.length === 0) {
+        logEvent('warning', 'No atoms parsed from input');
+        return;
+      }
+
+      // Clear input BEFORE append
+      notationInput.value = '';
+
+      group.addAtoms(false, ...atoms);
+
+      // Move caret to end after atoms are added
+      caretIndex = countAtoms();
+
+      if (!group.eventsEnabled) {
+        logEvent('info', '(Events disabled - no notification sent)');
+      }
+      // Always update display to show new caret position
+      updateDisplay();
+    });
+
+    // Remove at caret
+    document.getElementById('btn-remove').addEventListener('click', function() {
+      const count = parseInt(removeCountInput.value) || 1;
+      const atomCount = countAtoms();
+
+      if (atomCount === 0) {
+        logEvent('warning', 'No atoms to remove');
+        return;
+      }
+
+      if (caretIndex >= atomCount) {
+        logEvent('warning', 'Caret is at end, no atoms after it to remove');
+        return;
+      }
+
+      // Collect atoms to remove starting at caret
+      const toRemove = [];
+      let idx = 0;
+      group.atoms.forEach(function(atom) {
+        if (idx >= caretIndex && toRemove.length < count) {
+          toRemove.push(atom);
+        }
+        idx++;
+        return true;
+      });
+
+      if (toRemove.length > 0) {
+        group.removeAtoms(false, ...toRemove);
+        if (!group.eventsEnabled) {
+          logEvent('info', '(Events disabled - no notification sent)');
+          updateDisplay();
+        }
+      }
+    });
+
+    // Clear all
+    document.getElementById('btn-clear').addEventListener('click', function() {
+      const toRemove = [];
+      group.atoms.forEach(function(a) { toRemove.push(a); return true; });
+      if (toRemove.length > 0) {
+        group.removeAtoms(false, ...toRemove);
+        caretIndex = 0;
+        if (!group.eventsEnabled) {
+          logEvent('info', '(Events disabled - no notification sent)');
+          updateDisplay();
+        }
+      }
+    });
+
+    // Events toggle
+    eventsCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        group.enableEvents();
+        logEvent('info', 'Events <strong>enabled</strong>');
+      } else {
+        group.disableEvents();
+        logEvent('info', 'Events <strong>disabled</strong>');
+      }
+    });
+
+    // Enter key in input triggers insert
+    notationInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-insert').click();
+      }
+    });
+
+    updateDisplay();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDemo);
+  } else {
+    initDemo();
+  }
+})();
+</script>
+
+<style>
+.demo-container {
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .demo-container {
+  background: var(--color-bg-secondary-dark, #1e1e1e);
+  border-color: var(--color-border-dark, #333);
+}
+
+.demo-controls {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .demo-controls {
+  border-color: var(--color-border-dark, #333);
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.control-group > label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+}
+
+.inline-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.inline-group label {
+  margin-bottom: 0;
+}
+
+.demo-input {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: monospace;
+}
+
+.demo-input.wide {
+  width: 100%;
+  max-width: 400px;
+}
+
+.demo-input.small {
+  width: 60px;
+}
+
+.input-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.dark .input-hint {
+  color: #999;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: #2196f3;
+  border-color: #2196f3;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1976d2;
+}
+
+.btn-secondary {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #388e3c;
+}
+
+.btn-danger {
+  background: #f44336;
+  border-color: #f44336;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: #666;
+  color: #666;
+}
+
+.btn-outline:hover {
+  background: #f5f5f5;
+}
+
+.dark .btn-outline {
+  border-color: #999;
+  color: #999;
+}
+
+.dark .btn-outline:hover {
+  background: #333;
+}
+
+.demo-section {
+  margin-bottom: 1.5rem;
+}
+
+.demo-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.caret-info {
+  font-weight: normal;
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+.dark .caret-info {
+  color: #999;
+}
+
+.atoms-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  min-height: 50px;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+}
+
+.dark .atoms-container {
+  background: #2d2d2d;
+  border-color: #444;
+}
+
+.atom-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.5rem;
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #1565c0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.atom-badge:hover {
+  background: #bbdefb;
+  transform: scale(1.05);
+}
+
+.dark .atom-badge {
+  background: #1e3a5f;
+  border-color: #2196f3;
+  color: #90caf9;
+}
+
+.dark .atom-badge:hover {
+  background: #2a4a6f;
+}
+
+.caret-indicator {
+  width: 4px;
+  height: 32px;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.caret-indicator:hover {
+  background: rgba(33, 150, 243, 0.3);
+}
+
+.caret-indicator.active {
+  background: #2196f3;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.empty-message {
+  color: #999;
+  font-style: italic;
+}
+
+.event-log {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: #1e1e1e;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #d4d4d4;
+}
+
+.log-entry {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #333;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.add {
+  color: #4caf50;
+}
+
+.log-entry.insert {
+  color: #ff9800;
+}
+
+.log-entry.remove {
+  color: #f44336;
+}
+
+.log-entry.info {
+  color: #2196f3;
+}
+
+.log-entry.warning {
+  color: #ffc107;
+}
+
+.log-entry.error {
+  color: #f44336;
+}
+
+.log-time {
+  color: #666;
+}
+
+.syntax-table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.syntax-table td {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ddd);
+}
+
+.syntax-table td:first-child {
+  font-family: monospace;
+  background: var(--color-bg-secondary, #f5f5f5);
+}
+
+.dark .syntax-table td {
+  border-color: #444;
+}
+
+.dark .syntax-table td:first-child {
+  background: #2d2d2d;
+}
+
+.note {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.dark .note {
+  background: #332b00;
+  border-color: #ffc107;
+}
+</style>

@@ -1,0 +1,365 @@
+---
+title: "Observer Pattern API"
+description: "API reference for model change observers in the Notations library"
+---
+
+<p>The Notations library uses the Observer pattern to notify listeners about model changes. This enables incremental updates to views and efficient change tracking.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>Each observable entity (Group, Role, Line, Block) manages its own list of typed observers. When the model changes, registered observers are notified with strongly-typed callbacks.</p>
+
+<h3>Benefits</h3>
+
+<ul>
+  <li><strong>Type Safety</strong> - Observers have strongly-typed method signatures</li>
+  <li><strong>Traceability</strong> - Easy to see who is observing what entity</li>
+  <li><strong>Explicit Contracts</strong> - Clear interface between observables and observers</li>
+  <li><strong>Partial Implementation</strong> - Observers can implement only the methods they need</li>
+</ul>
+
+<h2 id="enabling-events">Enabling Events</h2>
+
+<p>Before observers receive notifications, events must be enabled on the entity:</p>
+
+<pre><code class="language-typescript">const group = new Group();
+group.enableEvents();  // Enable observer notifications
+
+// Later, you can disable events if needed
+group.disableEvents();
+
+// Check if events are enabled
+if (group.eventsEnabled) {
+  console.log("Events are enabled");
+}
+</code></pre>
+
+<h2 id="group-observer">GroupObserver</h2>
+
+<p>Interface for observing atom changes in a Group.</p>
+
+<h3>Interface Definition</h3>
+
+<pre><code class="language-typescript">interface GroupObserver&lt;TAtom = any, TGroup = any&gt; {
+  /** Called when atoms are added to the end of the group */
+  onAtomsAdded?(group: TGroup, atoms: TAtom[], index: number): void;
+
+  /** Called when atoms are inserted at a specific position */
+  onAtomsInserted?(group: TGroup, atoms: TAtom[], index: number): void;
+
+  /** Called when atoms are removed from the group */
+  onAtomsRemoved?(group: TGroup, atoms: TAtom[]): void;
+}
+</code></pre>
+
+<h3>Usage Example</h3>
+
+<pre><code class="language-typescript">import { Group, Note, Atom, GroupObserver } from 'notations';
+
+const group = new Group();
+group.enableEvents();
+
+// Create an observer
+const observer: GroupObserver&lt;Atom, Group&gt; = {
+  onAtomsAdded: (group, atoms, index) => {
+    console.log(`${atoms.length} atoms added at index ${index}`);
+    atoms.forEach(atom => {
+      if (atom.TYPE === 'Note') {
+        console.log(`  Note: ${(atom as Note).value}`);
+      }
+    });
+  },
+  onAtomsRemoved: (group, atoms) => {
+    console.log(`${atoms.length} atoms removed`);
+  }
+};
+
+// Register the observer
+const unsubscribe = group.addObserver(observer);
+
+// Make changes - observer will be notified
+group.addAtoms(false, new Note("S"), new Note("R"));
+// Output: 2 atoms added at index 0
+//         Note: S
+//         Note: R
+
+// Unsubscribe when done
+unsubscribe();
+</code></pre>
+
+<h2 id="role-observer">RoleObserver</h2>
+
+<p>Interface for observing atom changes in a Role.</p>
+
+<h3>Interface Definition</h3>
+
+<pre><code class="language-typescript">interface RoleObserver&lt;TAtom = any, TRole = any&gt; {
+  /** Called when atoms are added to the end of the role */
+  onAtomsAdded?(role: TRole, atoms: TAtom[], index: number): void;
+
+  /** Called when atoms are inserted at a specific position */
+  onAtomsInserted?(role: TRole, atoms: TAtom[], index: number): void;
+
+  /** Called when atoms are removed from the role */
+  onAtomsRemoved?(role: TRole, atoms: TAtom[]): void;
+}
+</code></pre>
+
+<h3>Usage Example</h3>
+
+<pre><code class="language-typescript">import { Line, Role, Note, Atom, RoleObserver } from 'notations';
+
+const line = new Line();
+const role = new Role(line, "swaras");
+role.enableEvents();
+
+const observer: RoleObserver&lt;Atom, Role&gt; = {
+  onAtomsAdded: (role, atoms, index) => {
+    console.log(`Added to role "${role.name}": ${atoms.length} atoms`);
+  }
+};
+
+role.addObserver(observer);
+role.addAtoms(new Note("G"), new Note("M"));
+// Output: Added to role "swaras": 2 atoms
+</code></pre>
+
+<h2 id="line-observer">LineObserver</h2>
+
+<p>Interface for observing role changes on a Line.</p>
+
+<h3>Interface Definition</h3>
+
+<pre><code class="language-typescript">interface LineObserver&lt;TRole = any, TLine = any&gt; {
+  /** Called when a role is added to the line */
+  onRoleAdded?(line: TLine, roleName: string, role: TRole): void;
+
+  /** Called when a role is removed from the line */
+  onRoleRemoved?(line: TLine, roleName: string): void;
+}
+</code></pre>
+
+<h3>Usage Example</h3>
+
+<pre><code class="language-typescript">import { Line, Role, LineObserver } from 'notations';
+
+const line = new Line();
+line.enableEvents();
+
+const observer: LineObserver&lt;Role, Line&gt; = {
+  onRoleAdded: (line, roleName, role) => {
+    console.log(`New role created: ${roleName}`);
+    // You can now add a RoleObserver to the new role
+    role.enableEvents();
+    role.addObserver({
+      onAtomsAdded: (r, atoms) => {
+        console.log(`  Role ${r.name} got ${atoms.length} new atoms`);
+      }
+    });
+  },
+  onRoleRemoved: (line, roleName) => {
+    console.log(`Role removed: ${roleName}`);
+  }
+};
+
+line.addObserver(observer);
+
+// Create a role - observer notified
+const role = line.ensureRole("swaras", true);
+// Output: New role created: swaras
+
+// Add atoms to the role - nested observer notified
+role.addAtoms(new Note("P"), new Note("D"));
+// Output: Role swaras got 2 new atoms
+</code></pre>
+
+<h2 id="block-observer">BlockObserver</h2>
+
+<p>Interface for observing item changes on a Block.</p>
+
+<h3>Interface Definition</h3>
+
+<pre><code class="language-typescript">interface BlockObserver&lt;TItem = any, TBlock = any&gt; {
+  /** Called when an item is added to the block */
+  onItemAdded?(block: TBlock, item: TItem, index: number): void;
+
+  /** Called when an item is removed from the block */
+  onItemRemoved?(block: TBlock, item: TItem, index: number): void;
+}
+</code></pre>
+
+<h3>Usage Example</h3>
+
+<pre><code class="language-typescript">import { Block, Line, BlockObserver } from 'notations';
+
+const block = new Block("section", null, "Pallavi");
+block.enableEvents();
+
+const observer: BlockObserver = {
+  onItemAdded: (block, item, index) => {
+    console.log(`Item added at index ${index}`);
+    if (item.TYPE === "Line") {
+      console.log("  A new line was added");
+    }
+  }
+};
+
+block.addObserver(observer);
+
+// Add a line
+block.addBlockItem(new Line());
+// Output: Item added at index 0
+//         A new line was added
+</code></pre>
+
+<h2 id="change-types">Change Types</h2>
+
+<p>The library defines enums for categorizing changes:</p>
+
+<h3>AtomChangeType</h3>
+
+<pre><code class="language-typescript">enum AtomChangeType {
+  ADD = "add",       // Atoms added to the end
+  INSERT = "insert", // Atoms inserted at a position
+  REMOVE = "remove", // Atoms removed
+  UPDATE = "update"  // Atom properties changed
+}
+</code></pre>
+
+<h3>RoleChangeType</h3>
+
+<pre><code class="language-typescript">enum RoleChangeType {
+  ADD = "add",    // Role added to line
+  REMOVE = "remove" // Role removed from line
+}
+</code></pre>
+
+<h3>BlockItemChangeType</h3>
+
+<pre><code class="language-typescript">enum BlockItemChangeType {
+  ADD = "add",    // Item added to block
+  REMOVE = "remove" // Item removed from block
+}
+</code></pre>
+
+<h2 id="patterns">Common Patterns</h2>
+
+<h3>Hierarchical Observation</h3>
+
+<p>Watch an entire notation structure by adding observers at each level:</p>
+
+<pre><code class="language-typescript">function observeNotation(block: Block) {
+  block.enableEvents();
+
+  // Watch for new lines in the block
+  block.addObserver({
+    onItemAdded: (b, item, index) => {
+      if (item.TYPE === "Line") {
+        observeLine(item as Line);
+      }
+    }
+  });
+
+  // Also observe existing lines
+  for (const item of block.blockItems) {
+    if (item.TYPE === "Line") {
+      observeLine(item as Line);
+    }
+  }
+}
+
+function observeLine(line: Line) {
+  line.enableEvents();
+
+  // Watch for new roles
+  line.addObserver({
+    onRoleAdded: (l, name, role) => {
+      observeRole(role);
+    }
+  });
+
+  // Also observe existing roles
+  for (const role of line.roles) {
+    observeRole(role);
+  }
+}
+
+function observeRole(role: Role) {
+  role.enableEvents();
+
+  role.addObserver({
+    onAtomsAdded: (r, atoms, index) => {
+      console.log(`Role ${r.name}: ${atoms.length} atoms added`);
+    },
+    onAtomsRemoved: (r, atoms) => {
+      console.log(`Role ${r.name}: ${atoms.length} atoms removed`);
+    }
+  });
+}
+</code></pre>
+
+<h3>DOM Synchronization</h3>
+
+<p>Keep a DOM view in sync with model changes:</p>
+
+<pre><code class="language-typescript">class RoleView {
+  private container: HTMLElement;
+  private role: Role;
+
+  constructor(role: Role, container: HTMLElement) {
+    this.role = role;
+    this.container = container;
+
+    // Enable events and observe
+    role.enableEvents();
+    role.addObserver({
+      onAtomsAdded: (r, atoms, index) => this.renderAtoms(atoms, index),
+      onAtomsRemoved: (r, atoms) => this.removeAtoms(atoms)
+    });
+
+    // Initial render
+    this.renderAll();
+  }
+
+  private renderAll() {
+    this.container.innerHTML = '';
+    this.role.atoms.forEach((atom, i) => this.renderAtom(atom, i));
+  }
+
+  private renderAtoms(atoms: Atom[], startIndex: number) {
+    const before = this.container.children[startIndex];
+    atoms.forEach((atom, i) => {
+      const el = this.createAtomElement(atom);
+      if (before) {
+        this.container.insertBefore(el, before);
+      } else {
+        this.container.appendChild(el);
+      }
+    });
+  }
+
+  private removeAtoms(atoms: Atom[]) {
+    // Find and remove DOM elements for these atoms
+    atoms.forEach(atom => {
+      const el = this.container.querySelector(`[data-uuid="${atom.uuid}"]`);
+      if (el) el.remove();
+    });
+  }
+
+  private createAtomElement(atom: Atom): HTMLElement {
+    const el = document.createElement('span');
+    el.className = 'atom';
+    el.dataset.uuid = String(atom.uuid);
+    el.textContent = atom.TYPE === 'Note' ? (atom as Note).value : '_';
+    return el;
+  }
+}
+</code></pre>
+
+<h2 id="see-also">See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/">API Reference</a> - Complete API documentation</li>
+  <li><a href="{{.Site.PathPrefix}}/api/playgrounds/model-events/">Model Events Demo</a> - Interactive demo</li>
+  <li><a href="{{.Site.PathPrefix}}/tutorials/04-advanced/">Advanced Tutorial</a> - Advanced techniques</li>
+</ul>

@@ -1,6 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Entity, TimedEntity } from "./entity";
 import { LayoutParams } from "./layouts";
+import { AtomChangeType, GroupObserver, RoleObserver, LineObserver } from "./events";
 
 /**
  * Alias to TSU.Num.Fraction in tsutils.
@@ -469,12 +470,58 @@ export class Group extends Atom {
   readonly atoms = new TSU.Lists.ValueList<Atom>();
 
   /**
+   * Observers that receive notifications when atoms change.
+   */
+  private _observers: GroupObserver<Atom, Group>[] = [];
+
+  /**
    * Creates a new Group containing the specified atoms.
    * @param atoms The atoms to include in this group
    */
   constructor(...atoms: Atom[]) {
     super(atoms.length == 0 ? ZERO : ONE);
     this.addAtoms(false, ...atoms);
+  }
+
+  /**
+   * Adds an observer to receive atom change notifications.
+   * @param observer The observer to add
+   * @returns A function to remove the observer
+   */
+  addObserver(observer: GroupObserver<Atom, Group>): () => void {
+    this._observers.push(observer);
+    return () => this.removeObserver(observer);
+  }
+
+  /**
+   * Removes an observer.
+   * @param observer The observer to remove
+   */
+  removeObserver(observer: GroupObserver<Atom, Group>): void {
+    const index = this._observers.indexOf(observer);
+    if (index >= 0) {
+      this._observers.splice(index, 1);
+    }
+  }
+
+  /**
+   * Notifies observers of atom changes.
+   */
+  private notifyObservers(type: AtomChangeType, atoms: Atom[], index: number): void {
+    if (!this._eventsEnabled) return;
+    for (const observer of this._observers) {
+      switch (type) {
+        case AtomChangeType.ADD:
+          observer.onAtomsAdded?.(this, atoms, index);
+          break;
+        case AtomChangeType.INSERT:
+          observer.onAtomsInserted?.(this, atoms, index);
+          break;
+        case AtomChangeType.REMOVE:
+          observer.onAtomsRemoved?.(this, atoms);
+          break;
+      }
+    }
   }
 
   /**
@@ -495,7 +542,9 @@ export class Group extends Atom {
   copyTo(another: this): void {
     super.copyTo(another);
     another.durationIsMultiplier = this.durationIsMultiplier;
-    this.atoms.forEach((atom) => another.atoms.add(atom.clone()));
+    for (const atom of this.atoms.values()) {
+      another.atoms.add(atom.clone());
+    }
   }
 
   /**
@@ -628,7 +677,9 @@ export class Group extends Atom {
    */
   get totalChildDuration(): Fraction {
     let out = ZERO;
-    this.atoms.forEach((atom) => (out = out.plus(atom.duration)));
+    for (const atom of this.atoms.values()) {
+      out = out.plus(atom.duration);
+    }
     return out;
   }
 
@@ -644,6 +695,24 @@ export class Group extends Atom {
   insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, adjustDuration = false, ...atoms: Atom[]): this {
     adjustDuration = adjustDuration && !this.durationIsMultiplier;
     const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
+
+    // Calculate insertion index for event notification
+    let insertIndex: number;
+    if (beforeAtom) {
+      // Find index of beforeAtom using for loop
+      insertIndex = 0;
+      for (const a of this.atoms.values()) {
+        if (a === beforeAtom) break;
+        insertIndex++;
+      }
+    } else {
+      // Appending to end - use size property
+      insertIndex = this.atoms.size;
+    }
+
+    // Track which atoms were actually added (excluding REST atoms)
+    const addedAtoms: Atom[] = [];
+
     // First form a chain of the given atoms
     for (const atom of atoms) {
       if (atom.parentGroup != null) {
@@ -660,6 +729,7 @@ export class Group extends Atom {
       } else {
         atom.parentGroup = this;
         this.atoms.add(atom, beforeAtom);
+        addedAtoms.push(atom);
       }
     }
     if (adjustDuration) {
@@ -671,6 +741,13 @@ export class Group extends Atom {
         this._duration = this._duration.times(scaleFactor, true);
       }
     }
+
+    // Notify observers if atoms were added
+    if (addedAtoms.length > 0) {
+      const type = beforeAtom ? AtomChangeType.INSERT : AtomChangeType.ADD;
+      this.notifyObservers(type, addedAtoms, insertIndex);
+    }
+
     return this;
   }
 
@@ -695,10 +772,15 @@ export class Group extends Atom {
   removeAtoms(adjustDuration = false, ...atoms: Atom[]): this {
     adjustDuration = adjustDuration && !this.durationIsMultiplier;
     const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
+
+    // Track which atoms were actually removed
+    const removedAtoms: Atom[] = [];
+
     for (const atom of atoms) {
       if (atom.parentGroup == this) {
         this.atoms.remove(atom);
         atom.parentGroup = null;
+        removedAtoms.push(atom);
       } else if (atom.parentGroup != null) {
         throw new Error("Atom cannot be removed as it does not belong to this group");
       }
@@ -712,6 +794,12 @@ export class Group extends Atom {
         this._duration = this._duration.times(scaleFactor, true);
       }
     }
+
+    // Notify observers if atoms were removed
+    if (removedAtoms.length > 0) {
+      this.notifyObservers(AtomChangeType.REMOVE, removedAtoms, -1);
+    }
+
     return this;
   }
 }
@@ -747,6 +835,32 @@ export class Line extends Entity {
    * The LayoutParams associated with this line.
    */
   layoutParams: LayoutParams;
+
+  /**
+   * Observers that receive notifications when roles change.
+   */
+  private _observers: LineObserver<Role, Line>[] = [];
+
+  /**
+   * Adds an observer to receive role change notifications.
+   * @param observer The observer to add
+   * @returns A function to remove the observer
+   */
+  addObserver(observer: LineObserver<Role, Line>): () => void {
+    this._observers.push(observer);
+    return () => this.removeObserver(observer);
+  }
+
+  /**
+   * Removes an observer.
+   * @param observer The observer to remove
+   */
+  removeObserver(observer: LineObserver<Role, Line>): void {
+    const index = this._observers.indexOf(observer);
+    if (index >= 0) {
+      this._observers.splice(index, 1);
+    }
+  }
 
   /**
    * Finds the index of a role with the given name.
@@ -819,8 +933,36 @@ export class Line extends Entity {
       const role = new Role(this, roleName);
       role.defaultToNotes = defaultToNotes;
       this.roles.push(role);
+
+      // Notify observers of new role
+      if (this._eventsEnabled) {
+        for (const observer of this._observers) {
+          observer.onRoleAdded?.(this, roleName, role);
+        }
+      }
     }
     return this.roles[ri];
+  }
+
+  /**
+   * Removes a role from this line.
+   * @param roleName The name of the role to remove
+   * @returns True if the role was removed, false if not found
+   */
+  removeRole(roleName: string): boolean {
+    const ri = this.roles.findIndex((r) => r.name == roleName);
+    if (ri >= 0) {
+      this.roles.splice(ri, 1);
+
+      // Notify observers of removed role
+      if (this._eventsEnabled) {
+        for (const observer of this._observers) {
+          observer.onRoleRemoved?.(this, roleName);
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -853,6 +995,11 @@ export class Role extends Entity {
   atoms: Atom[] = [];
 
   /**
+   * Observers that receive notifications when atoms change.
+   */
+  private _observers: RoleObserver<Atom, Role>[] = [];
+
+  /**
    * Creates a new Role with the specified line and name.
    * @param line The line this role belongs to
    * @param name The name of the role
@@ -862,6 +1009,47 @@ export class Role extends Entity {
     public readonly name: string,
   ) {
     super();
+  }
+
+  /**
+   * Adds an observer to receive atom change notifications.
+   * @param observer The observer to add
+   * @returns A function to remove the observer
+   */
+  addObserver(observer: RoleObserver<Atom, Role>): () => void {
+    this._observers.push(observer);
+    return () => this.removeObserver(observer);
+  }
+
+  /**
+   * Removes an observer.
+   * @param observer The observer to remove
+   */
+  removeObserver(observer: RoleObserver<Atom, Role>): void {
+    const index = this._observers.indexOf(observer);
+    if (index >= 0) {
+      this._observers.splice(index, 1);
+    }
+  }
+
+  /**
+   * Notifies observers of atom changes.
+   */
+  private notifyObservers(type: AtomChangeType, atoms: Atom[], index: number): void {
+    if (!this._eventsEnabled) return;
+    for (const observer of this._observers) {
+      switch (type) {
+        case AtomChangeType.ADD:
+          observer.onAtomsAdded?.(this, atoms, index);
+          break;
+        case AtomChangeType.INSERT:
+          observer.onAtomsInserted?.(this, atoms, index);
+          break;
+        case AtomChangeType.REMOVE:
+          observer.onAtomsRemoved?.(this, atoms);
+          break;
+      }
+    }
   }
 
   /**
@@ -880,20 +1068,61 @@ export class Role extends Entity {
   }
 
   /**
-   * Adds atoms to this role.
+   * Adds atoms to the end of this role.
    * @param atoms The atoms to add
    */
   addAtoms(...atoms: Atom[]): void {
-    let last: null | Atom = null;
+    this.insertAtomsAt(this.atoms.length, ...atoms);
+  }
+
+  /**
+   * Inserts atoms at a specific index in this role.
+   * @param index The index at which to insert
+   * @param atoms The atoms to insert
+   */
+  insertAtomsAt(index: number, ...atoms: Atom[]): void {
+    // Track which atoms were actually added (excluding REST atoms)
+    const addedAtoms: Atom[] = [];
+    let last: null | Atom = index > 0 ? this.atoms[index - 1] : null;
+
     for (const atom of atoms) {
       if (atom.TYPE == AtomType.REST) {
         if (last && last.TYPE != AtomType.GROUP && last.TYPE != AtomType.LABEL) {
           (last as LeafAtom).beforeRest = true;
         }
       } else {
-        this.atoms.push(atom);
+        this.atoms.splice(index + addedAtoms.length, 0, atom);
+        addedAtoms.push(atom);
       }
       last = atom;
+    }
+
+    // Notify observers if atoms were added
+    if (addedAtoms.length > 0) {
+      const isAppend = index >= this.atoms.length - addedAtoms.length;
+      const type = isAppend ? AtomChangeType.ADD : AtomChangeType.INSERT;
+      this.notifyObservers(type, addedAtoms, index);
+    }
+  }
+
+  /**
+   * Removes atoms from this role.
+   * @param atoms The atoms to remove
+   */
+  removeAtoms(...atoms: Atom[]): void {
+    const removedAtoms: Atom[] = [];
+
+    for (const atom of atoms) {
+      const idx = this.atoms.indexOf(atom);
+      if (idx >= 0) {
+        this.atoms.splice(idx, 1);
+        removedAtoms.push(atom);
+      }
+    }
+
+    // Notify observers if atoms were removed
+    if (removedAtoms.length > 0) {
+      this.notifyObservers(AtomChangeType.REMOVE, removedAtoms, -1);
     }
   }
 

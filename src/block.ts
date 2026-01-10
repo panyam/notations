@@ -3,6 +3,7 @@ import { Entity } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
 import { LayoutParams } from "./layouts";
+import { BlockObserver } from "./events";
 
 /**
  * Definition of a role in a block context.
@@ -108,6 +109,11 @@ export class Block extends Entity {
   protected _currentLine: TSU.Nullable<Line> = null;
 
   /**
+   * Observers that receive notifications when block items change.
+   */
+  private _observers: BlockObserver<BlockItem, Block>[] = [];
+
+  /**
    * Creates a new Block.
    * @param blockType The type of block (e.g., "section", "group")
    * @param parent The parent block (null for root)
@@ -121,6 +127,27 @@ export class Block extends Entity {
     // Also set Entity's parent for tree traversal
     if (parent) {
       this.setParent(parent);
+    }
+  }
+
+  /**
+   * Adds an observer to receive block item change notifications.
+   * @param observer The observer to add
+   * @returns A function to remove the observer
+   */
+  addObserver(observer: BlockObserver<BlockItem, Block>): () => void {
+    this._observers.push(observer);
+    return () => this.removeObserver(observer);
+  }
+
+  /**
+   * Removes an observer.
+   * @param observer The observer to remove
+   */
+  removeObserver(observer: BlockObserver<BlockItem, Block>): void {
+    const index = this._observers.indexOf(observer);
+    if (index >= 0) {
+      this._observers.splice(index, 1);
     }
   }
 
@@ -396,8 +423,16 @@ export class Block extends Entity {
    * @param item The item to add
    */
   addBlockItem(item: BlockItem): void {
+    const index = this.blockItems.length;
     item.setParent(this);
     this.blockItems.push(item);
+
+    // Notify observers of added item
+    if (this._eventsEnabled) {
+      for (const observer of this._observers) {
+        observer.onItemAdded?.(this, item, index);
+      }
+    }
   }
 
   /**
@@ -410,6 +445,13 @@ export class Block extends Entity {
     if (index >= 0) {
       this.blockItems.splice(index, 1);
       item.setParent(null);
+
+      // Notify observers of removed item
+      if (this._eventsEnabled) {
+        for (const observer of this._observers) {
+          observer.onItemRemoved?.(this, item, index);
+        }
+      }
     }
     return index;
   }
