@@ -1,0 +1,503 @@
+---
+title: "Model Events Demo"
+description: "Interactive demo for the Observer pattern and model change events"
+---
+
+<p>This interactive demo shows how the Observer pattern works in the Notations library. Add, insert, or remove atoms and watch the event log update in real-time.</p>
+
+<h2>Interactive Demo</h2>
+
+<div id="model-events-demo" class="demo-container">
+  <div class="demo-controls">
+    <h3>Controls</h3>
+    <div class="control-group">
+      <label>Note Value:</label>
+      <input type="text" id="note-value" value="S" maxlength="3" class="demo-input">
+    </div>
+    <div class="control-group">
+      <label>Actions:</label>
+      <div class="button-group">
+        <button id="btn-add" class="btn btn-primary">Add Note</button>
+        <button id="btn-insert" class="btn btn-secondary">Insert at Start</button>
+        <button id="btn-remove-last" class="btn btn-danger">Remove Last</button>
+        <button id="btn-clear" class="btn btn-outline">Clear All</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="events-enabled" checked>
+        Events Enabled
+      </label>
+    </div>
+  </div>
+
+  <div class="demo-output">
+    <div class="demo-section">
+      <h3>Current Atoms</h3>
+      <div id="atoms-display" class="atoms-container">
+        <span class="empty-message">No atoms yet</span>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h3>Event Log</h3>
+      <div id="event-log" class="event-log">
+        <div class="log-entry info">Observer registered. Ready to receive events.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>How It Works</h2>
+
+<p>The demo creates a <code>Group</code> and registers a <code>GroupObserver</code>:</p>
+
+<pre><code class="language-typescript">const group = new Group();
+group.enableEvents();
+
+const observer: GroupObserver = {
+  onAtomsAdded: (g, atoms, index) => {
+    log(`ADD: ${atoms.length} atom(s) at index ${index}`);
+  },
+  onAtomsInserted: (g, atoms, index) => {
+    log(`INSERT: ${atoms.length} atom(s) at index ${index}`);
+  },
+  onAtomsRemoved: (g, atoms) => {
+    log(`REMOVE: ${atoms.length} atom(s)`);
+  }
+};
+
+group.addObserver(observer);
+</code></pre>
+
+<h2>Try It Yourself</h2>
+
+<ol>
+  <li><strong>Add a note</strong> - Click "Add Note" to append a note to the end</li>
+  <li><strong>Insert a note</strong> - Click "Insert at Start" to insert at position 0</li>
+  <li><strong>Remove a note</strong> - Click "Remove Last" to remove the last note</li>
+  <li><strong>Toggle events</strong> - Uncheck "Events Enabled" to see that modifications still work but no events fire</li>
+</ol>
+
+<h2>Code Example</h2>
+
+<p>Here's the complete code for this demo:</p>
+
+<pre><code class="language-typescript">import { Group, Note, Atom, GroupObserver } from 'notations';
+
+// Create a group with events enabled
+const group = new Group();
+group.enableEvents();
+
+// Track atoms for UI display
+function displayAtoms() {
+  const atoms: string[] = [];
+  group.atoms.forEach(atom => {
+    if (atom.TYPE === 'Note') {
+      atoms.push((atom as Note).value);
+    }
+  });
+  return atoms;
+}
+
+// Create observer with all handlers
+const observer: GroupObserver&lt;Atom, Group&gt; = {
+  onAtomsAdded: (g, atoms, index) => {
+    const values = atoms.map(a => (a as Note).value).join(', ');
+    console.log(`ADD: ${values} at index ${index}`);
+  },
+
+  onAtomsInserted: (g, atoms, index) => {
+    const values = atoms.map(a => (a as Note).value).join(', ');
+    console.log(`INSERT: ${values} at index ${index}`);
+  },
+
+  onAtomsRemoved: (g, atoms) => {
+    const values = atoms.map(a => (a as Note).value).join(', ');
+    console.log(`REMOVE: ${values}`);
+  }
+};
+
+// Register observer
+const unsubscribe = group.addObserver(observer);
+
+// Add atoms
+group.addAtoms(false, new Note("S"), new Note("R"));
+// Output: ADD: S, R at index 0
+
+// Insert at start
+const first = group.atoms.first;
+if (first) {
+  group.insertAtomsAt(first, false, new Note("G"));
+  // Output: INSERT: G at index 0
+}
+
+// Remove an atom
+const last = group.atoms.last;
+if (last) {
+  group.removeAtoms(false, last);
+  // Output: REMOVE: R
+}
+
+// Disable events
+group.disableEvents();
+group.addAtoms(false, new Note("M")); // No event fired
+
+// Re-enable events
+group.enableEvents();
+group.addAtoms(false, new Note("P"));
+// Output: ADD: P at index 3
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/observer-pattern/">Observer Pattern API</a> - Complete API reference</li>
+  <li><a href="{{.Site.PathPrefix}}/api/playgrounds/">All Playgrounds</a> - More interactive demos</li>
+</ul>
+
+<script>
+// Demo implementation
+(function() {
+  // Wait for N (notations library) to be available
+  function initDemo() {
+    if (typeof N === 'undefined') {
+      setTimeout(initDemo, 100);
+      return;
+    }
+
+    const group = new N.Group();
+    group.enableEvents();
+
+    const atomsDisplay = document.getElementById('atoms-display');
+    const eventLog = document.getElementById('event-log');
+    const noteInput = document.getElementById('note-value');
+    const eventsCheckbox = document.getElementById('events-enabled');
+
+    function logEvent(type, message) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = '<span class="log-time">[' + time + ']</span> ' + message;
+      eventLog.insertBefore(entry, eventLog.firstChild.nextSibling);
+
+      // Keep only last 20 entries
+      while (eventLog.children.length > 21) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    function updateDisplay() {
+      atomsDisplay.innerHTML = '';
+      let hasAtoms = false;
+      group.atoms.forEach(function(atom) {
+        hasAtoms = true;
+        const span = document.createElement('span');
+        span.className = 'atom-badge';
+        span.textContent = atom.TYPE === 'Note' ? atom.value : '_';
+        span.dataset.uuid = atom.uuid;
+        atomsDisplay.appendChild(span);
+      });
+      if (!hasAtoms) {
+        atomsDisplay.innerHTML = '<span class="empty-message">No atoms yet</span>';
+      }
+    }
+
+    // Register observer
+    const observer = {
+      onAtomsAdded: function(g, atoms, index) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        logEvent('add', '<strong>ADD:</strong> ' + values.join(', ') + ' at index ' + index);
+        updateDisplay();
+      },
+      onAtomsInserted: function(g, atoms, index) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        logEvent('insert', '<strong>INSERT:</strong> ' + values.join(', ') + ' at index ' + index);
+        updateDisplay();
+      },
+      onAtomsRemoved: function(g, atoms) {
+        const values = [];
+        atoms.forEach(function(a) { values.push(a.value || '_'); });
+        logEvent('remove', '<strong>REMOVE:</strong> ' + values.join(', '));
+        updateDisplay();
+      }
+    };
+    group.addObserver(observer);
+
+    // Event handlers
+    document.getElementById('btn-add').addEventListener('click', function() {
+      const value = noteInput.value.trim() || 'S';
+      group.addAtoms(false, new N.Note(value));
+      if (!group.eventsEnabled) {
+        logEvent('info', '(Events disabled - no notification sent)');
+        updateDisplay();
+      }
+    });
+
+    document.getElementById('btn-insert').addEventListener('click', function() {
+      const value = noteInput.value.trim() || 'S';
+      const first = group.atoms.first;
+      group.insertAtomsAt(first, false, new N.Note(value));
+      if (!group.eventsEnabled) {
+        logEvent('info', '(Events disabled - no notification sent)');
+        updateDisplay();
+      }
+    });
+
+    document.getElementById('btn-remove-last').addEventListener('click', function() {
+      const last = group.atoms.last;
+      if (last) {
+        group.removeAtoms(false, last);
+        if (!group.eventsEnabled) {
+          logEvent('info', '(Events disabled - no notification sent)');
+          updateDisplay();
+        }
+      } else {
+        logEvent('warning', 'No atoms to remove');
+      }
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', function() {
+      const toRemove = [];
+      group.atoms.forEach(function(a) { toRemove.push(a); });
+      if (toRemove.length > 0) {
+        group.removeAtoms.apply(group, [false].concat(toRemove));
+        if (!group.eventsEnabled) {
+          logEvent('info', '(Events disabled - no notification sent)');
+          updateDisplay();
+        }
+      }
+    });
+
+    eventsCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        group.enableEvents();
+        logEvent('info', 'Events <strong>enabled</strong>');
+      } else {
+        group.disableEvents();
+        logEvent('info', 'Events <strong>disabled</strong>');
+      }
+    });
+
+    updateDisplay();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDemo);
+  } else {
+    initDemo();
+  }
+})();
+</script>
+
+<style>
+.demo-container {
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .demo-container {
+  background: var(--color-bg-secondary-dark, #1e1e1e);
+  border-color: var(--color-border-dark, #333);
+}
+
+.demo-controls {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .demo-controls {
+  border-color: var(--color-border-dark, #333);
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.control-group > label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+}
+
+.demo-input {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 80px;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: #2196f3;
+  border-color: #2196f3;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1976d2;
+}
+
+.btn-secondary {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #388e3c;
+}
+
+.btn-danger {
+  background: #f44336;
+  border-color: #f44336;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: #666;
+  color: #666;
+}
+
+.btn-outline:hover {
+  background: #f5f5f5;
+}
+
+.dark .btn-outline {
+  border-color: #999;
+  color: #999;
+}
+
+.dark .btn-outline:hover {
+  background: #333;
+}
+
+.demo-section {
+  margin-bottom: 1.5rem;
+}
+
+.demo-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.atoms-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+}
+
+.dark .atoms-container {
+  background: #2d2d2d;
+  border-color: #444;
+}
+
+.atom-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.5rem;
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.dark .atom-badge {
+  background: #1e3a5f;
+  border-color: #2196f3;
+  color: #90caf9;
+}
+
+.empty-message {
+  color: #999;
+  font-style: italic;
+}
+
+.event-log {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: #1e1e1e;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #d4d4d4;
+}
+
+.log-entry {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #333;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.add {
+  color: #4caf50;
+}
+
+.log-entry.insert {
+  color: #ff9800;
+}
+
+.log-entry.remove {
+  color: #f44336;
+}
+
+.log-entry.info {
+  color: #2196f3;
+}
+
+.log-entry.warning {
+  color: #ffc107;
+}
+
+.log-time {
+  color: #666;
+}
+</style>

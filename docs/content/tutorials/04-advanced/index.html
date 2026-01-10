@@ -101,10 +101,73 @@ Sw: S. , , S
 Sh: sa , , sa
 </notation>
 
+<h2 id="model-change-events">Model Change Events</h2>
+
+<p>The Notations library uses the Observer pattern to notify your code when the model changes. This is useful for building interactive editors, undo/redo systems, or keeping views synchronized with the model.</p>
+
+<h3>Enabling Events</h3>
+
+<p>First, enable events on entities you want to observe:</p>
+
+<pre><code class="language-typescript">const group = new Group();
+group.enableEvents();  // Now observers will receive notifications
+</code></pre>
+
+<h3>Observing a Group</h3>
+
+<p>Add an observer to receive notifications when atoms are added, inserted, or removed:</p>
+
+<pre><code class="language-typescript">import { Group, Note, GroupObserver } from 'notations';
+
+const group = new Group();
+group.enableEvents();
+
+// Create an observer
+const observer: GroupObserver = {
+  onAtomsAdded: (group, atoms, index) => {
+    console.log(`Added ${atoms.length} atoms at index ${index}`);
+  },
+  onAtomsRemoved: (group, atoms) => {
+    console.log(`Removed ${atoms.length} atoms`);
+  }
+};
+
+// Register and get unsubscribe function
+const unsubscribe = group.addObserver(observer);
+
+// Make changes - observer is notified
+group.addAtoms(false, new Note("S"), new Note("R"));
+// Output: Added 2 atoms at index 0
+
+// Unsubscribe when done
+unsubscribe();
+</code></pre>
+
+<h3>Available Observers</h3>
+
+<ul>
+  <li><strong>GroupObserver</strong> - Observe atoms in a Group (onAtomsAdded, onAtomsInserted, onAtomsRemoved)</li>
+  <li><strong>RoleObserver</strong> - Observe atoms in a Role (same callbacks as GroupObserver)</li>
+  <li><strong>LineObserver</strong> - Observe roles in a Line (onRoleAdded, onRoleRemoved)</li>
+  <li><strong>BlockObserver</strong> - Observe items in a Block (onItemAdded, onItemRemoved)</li>
+</ul>
+
+<h3>Use Cases</h3>
+
+<ul>
+  <li><strong>Live Editing</strong> - Update the rendered view when the user makes changes</li>
+  <li><strong>Undo/Redo</strong> - Record changes to build an undo stack</li>
+  <li><strong>Collaboration</strong> - Sync changes with other users</li>
+  <li><strong>Validation</strong> - Check constraints when the model changes</li>
+</ul>
+
+<p>Try the <a href="{{.Site.PathPrefix}}/api/playgrounds/model-events/">interactive Model Events demo</a> to see observers in action.</p>
+
 <h2>Next Steps</h2>
 
 <ul>
   <li><a href="{{.Site.PathPrefix}}/reference/">Reference Documentation</a> - Complete syntax specification</li>
   <li><a href="{{.Site.PathPrefix}}/examples/">Examples</a> - Real-world examples and patterns</li>
   <li><a href="{{.Site.PathPrefix}}/api/">API Documentation</a> - Use the library programmatically</li>
+  <li><a href="{{.Site.PathPrefix}}/api/reference/observer-pattern/">Observer Pattern API</a> - Full observer API reference</li>
 </ul>
