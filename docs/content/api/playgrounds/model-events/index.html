@@ -317,14 +317,14 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
         return;
       }
 
-      const atomAtCaret = getAtomAtIndex(caretIndex);
-      group.insertAtomsAt(atomAtCaret, false, ...atoms);
-
-      // Move caret after inserted atoms
-      caretIndex += atoms.length;
-
-      // Clear input after successful insert
+      // Clear input and calculate new caret position BEFORE insert
+      // (observer's updateDisplay will use the updated caret)
       notationInput.value = '';
+      const newCaretPos = caretIndex + atoms.length;
+
+      const atomAtCaret = getAtomAtIndex(caretIndex);
+      caretIndex = newCaretPos;
+      group.insertAtomsAt(atomAtCaret, false, ...atoms);
 
       if (!group.eventsEnabled) {
         logEvent('info', '(Events disabled - no notification sent)');
@@ -346,18 +346,19 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
         return;
       }
 
+      // Clear input BEFORE append
+      notationInput.value = '';
+
       group.addAtoms(false, ...atoms);
 
-      // Move caret to end
+      // Move caret to end after atoms are added
       caretIndex = countAtoms();
-
-      // Clear input after successful append
-      notationInput.value = '';
 
       if (!group.eventsEnabled) {
         logEvent('info', '(Events disabled - no notification sent)');
-        updateDisplay();
       }
+      // Always update display to show new caret position
+      updateDisplay();
     });
 
     // Remove at caret
