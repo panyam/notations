@@ -1,0 +1,61 @@
+---
+title: "Visual Sanity Tests"
+description: "Visual regression test cases for notation rendering"
+---
+
+<p>This page displays notation test cases with their rendered output to help catch visual regressions and document expected rendering behavior.</p>
+
+{{ $manifest := (json "visual-tests/manifest.json" "") }}
+{{ $cases := $manifest.cases }}
+
+{{ range $manifest.categories }}
+<div class="visual-test-category">
+  <h2>{{ .name }} ({{ len .cases }})</h2>
+  <div class="visual-test-grid">
+    {{ $catCases := .cases }}
+    {{ range $catCases }}
+    {{ $caseId := . }}
+    {{ $caseMeta := index $cases $caseId }}
+    {{ $inputPath := printf "static/visual-tests/cases/%s/input.txt" $caseId }}
+    {{ $expectedPath := printf "static/visual-tests/cases/%s/expected.svg" $caseId }}
+    {{ $input := includeFileText $inputPath }}
+    {{ $expected := includeFile $expectedPath }}
+
+    <div class="visual-test-card" id="test-{{ $caseId }}">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">{{ $caseMeta.name }}</div>
+        <div class="visual-test-card-id">{{ $caseId }}</div>
+      </div>
+      <div class="visual-test-card-body">
+        {{ if $caseMeta.description }}
+        <div class="visual-test-description">{{ $caseMeta.description }}</div>
+        {{ end }}
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">{{ $input }}</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-{{ $caseId }}">
+            {{ if $expected }}
+            {{ $expected }}
+            {{ else }}
+            <span class="visual-test-expected-placeholder">No baseline saved</span>
+            {{ end }}
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Rendered</div>
+          <div class="visual-test-output">
+            <notation id="render-{{ $caseId }}">{{ $input }}</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
