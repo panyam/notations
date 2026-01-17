@@ -8,11 +8,7 @@ const FOUR = ONE.timesNum(4);
 /**
  * Helper to create a CollisionLayoutItem with default values.
  */
-function item(
-  duration: TSU.Num.Fraction,
-  minWidth: number,
-  glyphOffset = 0,
-): CollisionLayoutItem {
+function item(duration: TSU.Num.Fraction, minWidth: number, glyphOffset = 0): CollisionLayoutItem {
   return {
     timeOffset: TSU.Num.Fraction.ZERO, // Not used directly, computed from cumulative duration
     duration,
