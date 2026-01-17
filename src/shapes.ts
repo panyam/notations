@@ -2,6 +2,78 @@ import * as TSU from "@panyam/tsutils";
 import { ZERO, Atom, LeafAtom, Group } from "./core";
 
 /**
+ * Represents an item to be positioned in collision-based layout.
+ */
+export interface CollisionLayoutItem {
+  /** Time offset as a fraction (numerator/denominator) */
+  timeOffset: TSU.Num.Fraction;
+  /** Duration of this item */
+  duration: TSU.Num.Fraction;
+  /** Width of pre-embellishments (extends left from glyph position) */
+  glyphOffset: number;
+  /** Minimum width of the item (includes all embellishments and glyph) */
+  minWidth: number;
+}
+
+/**
+ * Result of collision-based layout for a single item.
+ */
+export interface CollisionLayoutResult {
+  /** The calculated x position for the item */
+  x: number;
+  /** Whether the item was pushed right due to collision */
+  wasCollision: boolean;
+}
+
+/**
+ * Computes collision-based positions for a sequence of items within a container.
+ *
+ * ## Algorithm
+ *
+ * 1. Calculate ideal glyph position: `glyphX = (timeOffset / totalDuration) * containerWidth`
+ * 2. Pre-embellishments extend left: `realX = glyphX - glyphOffset`
+ * 3. Collision check: if `realX < prevItemEndX`, then `realX = prevItemEndX`
+ * 4. Track: `prevItemEndX = realX + minWidth`
+ *
+ * @param items Items to position (must be in time order)
+ * @param totalDuration Total duration of all items
+ * @param containerWidth Width of the container to position items within
+ * @returns Array of positions for each item
+ */
+export function computeCollisionLayout(
+  items: CollisionLayoutItem[],
+  totalDuration: TSU.Num.Fraction,
+  containerWidth: number,
+): CollisionLayoutResult[] {
+  const results: CollisionLayoutResult[] = [];
+  let prevItemEndX = 0;
+  let currTime = ZERO;
+
+  for (const item of items) {
+    // 1. Calculate ideal glyph position based on time offset
+    const glyphX = totalDuration.isZero ? 0 : currTime.timesNum(containerWidth).divby(totalDuration).floor;
+
+    // 2. Pre-embellishments extend left from glyph position
+    let realX = glyphX - item.glyphOffset;
+
+    // 3. Collision check: push right if overlapping previous item
+    const wasCollision = realX < prevItemEndX;
+    if (wasCollision) {
+      realX = prevItemEndX;
+    }
+
+    results.push({ x: realX, wasCollision });
+
+    // 4. Track end position for next collision check
+    prevItemEndX = realX + item.minWidth;
+
+    currTime = currTime.plus(item.duration);
+  }
+
+  return results;
+}
+
+/**
  * Base class for all renderable objects.
  *
  * Shape caches properties like bounding boxes to improve performance,
@@ -591,13 +663,22 @@ export abstract class GroupView extends AtomView {
   }
 
   /**
-   * Refreshes the layout of this group using duration-based positioning.
+   * Refreshes the layout of this group using collision-based positioning.
    *
-   * ## Duration-Based Positioning Algorithm
+   * ## Collision-Based Layout Algorithm
    *
-   * Atoms are positioned at x-coordinates proportional to their time offset
-   * within the group's total duration. This ensures that atoms with extended
-   * durations visually occupy the correct amount of horizontal space.
+   * Atoms are positioned using time-based positioning with collision avoidance.
+   * Each atom starts at its ideal time-based position, but is pushed right if
+   * it would overlap with the previous atom (including embellishments).
+   *
+   * ### Algorithm:
+   * ```
+   * 1. Calculate ideal glyph position: glyphX = (time / totalDuration) * groupWidth
+   * 2. Pre-embellishments extend left: realX = glyphX - preEmbellishmentWidth
+   * 3. Collision check: if (realX < prevNoteEndX) realX = prevNoteEndX
+   * 4. Position the atom at realX
+   * 5. Track: prevNoteEndX = realX + atom.minSize.width
+   * ```
    *
    * ### Width Source Priority:
    *
@@ -607,30 +688,37 @@ export abstract class GroupView extends AtomView {
    *
    * 2. **Minimum size**: Fall back to `minSize.width` calculated by `refreshMinSize()`.
    *
-   * ### Positioning Formula:
-   * ```
-   * xPosition = (timeOffset / totalDuration) * groupWidth
-   * ```
-   *
    * ### Continuation Markers:
    *
    * When `showContinuationMarkers` is true (default), atoms with duration > 1
    * will have "," markers rendered at each additional time slot. For example,
    * an atom with duration 2 will show "R ," instead of "R   ".
    *
-   * This helps users visually understand that the note continues through
-   * multiple time slots without relying on empty space alone.
-   *
-   * ### Example:
+   * ### Example (no collisions):
    * ```
-   * Input: S 2 R G (with beatDuration=4)
+   * Input: S R G M (equal duration, no embellishments)
    * Group width: 60px, Total duration: 4 units
    *
    * Positioning:
-   *   S at x=0   (time 0, offset 0/4 * 60 = 0)
-   *   R at x=15  (time 1, offset 1/4 * 60 = 15)
-   *   "," at x=30 (continuation marker for R at time 2)
-   *   G at x=45  (time 3, offset 3/4 * 60 = 45)
+   *   S at x=0   (time 0/4 * 60 = 0)
+   *   R at x=15  (time 1/4 * 60 = 15)
+   *   G at x=30  (time 2/4 * 60 = 30)
+   *   M at x=45  (time 3/4 * 60 = 45)
+   * ```
+   *
+   * ### Example (with collision):
+   * ```
+   * Input: [Jaaru+S] R (S has 10px pre-embellishment, each atom 15px wide)
+   * Group width: 60px, Total duration: 2 units
+   *
+   * Without collision avoidance:
+   *   S.glyphX = 0, S.realX = 0 - 10 = -10 (clamped to 0)
+   *   R.glyphX = 30, R overlaps with S
+   *
+   * With collision avoidance:
+   *   S at x=0 (prevNoteEndX becomes 15)
+   *   R.glyphX = 30, R.realX = 30 - 0 = 30
+   *   30 >= 15, no collision, R at x=30
    * ```
    */
   refreshLayout(): void {
@@ -650,15 +738,29 @@ export abstract class GroupView extends AtomView {
     // Clear existing continuation markers before re-rendering
     this.clearContinuationMarkers();
 
-    // Position each atom based on its time offset
+    // Position each atom using collision-based layout
+    // Atoms start at their time-based position, but are pushed right if they would
+    // overlap with the previous atom (including embellishments)
     let currTime = ZERO;
+    let prevNoteEndX = 0;
     this.atomViews.forEach((av, index) => {
-      // Calculate where the NOTE GLYPH should appear based on time offset
+      // 1. Calculate ideal glyph position based on time offset
       const glyphX = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
-      // Subtract glyphOffset so left embellishments don't push the glyph past its time position
-      // The atom origin is placed earlier, so the glyph ends up at the correct time position
-      const xPos = Math.max(0, glyphX - av.glyphOffset);
-      av.setBounds(xPos, currY, null, null, true);
+
+      // 2. Pre-embellishments extend left from glyph position
+      //    realX is where the atom origin should be placed
+      let realX = glyphX - av.glyphOffset;
+
+      // 3. Collision check: push right if overlapping previous atom
+      if (realX < prevNoteEndX) {
+        realX = prevNoteEndX;
+      }
+
+      // 4. Position the atom
+      av.setBounds(realX, currY, null, null, true);
+
+      // 5. Track end position for next collision check
+      prevNoteEndX = realX + av.minSize.width;
 
       // Render continuation markers for atoms with duration > 1
       if (this.showContinuationMarkers && !totalDur.isZero) {

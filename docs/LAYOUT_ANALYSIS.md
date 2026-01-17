@@ -2,20 +2,39 @@
 
 ## Overview
 
-This document analyzes the layout algorithm in the notations library and identifies gaps, particularly around inter-beat alignment when embellishments are present.
+This document describes the layout algorithm for the notations library, focusing on collision-based intra-beat layout with embellishment support.
 
 ## Layout System Architecture
 
-The layout system is hierarchical and grid-based with the following key components:
+The layout system is hierarchical with two distinct layout levels:
 
 ```
-Notation (Block)
-└── Lines
-    └── Roles (multiple voices/parts)
-        └── Beats (time-based containers)
-            └── Atoms (Notes, Spaces, Groups)
-                └── Embellishments (decorations)
+┌─────────────────────────────────────────────────────────────────┐
+│  INTER-BEAT LAYOUT (GridLayoutGroup / Constraint Solver)        │
+│  - Beats are atomic units for alignment                         │
+│  - BFS or constraint-based positioning of beat columns          │
+│  - Multiple NotationViews can share a GridLayoutGroup           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  INTRA-BEAT LAYOUT (Collision-based)                            │
+│  - Time-based positioning with collision avoidance              │
+│  - Pre-embellishments extend left from note position            │
+│  - Notes pushed right if they would overlap previous note       │
+│  - Beat minWidth includes all embellishment space               │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+### Key Design Decision
+
+**We do NOT require same-timed notes in different beats (different rows, same column) to align.**
+
+This simplification means:
+- No cross-beat glyph coordination needed
+- Each beat handles its own internal layout independently
+- Beats are the atomic units for column alignment
+- 90%+ of notation has no embellishments, so this handles the common case well
 
 ### Key Files
 
@@ -31,251 +50,252 @@ Notation (Block)
 
 ---
 
-## Identified Gaps
+## Intra-Beat Layout Algorithm
 
-### 1. Inter-Beat Alignment with Embellishments (HIGH PRIORITY)
+### Current Behavior (Time-Based with Clamping)
 
-**Problem**: When atoms have left-side embellishments (like Jaaru - ascending/descending slides), the note glyphs can become misaligned with notes in other beats at the same time position.
-
-**Current Behavior**:
-
-```
-shapes.ts:656-660:
+```typescript
+// shapes.ts - GroupView.refreshLayout()
 const glyphX = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
-// Subtract glyphOffset so left embellishments don't push the glyph past its time position
 const xPos = Math.max(0, glyphX - av.glyphOffset);
 av.setBounds(xPos, currY, null, null, true);
 ```
 
-The system calculates `glyphOffset` (width of left embellishments) and subtracts it from the atom's origin position. However, this only works **within a single beat/group**.
+**Problem**: The `Math.max(0, ...)` clamping loses precision when pre-embellishments are large. Notes get pushed to x=0 regardless of their intended time position.
 
-**The Gap**: There is no mechanism to communicate embellishment widths **across beats in the same column**.
+### New Behavior (Collision-Based)
 
-**Example Scenario**:
+```typescript
+// Pseudocode for collision-based layout
+let prevNoteEndX = 0;
+
+for each atom in beat:
+    // 1. Calculate ideal position based on time
+    noteX = (currTime / totalDuration) * beatWidth
+
+    // 2. Pre-embellishments extend left from note position
+    realX = noteX - preEmbellishmentWidth
+
+    // 3. Collision check: push right if overlapping previous note
+    if (realX < prevNoteEndX):
+        realX = prevNoteEndX
+
+    // 4. Position the atom
+    atom.setBounds(realX, y, ...)
+
+    // 5. Track end position for next collision check
+    prevNoteEndX = realX + atom.totalWidth
+
+    currTime += atom.duration
 ```
-Beat 1 (Role 1): [Jaaru + S]  R   G
-Beat 1 (Role 2): [S]          R   G
+
+### Beat MinWidth Calculation
+
+The beat's minimum width must account for all content:
+
+```typescript
+beatMinWidth = sum of all atoms' total widths
+             = sum of (preEmbellishment.width + glyph.width + postEmbellishment.width)
 ```
 
-In Role 1, the Jaaru embellishment takes up space before "S". The current algorithm:
-1. Calculates S's glyph should be at x=0 based on time
-2. Subtracts glyphOffset, moving the atom origin to negative space
-3. Uses `Math.max(0, xPos)` to clamp it back to 0
-
-Result: The "S" in Role 1 may not align with the "S" in Role 2 because:
-- Role 1's atom takes more horizontal space due to Jaaru
-- Column width is calculated as `max(all cells' minSize.width)`
-- But atoms within each beat are positioned independently
-
-**Potential Solutions**:
-
-1. **Sub-column alignment**: Create sub-column alignments within beat columns for glyph positions, not just atom positions
-2. **Embellishment-aware width calculation**: Pass max `glyphOffset` from all cells in a column to each cell
-3. **Two-pass layout**: First pass to collect embellishment widths, second pass to position glyphs
+This ensures the beat column is wide enough to contain all content without clipping.
 
 ---
 
-### 2. Missing Cross-Beat Embellishment Coordination
+## Inter-Beat Layout
 
-**Problem**: The `ColAlign` system only tracks cell widths, not internal structure like glyph positions.
+Inter-beat layout uses the existing GridLayoutGroup / BFS system:
 
-**Current Code** (`grids.ts:662-671`):
-```typescript
-evalMaxLength(changedCells: GridCell[] = []): number {
-  this._maxLength = 0;
-  for (const cell of this.cells) {
-    if (cell.value) {
-      const cellView = this.getCellView(cell);
-      this._maxLength = Math.max(cellView.minSize.width, this._maxLength);
-    }
-  }
-  return this._maxLength;
-}
-```
+- **Beats are atomic units** - no internal structure exposed to grid
+- **Column width** = max(all cells' minWidth in column)
+- **Constraint solving** (optional) for beat positions/dimensions
+- **Hierarchical views** - multiple NotationViews can share a GridLayoutGroup
 
-This calculates the maximum **total width** but doesn't consider:
-- Where the glyph starts within that width
-- Alignment of glyphs at the same time position across cells
-
-**Gap**: No mechanism exists to align internal elements (glyphs) across cells.
+This enables:
+1. Virtual scrolling (only render visible sections)
+2. Incremental editing (only re-render affected sections)
+3. Coordinated alignment across views
 
 ---
 
-### 3. GroupView Duration-Based Layout Ignores Column Constraints
+## Implementation Plan
 
-**Problem**: When `GroupView.refreshLayout()` positions atoms by duration ratio, it uses either `minSize.width` or the column width set via `setBounds()`. However, the column width doesn't account for different embellishment requirements across cells.
+### Phase 1: Beat MinWidth with Embellishments
 
-**Current Code** (`shapes.ts:646-661`):
+**Goal**: Ensure beat minWidth includes pre/post embellishment sizes.
+
+**Files to modify**:
+- `src/shapes.ts` - GroupView.minSize calculation
+- `src/carnatic/atomviews.ts` - LeafAtomView.minSize calculation
+
+**Changes**:
+1. `LeafAtomView.minSize.width` should include `leftSlotWidth + glyphWidth + rightSlotWidth`
+2. `GroupView.minSize.width` should sum all atomView widths (already does this via `evalMinSize`)
+3. Verify `glyphOffset` is calculated correctly as `leftSlotWidth`
+
+### Phase 2: Collision-Based Intra-Beat Layout
+
+**Goal**: Replace clamping with collision-based positioning.
+
+**Files to modify**:
+- `src/shapes.ts` - GroupView.refreshLayout()
+
+**Changes**:
+1. Track `prevNoteEndX` as we iterate through atoms
+2. Calculate `realX = glyphX - av.glyphOffset`
+3. Collision check: `if (realX < prevNoteEndX) realX = prevNoteEndX`
+4. Update `prevNoteEndX = realX + av.minSize.width` (or actual rendered width)
+
+### Phase 3: Verify End-to-End
+
+**Goal**: Ensure the full pipeline works correctly.
+
+1. Beat minWidth flows up to GridCell
+2. GridCell width flows to BeatView
+3. BeatView width flows to GroupView (atomView)
+4. GroupView positions atoms with collision avoidance
+
+---
+
+## Test Plan
+
+### Unit Tests (`src/tests/layouts.spec.ts`)
+
+#### 1. Beat MinWidth Calculation
+
 ```typescript
-// Width source priority: column width (for global alignment) > minSize
-const unscaledMinWidth = this.minSize.width / this.scaleFactor;
-const groupWidth = this.hasWidth ? this.width / this.scaleFactor : unscaledMinWidth;
+describe('Beat minWidth with embellishments', () => {
+  it('should include pre-embellishment width in atom minSize', () => {
+    // Create atom with left-side embellishment (e.g., Jaaru)
+    // Verify atom.minSize.width = leftEmb.width + glyph.width
+  });
 
-// Position each atom based on its time offset
-let currTime = ZERO;
-this.atomViews.forEach((av, index) => {
-  const glyphX = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
-  const xPos = Math.max(0, glyphX - av.glyphOffset);
-  av.setBounds(xPos, currY, null, null, true);
-  // ...
+  it('should include post-embellishment width in atom minSize', () => {
+    // Create atom with right-side embellishment
+    // Verify atom.minSize.width includes rightEmb.width
+  });
+
+  it('should sum all atom widths for group minSize', () => {
+    // Create group with multiple atoms
+    // Verify group.minSize.width = sum of atom minSizes
+  });
 });
 ```
 
-**Gap**: The column width is a single value that gets distributed. If one cell has atoms with large embellishments and another doesn't, the atoms won't align by glyph position.
+#### 2. Collision-Based Positioning
 
----
-
-### 4. BeatView Doesn't Propagate Embellishment Information
-
-**Problem**: `BeatView.refreshLayout()` propagates column width to `atomView` but doesn't communicate embellishment alignment requirements.
-
-**Current Code** (`beatviews.ts:91-106`):
 ```typescript
-refreshLayout(): void {
-  // ...
-  if (this.hasWidth && this.atomView) {
-    this.atomView.setBounds(0, 0, this.width, null, false);
-    this.atomView.refreshLayout();
-  }
-  // ...
-}
+describe('Collision-based intra-beat layout', () => {
+  it('should position notes by time when no collisions', () => {
+    // Create beat with notes: S R G M (equal duration, no embellishments)
+    // Verify each note at expected time-based position
+    // noteX = (index / 4) * beatWidth
+  });
+
+  it('should push note right when pre-embellishment would overlap', () => {
+    // Create beat: [Jaaru+S] R
+    // S has large pre-embellishment
+    // R's ideal position overlaps with S's actual end
+    // Verify R is pushed right to avoid overlap
+  });
+
+  it('should handle multiple collisions cascading', () => {
+    // Create beat: [Jaaru+S] [Jaaru+R] [Jaaru+G]
+    // Each note has pre-embellishment causing cascade
+    // Verify each note positioned after previous note's end
+  });
+
+  it('should not push notes when no collision', () => {
+    // Create beat with wide spacing, small embellishments
+    // Verify notes remain at time-based positions
+  });
+});
 ```
 
-**Gap**: No information about glyph alignment points is passed down.
+#### 3. Edge Cases
 
----
-
-### 5. Marker Columns Not Aligned with Beat Content
-
-**Problem**: Pre-markers and post-markers have their own columns (`markerType: -1` and `markerType: 1`), but there's no coordination between marker width and beat content positioning.
-
-**Current Code** (`beats.ts:549-597`):
 ```typescript
-// pre marker goes on realCol - 1, post marker goes on realCol + 1
-const realCol = 1 + layoutColumn * 3;
-// Pre-markers added at realCol - 1
-// Beat content at realCol
-// Post-markers at realCol + 1
+describe('Edge cases', () => {
+  it('should handle first note with pre-embellishment', () => {
+    // First note has Jaaru - should start at x=0
+    // Pre-embellishment extends into negative space (clipped or handled)
+  });
+
+  it('should handle notes with zero duration', () => {
+    // Grace notes or ornaments with zero duration
+    // Should not affect time-based positioning of subsequent notes
+  });
+
+  it('should handle single note in beat', () => {
+    // Beat with only one note
+    // Should be positioned at x=0
+  });
+
+  it('should handle empty beat', () => {
+    // Beat with no notes (rest or space)
+    // Should have appropriate minWidth
+  });
+});
 ```
 
-**Gap**: If a pre-marker in one role is very wide and another role has no marker, the beat content columns align, but the visual relationship between markers and beats may be inconsistent.
+### Integration Tests
 
----
+#### 4. Full Rendering Tests
 
-### 6. Left Embellishments Can Cause Negative Positioning
-
-**Problem**: The `Math.max(0, glyphX - av.glyphOffset)` clamping can cause visual issues.
-
-**Current Code** (`shapes.ts:660`):
 ```typescript
-const xPos = Math.max(0, glyphX - av.glyphOffset);
+describe('Full notation rendering with embellishments', () => {
+  it('should render Jaaru without overlapping previous note', () => {
+    // Parse: "S /ja R G M"
+    // Render and verify S's Jaaru doesn't overlap with R
+  });
+
+  it('should render multiple embellished notes correctly', () => {
+    // Parse: "/ja S /ja R /ja G"
+    // Verify all notes visible, no overlapping
+  });
+
+  it('should maintain correct beat width with embellishments', () => {
+    // Compare beat width with/without embellishments
+    // Verify embellished beat is wider
+  });
+});
 ```
 
-**Gap**: If `glyphOffset` is large (many left embellishments), the atom gets pushed to x=0, but the expected time-based positioning is lost. The embellishment may overlap with the previous atom or extend outside the cell bounds.
+### Visual Regression Tests (Optional)
+
+For complex layout scenarios, consider screenshot-based tests:
+1. Capture baseline SVG output
+2. Compare against known-good renderings
+3. Flag visual differences for review
 
 ---
 
-### 7. No Vertical Alignment for Multi-Row Embellishments
+## Known Limitations
 
-**Problem**: Embellishments in top/bottom slots affect row height, but there's no coordination for vertical alignment of glyphs across roles.
+### Pathological Cases (User Error)
 
-**Current Code** (`atomviews.ts:117-133`):
-```typescript
-// top embelishments
-const glyphX = textX + this.glyph.x;
-const glyphY = this.glyph.y;
-currY = glyphY - this.glyph.minSize.height + 5;
-for (const emb of this.topSlot) {
-  const bb = emb.minSize;
-  emb.setBounds(glyphX + (gminSize.width - bb.width) / 2, currY - bb.height, null, null, true);
-  currY = emb.y;
-}
-```
+1. **Arbitrarily long notes**: Notes with extreme durations may cause unexpected layout. We treat this as user error.
 
-**Gap**: Each atom positions its embellishments independently. If Role 1 has octave indicators and Role 2 doesn't, the note glyphs may not be at the same Y position.
+2. **Too many embellishments**: Excessive embellishments on every note will cause beats to become very wide. This is acceptable behavior.
 
----
+3. **Cross-beat glyph alignment**: Same-timed notes in different beats/rows won't align. This is a deliberate simplification.
 
-### 8. Jaaru Path Calculation Uses Atom Position, Not Column Position
+### Future Enhancements
 
-**Problem**: The Jaaru embellishment draws a path based on the atom's position, but this doesn't account for column-level alignment.
+1. **Constraint-based inter-beat layout**: Use Kiwi solver for more sophisticated beat positioning.
 
-**Current Code** (`embelishments.ts:316-330`):
-```typescript
-pathAttribute(x = 0): string {
-  const avbbox = this.atomView.glyph.minSize;
-  let y2 = 0;
-  const h2 = avbbox.height / 2;
-  const x2 = x + h2;
-  let y = this.atomView.y;
-  // ... path calculation
-}
-```
+2. **Vertical baseline alignment**: Coordinate glyph Y positions across roles.
 
-**Gap**: The path is calculated relative to the atom, but if atoms in different cells have different starting positions, the Jaaru visuals won't align.
+3. **Sub-beat alignment zones**: For cases where cross-beat alignment is desired.
 
 ---
 
-## Recommendations
-
-### Short-term Fixes
-
-1. **Add `maxGlyphOffset` to ColAlign**: Track the maximum `glyphOffset` across all cells in a column and use it to offset all atoms uniformly.
-
-2. **Two-pass atom positioning**: First pass computes desired glyph positions, second pass adjusts for column-wide alignment.
-
-3. **Propagate glyph offset through BeatView**: Add a property to BeatView that communicates required glyph offset to atomView.
-
-### Medium-term Improvements
-
-1. **Sub-column structure**: Extend `BeatColumn` to track not just total width but also:
-   - Left embellishment zone width
-   - Glyph zone width
-   - Right embellishment zone width
-
-2. **Alignment points**: Add a concept of "alignment points" within atoms that can be coordinated across cells.
-
-3. **Vertical baseline alignment**: Implement proper baseline alignment for glyphs across roles.
-
-### Long-term Architecture
-
-1. **Constraint-based layout**: The codebase has commented-out references to Kiwi (constraint solver). Implementing a constraint-based system would naturally handle cross-cell alignment:
-   ```typescript
-   constraint: cell1.glyphX == cell2.glyphX
-   ```
-
-2. **Layout zones**: Formalize the concept of zones within beats:
-   ```
-   [Pre-Zone | Left-Emb-Zone | Glyph-Zone | Right-Emb-Zone | Post-Zone]
-   ```
-   Each zone would have its own alignment tracking.
-
----
-
-## Test Cases to Add
-
-1. **Cross-role alignment with Jaaru**: Two roles where one has Jaaru embellishment on first note
-2. **Multiple left embellishments**: Note with multiple left-side decorations
-3. **Mixed embellishment scenarios**: One role with top embellishments, another with left embellishments
-4. **Continuation markers with embellishments**: Extended duration notes that have embellishments
-
----
-
-## Current Workaround Limitations
-
-The current `glyphOffset` mechanism in `shapes.ts` is a partial solution but:
-- Only works within a single GroupView
-- Doesn't coordinate across BeatViews in the same column
-- Uses clamping (`Math.max(0, ...)`) which loses precision
-- Doesn't handle vertical alignment
-
----
-
-## Related Code References
+## Code References
 
 - `src/shapes.ts:368-376` - glyphOffset property definition
-- `src/shapes.ts:656-660` - glyphOffset usage in positioning
+- `src/shapes.ts:654-680` - GroupView.refreshLayout() (to be modified)
 - `src/carnatic/atomviews.ts:71-75` - glyphOffset calculation
+- `src/carnatic/atomviews.ts` - LeafAtomView.evalMinSize()
 - `src/carnatic/embelishments.ts:295-352` - Jaaru implementation
 - `src/grids.ts:662-671` - Column width evaluation
 - `src/beats.ts:549-597` - Beat to grid cell mapping
