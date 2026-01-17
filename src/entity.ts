@@ -8,6 +8,11 @@ import * as TSU from "@panyam/tsutils";
  * Note: Child management is intentionally NOT included here. Each container type
  * (BlockContainer, Line, Group, etc.) defines its own child management with
  * appropriate types.
+ *
+ * Observer Pattern:
+ * Each observable entity subclass (Group, Role, Line, Block) manages its own
+ * typed observer list. This provides type safety and clear contracts between
+ * observables and observers.
  */
 export class Entity {
   readonly TYPE: string = "Entity";
@@ -19,12 +24,44 @@ export class Entity {
   protected _parent: TSU.Nullable<Entity> = null;
 
   /**
+   * Whether events/observer notifications are enabled for this entity.
+   * Subclasses check this flag before notifying observers.
+   */
+  protected _eventsEnabled = false;
+
+  /**
    * Creates a new Entity.
    * @param config Optional configuration object
    */
   constructor(config: any = null) {
     config = config || {};
     if (config.metadata) throw new Error("See where metadata is being passed");
+  }
+
+  /**
+   * Enables observer notifications for this entity.
+   * Call this to activate change notifications on entities that support them.
+   * @returns This entity for method chaining
+   */
+  enableEvents(): this {
+    this._eventsEnabled = true;
+    return this;
+  }
+
+  /**
+   * Disables observer notifications for this entity.
+   * @returns This entity for method chaining
+   */
+  disableEvents(): this {
+    this._eventsEnabled = false;
+    return this;
+  }
+
+  /**
+   * Checks if events/observer notifications are enabled.
+   */
+  get eventsEnabled(): boolean {
+    return this._eventsEnabled;
   }
 
   /**

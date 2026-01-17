@@ -1,6 +1,6 @@
 module github.com/panyam/notations/docs
 
-go 1.25
+go 1.24
 
 require github.com/panyam/s3gen v0.0.34
 
