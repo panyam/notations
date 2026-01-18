@@ -371,6 +371,8 @@ Visual sanity test suite implemented (commit `0167741`):
 
 2. **Sub-beat alignment zones**: For cases where cross-beat alignment is desired.
 
+3. **Joined bracket connectors for split groups**: When a group is split across beat boundaries (isContinuation=true), render a connector line between adjacent beats' bracket endpoints instead of continuation markers. This could be implemented as "tail lines" at the beat row level.
+
 ---
 
 ## Code References
@@ -395,3 +397,8 @@ Key implementation files:
 - `src/shapes.ts:731-738` - Baseline offset calculation in refreshLayout()
 - `src/tests/baseline-alignment.spec.ts` - Unit tests (8 tests)
 - `docs/static/visual-tests/cases/baseline-alignment/` - Visual test case
+
+### Collision Detection Fix (PR #12)
+- `src/shapes.ts:770-777` - Use duration-based width allocation instead of minSize.width
+- `src/shapes.ts:513` - Disable continuation markers by default
+- Fixed bug where nested groups caused subsequent atoms to be pushed too far right

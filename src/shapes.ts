@@ -508,8 +508,9 @@ export abstract class GroupView extends AtomView {
   /**
    * When true, shows continuation markers (",") for atoms with duration > 1
    * instead of just leaving empty space.
+   * Disabled by default as group bracket lines provide clearer visual boundaries.
    */
-  showContinuationMarkers = true;
+  showContinuationMarkers = false;
   /** SVG elements for continuation markers */
   protected continuationMarkerElements: SVGTextElement[] = [];
 
@@ -768,7 +769,13 @@ export abstract class GroupView extends AtomView {
       av.setBounds(realX, currY, null, null, true);
 
       // 5. Track end position for next collision check
-      prevNoteEndX = realX + av.minSize.width;
+      // Use duration-based width allocation instead of minSize.width.
+      // minSize.width can be inflated for groups (includes padding for all possible durations),
+      // which causes subsequent atoms to be pushed too far right.
+      const atomDurValue = av.totalDuration.num / av.totalDuration.den;
+      const totalDurValue = totalDur.isZero ? 1 : totalDur.num / totalDur.den;
+      const allocatedWidth = (atomDurValue / totalDurValue) * groupWidth;
+      prevNoteEndX = realX + allocatedWidth;
 
       // Render continuation markers for atoms with duration > 1
       if (this.showContinuationMarkers && !totalDur.isZero) {
