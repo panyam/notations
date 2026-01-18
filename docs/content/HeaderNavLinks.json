@@ -92,6 +92,11 @@
     ]
   },
   {
+    "name": "Visual Tests",
+    "url": "visual-tests/",
+    "icon": "eye"
+  },
+  {
     "name": "Contributing",
     "url": "contributing/",
     "icon": "users"

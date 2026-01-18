@@ -728,7 +728,15 @@ export abstract class GroupView extends AtomView {
     }
     this.groupElement.setAttribute("transform", transform);
 
-    const currY = 0;
+    // BASELINE ALIGNMENT: Position atoms at bottom of allocated height.
+    // This ensures atoms align across beats with different bracket heights.
+    // When beats in the same row have different content heights (e.g., due to
+    // nested group brackets), all beats get the same allocated height from the
+    // grid. By positioning content at the bottom, atom baselines align.
+    const unscaledContentHeight = this.minSize.height / this.scaleFactor;
+    const unscaledAllocatedHeight = this.hasHeight ? this.height / this.scaleFactor : unscaledContentHeight;
+    const currY = unscaledAllocatedHeight - unscaledContentHeight;
+
     const totalDur = this.group.totalChildDuration;
 
     // Width source priority: column width (for global alignment) > minSize
