@@ -96,6 +96,88 @@ This ensures the beat column is wide enough to contain all content without clipp
 
 ---
 
+## Nested Group Rendering
+
+> **Status**: ✅ **IMPLEMENTED** (commit `79ce12e`, PR #9)
+
+### Depth-Based Bracket Lines
+
+Nested groups now render bracket lines above them to visually distinguish group boundaries. Each group container has exactly **one** bracket line as its "top border".
+
+**Container Border Model:**
+- Each `GroupView` at depth >= 1 renders a single bracket line
+- Atoms inside nested containers appear to have N lines above them (cumulative from N ancestor containers)
+- Bracket lines have small circles at each end for visual clarity
+
+```
+Example: A B [ S R [ P D [ W X ] ] ]
+
+                    ○─────────────────────────────────────────────○  ← Group 1's border (depth 1)
+                          ○────────────────────────────────────○       ← Group 2's border (depth 2)
+                                ○───────────────────○              ← Group 3's border (depth 3)
+A B                 S R         P D         W X
+└─depth 0─┘         └─ inside Group 1 ─────────────────────────────┘
+```
+
+**Implementation:**
+- `src/carnatic/atomviews.ts:26-61` - GroupView with depth propagation and bracket height
+- `src/carnatic/embelishments.ts:371-485` - GroupBracket class
+- `styles/NotationView.scss` - `.group-bracket-line`, `.group-bracket-circle` styles
+
+**Key code:**
+```typescript
+// Depth propagated through createAtomView factory
+createAtomView(atom: Atom): AtomView {
+  return createAtomView(this.groupElement, atom, this.defaultToNotes, 0.7, this.depth + 1);
+}
+
+// Bracket embellishment added for nested groups
+protected createEmbelishments(): Embelishment[] {
+  const embelishments = super.createEmbelishments();
+  if (this.depth >= 1) {
+    embelishments.push(new GroupBracket(this));
+  }
+  return embelishments;
+}
+```
+
+---
+
+## Baseline Alignment
+
+> **Status**: ✅ **IMPLEMENTED** (commit `6ae6461`, PR #11)
+
+### Problem
+
+When beats in the same row have different nesting levels, they have different content heights due to bracket lines. The grid allocates equal height to all beats in a row (max of all beat heights). Without baseline alignment, atoms would start at the top of each beat, causing visual misalignment.
+
+```
+Without baseline alignment:        With baseline alignment:
+┌────────┐ ┌────────┐              ┌─────────┐ ┌────────┐
+│ ○────○ │ │        │              │ ○────○  │ │        │
+│ S R G  │ │ P D N  │  ← Misaligned│ S R G   │ │        │
+│        │ │        │              │         │ │ P D N  │  ← Aligned
+└────────┘ └────────┘              └─────────┘ └────────┘
+```
+
+### Solution
+
+Position atoms at the **bottom** of allocated space rather than the top. The offset is calculated as:
+
+```typescript
+// In GroupView.refreshLayout() (src/shapes.ts:731-738)
+const unscaledContentHeight = this.minSize.height / this.scaleFactor;
+const unscaledAllocatedHeight = this.hasHeight ? this.height / this.scaleFactor : unscaledContentHeight;
+const currY = unscaledAllocatedHeight - unscaledContentHeight;
+```
+
+**Key insight**: When `allocatedHeight > contentHeight`, atoms are pushed down by the difference, aligning baselines across beats with different bracket heights.
+
+**Unit tests**: `src/tests/baseline-alignment.spec.ts` (8 tests)
+**Visual test**: `docs/static/visual-tests/cases/baseline-alignment/`
+
+---
+
 ## Inter-Beat Layout
 
 Inter-beat layout uses the existing GridLayoutGroup / BFS system:
@@ -261,11 +343,15 @@ describe('Full notation rendering with embellishments', () => {
 ### Visual Regression Tests ✅
 
 Visual sanity test suite implemented (commit `0167741`):
-- Test page at `/api/visual-tests/`
+- Test page at `/visual-tests/` (linked from header navigation)
 - File-based test cases in `docs/static/visual-tests/cases/`
 - Categories: basic, embellishments, layout
 - Copy button to capture rendered output for baselines
 - See `docs/static/visual-tests/manifest.json` for test case definitions
+
+**Layout category test cases:**
+- `nested-groups` - Bracket lines above nested groups (PR #9)
+- `baseline-alignment` - Atom alignment across beats with different nesting levels (PR #11)
 
 ---
 
@@ -283,20 +369,29 @@ Visual sanity test suite implemented (commit `0167741`):
 
 1. **Constraint-based inter-beat layout**: Use Kiwi solver for more sophisticated beat positioning.
 
-2. **Vertical baseline alignment**: Coordinate glyph Y positions across roles.
-
-3. **Sub-beat alignment zones**: For cases where cross-beat alignment is desired.
+2. **Sub-beat alignment zones**: For cases where cross-beat alignment is desired.
 
 ---
 
 ## Code References
 
-Key implementation files (line numbers as of commit `6478067`):
+Key implementation files:
 
+### Collision-Based Layout (commit `6478067`, PR #6)
 - `src/shapes.ts:368-376` - glyphOffset property definition
-- `src/shapes.ts:724-787` - GroupView.refreshLayout() - **collision-based layout implementation**
+- `src/shapes.ts:724-787` - GroupView.refreshLayout() - collision-based layout
 - `src/carnatic/atomviews.ts:71-75` - glyphOffset calculation
 - `src/carnatic/atomviews.ts` - LeafAtomView.evalMinSize()
 - `src/carnatic/embelishments.ts:295-352` - Jaaru implementation
 - `src/grids.ts:662-671` - Column width evaluation
 - `src/beats.ts:549-597` - Beat to grid cell mapping
+
+### Nested Group Bracket Lines (commit `79ce12e`, PR #9)
+- `src/carnatic/atomviews.ts:26-61` - GroupView with depth propagation
+- `src/carnatic/embelishments.ts:371-485` - GroupBracket class
+- `styles/NotationView.scss` - Bracket line CSS styles
+
+### Baseline Alignment (commit `6ae6461`, PR #11)
+- `src/shapes.ts:731-738` - Baseline offset calculation in refreshLayout()
+- `src/tests/baseline-alignment.spec.ts` - Unit tests (8 tests)
+- `docs/static/visual-tests/cases/baseline-alignment/` - Visual test case
