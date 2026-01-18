@@ -975,6 +975,34 @@ pre code {
     font-weight: 600;
 }
 
+.visual-test-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.visual-test-label-row .visual-test-label {
+    margin-bottom: 0;
+}
+
+.visual-test-copy-btn {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.2s;
+}
+
+.visual-test-copy-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
 .visual-test-input {
     background: var(--code-bg);
     color: var(--code-color);

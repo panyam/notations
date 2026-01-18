@@ -3,7 +3,7 @@ title: "Visual Sanity Tests"
 description: "Visual regression test cases for notation rendering"
 ---
 
-<p>This page displays notation test cases with their rendered output to help catch visual regressions and document expected rendering behavior.</p>
+<p>This page displays notation test cases with their rendered output to help catch visual regressions and document expected rendering behavior. Use the "Copy SVG" button to copy rendered output for updating baseline expectations.</p>
 
 {{ $manifest := (json "visual-tests/manifest.json" "") }}
 {{ $cases := $manifest.cases }}
@@ -48,8 +48,11 @@ description: "Visual regression test cases for notation rendering"
         </div>
 
         <div class="visual-test-section">
-          <div class="visual-test-label">Rendered</div>
-          <div class="visual-test-output">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-{{ $caseId }}" title="Copy SVG to clipboard">Copy SVG</button>
+          </div>
+          <div class="visual-test-output" id="output-{{ $caseId }}">
             <notation id="render-{{ $caseId }}">{{ $input }}</notation>
           </div>
         </div>
@@ -59,3 +62,33 @@ description: "Visual regression test cases for notation rendering"
   </div>
 </div>
 {{ end }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.visual-test-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var targetId = btn.getAttribute('data-target');
+      var container = document.getElementById(targetId);
+      if (!container) return;
+
+      var svg = container.querySelector('svg');
+      if (!svg) {
+        alert('No SVG found to copy');
+        return;
+      }
+
+      var svgContent = svg.outerHTML;
+      navigator.clipboard.writeText(svgContent).then(function() {
+        var originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() {
+          btn.textContent = originalText;
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy SVG');
+      });
+    });
+  });
+});
+</script>
