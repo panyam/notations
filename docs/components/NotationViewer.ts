@@ -16,7 +16,7 @@ export function createMarkdownParser(): (contents: string) => string {
 }
 
 export function createViewer(rootElement: HTMLElement): NotationView {
-  const notationView = new NotationView(rootElement);
+  const notationView = new NotationView(rootElement); // , {debugEagerPositioning: true});
   notationView.markdownParser = createMarkdownParser();
   return notationView;
 }

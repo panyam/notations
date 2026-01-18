@@ -213,12 +213,12 @@ describe("Parser Tests", () => {
               },
             ],
             duration: "2/1",
-            durationIsMultiplier: true,
+            durationIsSpeedMultiplier: true,
           },
           {
             type: "Group",
             duration: "20/3",
-            durationIsMultiplier: true,
+            durationIsSpeedMultiplier: true,
             atoms: [
               {
                 type: "Literal",

@@ -510,7 +510,7 @@ export abstract class GroupView extends AtomView {
    * instead of just leaving empty space.
    * Disabled by default as group bracket lines provide clearer visual boundaries.
    */
-  showContinuationMarkers = false;
+  showContinuationMarkers = true;
   /** SVG elements for continuation markers */
   protected continuationMarkerElements: SVGTextElement[] = [];
 
@@ -530,9 +530,11 @@ export abstract class GroupView extends AtomView {
 
   /**
    * Returns the total duration of the group rendered by this view.
+   * This returns the group's actual duration (accounting for scaling),
+   * not the raw sum of child durations.
    */
   get totalDuration(): TSU.Num.Fraction {
-    return this.group.totalChildDuration;
+    return this.group.duration;
   }
 
   /**
@@ -634,7 +636,8 @@ export abstract class GroupView extends AtomView {
     // Step 3: Scale by total duration
     const totalDuration = this.group.totalChildDuration;
     const totalDurValue = totalDuration.num / totalDuration.den;
-    const totalWidth = minWidthPerDuration * totalDurValue;
+    // Subtract one atomSpacing since we don't need spacing after the last atom
+    const totalWidth = Math.max(0, minWidthPerDuration * totalDurValue - this.atomSpacing);
 
     return new TSU.Geom.Size(totalWidth * this.scaleFactor, maxHeight * this.scaleFactor);
   }
@@ -769,13 +772,10 @@ export abstract class GroupView extends AtomView {
       av.setBounds(realX, currY, null, null, true);
 
       // 5. Track end position for next collision check
-      // Use duration-based width allocation instead of minSize.width.
-      // minSize.width can be inflated for groups (includes padding for all possible durations),
-      // which causes subsequent atoms to be pushed too far right.
-      const atomDurValue = av.totalDuration.num / av.totalDuration.den;
-      const totalDurValue = totalDur.isZero ? 1 : totalDur.num / totalDur.den;
-      const allocatedWidth = (atomDurValue / totalDurValue) * groupWidth;
-      prevNoteEndX = realX + allocatedWidth;
+      // Use actual rendered bbox width, not minSize.width or duration-based allocation.
+      // minSize.width can be inflated for groups, and duration-based allocation doesn't
+      // account for scaling. The bbox gives the actual visual footprint after layout.
+      prevNoteEndX = realX + av.bbox.width;
 
       // Render continuation markers for atoms with duration > 1
       if (this.showContinuationMarkers && !totalDur.isZero) {

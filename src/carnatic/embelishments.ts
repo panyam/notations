@@ -375,7 +375,7 @@ export class GroupBracket extends Embelishment {
 
   // Configuration - exposed for experimentation
   /** Distance above group content */
-  lineOffset = 4;
+  lineOffset = 2;
   /** End circle radius */
   circleRadius = 1.5;
   /** How far line extends beyond group content on each side */
@@ -383,11 +383,11 @@ export class GroupBracket extends Embelishment {
 
   /**
    * Position mode for embellishment interaction experimentation:
-   * - 'above-all': Bracket at very top, above all embellishments (default)
-   * - 'below-embellishments': Bracket between glyphs and embellishments
+   * - 'above-all': Bracket at very top, above all embellishments
+   * - 'below-embellishments': Bracket between glyphs and embellishments (default)
    * - 'separate-space': Bracket in dedicated reserved space
    */
-  positionMode: GroupBracketPositionMode = "above-all";
+  positionMode: GroupBracketPositionMode = "below-embellishments";
 
   constructor(public readonly groupView: GroupViewBase) {
     super();
@@ -458,7 +458,7 @@ export class GroupBracket extends Embelishment {
     switch (this.positionMode) {
       case "below-embellishments":
         // Position just above glyph content, below other embellishments
-        y = bbox.y + this.lineOffset;
+        y = bbox.y + this.lineOffset - 2;
         break;
       case "separate-space":
         // Use dedicated space at very top of group bbox

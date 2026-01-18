@@ -84,7 +84,7 @@ describe("Parser Tests", () => {
                   ],
                   type: "Group",
                   duration: "2/1",
-                  durationIsMultiplier: true,
+                  durationIsSpeedMultiplier: true,
                 },
                 {
                   atoms: [
@@ -94,7 +94,7 @@ describe("Parser Tests", () => {
                     { type: "Literal", value: "h" },
                   ],
                   duration: "20/3",
-                  durationIsMultiplier: true,
+                  durationIsSpeedMultiplier: true,
                   type: "Group",
                 },
               ],

@@ -241,6 +241,10 @@ export class NotationView {
         const lp = line.layoutParams;
         curr = new BeatView(cell, beat, lineView.gElem, lp.cycle);
         this.beatViews.set(beat.uuid, curr);
+
+        // Eagerly position view based on current alignment offsets.
+        // Since BFS layout processes alignments in order, predecessors are already positioned.
+        this.eagerlyPositionView(curr, cell);
       }
       return curr;
     } else {
@@ -255,8 +259,23 @@ export class NotationView {
         const isPreMarker = cell.colIndex % 3 == 0;
         curr = new MarkerView(cell, beat, marker.markers, isPreMarker, lineView.gElem);
         this.markerViews.set("pre:" + beat.uuid, curr);
+
+        // Eagerly position view based on current alignment offsets.
+        this.eagerlyPositionView(curr, cell);
       }
       return curr;
     }
+  }
+
+  /**
+   * Eagerly positions a newly created view based on current alignment offsets.
+   * This helps with debugging by showing intermediate positions during BFS layout.
+   */
+  protected eagerlyPositionView(view: GridCellView, cell: GridCell): void {
+    const x = cell.colAlign?.coordOffset ?? 0;
+    const y = cell.rowAlign?.coordOffset ?? 0;
+    const w = cell.colAlign?.maxLength ?? null;
+    const h = cell.rowAlign?.maxLength ?? null;
+    view.setBounds(x, y, w, h, true);
   }
 }

@@ -31,7 +31,7 @@ describe("BeatsBuilder", () => {
   test("Create beats from BeatsBuilder", () => {
     const l = new Line();
     const g1 = new Group(new Note("1", ONE), new Note("2", TWO), new Note("3", THREE));
-    g1.durationIsMultiplier = true;
+    g1.durationIsSpeedMultiplier = true;
     const atoms = [new Note("a", ONE), new Note("b", TWO), new Note("c", THREE), new Note("d", FIVE), g1];
     l.addAtoms("test", true, ...atoms);
     const c = Cycle.DEFAULT;
@@ -52,7 +52,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -76,7 +76,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               isContinuation: true,
@@ -145,7 +145,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Space",
@@ -154,7 +154,7 @@ describe("BeatsBuilder", () => {
             },
             {
               type: "Group",
-              durationIsMultiplier: true,
+              durationIsSpeedMultiplier: true,
               atoms: [
                 {
                   type: "Note",
@@ -176,7 +176,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -197,7 +197,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -217,7 +217,7 @@ describe("BeatsBuilder", () => {
         instance: 0,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               isContinuation: true,
@@ -252,7 +252,7 @@ describe("BeatsBuilder", () => {
         instance: 0,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           duration: "2/1",
           atoms: [
             {
@@ -261,7 +261,7 @@ describe("BeatsBuilder", () => {
             },
             {
               type: "Group",
-              durationIsMultiplier: true,
+              durationIsSpeedMultiplier: true,
               atoms: [
                 {
                   type: "Note",
@@ -304,7 +304,7 @@ describe("BeatsBuilder", () => {
         instance: 0,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           duration: "3/1",
           atoms: [
             {
@@ -354,7 +354,7 @@ describe("BeatsBuilder", () => {
         instance: 0,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -406,7 +406,7 @@ describe("BeatsBuilder", () => {
         instance: 0,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -494,7 +494,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -518,7 +518,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -543,7 +543,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "3/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -571,7 +571,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "3/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -598,7 +598,7 @@ describe("BeatsBuilder", () => {
         instance: 2,
         atom: {
           type: "Group",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           duration: "3/1",
           atoms: [
             {
@@ -628,7 +628,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -652,7 +652,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -705,7 +705,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -729,7 +729,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",
@@ -754,7 +754,7 @@ describe("BeatsBuilder", () => {
         atom: {
           type: "Group",
           duration: "2/1",
-          durationIsMultiplier: true,
+          durationIsSpeedMultiplier: true,
           atoms: [
             {
               type: "Note",

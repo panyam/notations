@@ -462,7 +462,7 @@ export class Group extends Atom {
    * When true, the duration is used as a multiplier for the total child duration.
    * When false, the duration is absolute.
    */
-  durationIsMultiplier = false;
+  durationIsSpeedMultiplier = false;
 
   /**
    * The list of atoms in this group.
@@ -541,7 +541,7 @@ export class Group extends Atom {
    */
   copyTo(another: this): void {
     super.copyTo(another);
-    another.durationIsMultiplier = this.durationIsMultiplier;
+    another.durationIsSpeedMultiplier = this.durationIsSpeedMultiplier;
     for (const atom of this.atoms.values()) {
       another.atoms.add(atom.clone());
     }
@@ -549,11 +549,11 @@ export class Group extends Atom {
 
   /**
    * Gets the duration of this group.
-   * If durationIsMultiplier is true, returns the total child duration divided by the multiplier.
+   * If durationIsSpeedMultiplier is true, returns the total child duration divided by the multiplier.
    * Otherwise, returns the absolute duration.
    */
   get duration(): Fraction {
-    if (this.durationIsMultiplier) {
+    if (this.durationIsSpeedMultiplier) {
       return this.totalChildDuration.divby(this._duration);
     } else {
       return this._duration;
@@ -562,23 +562,25 @@ export class Group extends Atom {
 
   /**
    * Sets this group to use a multiplier for duration calculations.
-   * @param asMultiplier Whether to use the duration as a multiplier
+   * @param asSpeedMultiplier Whether to use the duration as a speed multiplier.  Eg If our duration was 2 and this was
+   *                          set then since the speed is doubled - then the actual duration is halved.
    * @returns This Group instance for method chaining
    */
-  setDurationAsMultiplier(asMultiplier = true): this {
-    this.durationIsMultiplier = asMultiplier;
+  setDurationAsMultiplier(asSpeedMultiplier = true): this {
+    this.durationIsSpeedMultiplier = asSpeedMultiplier;
     return this;
   }
 
   /**
    * Sets the duration of this group.
    * @param d The new duration
-   * @param asMultiplier Whether to use the duration as a multiplier
+   * @param asSpeedMultiplier Whether to use the duration as a speed multiplier.  Eg If our duration was 2 and this was
+   *                          set then since the speed is doubled - then the actual duration is halved.
    * @returns This Group instance for method chaining
    */
-  setDuration(d: Fraction, asMultiplier = false): this {
+  setDuration(d: Fraction, asSpeedMultiplier = false): this {
     this._duration = d;
-    this.durationIsMultiplier = asMultiplier;
+    this.durationIsSpeedMultiplier = asSpeedMultiplier;
     return this;
   }
 
@@ -588,7 +590,7 @@ export class Group extends Atom {
    */
   debugValue(): any {
     const out = { ...super.debugValue(), atoms: Array.from(this.atoms.values(), (a) => a.debugValue()) };
-    if (this.durationIsMultiplier) out.durationIsMultiplier = true;
+    if (this.durationIsSpeedMultiplier) out.durationIsSpeedMultiplier = true;
     return out;
   }
 
@@ -605,14 +607,14 @@ export class Group extends Atom {
       return null;
     }
     const targetGroup = new Group();
-    if (this.durationIsMultiplier) {
-      targetGroup.durationIsMultiplier = true;
+    if (this.durationIsSpeedMultiplier) {
+      targetGroup.durationIsSpeedMultiplier = true;
       targetGroup._duration = this._duration;
     }
 
     let remainingDur = this.duration;
     const totalChildDuration = this.totalChildDuration;
-    const durationFactor = this.durationIsMultiplier
+    const durationFactor = this.durationIsSpeedMultiplier
       ? ONE.divby(this._duration)
       : this._duration.divby(totalChildDuration, true);
     while (remainingDur.isGT(requiredDuration) && this.atoms.last) {
@@ -655,7 +657,7 @@ export class Group extends Atom {
         if (spillOver == null) {
           throw new Error("Spill over cannot be null here");
         }
-        if (!this.durationIsMultiplier) {
+        if (!this.durationIsSpeedMultiplier) {
           // Our own duration has also now changed
           this._duration = requiredDuration;
         } else {
@@ -693,7 +695,7 @@ export class Group extends Atom {
    * @returns This Group instance for method chaining
    */
   insertAtomsAt(beforeAtom: TSU.Nullable<Atom>, adjustDuration = false, ...atoms: Atom[]): this {
-    adjustDuration = adjustDuration && !this.durationIsMultiplier;
+    adjustDuration = adjustDuration && !this.durationIsSpeedMultiplier;
     const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
 
     // Calculate insertion index for event notification
@@ -734,7 +736,7 @@ export class Group extends Atom {
     }
     if (adjustDuration) {
       if (this._duration.isZero) {
-        if (this.durationIsMultiplier) throw new Error("How can this be?");
+        if (this.durationIsSpeedMultiplier) throw new Error("How can this be?");
         this._duration = this.totalChildDuration;
       } else {
         const scaleFactor = this.totalChildDuration.divby(oldChildDuration);
@@ -770,7 +772,7 @@ export class Group extends Atom {
    * @returns This Group instance for method chaining
    */
   removeAtoms(adjustDuration = false, ...atoms: Atom[]): this {
-    adjustDuration = adjustDuration && !this.durationIsMultiplier;
+    adjustDuration = adjustDuration && !this.durationIsSpeedMultiplier;
     const oldChildDuration = adjustDuration ? this.totalChildDuration : ONE;
 
     // Track which atoms were actually removed
@@ -787,7 +789,7 @@ export class Group extends Atom {
     }
     if (adjustDuration) {
       if (this._duration.isZero) {
-        if (this.durationIsMultiplier) throw new Error("How can this be?");
+        if (this.durationIsSpeedMultiplier) throw new Error("How can this be?");
         this._duration = this.totalChildDuration;
       } else {
         const scaleFactor = this.totalChildDuration.divby(oldChildDuration);
