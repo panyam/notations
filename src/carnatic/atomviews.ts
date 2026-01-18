@@ -54,10 +54,7 @@ export class GroupView extends GroupViewBase {
 
     // Add height for bracket line if this is a nested group
     if (this.depth >= 1) {
-      return new TSU.Geom.Size(
-        baseSize.width,
-        baseSize.height + GroupView.BRACKET_HEIGHT * this.scaleFactor,
-      );
+      return new TSU.Geom.Size(baseSize.width, baseSize.height + GroupView.BRACKET_HEIGHT * this.scaleFactor);
     }
 
     return baseSize;
