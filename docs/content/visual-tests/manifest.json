@@ -13,7 +13,7 @@
     {
       "id": "layout",
       "name": "Layout & Configuration",
-      "cases": ["two-roles", "cycle-beat", "nested-groups"]
+      "cases": ["two-roles", "cycle-beat", "nested-groups", "baseline-alignment"]
     }
   ],
   "cases": {
@@ -64,6 +64,10 @@
     "nested-groups": {
       "name": "Nested Groups",
       "description": "Nested groups with depth-based bracket lines above each group container"
+    },
+    "baseline-alignment": {
+      "name": "Baseline Alignment",
+      "description": "Beats with different nesting levels in the same row should have aligned atom baselines"
     }
   }
 }

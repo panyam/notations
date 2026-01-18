@@ -1,0 +1,5 @@
+\cycle("|1|")
+\beatDuration(4)
+
+Sw: S R G M  [ P D [ N S. ] ]  G M P D
+    [ S R ] G M  P D N S.  [ [ W X ] ]
