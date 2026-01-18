@@ -71,4 +71,4 @@ if (errors.length === 0) {
 
 ## License
 
-ISC
+MIT
