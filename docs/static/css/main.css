@@ -133,6 +133,16 @@ body {
     margin-top: 0.5rem;
 }
 
+/* Invisible bridge to prevent hover loss when moving to dropdown */
+.nav-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -0.5rem;
+    left: 0;
+    right: 0;
+    height: 0.5rem;
+}
+
 :root.dark .nav-dropdown,
 [data-theme="dark"] .nav-dropdown {
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
