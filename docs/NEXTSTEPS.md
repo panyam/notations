@@ -165,7 +165,24 @@ Goal: Notebook-style editing where each Block becomes an editable cell with shar
   - Heights updated for padding changes
   - All tests now pass
 
+### Visual Sanity Test Suite ✅
+- [x] Created visual regression test page (`/api/visual-tests/`)
+  - File-based test cases in `docs/static/visual-tests/cases/`
+  - Each test case has `input.txt` and optional `expected.html`
+  - Manifest-driven organization with categories: basic, embellishments, layout
+- [x] Added custom s3gen template functions:
+  - `includeFile` - Include file contents as raw HTML (unescaped)
+  - `includeFileText` - Include file contents as text (escaped)
+  - Path validation prevents directory traversal
+- [x] Test case coverage:
+  - Basic: notes, octaves, groups, durations, rests
+  - Embellishments: jaaru, kampitam, multi-emb, collision
+  - Layout: two-roles, cycle-beat
+- [x] Copy button for capturing rendered output to update baselines
+- [x] Link added to README.md documentation section
+
 ### UI/UX Improvements
+- [x] Fix dropdown menu hover gap (invisible bridge prevents menu from disappearing)
 - [ ] Fix button wrapping on narrow screens (keep copy/edit buttons on same line)
 - [ ] Add keyboard shortcuts for edit mode (Ctrl+Enter to apply, Esc to cancel)
 - [ ] Add error display in notation preview when DSL parsing fails (currently only logs to console)

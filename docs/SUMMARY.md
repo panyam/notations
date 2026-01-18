@@ -31,6 +31,14 @@ The documentation includes interactive notation examples with:
 - **Edit Mode**: Live editing with instant preview updates
 - **Responsive Design**: Mobile-friendly with adaptive UI
 
+### Visual Sanity Test Suite
+The documentation includes a visual regression testing page:
+- **Test Cases**: File-based in `docs/static/visual-tests/cases/`
+- **Structure**: Each case has `input.txt` and optional `expected.html`
+- **Categories**: Basic notation, embellishments, layout configurations
+- **Copy Button**: Capture rendered output to update baselines
+- **URL**: `/api/visual-tests/`
+
 ## Architecture Decisions
 
 ### Site Generation (s3gen)
@@ -132,6 +140,12 @@ This command:
 ## Recent Updates
 
 ### January 2026
+- **Visual Sanity Test Suite**: Added visual regression test page for notation rendering
+  - File-based test cases with `input.txt` and `expected.html`
+  - Custom s3gen template functions (`includeFile`, `includeFileText`)
+  - Copy button for capturing rendered output to update baselines
+  - 11 test cases covering basic, embellishments, and layout categories
+- **UI Fix**: Dropdown menu hover gap fixed with invisible CSS bridge
 - **Duration-Based Layout Algorithm**: Atoms within beats are now positioned proportionally
   to their musical duration, ensuring notes with extended durations (e.g., `2 R`) visually
   occupy the correct amount of horizontal space
