@@ -74,10 +74,6 @@
         "url": "api/integration-guide/"
       },
       {
-        "name": "Playgrounds",
-        "url": "api/playgrounds/"
-      },
-      {
         "name": "API Reference",
         "url": "api/reference/"
       },
@@ -92,9 +88,27 @@
     ]
   },
   {
-    "name": "Visual Tests",
-    "url": "visual-tests/",
-    "icon": "eye"
+    "name": "Demos",
+    "url": "demos/playgrounds/",
+    "icon": "play",
+    "children": [
+      {
+        "name": "Side by Side",
+        "url": "demos/playgrounds/side-by-side/"
+      },
+      {
+        "name": "Notebook",
+        "url": "demos/playgrounds/notebook/"
+      },
+      {
+        "name": "Model Events",
+        "url": "demos/playgrounds/model-events/"
+      },
+      {
+        "name": "Visual Tests",
+        "url": "demos/visual-tests/"
+      }
+    ]
   },
   {
     "name": "Contributing",
