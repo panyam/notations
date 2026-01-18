@@ -63,10 +63,11 @@ if (errors.length === 0) {
 
 - **[Getting Started](https://panyam.github.io/notations/getting-started/)** - Installation and setup
 - **[Tutorials](https://panyam.github.io/notations/tutorials/)** - Learn the notation syntax
+- **[Demos](https://panyam.github.io/notations/demos/playgrounds/)** - Demos
 - **[API Reference](https://panyam.github.io/notations/api/)** - Full API documentation
 - **[Integration Guide](https://panyam.github.io/notations/api/integration-guide/)** - React, Vue, Node.js integration
 - **[Styling & Theming](https://panyam.github.io/notations/api/styling/)** - Customize appearance with CSS variables
-- **[Visual Tests](https://panyam.github.io/notations/api/visual-tests/)** - Visual sanity tests for notation rendering
+- **[Visual Tests](https://panyam.github.io/notations/demos/visual-tests/)** - Visual sanity tests for notation rendering
 
 ## License
 
