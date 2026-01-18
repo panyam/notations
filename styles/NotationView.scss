@@ -60,6 +60,21 @@
   fill: var(--notation-fill-color);
 }
 
+/* Group bracket lines - top border of nested group containers */
+.group-bracket-line {
+  stroke: var(--notation-stroke-color);
+  stroke-width: 1;
+}
+
+.group-bracket-circle {
+  fill: var(--notation-stroke-color);
+  stroke: none;
+}
+
+.group-bracket {
+  opacity: 0.8;
+}
+
 /* Text elements - target all SVG text within notation */
 .notationsContentRootTable text,
 .atomViewTextRoot,

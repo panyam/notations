@@ -52,18 +52,12 @@ This simplification means:
 
 ## Intra-Beat Layout Algorithm
 
-### Current Behavior (Time-Based with Clamping)
+> **Status**: ✅ **IMPLEMENTED** (commit `6478067`, PR #6)
+>
+> The collision-based layout algorithm described below has been fully implemented
+> in `src/shapes.ts` - `GroupView.refreshLayout()` method (lines 724-787).
 
-```typescript
-// shapes.ts - GroupView.refreshLayout()
-const glyphX = totalDur.isZero ? 0 : currTime.timesNum(groupWidth).divby(totalDur).floor;
-const xPos = Math.max(0, glyphX - av.glyphOffset);
-av.setBounds(xPos, currY, null, null, true);
-```
-
-**Problem**: The `Math.max(0, ...)` clamping loses precision when pre-embellishments are large. Notes get pushed to x=0 regardless of their intended time position.
-
-### New Behavior (Collision-Based)
+### Implementation (Collision-Based)
 
 ```typescript
 // Pseudocode for collision-based layout
@@ -120,40 +114,43 @@ This enables:
 
 ## Implementation Plan
 
-### Phase 1: Beat MinWidth with Embellishments
+> **All phases completed** in commit `6478067` (PR #6, January 2026)
+
+### Phase 1: Beat MinWidth with Embellishments ✅
 
 **Goal**: Ensure beat minWidth includes pre/post embellishment sizes.
 
-**Files to modify**:
+**Files modified**:
 - `src/shapes.ts` - GroupView.minSize calculation
 - `src/carnatic/atomviews.ts` - LeafAtomView.minSize calculation
 
-**Changes**:
-1. `LeafAtomView.minSize.width` should include `leftSlotWidth + glyphWidth + rightSlotWidth`
-2. `GroupView.minSize.width` should sum all atomView widths (already does this via `evalMinSize`)
-3. Verify `glyphOffset` is calculated correctly as `leftSlotWidth`
+**Implemented**:
+1. ✅ `LeafAtomView.minSize.width` includes `leftSlotWidth + glyphWidth + rightSlotWidth`
+2. ✅ `GroupView.minSize.width` sums all atomView widths via `evalMinSize`
+3. ✅ `glyphOffset` calculated correctly as `leftSlotWidth`
 
-### Phase 2: Collision-Based Intra-Beat Layout
+### Phase 2: Collision-Based Intra-Beat Layout ✅
 
 **Goal**: Replace clamping with collision-based positioning.
 
-**Files to modify**:
-- `src/shapes.ts` - GroupView.refreshLayout()
+**Files modified**:
+- `src/shapes.ts` - GroupView.refreshLayout() (lines 724-787)
 
-**Changes**:
-1. Track `prevNoteEndX` as we iterate through atoms
-2. Calculate `realX = glyphX - av.glyphOffset`
-3. Collision check: `if (realX < prevNoteEndX) realX = prevNoteEndX`
-4. Update `prevNoteEndX = realX + av.minSize.width` (or actual rendered width)
+**Implemented**:
+1. ✅ Track `prevNoteEndX` as we iterate through atoms
+2. ✅ Calculate `realX = glyphX - av.glyphOffset`
+3. ✅ Collision check: `if (realX < prevNoteEndX) realX = prevNoteEndX`
+4. ✅ Update `prevNoteEndX = realX + av.minSize.width`
 
-### Phase 3: Verify End-to-End
+### Phase 3: Verify End-to-End ✅
 
 **Goal**: Ensure the full pipeline works correctly.
 
-1. Beat minWidth flows up to GridCell
-2. GridCell width flows to BeatView
-3. BeatView width flows to GroupView (atomView)
-4. GroupView positions atoms with collision avoidance
+**Verified**:
+1. ✅ Beat minWidth flows up to GridCell
+2. ✅ GridCell width flows to BeatView
+3. ✅ BeatView width flows to GroupView (atomView)
+4. ✅ GroupView positions atoms with collision avoidance
 
 ---
 
@@ -261,12 +258,14 @@ describe('Full notation rendering with embellishments', () => {
 });
 ```
 
-### Visual Regression Tests (Optional)
+### Visual Regression Tests ✅
 
-For complex layout scenarios, consider screenshot-based tests:
-1. Capture baseline SVG output
-2. Compare against known-good renderings
-3. Flag visual differences for review
+Visual sanity test suite implemented (commit `0167741`):
+- Test page at `/api/visual-tests/`
+- File-based test cases in `docs/static/visual-tests/cases/`
+- Categories: basic, embellishments, layout
+- Copy button to capture rendered output for baselines
+- See `docs/static/visual-tests/manifest.json` for test case definitions
 
 ---
 
@@ -292,8 +291,10 @@ For complex layout scenarios, consider screenshot-based tests:
 
 ## Code References
 
+Key implementation files (line numbers as of commit `6478067`):
+
 - `src/shapes.ts:368-376` - glyphOffset property definition
-- `src/shapes.ts:654-680` - GroupView.refreshLayout() (to be modified)
+- `src/shapes.ts:724-787` - GroupView.refreshLayout() - **collision-based layout implementation**
 - `src/carnatic/atomviews.ts:71-75` - glyphOffset calculation
 - `src/carnatic/atomviews.ts` - LeafAtomView.evalMinSize()
 - `src/carnatic/embelishments.ts:295-352` - Jaaru implementation

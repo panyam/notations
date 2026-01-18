@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Note } from "../core";
 import { BeatView } from "../beatview";
-import { Embelishment } from "../shapes";
+import { Embelishment, GroupView as GroupViewBase } from "../shapes";
 import { LeafAtomView } from "./atomviews";
 import { JaaruGamaka } from "./gamakas";
 
@@ -348,5 +348,140 @@ export class Jaaru extends LeafAtomViewEmbelishment {
 
   refreshLayout(): void {
     this.pathElem.setAttribute("d", this.pathAttribute(this.x));
+  }
+}
+
+/**
+ * Position mode for GroupBracket - controls how the bracket interacts with embellishments.
+ */
+export type GroupBracketPositionMode = "above-all" | "below-embellishments" | "separate-space";
+
+/**
+ * Renders a single bracket line as the top border of a GroupView container.
+ * Each nested group gets its own bracket line, creating a visual effect where
+ * atoms inside deeply nested groups appear to have multiple lines above them.
+ *
+ * For example, with notation `A B [ S R [ P D [ W X ] ] ]`:
+ * - Group 1 (outermost) has 1 bracket line
+ * - Group 2 has 1 bracket line (inside Group 1's bracket)
+ * - Group 3 (innermost) has 1 bracket line (inside Groups 1 & 2's brackets)
+ * - Atoms W X visually appear to have 3 lines above (cumulative effect)
+ */
+export class GroupBracket extends Embelishment {
+  private line: SVGLineElement | null = null;
+  private leftCircle: SVGCircleElement | null = null;
+  private rightCircle: SVGCircleElement | null = null;
+  private bracketGroup: SVGGElement | null = null;
+
+  // Configuration - exposed for experimentation
+  /** Distance above group content */
+  lineOffset = 4;
+  /** End circle radius */
+  circleRadius = 1.5;
+  /** How far line extends beyond group content on each side */
+  lineExtension = 2;
+
+  /**
+   * Position mode for embellishment interaction experimentation:
+   * - 'above-all': Bracket at very top, above all embellishments (default)
+   * - 'below-embellishments': Bracket between glyphs and embellishments
+   * - 'separate-space': Bracket in dedicated reserved space
+   */
+  positionMode: GroupBracketPositionMode = "above-all";
+
+  constructor(public readonly groupView: GroupViewBase) {
+    super();
+
+    this.bracketGroup = TSU.DOM.createSVGNode("g", {
+      doc: document,
+      parent: this.groupView.groupElement,
+      attrs: {
+        class: "group-bracket",
+        source: "group" + this.groupView.group.uuid,
+      },
+    });
+
+    this.line = TSU.DOM.createSVGNode("line", {
+      doc: document,
+      parent: this.bracketGroup,
+      attrs: {
+        class: "group-bracket-line",
+      },
+    });
+
+    this.leftCircle = TSU.DOM.createSVGNode("circle", {
+      doc: document,
+      parent: this.bracketGroup,
+      attrs: {
+        class: "group-bracket-circle",
+        r: String(this.circleRadius),
+      },
+    });
+
+    this.rightCircle = TSU.DOM.createSVGNode("circle", {
+      doc: document,
+      parent: this.bracketGroup,
+      attrs: {
+        class: "group-bracket-circle",
+        r: String(this.circleRadius),
+      },
+    });
+  }
+
+  protected refreshBBox(): TSU.Geom.Rect {
+    if (!this.bracketGroup) return new TSU.Geom.Rect(0, 0, 0, 0);
+    return TSU.DOM.svgBBox(this.bracketGroup);
+  }
+
+  protected refreshMinSize(): TSU.Geom.Size {
+    // Single bracket line height contribution
+    return new TSU.Geom.Size(0, this.lineOffset + this.circleRadius);
+  }
+
+  protected updateBounds(
+    x: null | number,
+    y: null | number,
+    w: null | number,
+    h: null | number,
+  ): [number | null, number | null, number | null, number | null] {
+    return [x, y, w, h];
+  }
+
+  refreshLayout(): void {
+    if (!this.line || !this.leftCircle || !this.rightCircle) return;
+
+    const bbox = this.groupView.bbox;
+    const groupWidth = bbox.width;
+
+    // Calculate Y position based on position mode
+    let y: number;
+    switch (this.positionMode) {
+      case "below-embellishments":
+        // Position just above glyph content, below other embellishments
+        y = bbox.y + this.lineOffset;
+        break;
+      case "separate-space":
+        // Use dedicated space at very top of group bbox
+        y = bbox.y - this.lineOffset;
+        break;
+      case "above-all":
+      default:
+        // Position above everything including embellishments
+        y = bbox.y - this.lineOffset;
+        break;
+    }
+
+    const x1 = -this.lineExtension;
+    const x2 = groupWidth + this.lineExtension;
+
+    this.line.setAttribute("x1", String(x1));
+    this.line.setAttribute("y1", String(y));
+    this.line.setAttribute("x2", String(x2));
+    this.line.setAttribute("y2", String(y));
+
+    this.leftCircle.setAttribute("cx", String(x1));
+    this.leftCircle.setAttribute("cy", String(y));
+    this.rightCircle.setAttribute("cx", String(x2));
+    this.rightCircle.setAttribute("cy", String(y));
   }
 }
