@@ -66,9 +66,7 @@ describe("Baseline Alignment", () => {
       const scaleFactor = 1;
 
       const unscaledContentHeight = contentHeight / scaleFactor;
-      const unscaledAllocatedHeight = hasHeight
-        ? allocatedHeight / scaleFactor
-        : unscaledContentHeight;
+      const unscaledAllocatedHeight = hasHeight ? allocatedHeight / scaleFactor : unscaledContentHeight;
       const currY = unscaledAllocatedHeight - unscaledContentHeight;
 
       // When no allocated height, currY should be 0 (content at top = bottom of itself)
@@ -87,8 +85,7 @@ describe("Baseline Alignment", () => {
       const depth = 0;
       const baseHeight = 30;
 
-      const heightWithBracket =
-        depth >= 1 ? baseHeight + BRACKET_HEIGHT : baseHeight;
+      const heightWithBracket = depth >= 1 ? baseHeight + BRACKET_HEIGHT : baseHeight;
 
       expect(heightWithBracket).toBe(30);
     });
@@ -97,8 +94,7 @@ describe("Baseline Alignment", () => {
       const depth = 1;
       const baseHeight = 30;
 
-      const heightWithBracket =
-        depth >= 1 ? baseHeight + BRACKET_HEIGHT : baseHeight;
+      const heightWithBracket = depth >= 1 ? baseHeight + BRACKET_HEIGHT : baseHeight;
 
       expect(heightWithBracket).toBe(38);
     });
@@ -152,11 +148,7 @@ describe("Baseline Alignment", () => {
       const beat3ContentHeight = baseAtomHeight;
 
       // Row height is max of all beats
-      const rowHeight = Math.max(
-        beat1ContentHeight,
-        beat2ContentHeight,
-        beat3ContentHeight
-      );
+      const rowHeight = Math.max(beat1ContentHeight, beat2ContentHeight, beat3ContentHeight);
 
       // Beat 1 offset (pushed down to align)
       const beat1Offset = rowHeight - beat1ContentHeight;
