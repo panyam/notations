@@ -265,7 +265,7 @@ export class BeatsBuilder {
  */
 export class BeatColumn extends ColAlign {
   /** Spacing between atoms in this column */
-  atomSpacing = 5;
+  atomSpacing = 2;
   /** Unique key for this column */
   readonly key: string;
 

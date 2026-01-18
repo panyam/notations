@@ -451,7 +451,8 @@ export class GroupBracket extends Embelishment {
     if (!this.line || !this.leftCircle || !this.rightCircle) return;
 
     const bbox = this.groupView.bbox;
-    const groupWidth = bbox.width;
+    // Use actual content width (not bbox which may include extra space)
+    const groupWidth = this.groupView.contentWidth || bbox.width;
 
     // Calculate Y position based on position mode
     let y: number;

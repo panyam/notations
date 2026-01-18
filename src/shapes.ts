@@ -510,9 +510,11 @@ export abstract class GroupView extends AtomView {
    * instead of just leaving empty space.
    * Disabled by default as group bracket lines provide clearer visual boundaries.
    */
-  showContinuationMarkers = true;
+  showContinuationMarkers = false;
   /** SVG elements for continuation markers */
   protected continuationMarkerElements: SVGTextElement[] = [];
+  /** Actual content width after layout (position of last atom + its width) */
+  contentWidth = 0;
 
   /**
    * Creates a new GroupView.
@@ -524,7 +526,7 @@ export abstract class GroupView extends AtomView {
     config?: any,
   ) {
     super();
-    this.atomSpacing = 5;
+    this.atomSpacing = 2;
     this.setStyles(config || {});
   }
 
@@ -772,10 +774,10 @@ export abstract class GroupView extends AtomView {
       av.setBounds(realX, currY, null, null, true);
 
       // 5. Track end position for next collision check
-      // Use actual rendered bbox width, not minSize.width or duration-based allocation.
-      // minSize.width can be inflated for groups, and duration-based allocation doesn't
-      // account for scaling. The bbox gives the actual visual footprint after layout.
-      prevNoteEndX = realX + av.bbox.width;
+      // For groups, use contentWidth (actual content) instead of bbox.width (which may include extra space).
+      // For leaf atoms, use bbox.width.
+      const avWidth = (av as any).contentWidth || av.bbox.width;
+      prevNoteEndX = realX + avWidth;
 
       // Render continuation markers for atoms with duration > 1
       if (this.showContinuationMarkers && !totalDur.isZero) {
@@ -795,6 +797,9 @@ export abstract class GroupView extends AtomView {
 
       currTime = currTime.plus(av.totalDuration);
     });
+
+    // Track actual content width for bracket sizing
+    this.contentWidth = prevNoteEndX;
 
     this.invalidateBounds();
     for (const e of this.embelishments) e.refreshLayout();
