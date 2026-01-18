@@ -1002,14 +1002,29 @@ pre code {
     padding: 0.5rem;
     min-height: 60px;
     background: var(--notation-bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .visual-test-output svg {
     max-width: 100%;
     height: auto;
+}
+
+/* Hide notation wrapper elements when inside visual test output */
+.visual-test-output .notationBlockRoot {
+    margin: 0;
+}
+
+.visual-test-output .notation-output {
+    padding: 0;
+}
+
+.visual-test-output .notation-output-label {
+    display: none;
+}
+
+.visual-test-output .notation-view {
+    padding: 0;
+    border: none;
 }
 
 .visual-test-expected {

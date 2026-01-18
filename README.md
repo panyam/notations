@@ -66,6 +66,7 @@ if (errors.length === 0) {
 - **[API Reference](https://panyam.github.io/notations/api/)** - Full API documentation
 - **[Integration Guide](https://panyam.github.io/notations/api/integration-guide/)** - React, Vue, Node.js integration
 - **[Styling & Theming](https://panyam.github.io/notations/api/styling/)** - Customize appearance with CSS variables
+- **[Visual Tests](https://panyam.github.io/notations/api/visual-tests/)** - Visual sanity tests for notation rendering
 
 ## License
 
