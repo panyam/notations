@@ -495,7 +495,7 @@ export abstract class GroupView extends AtomView {
   /** Space between atoms in this group */
   protected atomSpacing: number;
   /** The SVG group element for this view */
-  protected groupElement: SVGGElement;
+  groupElement: SVGGElement;
   /** Views for the atoms in this group */
   protected atomViews: AtomView[] = [];
   private _embelishments: Embelishment[];

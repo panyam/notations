@@ -13,7 +13,7 @@
     {
       "id": "layout",
       "name": "Layout & Configuration",
-      "cases": ["two-roles", "cycle-beat"]
+      "cases": ["two-roles", "cycle-beat", "nested-groups"]
     }
   ],
   "cases": {
@@ -60,6 +60,10 @@
     "cycle-beat": {
       "name": "Cycle/Beat",
       "description": "Notation with cycle configuration"
+    },
+    "nested-groups": {
+      "name": "Nested Groups",
+      "description": "Nested groups with depth-based bracket lines above each group container"
     }
   }
 }

@@ -19,12 +19,48 @@ import {
   Kandippu,
   Vaali,
   Jaaru,
+  GroupBracket,
 } from "./embelishments";
 import { GamakaType } from "./gamakas";
 
 export class GroupView extends GroupViewBase {
+  /** Height reserved for bracket line (lineOffset + circleRadius + padding) */
+  static readonly BRACKET_HEIGHT = 8;
+
   createAtomView(atom: Atom): AtomView {
-    return createAtomView(this.groupElement, atom, this.defaultToNotes, 0.7);
+    // Propagate depth + 1 to child atoms
+    return createAtomView(this.groupElement, atom, this.defaultToNotes, 0.7, this.depth + 1);
+  }
+
+  /**
+   * Creates embellishments for this group, including the bracket line
+   * that serves as the top border of this group container.
+   */
+  protected createEmbelishments(): Embelishment[] {
+    const embelishments = super.createEmbelishments();
+    // Add bracket line for nested groups (depth >= 1)
+    if (this.depth >= 1) {
+      embelishments.push(new GroupBracket(this));
+    }
+    return embelishments;
+  }
+
+  /**
+   * Calculates the minimum size of this group, including space for the bracket line.
+   * The bracket line adds height for nested groups (depth >= 1).
+   */
+  protected refreshMinSize(): TSU.Geom.Size {
+    const baseSize = super.refreshMinSize();
+
+    // Add height for bracket line if this is a nested group
+    if (this.depth >= 1) {
+      return new TSU.Geom.Size(
+        baseSize.width,
+        baseSize.height + GroupView.BRACKET_HEIGHT * this.scaleFactor,
+      );
+    }
+
+    return baseSize;
   }
 }
 
@@ -345,6 +381,7 @@ export function createAtomView(
   atom: Atom,
   litDefaultsToNote = false,
   groupViewScale = 1.0,
+  depth = 0,
 ): AtomView {
   let out: AtomView;
   switch (atom.TYPE) {
@@ -377,6 +414,7 @@ export function createAtomView(
       // at leaf atom levels
       throw new Error("Invalid atom type: " + atom.TYPE);
   }
+  out.depth = depth;
   out.createElements(parent);
   return out;
 }
