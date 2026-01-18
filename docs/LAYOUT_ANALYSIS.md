@@ -402,3 +402,32 @@ Key implementation files:
 - `src/shapes.ts:770-777` - Use duration-based width allocation instead of minSize.width
 - `src/shapes.ts:513` - Disable continuation markers by default
 - Fixed bug where nested groups caused subsequent atoms to be pushed too far right
+
+### Group Duration & Spacing Fixes (January 2026)
+
+**Bug: Nested groups reported wrong duration**
+- `GroupView.totalDuration` was returning `group.totalChildDuration` (raw sum of children)
+- Should return `group.duration` (scaled duration accounting for multiplier)
+- Example: `[G , M G]` has 4 children but duration=2 with 2x multiplier
+- Fix: `src/shapes.ts:536-537` - Changed to `return this.group.duration`
+
+**Bug: Excessive spacing between atoms**
+- `atomSpacing` was 5px, causing too much space
+- Fix: Reduced to 2px in `src/shapes.ts:529`
+- Also fixed trailing spacing: `refreshMinSize()` now subtracts one `atomSpacing` from total width
+
+**Bug: Bracket line extended past content**
+- Bracket used `bbox.width` which included extra space
+- Added `contentWidth` property to GroupView tracking actual content width (`prevNoteEndX` after layout)
+- Bracket now uses `contentWidth` for width calculation
+- Fix: `src/shapes.ts:517`, `src/shapes.ts:802`, `src/carnatic/embelishments.ts:455`
+
+**Bug: Gap between bracket and notes too large**
+- Reduced `lineOffset` from 4 to 2
+- Changed default `positionMode` to `"below-embellishments"` (closer to notes)
+- Fix: `src/carnatic/embelishments.ts:378,390`
+
+**Bug: Collision detection used wrong width for groups**
+- Was using `av.bbox.width` for all atoms
+- Groups should use `contentWidth` (actual content, not allocated space)
+- Fix: `src/shapes.ts:779` - `const avWidth = (av as any).contentWidth || av.bbox.width`
