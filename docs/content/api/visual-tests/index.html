@@ -17,7 +17,7 @@ description: "Visual regression test cases for notation rendering"
     {{ $caseId := . }}
     {{ $caseMeta := index $cases $caseId }}
     {{ $inputPath := printf "static/visual-tests/cases/%s/input.txt" $caseId }}
-    {{ $expectedPath := printf "static/visual-tests/cases/%s/expected.svg" $caseId }}
+    {{ $expectedPath := printf "static/visual-tests/cases/%s/expected.html" $caseId }}
     {{ $input := includeFileText $inputPath }}
     {{ $expected := includeFile $expectedPath }}
 
