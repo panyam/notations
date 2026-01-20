@@ -11,7 +11,7 @@
  * Uses SideBySideEditor internally for editor/output management.
  */
 
-import { DockviewComponent, DockviewApi, IContentRenderer, Parameters } from "dockview-core";
+import { DockviewComponent, DockviewApi, IContentRenderer, Parameters, themeLight, themeDark } from "dockview-core";
 import SideBySideEditor, { SideBySideEditorConfig } from "./SideBySideEditor";
 import { Notation } from "../../notation";
 import { GlobalBeatLayout } from "../../beats";
@@ -312,24 +312,21 @@ export default class DockViewPlayground {
     }
     this.container.style.width = this.container.style.width || "100%";
 
-    // Apply theme class (preserve existing classes)
+    // Create DockView with correct theme
     const isDark = this.isDarkMode();
-    this.container.classList.add(isDark ? "dockview-theme-dark" : "dockview-theme-light");
+    const dockviewComponent = new DockviewComponent(this.container, {
+      createComponent: (options) => this.createComponent(options),
+      theme: isDark ? themeDark : themeLight,
+    });
 
-    // Watch for theme changes
+    // Watch for theme changes and update DockView theme
     const observer = new MutationObserver(() => {
       const dark = this.isDarkMode();
-      this.container.classList.remove("dockview-theme-dark", "dockview-theme-light");
-      this.container.classList.add(dark ? "dockview-theme-dark" : "dockview-theme-light");
+      dockviewComponent.updateOptions({ theme: dark ? themeDark : themeLight });
     });
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
-    });
-
-    // Create DockView
-    const dockviewComponent = new DockviewComponent(this.container, {
-      createComponent: (options) => this.createComponent(options),
     });
 
     this.dockview = dockviewComponent.api;
@@ -345,6 +342,13 @@ export default class DockViewPlayground {
         this.saveLayout();
       });
     }
+
+    // Trigger initial render after layout is ready and DOM has updated
+    // The SideBySideEditor renders in its constructor, but the output element
+    // isn't in the DOM yet at that point, so we need to re-render once everything is attached
+    requestAnimationFrame(() => {
+      this.render();
+    });
 
     this.log("Playground initialized", "info");
   }
