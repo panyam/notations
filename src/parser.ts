@@ -61,12 +61,9 @@ const [parser /*itemGraph*/] = G.newParser(
     %token  EMBELISHMENT  /~[^\s]*/                 { toEmbelishment }
     %token  NUMBER        /-?\d+/                   { toNumber }
     %token  BOOLEAN       /true|false/              { toBoolean }
-    %token  POST_MARKER   /<<"(([^"\\\n]|\\.|\\\n)*)"/  { toMarker }
-    %token  POST_MARKER   /<<'(([^'\\\n]|\\.|\\\n)*)'/  { toMarker }
-    %token  PRE_MARKER   /"(([^"\\\n]|\\.|\\\n)*)">>/  { toMarker }
-    %token  PRE_MARKER   /'(([^'\\\n]|\\.|\\\n)*)'>>/  { toMarker }
     %token  STRING        /"([^"\\\n]|\\.|\\\n)*"/  { toString }
     %token  STRING        /'([^'\\\n]|\\.|\\\n)*'/  { toString }
+    %token  MARKER_NAME   /\\@{IDENT}/              { toMarkerName }
     %token  DOTS_IDENT    /(\.+)({IdentChar}+)/     { toOctavedNote   }
     %token  IDENT_DOTS    /({IdentChar}+)(\.+)/     { toOctavedNote   }
     %token  IDENT_COLON   /{IdentChar}+:/           { toRoleSelector  }
@@ -110,14 +107,10 @@ const [parser /*itemGraph*/] = G.newParser(
     Atoms -> Atoms Atom { concatAtoms } ;
     Atoms -> { newArray } ;
 
-    Atom -> Atom POST_MARKER  { applyPostMarker }
-          | PreMarkedAtom
-          ;
-    PreMarkedAtom -> Leaf
-                  | PRE_MARKER PreMarkedAtom { applyPreMarker }
-                  ;
+    Atom -> Leaf ;
 
-    Leaf -> Space | Lit | Group | Rest  ;
+    Leaf -> Space | Lit | Group | Rest | Marker ;
+    Marker -> MARKER_NAME CommandParams { newMarker } ;
     Leaf -> Duration Leaf { applyDuration } ;
     Rest -> HYPHEN { newRest };
     Space -> COMMA { newSpace } 
@@ -190,17 +183,9 @@ const [parser /*itemGraph*/] = G.newParser(
         token.value = token.value.substring(1, token.value.length - 1);
         return token;
       },
-      toMarker: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
-        if (token.tag != "PRE_MARKER" && token.tag != "POST_MARKER") {
-          throw new Error("Invalid token for converting to note: " + token.tag);
-        }
-        const isBefore = token.tag == "PRE_MARKER";
-        const markerText = isBefore
-          ? token.value.substring(1, token.value.length - 3)
-          : token.value.substring(3, token.value.length - 1);
-        // console.log("TokVal: ", token.value, token.positions);
-        // console.log("Marker Text: ", markerText, isBefore);
-        token.value = new Marker(markerText, isBefore);
+      toMarkerName: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
+        // Extract marker name from \@markerName - skip the \@
+        token.value = token.value.substring(2);
         return token;
       },
       toOctavedNote: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
@@ -426,24 +411,10 @@ export class Parser {
     newSilentSpace: (_rule: G.Rule, _parent: G.PTNode, ..._children: G.PTNode[]) => {
       return new Space(ONE, true);
     },
-    applyPreMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const marker = children[0].value as Marker;
-      const leaf = children[1].value as Atom;
-      // console.log("marker, leaf: ", marker, leaf);
-      if (!leaf.markersBefore) {
-        leaf.markersBefore = [];
-      }
-      leaf.markersBefore.splice(0, 0, marker);
-      return leaf;
-    },
-    applyPostMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const leaf = children[0].value as Atom;
-      const marker = children[1].value as Marker;
-      if (!leaf.markersAfter) {
-        leaf.markersAfter = [];
-      }
-      leaf.markersAfter.push(marker);
-      return leaf;
+    newMarker: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+      const name = children[0].value as string;
+      const params = children[1].value || [];
+      return new Marker(name, params);
     },
     applyDuration: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
       let dur = children[0].value as TSU.Num.Fraction | number;

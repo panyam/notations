@@ -176,17 +176,17 @@ elements      := (command | roleSelector | atoms)*
 command       := "\\" name "(" params? ")"
 roleSelector  := name ":"
 atoms         := atom+
-atom          := duration? leaf marker?
-leaf          := literal | group | space | rest
+atom          := duration? leaf
+leaf          := literal | group | space | rest | marker
 literal       := (dots? ident dots?) embellishment?
 group         := "[" atoms "]"
 space         := "," | ";" | "_"
 rest          := "-"
+marker        := "\@" name "(" params ")"
 duration      := number | fraction
 fraction      := number "/" number
 octave        := "."+ (before or after literal)
 embellishment := "~" text
-marker        := "<<" text ">>" | ">>" text "<<"
 </code></pre>
 
 <h2>See Also</h2>
