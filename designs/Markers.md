@@ -91,32 +91,44 @@ Ta: S R G M P D N S.
 
 Only the Sw role will have the "Variation 1" label; the other roles will have empty space in that column but will be properly aligned.
 
-### Different Marker Types
+### Marker Types
 
-While `@label` is the primary marker type for annotations, the system supports different marker names for different purposes:
+Currently only `\@label` is implemented:
 
 ```
-\@label("V1")           // Text annotation
-\@slide(duration=2)     // Slide marking spanning 2 beats (future)
-\@crescendo(span=4)     // Dynamic marking (future)
+\@label("V1")           // Text annotation - rendered in dedicated columns
 ```
 
-The beat layout currently recognizes markers for rendering in pre/post columns. Future renderers may interpret different marker types differently.
+The parser accepts any `\@markerName(...)` syntax, but only `label` has rendering support. Future marker types will have different rendering behaviors:
+
+```
+\@slide(from=0.1, to=0.9)   // Future: curve from beat offset 0.1 to 0.9 in next beat
+\@crescendo(span=4)          // Future: dynamic marking spanning beats
+```
+
+These will NOT use the pre/post column model - they may render as curves, lines, or other graphical elements overlaid on the notation.
 
 ## Rendering
 
-### Beat Layout Rendering
+### Label Markers in Beat Layout
 
-In the beat layout, markers are rendered in dedicated columns:
+The `\@label` marker is rendered in dedicated columns adjacent to the beat:
 
 ```
 [pre-marker column] | [beat column] | [post-marker column]
 ```
 
-- Markers with `position="before"` appear in the pre-marker column
-- Markers with `position="after"` appear in the post-marker column
-- The column width is determined by the widest marker across all rows
-- Rows without markers have empty space (but properly aligned)
+- Labels with `position="before"` appear in the pre-marker column
+- Labels with `position="after"` appear in the post-marker column
+- The column width is determined by the widest label across all rows
+- Rows without labels have empty space (but properly aligned)
+
+### Other Markers (Future)
+
+Other marker types will have rendering specific to their purpose:
+- `\@slide` - A curve connecting two points across beats
+- `\@crescendo` - A hairpin or text spanning multiple beats
+- These are NOT rendered in pre/post columns
 
 ### Example Layout
 
