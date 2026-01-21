@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code examples for using the Notations library">
+    <title>API Examples - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Examples</h3>
+
+    <ul>
+        <li><a href="/notations/examples/">All Examples</a></li>
+        <li><a href="/notations/examples/compositions/">Compositions</a></li>
+        <li><a href="/notations/examples/patterns/">Patterns</a></li>
+        <li><a href="/notations/examples/tags/">By Tag</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>API Examples</h1>
+        
+        <p class="lead">Code examples for using the Notations library</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>Practical code examples demonstrating how to use the Notations library in different scenarios.</p>
+
+<h2>Basic Parsing</h2>
+
+<pre><code>import * as N from "notations";
+
+const source = `
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+`;
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  console.error("Parse errors:", errors);
+} else {
+  console.log("Parsed successfully!");
+  console.log("Cycle:", notation.currentCycle);
+  console.log("Beat duration:", notation.currentAPB);
+}
+</code></pre>
+
+<h2>Rendering Notation</h2>
+
+<pre><code>import * as N from "notations";
+
+// Parse the notation
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Create a view
+  const container = document.getElementById("notation-output");
+  const view = N.Carnatic.createNotationView(container);
+
+  // Render the notation
+  view.setNotation(notation, beatLayout);
+}
+</code></pre>
+
+<h2>Dynamic Notation Editor</h2>
+
+<pre><code>import * as N from "notations";
+
+const textarea = document.getElementById("editor");
+const output = document.getElementById("output");
+const errors = document.getElementById("errors");
+
+let view = null;
+
+function renderNotation() {
+  const source = textarea.value;
+  const [notation, beatLayout, parseErrors] = N.load(source);
+
+  if (parseErrors.length > 0) {
+    // Display errors
+    errors.innerHTML = parseErrors
+      .map(e => `Line ${e.line}, Col ${e.column}: ${e.message}`)
+      .join('<br>');
+    errors.style.display = 'block';
+  } else {
+    // Clear errors
+    errors.style.display = 'none';
+
+    // Create view if needed
+    if (!view) {
+      view = N.Carnatic.createNotationView(output);
+    }
+
+    // Render notation
+    view.setNotation(notation, beatLayout);
+  }
+}
+
+// Update on input
+textarea.addEventListener('input', renderNotation);
+
+// Initial render
+renderNotation();
+</code></pre>
+
+<h2>Analyzing Notation Structure</h2>
+
+<pre><code>import * as N from "notations";
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Count notes
+  let noteCount = 0;
+  notation.blocks.forEach(block => {
+    block.lines.forEach(line => {
+      Object.values(line.roles).forEach(role => {
+        role.atoms.forEach(atom => {
+          if (atom.type === "Literal") {
+            noteCount++;
+          }
+        });
+      });
+    });
+  });
+
+  console.log("Total notes:", noteCount);
+
+  // List all roles
+  const roleNames = notation.roles.map(r => r.name);
+  console.log("Roles:", roleNames);
+
+  // Get cycle information
+  console.log("Cycle pattern:", notation.currentCycle);
+  console.log("Atoms per beat:", notation.currentAPB);
+}
+</code></pre>
+
+<h2>Server-Side Rendering</h2>
+
+<pre><code>// Node.js example
+const N = require('notations');
+const fs = require('fs');
+
+// Read notation from file
+const source = fs.readFileSync('composition.txt', 'utf8');
+
+// Parse notation
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length > 0) {
+  console.error('Parse errors:');
+  errors.forEach(e => {
+    console.error(`  Line ${e.line}, Col ${e.column}: ${e.message}`);
+  });
+  process.exit(1);
+}
+
+// Process notation data
+const output = {
+  title: notation.metadata.title || 'Untitled',
+  cycle: notation.currentCycle,
+  beatDuration: notation.currentAPB,
+  roles: notation.roles.map(r => r.name),
+  blockCount: notation.blocks.length
+};
+
+// Write to JSON
+fs.writeFileSync('output.json', JSON.stringify(output, null, 2));
+
+console.log('Notation processed successfully');
+</code></pre>
+
+<h2>Batch Processing</h2>
+
+<pre><code>import * as N from "notations";
+import * as fs from "fs/promises";
+import * as path from "path";
+
+async function processNotationFiles(directory) {
+  const files = await fs.readdir(directory);
+  const results = [];
+
+  for (const file of files) {
+    if (file.endsWith('.txt')) {
+      const fullPath = path.join(directory, file);
+      const source = await fs.readFile(fullPath, 'utf8');
+
+      const [notation, beatLayout, errors] = N.load(source);
+
+      results.push({
+        file: file,
+        success: errors.length === 0,
+        errors: errors.length,
+        blocks: notation?.blocks.length || 0
+      });
+    }
+  }
+
+  return results;
+}
+
+// Usage
+processNotationFiles('./notations').then(results => {
+  console.log('Processing complete:');
+  results.forEach(r => {
+    console.log(`  ${r.file}: ${r.success ? 'OK' : 'ERRORS'}`);
+  });
+});
+</code></pre>
+
+<h2>Custom Error Handling</h2>
+
+<pre><code>import * as N from "notations";
+
+function parseNotationSafely(source) {
+  try {
+    const [notation, beatLayout, errors] = N.load(source);
+
+    if (errors.length > 0) {
+      throw new Error(
+        'Parse errors:\n' +
+        errors.map(e =>
+          `Line ${e.line}, Column ${e.column}: ${e.message}`
+        ).join('\n')
+      );
+    }
+
+    return { notation, beatLayout };
+  } catch (error) {
+    console.error('Failed to parse notation:', error.message);
+    throw error;
+  }
+}
+
+// Usage
+try {
+  const { notation, beatLayout } = parseNotationSafely(source);
+  // Use notation and beatLayout
+} catch (error) {
+  // Handle error gracefully
+  displayErrorToUser(error.message);
+}
+</code></pre>
+
+<h2>Working with Metadata</h2>
+
+<pre><code>import * as N from "notations";
+
+const source = `
+---
+title: "Mohana Varnam"
+raga: "Bhairavi"
+composer: "Papanasam Sivan"
+---
+
+\\cycle("|4|2|2|")
+\\beatDuration(4)
+Sw: S R G M P D N S.
+`;
+
+const parser = new N.Parser();
+parser.parse(source);
+
+console.log('Metadata:', parser.metadata);
+// Output: { title: "Mohana Varnam", raga: "Bhairavi", ... }
+
+const [notation, beatLayout, errors] = N.load(source);
+console.log('Title:', notation.metadata.title);
+</code></pre>
+
+<h2>Filtering and Transforming</h2>
+
+<pre><code>import * as N from "notations";
+
+const [notation, beatLayout, errors] = N.load(source);
+
+if (errors.length === 0) {
+  // Extract only swara role
+  const swaraLines = notation.blocks.flatMap(block =>
+    block.lines.map(line => line.roles['Sw'])
+  ).filter(role => role !== undefined);
+
+  console.log('Swara lines:', swaraLines.length);
+
+  // Count spaces
+  let spaceCount = 0;
+  notation.blocks.forEach(block => {
+    block.lines.forEach(line => {
+      Object.values(line.roles).forEach(role => {
+        role.atoms.forEach(atom => {
+          if (atom.type === "Space") {
+            spaceCount++;
+          }
+        });
+      });
+    });
+  });
+
+  console.log('Total spaces:', spaceCount);
+}
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/api/integration-guide/">Integration Guide</a> - Framework integration</li>
+  <li><a href="/notations/api/reference/">API Reference</a> - Complete API documentation</li>
+  <li><a href="/notations/tutorials/">Tutorials</a> - Learn the DSL</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

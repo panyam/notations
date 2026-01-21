@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Complete reference for gamakas and ornaments in Carnatic music notation">
+    <title>Embellishments Reference - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Reference</h3>
+
+    <ul>
+        <li><a href="/notations/reference/">Overview</a></li>
+        <li><a href="/notations/reference/dsl-syntax/">DSL Syntax</a></li>
+        <li><a href="/notations/reference/commands/">Commands</a></li>
+        <li><a href="/notations/reference/embelishments/">Embelishments</a></li>
+        <li><a href="/notations/reference/cycles/">Cycles & Talas</a></li>
+        <li><a href="/notations/reference/quick-reference/">Quick Reference</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Embellishments Reference</h1>
+        
+        <p class="lead">Complete reference for gamakas and ornaments in Carnatic music notation</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>Embellishments (gamakas) add ornamental details to notes in Carnatic music. All embellishments start with a tilde <code>~</code> and continue until whitespace.</p>
+
+<h2>Syntax</h2>
+
+<pre><code>~         // Kampitam
+~/        // Eetra Jaaru (ascending)
+~\        // Irakka Jaaru (descending)
+~w        // Nokku
+~^        // Raavi
+~x        // Odukkal</code></pre>
+
+<h2>Basic Gamakas</h2>
+
+<h3>Kampitam (~)</h3>
+
+<p>An oscillation between two notes.</p>
+
+<notation id="kampitam" showSource="true" caption="Kampitam">
+\beatDuration(4)
+S R ~ G M P ~
+</notation>
+
+<p>Example usage: <code>p , S..n S..n S..n</code> shows kampitam oscillating between notes.</p>
+
+<h3>Jaaru - Eetra (~/ or ~/note)</h3>
+
+<p>Ascending slide from one note to another.</p>
+
+<notation id="jaaru-eetra" showSource="true" caption="Eetra Jaaru (Ascending)">
+\beatDuration(4)
+S ~/ R G ~/ M P
+</notation>
+
+<p>You can specify a starting note: <code>~S/</code> means slide from S to the current note.</p>
+
+<h3>Jaaru - Irakka (~\ or ~\note)</h3>
+
+<p>Descending slide from one note to another.</p>
+
+<notation id="jaaru-irakka" showSource="true" caption="Irakka Jaaru (Descending)">
+\beatDuration(4)
+P ~\ D N ~\ S.
+</notation>
+
+<p>You can specify a starting note: <code>~P\</code> means slide from P to the current note.</p>
+
+<h2>Ornamental Gamakas</h2>
+
+<h3>Nokku (~w)</h3>
+
+<p>A gentle touch or glance at a note.</p>
+
+<notation id="nokku" showSource="true" caption="Nokku">
+\beatDuration(4)
+S R ~w G M P ~w D
+</notation>
+
+<h3>Raavi (~^)</h3>
+
+<p>An aahaatam (struck) gamaka, providing emphasis.</p>
+
+<notation id="raavi" showSource="true" caption="Raavi">
+\beatDuration(4)
+S ~^ R G M ~^ P
+</notation>
+
+<h3>Kandippu (~✓ or ~./ or ~.\)</h3>
+
+<p>A subtle touch on a note, like in Shankarabharanam where the note appears briefly.</p>
+
+<notation id="kandippu" showSource="true" caption="Kandippu">
+\beatDuration(4)
+S. , , , n ~./ , P , , ,
+</notation>
+
+<h3>Vaali (~~)</h3>
+
+<p>A curved or bent ornament.</p>
+
+<notation id="vaali" showSource="true" caption="Vaali">
+\beatDuration(4)
+S R ~~ G M
+</notation>
+
+<h3>Odukkal (~x)</h3>
+
+<p>A veena gamaka where the note is stretched to reach the next note effect without plucking. On voice, it sounds like an Eetra Jaaru.</p>
+
+<notation id="odukkal" showSource="true" caption="Odukkal">
+\beatDuration(4)
+S R ~x G M
+</notation>
+
+<h3>Orikkai (~γ or ~Y)</h3>
+
+<p>A complex oscillating pattern.</p>
+
+<notation id="orikkai" showSource="true" caption="Orikkai">
+\beatDuration(4)
+S ~Y R G ~Y M
+</notation>
+
+<p>Example: <code>S~~ RN N~~S.D D~~~NP</code></p>
+
+<h2>Jantai Gamakas</h2>
+
+<h3>Spuritam (~∴ or ~:-)</h3>
+
+<p>Stress on the second note of a jantai (paired notes).</p>
+
+<notation id="spuritam" showSource="true" caption="Spuritam">
+\beatDuration(4)
+[S R] ~:- [G M]
+</notation>
+
+<h3>Prathyagatam (~∵ or ~-:)</h3>
+
+<p>Similar to Spuritam but in reverse (descending order).</p>
+
+<notation id="prathyagatam" showSource="true" caption="Prathyagatam">
+\beatDuration(4)
+[M G] ~-: [R S]
+</notation>
+
+<h2>Gamaka Summary Table</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Syntax</th>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>~</code></td><td>Kampitam</td><td>Oscillation between notes</td></tr>
+    <tr><td><code>~/</code></td><td>Eetra Jaaru</td><td>Ascending slide</td></tr>
+    <tr><td><code>~\</code></td><td>Irakka Jaaru</td><td>Descending slide</td></tr>
+    <tr><td><code>~w</code></td><td>Nokku</td><td>Gentle touch</td></tr>
+    <tr><td><code>~^</code></td><td>Raavi</td><td>Struck emphasis</td></tr>
+    <tr><td><code>~./</code> or <code>~✓</code></td><td>Kandippu</td><td>Subtle touch</td></tr>
+    <tr><td><code>~~</code></td><td>Vaali</td><td>Curved ornament</td></tr>
+    <tr><td><code>~x</code></td><td>Odukkal</td><td>Stretched note (veena)</td></tr>
+    <tr><td><code>~Y</code> or <code>~γ</code></td><td>Orikkai</td><td>Complex oscillation</td></tr>
+    <tr><td><code>~:-</code> or <code>~∴</code></td><td>Spuritam</td><td>Jantai stress (ascending)</td></tr>
+    <tr><td><code>~-:</code> or <code>~∵</code></td><td>Prathyagatam</td><td>Jantai stress (descending)</td></tr>
+  </tbody>
+</table>
+
+<h2>Usage Notes</h2>
+
+<ul>
+  <li>Embellishments can appear before or after a note depending on the gamaka type</li>
+  <li>The Carnatic plugin determines whether an embellishment is valid in a given position</li>
+  <li>Embellishments work with groups and can be nested within complex phrases</li>
+  <li>Use embellishments sparingly for clarity, or abundantly for detailed notation</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/tutorials/03-embellishments/">Tutorial: Embellishments</a></li>
+  <li><a href="/notations/reference/syntax/">Syntax Reference</a></li>
+  <li><a href="/notations/examples/">Examples</a></li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

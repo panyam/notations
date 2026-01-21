@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How to customize the appearance of notation components using CSS variables">
+    <title>Styling &amp; Theming - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>API Documentation</h3>
+
+    <ul>
+        <li><a href="/notations/api/">Overview</a></li>
+        <li>
+            <a href="/notations/api/integration-guide/">Integration Guide</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/integration-guide/web-components/">Web Components</a></li>
+                <li><a href="/notations/api/integration-guide/react/">React</a></li>
+                <li><a href="/notations/api/integration-guide/vue/">Vue</a></li>
+                <li><a href="/notations/api/integration-guide/nodejs/">Node.js</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="/notations/api/playgrounds/">Playgrounds</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/playgrounds/side-by-side/">Side-by-Side Editor</a></li>
+                <li><a href="/notations/api/playgrounds/notebook/">Notebook Editor</a></li>
+            </ul>
+        </li>
+        <li><a href="/notations/api/reference/">API Reference</a></li>
+        <li><a href="/notations/api/examples/">Examples</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Styling &amp; Theming</h1>
+        
+        <p class="lead">How to customize the appearance of notation components using CSS variables</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>The Notations library uses CSS custom properties (variables) for all visual styling, making it easy to customize colors, strokes, and spacing without modifying the source code.</p>
+
+<h2>Quick Start</h2>
+
+<p>Import the default styles, then override any variables you want:</p>
+
+<h3>Via CDN (unpkg)</h3>
+
+<p>For quick prototyping or non-bundled projects, use unpkg:</p>
+
+<pre><code>&lt;!-- CSS --&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+
+&lt;!-- JavaScript (UMD bundle) --&gt;
+&lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- The library is available as window.Notations --&gt;
+&lt;script&gt;
+  const { load, Carnatic } = Notations;
+  // Use the library...
+&lt;/script&gt;
+</code></pre>
+
+<h3>Via npm/pnpm</h3>
+
+<pre><code>// Import the base styles
+import 'notations/dist/NotationView.css';
+
+// Or in HTML (from node_modules)
+&lt;link rel="stylesheet" href="node_modules/notations/dist/NotationView.css"&gt;
+</code></pre>
+
+<p>Then in your CSS, override the variables:</p>
+
+<pre><code>:root {
+  --notation-stroke-color: #2c5282;
+  --notation-text-color: #1a365d;
+}
+</code></pre>
+
+<h2>Available CSS Variables</h2>
+
+<table class="docs-table">
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Default (Light)</th>
+      <th>Default (Dark)</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--notation-stroke-color</code></td>
+      <td><code>black</code></td>
+      <td><code>#e5e5e5</code></td>
+      <td>Color for lines, bar markers, octave dots</td>
+    </tr>
+    <tr>
+      <td><code>--notation-text-color</code></td>
+      <td><code>#1a1a1a</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Color for swaras, sahityam, embellishments</td>
+    </tr>
+    <tr>
+      <td><code>--notation-fill-color</code></td>
+      <td><code>transparent</code></td>
+      <td><code>transparent</code></td>
+      <td>Fill color for shapes (e.g., jaaru curves)</td>
+    </tr>
+    <tr>
+      <td><code>--notation-border-color</code></td>
+      <td><code>gray</code></td>
+      <td><code>#555</code></td>
+      <td>Border color for the notation table</td>
+    </tr>
+    <tr>
+      <td><code>--notation-stroke-width</code></td>
+      <td><code>1</code></td>
+      <td><code>1</code></td>
+      <td>Stroke width for general elements</td>
+    </tr>
+    <tr>
+      <td><code>--notation-bar-line-width</code></td>
+      <td><code>1</code></td>
+      <td><code>1</code></td>
+      <td>Stroke width for bar lines</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Dark Mode Support</h2>
+
+<p>The library automatically supports dark mode via the <code>.dark</code> class or <code>data-theme="dark"</code> attribute on the root element:</p>
+
+<pre><code>// Toggle dark mode
+document.documentElement.classList.toggle('dark');
+
+// Or use data attribute
+document.documentElement.setAttribute('data-theme', 'dark');
+</code></pre>
+
+<p>System preference is also respected via <code>prefers-color-scheme</code> media query.</p>
+
+<h2>Scoped Overrides</h2>
+
+<p>You can apply different styles to different notation blocks on the same page using wrapper classes. CSS variables cascade, so inner elements inherit from their closest ancestor that defines the variable.</p>
+
+<h3>Example: Two Themes on One Page</h3>
+
+<p>Here are two notation blocks with different color schemes, defined using scoped CSS variables:</p>
+
+<style>
+.theme-ocean {
+  --notation-stroke-color: #0077b6;
+  --notation-text-color: #023e8a;
+  --notation-border-color: #90e0ef;
+  --notation-bg-color: #e0f7ff;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #caf0f8;
+}
+
+.theme-forest {
+  --notation-stroke-color: #2d6a4f;
+  --notation-text-color: #1b4332;
+  --notation-border-color: #95d5b2;
+  --notation-bg-color: #e8f5e9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #d8f3dc;
+}
+
+.theme-sunset {
+  --notation-stroke-color: #9d4edd;
+  --notation-text-color: #7b2cbf;
+  --notation-border-color: #e0aaff;
+  --notation-bg-color: #fff8e1;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #faf0ca;
+}
+</style>
+
+<div class="theme-ocean">
+  <h4 style="margin-top: 0; color: #023e8a;">Ocean Theme</h4>
+  <notation id="ocean-example" caption="Adi Tala in Ocean Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<div class="theme-forest">
+  <h4 style="margin-top: 0; color: #1b4332;">Forest Theme</h4>
+  <notation id="forest-example" caption="Adi Tala in Forest Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<div class="theme-sunset">
+  <h4 style="margin-top: 0; color: #7b2cbf;">Sunset Theme</h4>
+  <notation id="sunset-example" caption="Adi Tala in Sunset Theme">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  </notation>
+</div>
+
+<h3>CSS for Scoped Themes</h3>
+
+<p>The CSS to create these scoped themes:</p>
+
+<pre><code>.theme-ocean {
+  --notation-stroke-color: #0077b6;
+  --notation-text-color: #023e8a;
+  --notation-border-color: #90e0ef;
+  --notation-bg-color: #e0f7ff;
+  background-color: #caf0f8;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.theme-forest {
+  --notation-stroke-color: #2d6a4f;
+  --notation-text-color: #1b4332;
+  --notation-border-color: #95d5b2;
+  --notation-bg-color: #e8f5e9;
+  background-color: #d8f3dc;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.theme-sunset {
+  --notation-stroke-color: #9d4edd;
+  --notation-text-color: #7b2cbf;
+  --notation-border-color: #e0aaff;
+  --notation-bg-color: #fff8e1;
+  background-color: #faf0ca;
+  padding: 1rem;
+  border-radius: 8px;
+}
+</code></pre>
+
+<h3>HTML Usage</h3>
+
+<pre><code>&lt;div class="theme-ocean"&gt;
+  &lt;notation&gt;
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  &lt;/notation&gt;
+&lt;/div&gt;
+
+&lt;div class="theme-forest"&gt;
+  &lt;notation&gt;
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M , P D , N S.
+  &lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h2>Global Overrides</h2>
+
+<p>To change styles globally across your entire application:</p>
+
+<pre><code>/* In your app's CSS, after importing notations CSS */
+:root {
+  /* Custom brand colors */
+  --notation-stroke-color: #6366f1;
+  --notation-text-color: #312e81;
+
+  /* Thicker bar lines */
+  --notation-bar-line-width: 2;
+}
+
+/* Dark mode overrides */
+:root.dark {
+  --notation-stroke-color: #a5b4fc;
+  --notation-text-color: #e0e7ff;
+}
+</code></pre>
+
+<h2>Per-Component Inline Styles</h2>
+
+<p>For one-off customizations, you can also use inline styles:</p>
+
+<pre><code>&lt;div style="--notation-text-color: red;"&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h2>Integration with CSS Frameworks</h2>
+
+<h3>Tailwind CSS</h3>
+
+<p>Define your notation theme colors in <code>tailwind.config.js</code>:</p>
+
+<pre><code>// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        notation: {
+          stroke: 'var(--notation-stroke-color)',
+          text: 'var(--notation-text-color)',
+        }
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>Then use utility classes to set variables:</p>
+
+<pre><code>&lt;div class="[--notation-stroke-color:theme(colors.indigo.600)]"&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/div&gt;
+</code></pre>
+
+<h3>CSS-in-JS (Styled Components, Emotion)</h3>
+
+<pre><code>const ThemedNotation = styled.div`
+  --notation-stroke-color: ${props => props.theme.primary};
+  --notation-text-color: ${props => props.theme.text};
+`;
+
+// Usage
+&lt;ThemedNotation&gt;
+  &lt;notation&gt;...&lt;/notation&gt;
+&lt;/ThemedNotation&gt;
+</code></pre>
+
+<h2>Complete Standalone Example</h2>
+
+<p>Here's a complete HTML file that uses the library via CDN with no build tools required:</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Carnatic Notation Example&lt;/title&gt;
+
+  &lt;!-- Notation styles --&gt;
+  &lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+
+  &lt;!-- Optional: Custom theme overrides --&gt;
+  &lt;style&gt;
+    :root {
+      --notation-stroke-color: #2d6a4f;
+      --notation-text-color: #1b4332;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="notation-container"&gt;&lt;/div&gt;
+
+  &lt;!-- Notation library --&gt;
+  &lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+  &lt;script&gt;
+    const notation = `
+\\title("Sarali Varisai")
+\\cycle("|4|4|")
+\\beatDuration(4)
+
+Sw: S R G M , P D N S.
+    `;
+
+    // Parse and render
+    const container = document.getElementById('notation-container');
+    const [parsed, beatLayout, errors] = Notations.load(notation);
+
+    if (errors.length === 0) {
+      const view = new Notations.Carnatic.NotationView(container);
+      view.renderNotation(parsed, beatLayout);
+    } else {
+      console.error('Parse errors:', errors);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/api/integration-guide/">Integration Guide</a> - Framework integration</li>
+  <li><a href="/notations/api/reference/">API Reference</a> - Complete API documentation</li>
+  <li><a href="/notations/api/examples/">Examples</a> - Code examples</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Examples of commonly used talas in Carnatic music">
+    <title>Common Talas - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Examples</h3>
+
+    <ul>
+        <li><a href="/notations/examples/">All Examples</a></li>
+        <li><a href="/notations/examples/compositions/">Compositions</a></li>
+        <li><a href="/notations/examples/patterns/">Patterns</a></li>
+        <li><a href="/notations/examples/tags/">By Tag</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Common Talas</h1>
+        
+        <p class="lead">Examples of commonly used talas in Carnatic music</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This recipe demonstrates how to notate music in the most common Carnatic talas (rhythmic cycles).</p>
+
+<h2>Adi Tala (4+2+2 = 8 beats)</h2>
+
+<p>Adi tala is the most common tala, with 8 beats divided into three bars (4, 2, 2):</p>
+
+<notation id="adi-tala" showSource="true" caption="Adi Tala">
+\cycle("|4|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa
+</notation>
+
+<p>The cycle repeats every 8 beats. Notice how the notation automatically wraps based on the tala structure.</p>
+
+<h2>Rupaka Tala (2+4 = 6 beats)</h2>
+
+<p>Rupaka tala has 6 beats divided into two bars (2, 4):</p>
+
+<notation id="rupaka" showSource="true" caption="Rupaka Tala">
+\cycle("|2|4|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa
+</notation>
+
+<p>The shorter cycle creates a different feel compared to Adi tala.</p>
+
+<h2>Misra Chapu (3+2+2 = 7 beats)</h2>
+
+<p>Misra Chapu tala has 7 beats divided into three bars (3, 2, 2):</p>
+
+<notation id="misra-chapu" showSource="true" caption="Misra Chapu">
+\cycle("|3|2|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D
+Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa sa sa
+</notation>
+
+<p>The odd number of beats (7) creates an asymmetric feel.</p>
+
+<h2>Khanda Chapu (2+3 = 5 beats)</h2>
+
+<p>Khanda Chapu tala has 5 beats divided into two bars (2, 3):</p>
+
+<notation id="khanda-chapu" showSource="true" caption="Khanda Chapu">
+\cycle("|2|3|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S.
+Sh: sa ri ga ma pa dha ni sa sa sa
+</notation>
+
+<h2>Jhompa Tala (7+1+2 = 10 beats)</h2>
+
+<p>Jhompa tala has 10 beats divided into three bars (7, 1, 2):</p>
+
+<notation id="jhompa" showSource="true" caption="Jhompa Tala">
+\cycle("|7|1|2|")
+\beatDuration(4)
+Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D N S. R. S.
+</notation>
+
+<h2>Tisra Adi (3+3+3 = 9 beats)</h2>
+
+<p>When Adi tala is performed in tisram (triplet feel), each bar has 3 beats:</p>
+
+<notation id="tisra-adi" showSource="true" caption="Tisra Adi">
+\cycle("|3|3|3|")
+\beatDuration(3)
+Sw: S R G M P D N S. R.
+Sh: sa ri ga ma pa dha ni sa sa
+</notation>
+
+<h2>Tala Comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tala</th>
+      <th>Cycle Pattern</th>
+      <th>Total Beats</th>
+      <th>Common Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Adi</td><td><code>"|4|2|2|"</code></td><td>8</td><td>Most common, varnams, kritis</td></tr>
+    <tr><td>Rupaka</td><td><code>"|2|4|"</code></td><td>6</td><td>Devotional songs, light music</td></tr>
+    <tr><td>Misra Chapu</td><td><code>"|3|2|2|"</code></td><td>7</td><td>Film songs, bhajans</td></tr>
+    <tr><td>Khanda Chapu</td><td><code>"|2|3|"</code></td><td>5</td><td>Rhythmic variety, tillanas</td></tr>
+    <tr><td>Jhompa</td><td><code>"|7|1|2|"</code></td><td>10</td><td>Rare, advanced compositions</td></tr>
+    <tr><td>Tisra Adi</td><td><code>"|3|3|3|"</code></td><td>9</td><td>Tisram variations</td></tr>
+  </tbody>
+</table>
+
+<h2>Tips</h2>
+
+<ul>
+  <li>Use <code>\cycle</code> at the beginning of your notation to set the tala</li>
+  <li>The cycle automatically repeats throughout the composition</li>
+  <li>Bar divisions are shown visually in the rendered notation</li>
+  <li>Different talas create different rhythmic feels</li>
+  <li>Experiment with beat duration values to find the right density</li>
+</ul>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/reference/commands/">Commands Reference</a> - Complete cycle documentation</li>
+  <li><a href="/notations/tutorials/02-commands/">Tutorial: Commands</a> - Learn about cycle command</li>
+  <li><a href="/notations/examples/different-speeds/">Different Speeds</a> - Combine talas with speed variations</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

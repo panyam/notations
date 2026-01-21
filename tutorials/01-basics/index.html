@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn the fundamentals of the Notations DSL">
+    <title>Tutorial 01: Basics - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Tutorials</h3>
+
+    <div class="nav-group">
+        <h4>01. Basics</h4>
+        <ul>
+            <li><a href="/notations/tutorials/01-basics/">Overview</a></li>
+            <li><a href="/notations/tutorials/01-basics/#notes-swaras">Notes (Swaras)</a></li>
+            <li><a href="/notations/tutorials/01-basics/#octaves">Octaves</a></li>
+            <li><a href="/notations/tutorials/01-basics/#spaces-karvais">Spaces</a></li>
+            <li><a href="/notations/tutorials/01-basics/#groups">Groups</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>02. Commands</h4>
+        <ul>
+            <li><a href="/notations/tutorials/02-commands/">Overview</a></li>
+            <li><a href="/notations/tutorials/02-commands/#beat-duration">Beat Duration</a></li>
+            <li><a href="/notations/tutorials/02-commands/#cycle-tala">Cycle (Tala)</a></li>
+            <li><a href="/notations/tutorials/02-commands/#creating-lines">Creating Lines</a></li>
+            <li><a href="/notations/tutorials/02-commands/#creating-roles">Creating Roles</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>03. Embellishments</h4>
+        <ul>
+            <li><a href="/notations/tutorials/03-embelishments/">Overview</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#example">Example</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#pre-and-post-embellishments">Pre & Post Embellishments</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#embellishments-with-groups">With Groups</a></li>
+            <li><a href="/notations/tutorials/03-embelishments/#multiple-embellishments">Multiple Embellishments</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-group">
+        <h4>04. Advanced</h4>
+        <ul>
+            <li><a href="/notations/tutorials/04-advanced/">Overview</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#nested-groups">Nested Groups</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#custom-note-durations">Custom Durations</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#multiple-roles">Multiple Roles</a></li>
+            <li><a href="/notations/tutorials/04-advanced/#complex-rhythmic-patterns">Rhythmic Patterns</a></li>
+        </ul>
+    </div>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Tutorial 01: Basics</h1>
+        
+        <p class="lead">Learn the fundamentals of the Notations DSL</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This tutorial covers the fundamental concepts of the Notations DSL. By the end, you'll understand how to write basic Carnatic music notation.</p>
+
+<h2 id="notes-swaras">Notes (Swaras)</h2>
+
+<p>Swaras are written as text tokens without spaces:</p>
+
+<notation id="basic-swaras" showSource="true" caption="Basic Swaras">
+S R G M P D N S. S. N D P M G R S
+</notation>
+
+<p>Common swaras:</p>
+
+<ul>
+  <li><strong>S</strong> - Shadja (sa)</li>
+  <li><strong>R</strong> - Rishabha (ri)</li>
+  <li><strong>G</strong> - Gandhara (ga)</li>
+  <li><strong>M</strong> - Madhyama (ma)</li>
+  <li><strong>P</strong> - Panchama (pa)</li>
+  <li><strong>D</strong> - Dhaivata (dha)</li>
+  <li><strong>N</strong> - Nishada (ni)</li>
+</ul>
+
+<p>You can use any text as literals. The notation system doesn't assign meaning - only durations and layout matter.</p>
+
+<h2 id="octaves">Octaves</h2>
+
+<p>Add dots before or after a note (without spaces) to indicate octaves:</p>
+
+<notation id="octaves" showSource="true" caption="Octaves">
+...pa ...da ...ni ..sa ..ri ..ga ma pa pa. da. ni. sa.. ri.. ga.. ma.. pa..
+</notation>
+
+<ul>
+  <li><strong>...sa</strong> - Three octaves below</li>
+  <li><strong>.ga</strong> - One octave below</li>
+  <li><strong>ma</strong> - Middle octave (default)</li>
+  <li><strong>da.</strong> - One octave above</li>
+  <li><strong>sa..</strong> - Two octaves above</li>
+</ul>
+
+<h2 id="spaces-karvais">Spaces (Karvais)</h2>
+
+<p>Spaces indicate empty durations where the previous note continues. Use commas:</p>
+
+<notation id="spacing" showSource="true" caption="Notes with Spaces">
+, S , R , , G M; P ; 
+D N S. ,
+</notation>
+
+<p>In this example:</p>
+<ul>
+  <li>S has one beat</li>
+  <li>One beat gap (comma) - S continues</li>
+  <li>R has one beat</li>
+  <li>Two beats gap (two commas) - R continues</li>
+  <li>G has one beat</li>
+</ul>
+
+<p>Use semicolon for double space:</p>
+
+<notation id="double-space" showSource="true" caption="Double Spaces">
+S ; R ; G ,
+M ; P ; D , 
+N , ; S. ; , 
+</notation>
+
+<h2 id="groups">Groups</h2>
+
+<p>Square brackets group multiple notes into a single beat:</p>
+
+<notation id="groups" showSource="true" caption="Grouped Notes">
+S [R G [ S R G ] ] M [P D N] S.
+</notation>
+
+<p>Here, R and G share one beat, and P, D, and N share one beat.   You dont need to do the mental math.  Just write 
+it and let notations figure out where they land.</p>
+
+<h2 id="multiple-lines-roles">Multiple Lines (Roles)</h2>
+
+<p>Each role represents different content. Use role selectors with a colon (no space before colon):</p>
+
+<notation id="roles" showSource="true" caption="Swaras and Sahitya">
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<p>The Sw (swara) and Sh (sahitya) roles are aligned automatically.</p>
+
+<h2>Practice Exercise</h2>
+
+<p>Try writing a simple arohanam and avarohanam:</p>
+
+<notation id="practice" showSource="true" caption="Arohanam and Avarohanam">
+Sw: S R G M P D N S. , S. N D P M G R S
+Sh: sa ri ga ma pa dha ni sa , sa ni dha pa ma ga ri sa
+</notation>
+
+<h2>Next Steps</h2>
+
+<ul>
+  <li><a href="/notations/tutorials/02-commands/">Tutorial 02: Commands</a> - Learn about beatDuration, cycle, and layout commands</li>
+  <li><a href="/notations/reference/syntax/">Syntax Reference</a> - Complete DSL specification</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

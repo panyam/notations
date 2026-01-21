@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Using the Notations library in Vue applications">
+    <title>Vue Integration - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>API Documentation</h3>
+
+    <ul>
+        <li><a href="/notations/api/">Overview</a></li>
+        <li>
+            <a href="/notations/api/integration-guide/">Integration Guide</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/integration-guide/web-components/">Web Components</a></li>
+                <li><a href="/notations/api/integration-guide/react/">React</a></li>
+                <li><a href="/notations/api/integration-guide/vue/">Vue</a></li>
+                <li><a href="/notations/api/integration-guide/nodejs/">Node.js</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="/notations/api/playgrounds/">Playgrounds</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/playgrounds/side-by-side/">Side-by-Side Editor</a></li>
+                <li><a href="/notations/api/playgrounds/notebook/">Notebook Editor</a></li>
+            </ul>
+        </li>
+        <li><a href="/notations/api/reference/">API Reference</a></li>
+        <li><a href="/notations/api/examples/">Examples</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Vue Integration</h1>
+        
+        <p class="lead">Using the Notations library in Vue applications</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This guide shows how to create Vue components for rendering Carnatic music notation.</p>
+
+<h2>Installation</h2>
+
+<pre><code>npm install notations</code></pre>
+
+<h2>Basic NotationViewer Component</h2>
+
+<p>Create a reusable Vue component (Composition API):</p>
+
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Basic NotationViewer Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="vue-basic-source">Source</button>
+    <button class="tab-btn" data-tab="vue-basic-output">Output</button>
+  </div>
+  <div id="vue-basic-source" class="tab-content active">
+<pre><code>&lt;!-- NotationViewer.vue --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+const props = defineProps({
+  source: {
+    type: String,
+    required: true
+  },
+  className: {
+    type: String,
+    default: ''
+  }
+});
+
+const emit = defineEmits(['error']);
+
+const container = ref(null);
+let view = null;
+
+function renderNotation() {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(props.source);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  } else {
+    emit('error', errors);
+  }
+}
+
+onMounted(() =&gt; {
+  renderNotation();
+});
+
+watch(() =&gt; props.source, () =&gt; {
+  renderNotation();
+});
+&lt;/script&gt;</code></pre>
+  </div>
+  <div id="vue-basic-output" class="tab-content">
+    <notation caption="Vue Component Output">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+    </notation>
+  </div>
+</div>
+
+<h2>Component with Source Display and Editing</h2>
+
+<p>A more complete component that shows source code and allows editing:</p>
+
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Editable NotationBlock Component</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="vue-edit-source">Source</button>
+    <button class="tab-btn" data-tab="vue-edit-output">Output</button>
+  </div>
+  <div id="vue-edit-source" class="tab-content active">
+<pre><code>&lt;!-- NotationBlock.vue --&gt;
+&lt;template&gt;
+  &lt;div class="notation-block"&gt;
+    &lt;div v-if="showSource" class="notation-source"&gt;
+      &lt;div v-if="caption" class="notation-caption"&gt;&#123;&#123; caption &#125;&#125;&lt;/div&gt;
+
+      &lt;template v-if="isEditing"&gt;
+        &lt;textarea
+          v-model="editedSource"
+          class="notation-textarea"
+        &gt;&lt;/textarea&gt;
+        &lt;div class="notation-actions"&gt;
+          &lt;button @click="applyEdit"&gt;Apply&lt;/button&gt;
+          &lt;button @click="cancelEdit"&gt;Cancel&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/template&gt;
+
+      &lt;template v-else&gt;
+        &lt;pre&gt;&lt;code&gt;&#123;&#123; currentSource &#125;&#125;&lt;/code&gt;&lt;/pre&gt;
+        &lt;div class="notation-actions"&gt;
+          &lt;button @click="copyToClipboard"&gt;Copy&lt;/button&gt;
+          &lt;button @click="startEdit"&gt;Edit&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/template&gt;
+    &lt;/div&gt;
+
+    &lt;div class="notation-output"&gt;
+      &lt;strong&gt;Output:&lt;/strong&gt;
+      &lt;div ref="container"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+const props = defineProps({
+  source: { type: String, required: true },
+  caption: { type: String, default: '' },
+  showSource: { type: Boolean, default: false }
+});
+
+const container = ref(null);
+const isEditing = ref(false);
+const currentSource = ref(props.source);
+const editedSource = ref(props.source);
+let view = null;
+
+function renderNotation() {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(currentSource.value);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  }
+}
+
+function startEdit() {
+  editedSource.value = currentSource.value;
+  isEditing.value = true;
+}
+
+function applyEdit() {
+  currentSource.value = editedSource.value;
+  isEditing.value = false;
+}
+
+function cancelEdit() {
+  editedSource.value = currentSource.value;
+  isEditing.value = false;
+}
+
+async function copyToClipboard() {
+  await navigator.clipboard.writeText(currentSource.value);
+}
+
+onMounted(() =&gt; renderNotation());
+watch(currentSource, () =&gt; renderNotation());
+&lt;/script&gt;</code></pre>
+  </div>
+  <div id="vue-edit-output" class="tab-content">
+    <notation showSource="true" caption="Ninnu Kori Varnam">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\line("Pallavi")
+Sw: S , R , G , M , P , D , N , S. ,
+Sh: ni , nnu , ko , ri , va , ra , nam , ma ,
+    </notation>
+  </div>
+</div>
+
+<h2>Options API Version</h2>
+
+<pre><code>&lt;!-- NotationViewer.vue (Options API) --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import * as N from 'notations';
+
+export default {
+  name: 'NotationViewer',
+  props: {
+    source: {
+      type: String,
+      required: true
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['error'],
+  data() {
+    return {
+      view: null
+    };
+  },
+  mounted() {
+    this.initView();
+    this.renderNotation();
+  },
+  watch: {
+    source() {
+      this.renderNotation();
+    }
+  },
+  methods: {
+    initView() {
+      const table = document.createElement('table');
+      table.classList.add('notation-table');
+      this.$refs.container.appendChild(table);
+      this.view = new N.Carnatic.NotationView(table);
+    },
+    renderNotation() {
+      const [notation, beatLayout, errors] = N.load(this.source);
+
+      if (errors.length === 0) {
+        this.view.tableElement.innerHTML = '';
+        this.view.renderNotation(notation, beatLayout);
+      } else {
+        this.$emit('error', errors);
+      }
+    }
+  }
+};
+&lt;/script&gt;</code></pre>
+
+<h2>TypeScript with Vue 3</h2>
+
+<pre><code>&lt;!-- NotationViewer.vue --&gt;
+&lt;template&gt;
+  &lt;div ref="container" :class="className"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup lang="ts"&gt;
+import { ref, onMounted, watch } from 'vue';
+import * as N from 'notations';
+
+interface Props {
+  source: string;
+  className?: string;
+}
+
+const props = withDefaults(defineProps&lt;Props&gt;(), {
+  className: ''
+});
+
+const emit = defineEmits&lt;{
+  (e: 'error', errors: N.ParseError[]): void;
+}&gt;();
+
+const container = ref&lt;HTMLDivElement | null&gt;(null);
+let view: N.Carnatic.NotationView | null = null;
+
+function renderNotation(): void {
+  if (!container.value) return;
+
+  if (!view) {
+    const table = document.createElement('table');
+    table.classList.add('notation-table');
+    container.value.appendChild(table);
+    view = new N.Carnatic.NotationView(table);
+  }
+
+  const [notation, beatLayout, errors] = N.load(props.source);
+
+  if (errors.length === 0) {
+    view.tableElement.innerHTML = '';
+    view.renderNotation(notation, beatLayout);
+  } else {
+    emit('error', errors);
+  }
+}
+
+onMounted(() =&gt; renderNotation());
+watch(() =&gt; props.source, () =&gt; renderNotation());
+&lt;/script&gt;</code></pre>
+
+<h2>Error Handling</h2>
+
+<pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;NotationViewer :source="source" @error="handleErrors" /&gt;
+
+    &lt;div v-if="errors.length" class="error-display"&gt;
+      &lt;h4&gt;Parsing Errors:&lt;/h4&gt;
+      &lt;ul&gt;
+        &lt;li v-for="(err, i) in errors" :key="i"&gt;
+          Line &#123;&#123; err.line &#125;&#125;, Col &#123;&#123; err.column &#125;&#125;: &#123;&#123; err.message &#125;&#125;
+        &lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref } from 'vue';
+import NotationViewer from './NotationViewer.vue';
+
+const source = ref('...');
+const errors = ref([]);
+
+function handleErrors(errs) {
+  errors.value = errs;
+}
+&lt;/script&gt;</code></pre>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/api/integration-guide/">Integration Guide Overview</a></li>
+  <li><a href="/notations/api/integration-guide/web-components/">Web Components</a></li>
+  <li><a href="/notations/api/integration-guide/react/">React Integration</a></li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive notebook-style notation editor with cell-based editing">
+    <title>Notebook Editor Playground - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="playground-page">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    
+    <main class="main-content-full">
+        
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Notebook Editor Playground</h1>
+        
+        <p class="lead">Interactive notebook-style notation editor with cell-based editing</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<div id="notebook-playground-container" class="notebook-playground-container">
+    <div class="notebook-toolbar">
+        <div class="toolbar-left">
+            <label>
+                Sample:
+                <select id="sample-select" class="sample-select">
+                    <option value="varnam">Varnam Structure</option>
+                </select>
+            </label>
+        </div>
+        <div class="toolbar-right">
+            <button id="view-all-btn" class="btn btn-primary">View All</button>
+            <span class="toolbar-hint">Click on cells to edit. Drag to reorder.</span>
+        </div>
+    </div>
+
+    <div class="notebook-main">
+        <div id="notebook-container" class="notebook-container"></div>
+
+        <div class="console-panel">
+            <div class="console-header">
+                <span>Console</span>
+                <button id="clear-console-btn" class="btn btn-sm">Clear</button>
+            </div>
+            <div id="console-output" class="console-output"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.playground-page {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.notebook-playground-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.main-content-full {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.notebook-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .notebook-toolbar {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toolbar-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #757575);
+}
+
+.dark .toolbar-hint {
+    color: var(--color-text-muted-dark, #9e9e9e);
+}
+
+.sample-select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    font-size: 0.875rem;
+}
+
+.dark .sample-select {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.notebook-container {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+    background: var(--color-bg, #fff);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dark .notebook-container {
+    background: var(--color-bg-dark, #121212);
+}
+
+ 
+.notebook-cell {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    background: var(--color-bg, #fff);
+    overflow: visible;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.dark .notebook-cell {
+    background: var(--color-bg-dark, #1e1e1e);
+    border-color: var(--color-border-dark, #333);
+}
+
+.notebook-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .notebook-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.notebook-cell-editing {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-cell.dragging {
+    opacity: 0.5;
+}
+
+.notebook-cell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-secondary, #f8f9fa);
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .notebook-cell-header {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.notebook-cell-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notebook-drag-handle {
+    cursor: grab;
+    color: var(--color-text-muted, #999);
+    font-size: 1rem;
+    user-select: none;
+    padding: 0 0.25rem;
+}
+
+.notebook-drag-handle:hover {
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-drag-handle:hover {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-cell-name {
+    font-weight: 500;
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-cell-name {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-cell-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.notebook-btn {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #666);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.dark .notebook-btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #ccc);
+}
+
+.notebook-btn:hover {
+    background: var(--color-bg-hover, #f0f0f0);
+}
+
+.dark .notebook-btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.notebook-edit-btn:hover {
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.notebook-delete-btn:hover {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.notebook-apply-btn {
+    background: #4caf50;
+    border-color: #4caf50;
+    color: white;
+}
+
+.notebook-apply-btn:hover {
+    background: #43a047;
+}
+
+.notebook-cancel-btn:hover {
+    border-color: #9e9e9e;
+}
+
+.notebook-cell-content {
+    padding: 0.75rem;
+}
+
+.notebook-cell-preview {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+ 
+.notebook-cell-preview .notation-container {
+    min-height: 40px;
+}
+
+.notebook-cell-preview svg,
+.notebook-cell-preview .lineRootSVG {
+    overflow: visible;
+}
+
+.notebook-cell-preview .notationsContentRootTable {
+    width: 100%;
+}
+
+ 
+.notebook-cell-preview .lineContentCell {
+    overflow: visible;
+    height: auto;
+}
+
+.notebook-cell-error {
+    color: #f44336;
+    padding: 0.5rem;
+    background: #ffebee;
+    border-radius: 4px;
+}
+
+.dark .notebook-cell-error {
+    background: #4a1515;
+}
+
+.notebook-name-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-name-input {
+    background: var(--color-bg-dark, #2d2d2d);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-edit-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .notebook-edit-textarea {
+    background: var(--color-bg-dark, #2d2d2d);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.notebook-edit-textarea:focus,
+.notebook-name-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.notebook-add-cell-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-text-muted, #999);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.notebook-add-cell-btn:hover {
+    border-color: #2196f3;
+    color: #2196f3;
+    background: rgba(33, 150, 243, 0.05);
+}
+
+.dark .notebook-add-cell-btn {
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-muted-dark, #666);
+}
+
+.dark .notebook-add-cell-btn:hover {
+    border-color: #64b5f6;
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+}
+
+ 
+.notebook-cell .notation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.notebook-cell .notation-table td {
+    padding: 0.25rem 0.5rem;
+    vertical-align: top;
+}
+
+.console-panel {
+    width: 300px;
+    border-left: 1px solid var(--color-border, #e0e0e0);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .console-panel {
+    background: var(--color-bg-secondary-dark, #1a1a1a);
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.dark .console-header {
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-output {
+    flex: 1;
+    overflow: auto;
+    padding: 0.5rem;
+    font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    font-size: 0.75rem;
+}
+
+.console-line {
+    padding: 0.125rem 0;
+    border-bottom: 1px solid var(--color-border, #f0f0f0);
+}
+
+.dark .console-line {
+    border-color: var(--color-border-dark, #333);
+}
+
+.console-info {
+    color: var(--color-text, #424242);
+}
+
+.dark .console-info {
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.console-error {
+    color: #f44336;
+}
+
+.btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+
+ 
+@media (max-width: 768px) {
+    .notebook-main {
+        flex-direction: column;
+    }
+
+    .console-panel {
+        width: 100%;
+        height: 200px;
+        border-left: none;
+        border-top: 1px solid var(--color-border, #e0e0e0);
+    }
+
+    .dark .console-panel {
+        border-top-color: var(--color-border-dark, #333);
+    }
+}
+</style>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+    </main>
+    
+
+    
+    
+
+    
+    
+    <script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script>
+<script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script>
+<script defer="defer" src="/notations/static/js/gen/747.d5395923d81283f4312f.js"></script>
+<script defer="defer" src="/notations/static/js/gen/NotebookPlayground.bc46b0cf80bc57103f40.js"></script>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive side-by-side notation editor with resizable panels">
+    <title>Side-by-Side Editor Playground - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="playground-page">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    
+    <main class="main-content-full">
+        
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Side-by-Side Editor Playground</h1>
+        
+        <p class="lead">Interactive side-by-side notation editor with resizable panels</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<div id="playground-container" class="playground-container">
+    
+    <div id="playground-toolbar" class="playground-toolbar">
+        <select id="sample-select" class="sample-select">
+            <option value="basic-scale">Basic Scale</option>
+        </select>
+        <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
+        <button id="reset-layout-btn" class="btn btn-sm" title="Reset to default layout">Reset Layout</button>
+    </div>
+    
+    <div id="dockview-container" class="dockview-container"></div>
+</div>
+
+<style>
+.playground-page {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.playground-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.playground-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-secondary, #f8f9fa);
+    flex-shrink: 0;
+}
+
+.dark .playground-toolbar {
+    background: var(--color-bg-secondary-dark, #252525);
+    border-color: var(--color-border-dark, #333);
+}
+
+.dockview-container {
+    flex: 1;
+    min-height: 0;
+     
+    height: calc(100% - 41px);
+}
+
+.main-content-full {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.sample-select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    font-size: 0.875rem;
+}
+
+.dark .sample-select {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #555);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.playground-editor {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0.75rem;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .playground-editor {
+    background: var(--color-bg-dark, #1e1e1e);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+ 
+.dvp-panel {
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+}
+
+.dark .dvp-panel {
+    background: var(--color-bg-dark, #1e1e1e);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dvp-console-header {
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .dvp-console-header {
+    border-color: var(--color-border-dark, #333);
+}
+
+.dvp-console-clear-btn {
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+    border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.dark .dvp-console-clear-btn {
+    background: var(--color-bg-dark, #333);
+    color: var(--color-text-dark, #e0e0e0);
+    border-color: var(--color-border-dark, #555);
+}
+
+.dvp-console-clear-btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.dark .dvp-console-clear-btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+</style>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+    </main>
+    
+
+    
+    
+
+    
+    
+    <script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script>
+<script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script>
+<script defer="defer" src="/notations/static/js/gen/366.0811d499cdf28c431982.js"></script>
+<script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script>
+<script defer="defer" src="/notations/static/js/gen/747.d5395923d81283f4312f.js"></script>
+<script defer="defer" src="/notations/static/js/gen/SideBySidePlayground.381feabb9be92f031357.js"></script>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

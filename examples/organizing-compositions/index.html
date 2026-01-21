@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Using lines, margins, and layouts effectively for readable notation">
+    <title>Organizing Long Compositions - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Examples</h3>
+
+    <ul>
+        <li><a href="/notations/examples/">All Examples</a></li>
+        <li><a href="/notations/examples/compositions/">Compositions</a></li>
+        <li><a href="/notations/examples/patterns/">Patterns</a></li>
+        <li><a href="/notations/examples/tags/">By Tag</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Organizing Long Compositions</h1>
+        
+        <p class="lead">Using lines, margins, and layouts effectively for readable notation</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>When notating long compositions like kritis, varnams, or RTP, proper organization is essential for readability. This guide shows best practices for structuring your notation.</p>
+
+<h2>Using Lines to Separate Sections</h2>
+
+<p>Use <code>\line()</code> to clearly mark different sections:</p>
+
+<notation id="lines-basic" showSource="true" caption="Organizing with Lines">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+
+\line("Anupallavi")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+
+\line("Charanam")
+Sw: P D S. R. , S. D P M , G M P D , S. ___ |
+Sh: pa dha sa ri , sa dha pa ma , ga ma pa dha , sa ___ ||
+</notation>
+
+<h2>Separating Swaras and Sahitya</h2>
+
+<p>Keep swaras and sahitya clearly aligned and separated:</p>
+
+<notation id="swara-sahitya" showSource="true" caption="Swara and Sahitya Alignment">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi - Swaras")
+Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+
+\line("Pallavi - Sahitya")
+Sh: nin nu ko ri , va ra da nun , nu ko ri , va ___ ___ ___ ||
+</notation>
+
+<h2>Multi-Speed Sections</h2>
+
+<p>Organize speed variations with clear labels:</p>
+
+<notation id="multi-speed" showSource="true" caption="Organizing Multiple Speeds">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Muktayi Swaram - 1st Speed")
+S R G M , P D N S. , ___ ___ , ___ ___ |
+
+\line("Muktayi Swaram - 2nd Speed")
+SR GM PD NS. , R.S. DP MG RS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+
+\line("Muktayi Swaram - 3rd Speed")
+SRG GMP PDN NS.R. , R.S.D DPN PMG GRS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+</notation>
+
+<h2>Long Kriti Structure</h2>
+
+<p>Example of organizing a complete kriti:</p>
+
+<notation id="kriti-structure" showSource="true" caption="Complete Kriti Organization">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("==== PALLAVI ====")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+Sh: bro va bha ra ma , moo la ra ma chan , dra ___ , ___ ___ ||
+
+\line("==== ANUPALLAVI ====")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+Sh: de va de va , ja ya ja ya , ___ ___ , ___ ___ ||
+
+\line("==== CHARANAM 1 ====")
+Sw: P D S. R. , S. D P M , G R S ___ , ___ ___ ___ ___ |
+Sh: ka ru na ni dhi , ra ma bha dra , nin ne ___ , ___ ___ ___ ___ ||
+
+\line("==== CHARANAM 2 ====")
+Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+Sh: sa da sa dhi ya , tya ga ra ja , vi nu ta , ra ___ ___ ___ ||
+</notation>
+
+<h2>Using Comments for Annotations</h2>
+
+<p>Add performance notes or reminders:</p>
+
+<notation id="comments" showSource="true" caption="Using Comments">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi - Slow tempo, emphasize gamakas")
+Sw: S (R~G) M P , (P~D) N S. , ___ ___ , ___ ___ |
+Sh: nin nu ko ri , va ra da , ___ ___ , ___ ___ ||
+
+\line("Repeat pallavi 2x before anupallavi")
+</notation>
+
+<h2>Organizing Repetitions</h2>
+
+<p>Clearly mark repeated sections:</p>
+
+<notation id="repetitions" showSource="true" caption="Marking Repetitions">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Pallavi [Repeat 2x]")
+Sw: S R G M , P D N S. , ___ ___ , ___ ___ ||
+
+\line("Anupallavi")
+Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ ||
+
+\line("[Return to Pallavi]")
+</notation>
+
+<h2>Breaking Long Phrases</h2>
+
+<p>Use multiple lines for very long swara patterns:</p>
+
+<notation id="long-phrases" showSource="true" caption="Breaking Long Swara Patterns">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Extended Swaram - Part 1")
+SR GM PD NS. , R.S. DP MG RS , SR GM PD NS. , R.S. DP MG RS |
+
+\line("Extended Swaram - Part 2")
+S.R. G.M. P.D. N.S.. , R..S.. D..N.. P..D.. M..P.. , G..M.. R..G.. S..R.. ___ , ___ ___ ___ ___ |
+</notation>
+
+<h2>Organizing by Tala Avartanams</h2>
+
+<p>Mark each tala cycle clearly:</p>
+
+<notation id="avartanams" showSource="true" caption="Organizing by Avartanams">
+\cycle("|4|2|2|")
+\beatDuration(4)
+
+\line("Avartanam 1")
+S R G M , P D N S. , ___ ___ , ___ ___ |
+
+\line("Avartanam 2")
+S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+
+\line("Avartanam 3")
+S.. D.. N.. S.. , P. M. G. R. , S. ___ ___ , ___ ___ ___ ||
+</notation>
+
+<h2>Best Practices</h2>
+
+<ul>
+  <li><strong>Consistent naming</strong> - Use clear, consistent section names (Pallavi, Anupallavi, Charanam)</li>
+  <li><strong>Visual separation</strong> - Use <code>\line()</code> liberally to separate sections</li>
+  <li><strong>Alignment</strong> - Keep swaras and sahitya aligned on the same beats</li>
+  <li><strong>Speed markers</strong> - Always label speed changes (1st, 2nd, 3rd speed)</li>
+  <li><strong>Tala markers</strong> - Use <code>|</code> and <code>||</code> to mark avartanam boundaries</li>
+  <li><strong>Whitespace</strong> - Don't be afraid of empty space for readability</li>
+  <li><strong>Comments</strong> - Add performance notes where helpful</li>
+  <li><strong>Logical grouping</strong> - Group related phrases together</li>
+</ul>
+
+<h2>Template for a Complete Composition</h2>
+
+<notation id="template" showSource="true" caption="Composition Template">
+\cycle("|4|2|2|")
+\beatDuration(4)
+\accidentals()  // Add accidentals if needed
+
+\line("==== PALLAVI ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== ANUPALLAVI ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== CHARANAM 1 ====")
+Sw: // Add swaras
+Sh: // Add sahitya
+
+\line("==== SWARAM SECTION ====")
+\line("1st Speed")
+// Add swarams
+
+\line("2nd Speed")
+// Add swarams
+</notation>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/examples/basic-varnam/">Basic Varnam</a> - Complete varnam structure example</li>
+  <li><a href="/notations/examples/ragam-tanam-pallavi/">RTP</a> - Organizing complex RTP structures</li>
+  <li><a href="/notations/reference/commands/">Commands Reference</a> - All available commands</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

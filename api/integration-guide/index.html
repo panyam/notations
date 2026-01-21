@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How to integrate the Notations library into your application">
+    <title>Integration Guide - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>API Documentation</h3>
+
+    <ul>
+        <li><a href="/notations/api/">Overview</a></li>
+        <li>
+            <a href="/notations/api/integration-guide/">Integration Guide</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/integration-guide/web-components/">Web Components</a></li>
+                <li><a href="/notations/api/integration-guide/react/">React</a></li>
+                <li><a href="/notations/api/integration-guide/vue/">Vue</a></li>
+                <li><a href="/notations/api/integration-guide/nodejs/">Node.js</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="/notations/api/playgrounds/">Playgrounds</a>
+            <ul class="nav-nested">
+                <li><a href="/notations/api/playgrounds/side-by-side/">Side-by-Side Editor</a></li>
+                <li><a href="/notations/api/playgrounds/notebook/">Notebook Editor</a></li>
+            </ul>
+        </li>
+        <li><a href="/notations/api/reference/">API Reference</a></li>
+        <li><a href="/notations/api/examples/">Examples</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Integration Guide</h1>
+        
+        <p class="lead">How to integrate the Notations library into your application</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This guide shows you how to integrate the Notations library into various platforms and frameworks.</p>
+
+<h2>Choose Your Integration</h2>
+
+<div class="integration-cards">
+  <a href="#cdn" class="integration-card">
+    <h3>CDN / Vanilla HTML</h3>
+    <p>No build tools required. Just add script tags and start using notation in any HTML page.</p>
+  </a>
+
+  <a href="/notations/api/integration-guide/web-components/" class="integration-card">
+    <h3>Web Components</h3>
+    <p>Use the <code>notations-web</code> package for easy integration with any web application. Works with vanilla JS, jQuery, or any framework.</p>
+  </a>
+
+  <a href="/notations/api/integration-guide/react/" class="integration-card">
+    <h3>React</h3>
+    <p>Create React components for notation rendering with hooks and state management.</p>
+  </a>
+
+  <a href="/notations/api/integration-guide/vue/" class="integration-card">
+    <h3>Vue</h3>
+    <p>Build Vue components with reactive notation rendering and watchers.</p>
+  </a>
+
+  <a href="/notations/api/integration-guide/nodejs/" class="integration-card">
+    <h3>Node.js</h3>
+    <p>Server-side parsing and processing of notation data.</p>
+  </a>
+</div>
+
+<h2 id="cdn">CDN / Vanilla HTML</h2>
+
+<p>The simplest way to add notation to any webpage - no build tools, npm, or bundlers required. Just add two script/link tags and you're ready to go.</p>
+
+<div class="tabbed-example">
+  <div class="tabbed-example-caption">Complete Standalone HTML Example</div>
+  <div class="tabbed-example-header">
+    <button class="tab-btn active" data-tab="cdn-basic-source">Source</button>
+    <button class="tab-btn" data-tab="cdn-basic-output">Output</button>
+  </div>
+  <div id="cdn-basic-source" class="tab-content active">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Carnatic Notation&lt;/title&gt;
+
+  &lt;!-- Notation styles --&gt;
+  &lt;link rel="stylesheet" href="https://unpkg.com/notations/dist/NotationView.min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="notation-container"&gt;&lt;/div&gt;
+
+  &lt;!-- Notation library --&gt;
+  &lt;script src="https://unpkg.com/notations/dist/notations.umd.min.js"&gt;&lt;/script&gt;
+
+  &lt;script&gt;
+    const notation = `
+\\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+    `;
+
+    const container = document.getElementById('notation-container');
+    const [parsed, beatLayout, errors] = Notations.load(notation);
+
+    if (errors.length === 0) {
+      const view = new Notations.Carnatic.NotationView(container);
+      view.renderNotation(parsed, beatLayout);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+  <div id="cdn-basic-output" class="tab-content">
+    <notation caption="CDN Example Output">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+    </notation>
+  </div>
+</div>
+
+<h3>CDN URLs</h3>
+
+<table class="docs-table">
+  <thead>
+    <tr>
+      <th>Asset</th>
+      <th>URL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>JavaScript (minified)</td>
+      <td><code>https://unpkg.com/notations/dist/notations.umd.min.js</code></td>
+    </tr>
+    <tr>
+      <td>JavaScript (development)</td>
+      <td><code>https://unpkg.com/notations/dist/notations.umd.js</code></td>
+    </tr>
+    <tr>
+      <td>CSS (minified)</td>
+      <td><code>https://unpkg.com/notations/dist/NotationView.min.css</code></td>
+    </tr>
+    <tr>
+      <td>CSS (development)</td>
+      <td><code>https://unpkg.com/notations/dist/NotationView.css</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The library exposes a global <code>Notations</code> object with all exports:</p>
+
+<pre><code>// Available on window.Notations
+const { load, Carnatic, Notation, Atom } = Notations;
+
+// Parse notation
+const [notation, beatLayout, errors] = Notations.load(source);
+
+// Render
+const view = new Notations.Carnatic.NotationView(container);
+view.renderNotation(notation, beatLayout);</code></pre>
+
+<h2>Quick Start (npm)</h2>
+
+<p>For projects using npm/pnpm with a bundler:</p>
+
+<pre><code>npm install notations notations-web</code></pre>
+
+<pre><code>import { NotationBlock } from "notations-web";
+import * as N from "notations";
+
+// Create a viewer factory
+function createViewer(container) {
+  return new N.Carnatic.NotationView(container);
+}
+
+// Process all &lt;notation&gt; tags on the page
+document.querySelectorAll("notation").forEach(elem => {
+  new NotationBlock(elem, { createViewer });
+});
+</code></pre>
+
+<p>Then add notation in your HTML:</p>
+
+<pre><code>&lt;notation showSource="true"&gt;
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+&lt;/notation&gt;</code></pre>
+
+<p>Which renders as:</p>
+
+<notation showSource="true" caption="Quick Start Example">
+\cycle("|4|2|2|")
+Sw: S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/api/">API Documentation</a> - Core API reference</li>
+  <li><a href="/notations/api/examples/">Examples</a> - More code examples</li>
+  <li><a href="/notations/getting-started/">Getting Started</a> - Installation and setup</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

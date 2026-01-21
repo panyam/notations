@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visual regression test cases for notation rendering">
+    <title>Visual Sanity Tests - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+                <div class="section-nav-content">
+                    <h3>Getting Started</h3>
+                    <ul>
+                        <li><a href="/notations/getting-started/">Quick Start</a></li>
+                        <li><a href="/notations/getting-started/installation/">Installation</a></li>
+                    </ul>
+
+                    <h3>Learn</h3>
+                    <ul>
+                        <li><a href="/notations/tutorials/">Tutorials</a></li>
+                        <li><a href="/notations/reference/">Reference</a></li>
+                        <li><a href="/notations/examples/">Examples</a></li>
+                    </ul>
+
+                    <h3>Developers</h3>
+                    <ul>
+                        <li><a href="/notations/api/">API Documentation</a></li>
+                        <li><a href="/notations/contributing/">Contributing</a></li>
+                    </ul>
+                </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Visual Sanity Tests</h1>
+        
+        <p class="lead">Visual regression test cases for notation rendering</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>This page displays notation test cases with their rendered output to help catch visual regressions and document expected rendering behavior. Use the "Copy" button to copy rendered output for updating baseline expectations.</p>
+
+
+
+
+
+<div class="visual-test-category">
+  <h2>Basic Notation (5)</h2>
+  <div class="visual-test-grid">
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-basic-notes">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Simple Notes</div>
+        <div class="visual-test-card-id">basic-notes</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Basic swara sequence with octave marker</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: S R G M P D N S.</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-basic-notes">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow15"><td class="lineAnnotationCell" id="lineAnnotation15"></td><td class="lineContentCell" id="lineContent15" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="545.96875" height="34"><g class="lineRoot" id="lineRoot15" transform="translate(14, 20)"><g class="beatView role_sw" beatId="0" id="0" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="17" class="atomViewRootGroup" id="atomViewRootGroup17" transform="translate(0,0)"><text atomid="17" class="atomViewTextRoot" id="atomViewTextRoot17" x="0"><tspan atomid="17" id="atomGlyph17">S</tspan></text></g></g><g class="beatView role_sw" beatId="1" id="1" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="18" class="atomViewRootGroup" id="atomViewRootGroup18" transform="translate(0,0)"><text atomid="18" class="atomViewTextRoot" id="atomViewTextRoot18" x="0"><tspan atomid="18" id="atomGlyph18">R</tspan></text></g></g><g class="beatView role_sw" beatId="2" id="2" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g atomid="19" class="atomViewRootGroup" id="atomViewRootGroup19" transform="translate(0,0)"><text atomid="19" class="atomViewTextRoot" id="atomViewTextRoot19" x="0"><tspan atomid="19" id="atomGlyph19">G</tspan></text></g></g><g class="beatView role_sw" beatId="3" id="3" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(211.671875,0)"><g atomid="20" class="atomViewRootGroup" id="atomViewRootGroup20" transform="translate(0,0)"><text atomid="20" class="atomViewTextRoot" id="atomViewTextRoot20" x="0"><tspan atomid="20" id="atomGlyph20">M</tspan></text></g></g><g class="beatView role_sw" beatId="4" id="4" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(285.34375,0)"><g atomid="21" class="atomViewRootGroup" id="atomViewRootGroup21" transform="translate(0,0)"><text atomid="21" class="atomViewTextRoot" id="atomViewTextRoot21" x="0"><tspan atomid="21" id="atomGlyph21">P</tspan></text></g></g><g class="beatView role_sw" beatId="5" id="5" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(355.203125,0)"><g atomid="22" class="atomViewRootGroup" id="atomViewRootGroup22" transform="translate(0,0)"><text atomid="22" class="atomViewTextRoot" id="atomViewTextRoot22" x="0"><tspan atomid="22" id="atomGlyph22">D</tspan></text></g></g><g class="beatView role_sw" beatId="6" id="6" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(426.515625,0)"><g atomid="23" class="atomViewRootGroup" id="atomViewRootGroup23" transform="translate(0,0)"><text atomid="23" class="atomViewTextRoot" id="atomViewTextRoot23" x="0"><tspan atomid="23" id="atomGlyph23">N</tspan></text></g></g><g class="beatView role_sw" beatId="7" id="7" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(498.078125,0)"><g atomid="10" class="atomViewRootGroup" id="atomViewRootGroup10" transform="translate(0,0)"><text atomid="10" class="atomViewTextRoot" id="atomViewTextRoot10" x="0"><tspan atomid="10" id="atomGlyph10">S</tspan></text><g width="2" height="2" source="atom10" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="245.34375" x2="245.34375" y1="-15" y2="3"></line><line class="bar-end-line" x1="386.515625" x2="386.515625" y1="-15" y2="3"></line><line class="bar-end-line" x1="527.96875" x2="527.96875" y1="-16" y2="3"></line><line class="bar-end-line" x1="531.96875" x2="531.96875" y1="-16" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-basic-notes" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-basic-notes">
+            <notation id="render-basic-notes">Sw: S R G M P D N S.</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-octaves">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Octaves</div>
+        <div class="visual-test-card-id">octaves</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Notes across lower, middle, and upper octaves</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: .N .D S R G M P D N S. R.</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-octaves">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow38"><td class="lineAnnotationCell" id="lineAnnotation38"></td><td class="lineContentCell" id="lineContent38" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="547.640625" height="66"><g class="lineRoot" id="lineRoot38" transform="translate(14, 19)"><g class="beatView role_sw" beatId="8" id="8" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="24" class="atomViewRootGroup" id="atomViewRootGroup24" transform="translate(0,0)"><text atomid="24" class="atomViewTextRoot" id="atomViewTextRoot24" x="0"><tspan atomid="24" id="atomGlyph24">N</tspan></text><g width="2" height="2" source="atom24" transform="translate(4.78125,7)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><g class="beatView role_sw" beatId="9" id="9" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(71.5625,0)"><g atomid="25" class="atomViewRootGroup" id="atomViewRootGroup25" transform="translate(0,0)"><text atomid="25" class="atomViewTextRoot" id="atomViewTextRoot25" x="0"><tspan atomid="25" id="atomGlyph25">D</tspan></text><g width="2" height="2" source="atom25" transform="translate(4.65625,7)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><g class="beatView role_sw" beatId="10" id="10" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(142.875,0)"><g atomid="40" class="atomViewRootGroup" id="atomViewRootGroup40" transform="translate(0,0)"><text atomid="40" class="atomViewTextRoot" id="atomViewTextRoot40" x="0"><tspan atomid="40" id="atomGlyph40">S</tspan></text></g></g><g class="beatView role_sw" beatId="11" id="11" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(213.015625,0)"><g atomid="41" class="atomViewRootGroup" id="atomViewRootGroup41" transform="translate(0,0)"><text atomid="41" class="atomViewTextRoot" id="atomViewTextRoot41" x="0"><tspan atomid="41" id="atomGlyph41">R</tspan></text></g></g><g class="beatView role_sw" beatId="12" id="12" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(283.15625,0)"><g atomid="42" class="atomViewRootGroup" id="atomViewRootGroup42" transform="translate(0,0)"><text atomid="42" class="atomViewTextRoot" id="atomViewTextRoot42" x="0"><tspan atomid="42" id="atomGlyph42">G</tspan></text></g></g><g class="beatView role_sw" beatId="13" id="13" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(354.796875,0)"><g atomid="43" class="atomViewRootGroup" id="atomViewRootGroup43" transform="translate(0,0)"><text atomid="43" class="atomViewTextRoot" id="atomViewTextRoot43" x="0"><tspan atomid="43" id="atomGlyph43">M</tspan></text></g></g><g class="beatView role_sw" beatId="14" id="14" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(428.46875,0)"><g atomid="44" class="atomViewRootGroup" id="atomViewRootGroup44" transform="translate(0,0)"><text atomid="44" class="atomViewTextRoot" id="atomViewTextRoot44" x="0"><tspan atomid="44" id="atomGlyph44">P</tspan></text></g></g><g class="beatView role_sw" beatId="15" id="15" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(498.328125,0)"><g atomid="45" class="atomViewRootGroup" id="atomViewRootGroup45" transform="translate(0,0)"><text atomid="45" class="atomViewTextRoot" id="atomViewTextRoot45" x="0"><tspan atomid="45" id="atomGlyph45">D</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="8"></line><line class="bar-end-line" x1="243.15625" x2="243.15625" y1="-15" y2="3"></line><line class="bar-end-line" x1="388.46875" x2="388.46875" y1="-15" y2="3"></line><line class="bar-end-line" x1="529.640625" x2="529.640625" y1="-15" y2="3"></line><line class="bar-end-line" x1="533.640625" x2="533.640625" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="16" id="16" roleName="sw" beatIndex="8" gridRow="1" gridCol="1" transform="translate(0,33)"><g atomid="46" class="atomViewRootGroup" id="atomViewRootGroup46" transform="translate(0,0)"><text atomid="46" class="atomViewTextRoot" id="atomViewTextRoot46" x="0"><tspan atomid="46" id="atomGlyph46">N</tspan></text></g></g><g class="beatView role_sw" beatId="17" id="17" roleName="sw" beatIndex="9" gridRow="1" gridCol="4" transform="translate(71.5625,33)"><g atomid="32" class="atomViewRootGroup" id="atomViewRootGroup32" transform="translate(0,0)"><text atomid="32" class="atomViewTextRoot" id="atomViewTextRoot32" x="0"><tspan atomid="32" id="atomGlyph32">S</tspan></text><g width="2" height="2" source="atom32" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><g class="beatView role_sw" beatId="18" id="18" roleName="sw" beatIndex="10" gridRow="1" gridCol="7" transform="translate(142.875,33)"><g atomid="34" class="atomViewRootGroup" id="atomViewRootGroup34" transform="translate(0,0)"><text atomid="34" class="atomViewTextRoot" id="atomViewTextRoot34" x="0"><tspan atomid="34" id="atomGlyph34">R</tspan></text><g width="2" height="2" source="atom34" transform="translate(4.0703125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="18" y2="36"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-octaves" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-octaves">
+            <notation id="render-octaves">Sw: .N .D S R G M P D N S. R.</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-groups">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Groups</div>
+        <div class="visual-test-card-id">groups</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Grouped notes played in same time duration</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: S R [G M] P D [N S.]</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-groups">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow60"><td class="lineAnnotationCell" id="lineAnnotation60"></td><td class="lineContentCell" id="lineContent60" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="432.765625" height="34"><g class="lineRoot" id="lineRoot60" transform="translate(14, 20)"><g class="beatView role_sw" beatId="19" id="19" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="62" class="atomViewRootGroup" id="atomViewRootGroup62" transform="translate(0,0)"><text atomid="62" class="atomViewTextRoot" id="atomViewTextRoot62" x="0"><tspan atomid="62" id="atomGlyph62">S</tspan></text></g></g><g class="beatView role_sw" beatId="20" id="20" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="63" class="atomViewRootGroup" id="atomViewRootGroup63" transform="translate(0,0)"><text atomid="63" class="atomViewTextRoot" id="atomViewTextRoot63" x="0"><tspan atomid="63" id="atomGlyph63">R</tspan></text></g></g><g class="beatView role_sw" beatId="21" id="21" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g class="groupViewRoot" id="groupViewRoot51" transform="translate(0,0)"><g atomid="64" class="atomViewRootGroup" id="atomViewRootGroup64" transform="translate(0,0)"><text atomid="64" class="atomViewTextRoot" id="atomViewTextRoot64" x="0"><tspan atomid="64" id="atomGlyph64">G</tspan></text></g><g atomid="65" class="atomViewRootGroup" id="atomViewRootGroup65" transform="translate(25,0)"><text atomid="65" class="atomViewTextRoot" id="atomViewTextRoot65" x="0"><tspan atomid="65" id="atomGlyph65">M</tspan></text></g></g></g><g class="beatView role_sw" beatId="22" id="22" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(231.703125,0)"><g atomid="66" class="atomViewRootGroup" id="atomViewRootGroup66" transform="translate(0,0)"><text atomid="66" class="atomViewTextRoot" id="atomViewTextRoot66" x="0"><tspan atomid="66" id="atomGlyph66">P</tspan></text></g></g><g class="beatView role_sw" beatId="23" id="23" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(301.5625,0)"><g atomid="67" class="atomViewRootGroup" id="atomViewRootGroup67" transform="translate(0,0)"><text atomid="67" class="atomViewTextRoot" id="atomViewTextRoot67" x="0"><tspan atomid="67" id="atomGlyph67">D</tspan></text></g></g><g class="beatView role_sw" beatId="24" id="24" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(372.875,0)"><g class="groupViewRoot" id="groupViewRoot56" transform="translate(0,0)"><g atomid="68" class="atomViewRootGroup" id="atomViewRootGroup68" transform="translate(0,0)"><text atomid="68" class="atomViewTextRoot" id="atomViewTextRoot68" x="0"><tspan atomid="68" id="atomGlyph68">N</tspan></text></g><g atomid="54" class="atomViewRootGroup" id="atomViewRootGroup54" transform="translate(22,0)"><text atomid="54" class="atomViewTextRoot" id="atomViewTextRoot54" x="0"><tspan atomid="54" id="atomGlyph54">S</tspan></text><g width="2" height="2" source="atom54" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="261.5625" x2="261.5625" y1="-15" y2="3"></line><line class="bar-end-line" x1="418.765625" x2="418.765625" y1="-16" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-groups" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-groups">
+            <notation id="render-groups">Sw: S R [G M] P D [N S.]</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-durations">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Durations</div>
+        <div class="visual-test-card-id">durations</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Notes with explicit duration modifiers</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: S 2 R G 3 M P</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-durations">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow77"><td class="lineAnnotationCell" id="lineAnnotation77"></td><td class="lineContentCell" id="lineContent77" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="526.515625" height="33"><g class="lineRoot" id="lineRoot77" transform="translate(14, 19)"><g class="beatView role_sw" beatId="25" id="25" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="82" class="atomViewRootGroup" id="atomViewRootGroup82" transform="translate(0,0)"><text atomid="82" class="atomViewTextRoot" id="atomViewTextRoot82" x="0"><tspan atomid="82" id="atomGlyph82">S</tspan></text></g></g><g class="beatView role_sw" beatId="26" id="26" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="83" class="atomViewRootGroup" id="atomViewRootGroup83" transform="translate(0,0)"><text atomid="83" class="atomViewTextRoot" id="atomViewTextRoot83" x="0"><tspan atomid="83" id="atomGlyph83">R</tspan></text></g></g><g class="beatView role_sw" beatId="27" id="27" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g atomid="79" class="atomViewRootGroup" id="atomViewRootGroup79" transform="translate(0,0)"><text atomid="79" class="atomViewTextRoot" id="atomViewTextRoot79" x="0"><tspan atomid="79" id="atomGlyph79">,</tspan></text></g></g><g class="beatView role_sw" beatId="28" id="28" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(204.46875,0)"><g atomid="84" class="atomViewRootGroup" id="atomViewRootGroup84" transform="translate(0,0)"><text atomid="84" class="atomViewTextRoot" id="atomViewTextRoot84" x="0"><tspan atomid="84" id="atomGlyph84">G</tspan></text></g></g><g class="beatView role_sw" beatId="29" id="29" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(276.109375,0)"><g atomid="85" class="atomViewRootGroup" id="atomViewRootGroup85" transform="translate(0,0)"><text atomid="85" class="atomViewTextRoot" id="atomViewTextRoot85" x="0"><tspan atomid="85" id="atomGlyph85">M</tspan></text></g></g><g class="beatView role_sw" beatId="30" id="30" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(349.78125,0)"><g atomid="80" class="atomViewRootGroup" id="atomViewRootGroup80" transform="translate(0,0)"><text atomid="80" class="atomViewTextRoot" id="atomViewTextRoot80" x="0"><tspan atomid="80" id="atomGlyph80">,</tspan></text></g></g><g class="beatView role_sw" beatId="31" id="31" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(414.21875,0)"><g atomid="81" class="atomViewRootGroup" id="atomViewRootGroup81" transform="translate(0,0)"><text atomid="81" class="atomViewTextRoot" id="atomViewTextRoot81" x="0"><tspan atomid="81" id="atomGlyph81">,</tspan></text></g></g><g class="beatView role_sw" beatId="32" id="32" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(478.65625,0)"><g atomid="86" class="atomViewRootGroup" id="atomViewRootGroup86" transform="translate(0,0)"><text atomid="86" class="atomViewTextRoot" id="atomViewTextRoot86" x="0"><tspan atomid="86" id="atomGlyph86">P</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="236.109375" x2="236.109375" y1="-15" y2="3"></line><line class="bar-end-line" x1="374.21875" x2="374.21875" y1="-15" y2="3"></line><line class="bar-end-line" x1="508.515625" x2="508.515625" y1="-15" y2="3"></line><line class="bar-end-line" x1="512.515625" x2="512.515625" y1="-15" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-durations" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-durations">
+            <notation id="render-durations">Sw: S 2 R G 3 M P</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-rests">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Rests/Spaces</div>
+        <div class="visual-test-card-id">rests</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Notes with rests/spaces between them</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: S , R , , G , , , M</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-rests">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow100"><td class="lineAnnotationCell" id="lineAnnotation100"></td><td class="lineContentCell" id="lineContent100" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="521.09375" height="61"><g class="lineRoot" id="lineRoot100" transform="translate(14, 19)"><g class="beatView role_sw" beatId="33" id="33" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="102" class="atomViewRootGroup" id="atomViewRootGroup102" transform="translate(0,0)"><text atomid="102" class="atomViewTextRoot" id="atomViewTextRoot102" x="0"><tspan atomid="102" id="atomGlyph102">S</tspan></text></g></g><g class="beatView role_sw" beatId="34" id="34" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="88" class="atomViewRootGroup" id="atomViewRootGroup88" transform="translate(0,0)"><text atomid="88" class="atomViewTextRoot" id="atomViewTextRoot88" x="0"><tspan atomid="88" id="atomGlyph88">,</tspan></text></g></g><g class="beatView role_sw" beatId="35" id="35" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(143.5625,0)"><g atomid="103" class="atomViewRootGroup" id="atomViewRootGroup103" transform="translate(0,0)"><text atomid="103" class="atomViewTextRoot" id="atomViewTextRoot103" x="0"><tspan atomid="103" id="atomGlyph103">R</tspan></text></g></g><g class="beatView role_sw" beatId="36" id="36" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(213.703125,0)"><g atomid="90" class="atomViewRootGroup" id="atomViewRootGroup90" transform="translate(0,0)"><text atomid="90" class="atomViewTextRoot" id="atomViewTextRoot90" x="0"><tspan atomid="90" id="atomGlyph90">,</tspan></text></g></g><g class="beatView role_sw" beatId="37" id="37" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(278.140625,0)"><g atomid="91" class="atomViewRootGroup" id="atomViewRootGroup91" transform="translate(0,0)"><text atomid="91" class="atomViewTextRoot" id="atomViewTextRoot91" x="0"><tspan atomid="91" id="atomGlyph91">,</tspan></text></g></g><g class="beatView role_sw" beatId="38" id="38" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(342.578125,0)"><g atomid="104" class="atomViewRootGroup" id="atomViewRootGroup104" transform="translate(0,0)"><text atomid="104" class="atomViewTextRoot" id="atomViewTextRoot104" x="0"><tspan atomid="104" id="atomGlyph104">G</tspan></text></g></g><g class="beatView role_sw" beatId="39" id="39" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(414.21875,0)"><g atomid="93" class="atomViewRootGroup" id="atomViewRootGroup93" transform="translate(0,0)"><text atomid="93" class="atomViewTextRoot" id="atomViewTextRoot93" x="0"><tspan atomid="93" id="atomGlyph93">,</tspan></text></g></g><g class="beatView role_sw" beatId="40" id="40" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(478.65625,0)"><g atomid="94" class="atomViewRootGroup" id="atomViewRootGroup94" transform="translate(0,0)"><text atomid="94" class="atomViewTextRoot" id="atomViewTextRoot94" x="0"><tspan atomid="94" id="atomGlyph94">,</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="238.140625" x2="238.140625" y1="-15" y2="3"></line><line class="bar-end-line" x1="374.21875" x2="374.21875" y1="-15" y2="3"></line><line class="bar-end-line" x1="503.09375" x2="503.09375" y1="-15" y2="3"></line><line class="bar-end-line" x1="507.09375" x2="507.09375" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="41" id="41" roleName="sw" beatIndex="8" gridRow="1" gridCol="1" transform="translate(0,28)"><g atomid="95" class="atomViewRootGroup" id="atomViewRootGroup95" transform="translate(0,0)"><text atomid="95" class="atomViewTextRoot" id="atomViewTextRoot95" x="0"><tspan atomid="95" id="atomGlyph95">,</tspan></text></g></g><g class="beatView role_sw" beatId="42" id="42" roleName="sw" beatIndex="9" gridRow="1" gridCol="4" transform="translate(69.890625,28)"><g atomid="105" class="atomViewRootGroup" id="atomViewRootGroup105" transform="translate(0,0)"><text atomid="105" class="atomViewTextRoot" id="atomViewTextRoot105" x="0"><tspan atomid="105" id="atomGlyph105">M</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="13" y2="31"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-rests" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-rests">
+            <notation id="render-rests">Sw: S , R , , G , , , M</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="visual-test-category">
+  <h2>Embellishments (4)</h2>
+  <div class="visual-test-grid">
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-jaaru">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Jaaru (slide)</div>
+        <div class="visual-test-card-id">jaaru</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Left embellishment indicating slide from previous note</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: ~/ S R G</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-jaaru">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow112"><td class="lineAnnotationCell" id="lineAnnotation112"></td><td class="lineContentCell" id="lineContent112" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="175.671875" height="48"><g class="lineRoot" id="lineRoot112" transform="translate(14, 19)"><g class="beatView role_sw" beatId="43" id="43" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="114" class="atomViewRootGroup" id="atomViewRootGroup114" transform="translate(0,0)"><text atomid="114" class="atomViewTextRoot" id="atomViewTextRoot114" x="10"><tspan atomid="114" id="atomGlyph114">S</tspan></text><path source="atom114" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g><g class="beatView role_sw" beatId="44" id="44" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(79.890625,0)"><g atomid="115" class="atomViewRootGroup" id="atomViewRootGroup115" transform="translate(0,0)"><text atomid="115" class="atomViewTextRoot" id="atomViewTextRoot115" x="0"><tspan atomid="115" id="atomGlyph115">R</tspan></text></g></g><g class="beatView role_sw" beatId="45" id="45" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(150.03125,0)"><g atomid="116" class="atomViewRootGroup" id="atomViewRootGroup116" transform="translate(0,0)"><text atomid="116" class="atomViewTextRoot" id="atomViewTextRoot116" x="0"><tspan atomid="116" id="atomGlyph116">G</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="18"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-jaaru" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-jaaru">
+            <notation id="render-jaaru">Sw: ~/ S R G</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-kampitam">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Kampitam (oscillation)</div>
+        <div class="visual-test-card-id">kampitam</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Top embellishment indicating oscillation</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: ~ S ~ R ~ G</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-kampitam">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow123"><td class="lineAnnotationCell" id="lineAnnotation123"></td><td class="lineContentCell" id="lineContent123" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="165.671875" height="52"><g class="lineRoot" id="lineRoot123" transform="translate(14, 38)"><g class="beatView role_sw" beatId="46" id="46" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="125" class="atomViewRootGroup" id="atomViewRootGroup125" transform="translate(0,0)"><text atomid="125" class="atomViewTextRoot" id="atomViewTextRoot125" x="0"><tspan atomid="125" id="atomGlyph125">S</tspan></text><text source="atom125" class="notation-embelishment-label" dominant-baseline="hanging" x="0.0625" y="-31">~</text></g></g><g class="beatView role_sw" beatId="47" id="47" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="126" class="atomViewRootGroup" id="atomViewRootGroup126" transform="translate(0,0)"><text atomid="126" class="atomViewTextRoot" id="atomViewTextRoot126" x="0"><tspan atomid="126" id="atomGlyph126">R</tspan></text><text source="atom126" class="notation-embelishment-label" dominant-baseline="hanging" x="0.1875" y="-31">~</text></g></g><g class="beatView role_sw" beatId="48" id="48" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g atomid="127" class="atomViewRootGroup" id="atomViewRootGroup127" transform="translate(0,0)"><text atomid="127" class="atomViewTextRoot" id="atomViewTextRoot127" x="0"><tspan atomid="127" id="atomGlyph127">G</tspan></text><text source="atom127" class="notation-embelishment-label" dominant-baseline="hanging" x="0.9375" y="-31">~</text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-34" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-kampitam" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-kampitam">
+            <notation id="render-kampitam">Sw: ~ S ~ R ~ G</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-multi-emb">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Multiple Embellishments</div>
+        <div class="visual-test-card-id">multi-emb</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Multiple embellishments on a single note</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: ~/ ~ S R</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-multi-emb">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow133"><td class="lineAnnotationCell" id="lineAnnotation133"></td><td class="lineContentCell" id="lineContent133" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="104.03125" height="67"><g class="lineRoot" id="lineRoot133" transform="translate(14, 38)"><g class="beatView role_sw" beatId="49" id="49" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="135" class="atomViewRootGroup" id="atomViewRootGroup135" transform="translate(0,0)"><text atomid="135" class="atomViewTextRoot" id="atomViewTextRoot135" x="10"><tspan atomid="135" id="atomGlyph135">S</tspan></text><path source="atom135" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path><text source="atom135" class="notation-embelishment-label" dominant-baseline="hanging" x="10.0625" y="-31">~</text></g></g><g class="beatView role_sw" beatId="50" id="50" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(79.890625,0)"><g atomid="136" class="atomViewRootGroup" id="atomViewRootGroup136" transform="translate(0,0)"><text atomid="136" class="atomViewTextRoot" id="atomViewTextRoot136" x="0"><tspan atomid="136" id="atomGlyph136">R</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-34" y2="18"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-multi-emb" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-multi-emb">
+            <notation id="render-multi-emb">Sw: ~/ ~ S R</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-collision">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Collision Test</div>
+        <div class="visual-test-card-id">collision</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Consecutive notes with embellishments (collision test)</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\beatDuration(2)
+Sw: 
+~/ S ~/ R ~/ G ~/ M ~/ P ~/ D ~/ N ~/ S.
+~/ S. ~/ N ~/ D ~/ P ~/ M ~/ G ~/ R ~/ S
+
+Sh: A B C D E F G H I J K L M N O P Q R S T
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-collision">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow179"><td class="lineAnnotationCell" id="lineAnnotation179"></td><td class="lineContentCell" id="lineContent179" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="755.96875" height="116"><g class="lineRoot" id="lineRoot179" transform="translate(14, 20)"><g class="beatView role_sw" beatId="51" id="51" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g class="groupViewRoot" id="groupViewRoot182" transform="translate(0,0)"><g atomid="200" class="atomViewRootGroup" id="atomViewRootGroup200" transform="translate(0,0)"><text atomid="200" class="atomViewTextRoot" id="atomViewTextRoot200" x="10"><tspan atomid="200" id="atomGlyph200">S</tspan></text><path source="atom200" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="201" class="atomViewRootGroup" id="atomViewRootGroup201" transform="translate(17,0)"><text atomid="201" class="atomViewTextRoot" id="atomViewTextRoot201" x="10"><tspan atomid="201" id="atomGlyph201">R</tspan></text><path source="atom201" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="52" id="52" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(95.140625,0)"><g class="groupViewRoot" id="groupViewRoot183" transform="translate(0,0)"><g atomid="202" class="atomViewRootGroup" id="atomViewRootGroup202" transform="translate(0,0)"><text atomid="202" class="atomViewTextRoot" id="atomViewTextRoot202" x="10"><tspan atomid="202" id="atomGlyph202">G</tspan></text><path source="atom202" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="203" class="atomViewRootGroup" id="atomViewRootGroup203" transform="translate(20,0)"><text atomid="203" class="atomViewTextRoot" id="atomViewTextRoot203" x="10"><tspan atomid="203" id="atomGlyph203">M</tspan></text><path source="atom203" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="53" id="53" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(196.8125,0)"><g class="groupViewRoot" id="groupViewRoot184" transform="translate(0,0)"><g atomid="204" class="atomViewRootGroup" id="atomViewRootGroup204" transform="translate(0,0)"><text atomid="204" class="atomViewTextRoot" id="atomViewTextRoot204" x="10"><tspan atomid="204" id="atomGlyph204">P</tspan></text><path source="atom204" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="205" class="atomViewRootGroup" id="atomViewRootGroup205" transform="translate(18,0)"><text atomid="205" class="atomViewTextRoot" id="atomViewTextRoot205" x="10"><tspan atomid="205" id="atomGlyph205">D</tspan></text><path source="atom205" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="54" id="54" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(294.125,0)"><g class="groupViewRoot" id="groupViewRoot185" transform="translate(0,0)"><g atomid="206" class="atomViewRootGroup" id="atomViewRootGroup206" transform="translate(0,0)"><text atomid="206" class="atomViewTextRoot" id="atomViewTextRoot206" x="10"><tspan atomid="206" id="atomGlyph206">N</tspan></text><path source="atom206" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="145" class="atomViewRootGroup" id="atomViewRootGroup145" transform="translate(17,0)"><text atomid="145" class="atomViewTextRoot" id="atomViewTextRoot145" x="10"><tspan atomid="145" id="atomGlyph145">S</tspan></text><g width="2" height="2" source="atom145" transform="translate(13.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g><path source="atom145" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="55" id="55" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(390.015625,0)"><g class="groupViewRoot" id="groupViewRoot186" transform="translate(0,0)"><g atomid="146" class="atomViewRootGroup" id="atomViewRootGroup146" transform="translate(0,0)"><text atomid="146" class="atomViewTextRoot" id="atomViewTextRoot146" x="10"><tspan atomid="146" id="atomGlyph146">S</tspan></text><g width="2" height="2" source="atom146" transform="translate(13.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g><path source="atom146" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="207" class="atomViewRootGroup" id="atomViewRootGroup207" transform="translate(18,0)"><text atomid="207" class="atomViewTextRoot" id="atomViewTextRoot207" x="10"><tspan atomid="207" id="atomGlyph207">N</tspan></text><path source="atom207" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="56" id="56" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(487.578125,0)"><g class="groupViewRoot" id="groupViewRoot187" transform="translate(0,0)"><g atomid="208" class="atomViewRootGroup" id="atomViewRootGroup208" transform="translate(0,0)"><text atomid="208" class="atomViewTextRoot" id="atomViewTextRoot208" x="10"><tspan atomid="208" id="atomGlyph208">D</tspan></text><path source="atom208" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="209" class="atomViewRootGroup" id="atomViewRootGroup209" transform="translate(17,0)"><text atomid="209" class="atomViewTextRoot" id="atomViewTextRoot209" x="10"><tspan atomid="209" id="atomGlyph209">P</tspan></text><path source="atom209" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="57" id="57" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(583.4375,0)"><g class="groupViewRoot" id="groupViewRoot188" transform="translate(0,0)"><g atomid="210" class="atomViewRootGroup" id="atomViewRootGroup210" transform="translate(0,0)"><text atomid="210" class="atomViewTextRoot" id="atomViewTextRoot210" x="10"><tspan atomid="210" id="atomGlyph210">M</tspan></text><path source="atom210" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="211" class="atomViewRootGroup" id="atomViewRootGroup211" transform="translate(19,0)"><text atomid="211" class="atomViewTextRoot" id="atomViewTextRoot211" x="10"><tspan atomid="211" id="atomGlyph211">G</tspan></text><path source="atom211" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><g class="beatView role_sw" beatId="58" id="58" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(683.078125,0)"><g class="groupViewRoot" id="groupViewRoot189" transform="translate(0,0)"><g atomid="212" class="atomViewRootGroup" id="atomViewRootGroup212" transform="translate(0,0)"><text atomid="212" class="atomViewTextRoot" id="atomViewTextRoot212" x="10"><tspan atomid="212" id="atomGlyph212">R</tspan></text><path source="atom212" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g><g atomid="213" class="atomViewRootGroup" id="atomViewRootGroup213" transform="translate(17,0)"><text atomid="213" class="atomViewTextRoot" id="atomViewTextRoot213" x="10"><tspan atomid="213" id="atomGlyph213">S</tspan></text><path source="atom213" class="notation-jaaru-path" d="M 0 18 Q 9 18 9 9"></path></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="18"></line><line class="bar-end-line" x1="350.015625" x2="350.015625" y1="-16" y2="18"></line><line class="bar-end-line" x1="543.4375" x2="543.4375" y1="-15" y2="18"></line><line class="bar-end-line" x1="737.96875" x2="737.96875" y1="-15" y2="18"></line><line class="bar-end-line" x1="741.96875" x2="741.96875" y1="-15" y2="18"></line><g class="beatView role_sh" beatId="59" id="59" roleName="sh" beatIndex="0" gridRow="1" gridCol="1" transform="translate(0,44)"><g class="groupViewRoot" id="groupViewRoot190" transform="translate(0,0)"><g atomid="214" class="atomViewRootGroup" id="atomViewRootGroup214" transform="translate(0,0)"><text atomid="214" class="atomViewTextRoot" id="atomViewTextRoot214" x="0"><tspan atomid="214" id="atomGlyph214">A</tspan></text></g><g atomid="215" class="atomViewRootGroup" id="atomViewRootGroup215" transform="translate(27,0)"><text atomid="215" class="atomViewTextRoot" id="atomViewTextRoot215" x="0"><tspan atomid="215" id="atomGlyph215">B</tspan></text></g></g></g><g class="beatView role_sh" beatId="60" id="60" roleName="sh" beatIndex="1" gridRow="1" gridCol="4" transform="translate(95.140625,44)"><g class="groupViewRoot" id="groupViewRoot191" transform="translate(0,0)"><g atomid="216" class="atomViewRootGroup" id="atomViewRootGroup216" transform="translate(0,0)"><text atomid="216" class="atomViewTextRoot" id="atomViewTextRoot216" x="0"><tspan atomid="216" id="atomGlyph216">C</tspan></text></g><g atomid="217" class="atomViewRootGroup" id="atomViewRootGroup217" transform="translate(30,0)"><text atomid="217" class="atomViewTextRoot" id="atomViewTextRoot217" x="0"><tspan atomid="217" id="atomGlyph217">D</tspan></text></g></g></g><g class="beatView role_sh" beatId="61" id="61" roleName="sh" beatIndex="2" gridRow="1" gridCol="7" transform="translate(196.8125,44)"><g class="groupViewRoot" id="groupViewRoot192" transform="translate(0,0)"><g atomid="218" class="atomViewRootGroup" id="atomViewRootGroup218" transform="translate(0,0)"><text atomid="218" class="atomViewTextRoot" id="atomViewTextRoot218" x="0"><tspan atomid="218" id="atomGlyph218">E</tspan></text></g><g atomid="219" class="atomViewRootGroup" id="atomViewRootGroup219" transform="translate(28,0)"><text atomid="219" class="atomViewTextRoot" id="atomViewTextRoot219" x="0"><tspan atomid="219" id="atomGlyph219">F</tspan></text></g></g></g><g class="beatView role_sh" beatId="62" id="62" roleName="sh" beatIndex="3" gridRow="1" gridCol="10" transform="translate(294.125,44)"><g class="groupViewRoot" id="groupViewRoot193" transform="translate(0,0)"><g atomid="220" class="atomViewRootGroup" id="atomViewRootGroup220" transform="translate(0,0)"><text atomid="220" class="atomViewTextRoot" id="atomViewTextRoot220" x="0"><tspan atomid="220" id="atomGlyph220">G</tspan></text></g><g atomid="221" class="atomViewRootGroup" id="atomViewRootGroup221" transform="translate(27,0)"><text atomid="221" class="atomViewTextRoot" id="atomViewTextRoot221" x="0"><tspan atomid="221" id="atomGlyph221">H</tspan></text></g></g></g><g class="beatView role_sh" beatId="63" id="63" roleName="sh" beatIndex="4" gridRow="1" gridCol="13" transform="translate(390.015625,44)"><g class="groupViewRoot" id="groupViewRoot194" transform="translate(0,0)"><g atomid="222" class="atomViewRootGroup" id="atomViewRootGroup222" transform="translate(0,0)"><text atomid="222" class="atomViewTextRoot" id="atomViewTextRoot222" x="0"><tspan atomid="222" id="atomGlyph222">I</tspan></text></g><g atomid="223" class="atomViewRootGroup" id="atomViewRootGroup223" transform="translate(28,0)"><text atomid="223" class="atomViewTextRoot" id="atomViewTextRoot223" x="0"><tspan atomid="223" id="atomGlyph223">J</tspan></text></g></g></g><g class="beatView role_sh" beatId="64" id="64" roleName="sh" beatIndex="5" gridRow="1" gridCol="16" transform="translate(487.578125,44)"><g class="groupViewRoot" id="groupViewRoot195" transform="translate(0,0)"><g atomid="224" class="atomViewRootGroup" id="atomViewRootGroup224" transform="translate(0,0)"><text atomid="224" class="atomViewTextRoot" id="atomViewTextRoot224" x="0"><tspan atomid="224" id="atomGlyph224">K</tspan></text></g><g atomid="225" class="atomViewRootGroup" id="atomViewRootGroup225" transform="translate(27,0)"><text atomid="225" class="atomViewTextRoot" id="atomViewTextRoot225" x="0"><tspan atomid="225" id="atomGlyph225">L</tspan></text></g></g></g><g class="beatView role_sh" beatId="65" id="65" roleName="sh" beatIndex="6" gridRow="1" gridCol="19" transform="translate(583.4375,44)"><g class="groupViewRoot" id="groupViewRoot196" transform="translate(0,0)"><g atomid="226" class="atomViewRootGroup" id="atomViewRootGroup226" transform="translate(0,0)"><text atomid="226" class="atomViewTextRoot" id="atomViewTextRoot226" x="0"><tspan atomid="226" id="atomGlyph226">M</tspan></text></g><g atomid="227" class="atomViewRootGroup" id="atomViewRootGroup227" transform="translate(29,0)"><text atomid="227" class="atomViewTextRoot" id="atomViewTextRoot227" x="0"><tspan atomid="227" id="atomGlyph227">N</tspan></text></g></g></g><g class="beatView role_sh" beatId="66" id="66" roleName="sh" beatIndex="7" gridRow="1" gridCol="22" transform="translate(683.078125,44)"><g class="groupViewRoot" id="groupViewRoot197" transform="translate(0,0)"><g atomid="228" class="atomViewRootGroup" id="atomViewRootGroup228" transform="translate(0,0)"><text atomid="228" class="atomViewTextRoot" id="atomViewTextRoot228" x="0"><tspan atomid="228" id="atomGlyph228">O</tspan></text></g><g atomid="229" class="atomViewRootGroup" id="atomViewRootGroup229" transform="translate(27,0)"><text atomid="229" class="atomViewTextRoot" id="atomViewTextRoot229" x="0"><tspan atomid="229" id="atomGlyph229">P</tspan></text></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="29" y2="47"></line><line class="bar-end-line" x1="350.015625" x2="350.015625" y1="29" y2="47"></line><line class="bar-end-line" x1="543.4375" x2="543.4375" y1="29" y2="47"></line><line class="bar-end-line" x1="737.96875" x2="737.96875" y1="29" y2="47"></line><line class="bar-end-line" x1="741.96875" x2="741.96875" y1="29" y2="47"></line><g class="beatView role_sh" beatId="67" id="67" roleName="sh" beatIndex="8" gridRow="3" gridCol="1" transform="translate(0,82)"><g class="groupViewRoot" id="groupViewRoot198" transform="translate(0,0)"><g atomid="230" class="atomViewRootGroup" id="atomViewRootGroup230" transform="translate(0,0)"><text atomid="230" class="atomViewTextRoot" id="atomViewTextRoot230" x="0"><tspan atomid="230" id="atomGlyph230">Q</tspan></text></g><g atomid="231" class="atomViewRootGroup" id="atomViewRootGroup231" transform="translate(27,0)"><text atomid="231" class="atomViewTextRoot" id="atomViewTextRoot231" x="0"><tspan atomid="231" id="atomGlyph231">R</tspan></text></g></g></g><g class="beatView role_sh" beatId="68" id="68" roleName="sh" beatIndex="9" gridRow="3" gridCol="4" transform="translate(95.140625,82)"><g class="groupViewRoot" id="groupViewRoot199" transform="translate(0,0)"><g atomid="232" class="atomViewRootGroup" id="atomViewRootGroup232" transform="translate(0,0)"><text atomid="232" class="atomViewTextRoot" id="atomViewTextRoot232" x="0"><tspan atomid="232" id="atomGlyph232">S</tspan></text></g><g atomid="233" class="atomViewRootGroup" id="atomViewRootGroup233" transform="translate(30,0)"><text atomid="233" class="atomViewTextRoot" id="atomViewTextRoot233" x="0"><tspan atomid="233" id="atomGlyph233">T</tspan></text></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="67" y2="85"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-collision" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-collision">
+            <notation id="render-collision">\beatDuration(2)
+Sw: 
+~/ S ~/ R ~/ G ~/ M ~/ P ~/ D ~/ N ~/ S.
+~/ S. ~/ N ~/ D ~/ P ~/ M ~/ G ~/ R ~/ S
+
+Sh: A B C D E F G H I J K L M N O P Q R S T
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="visual-test-category">
+  <h2>Layout &amp; Configuration (4)</h2>
+  <div class="visual-test-grid">
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-two-roles">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Two Roles</div>
+        <div class="visual-test-card-id">two-roles</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Multi-role notation with swaras and sahitya</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: S R G M
+Sh: sa ri ga ma</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-two-roles">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow247"><td class="lineAnnotationCell" id="lineAnnotation247"></td><td class="lineContentCell" id="lineContent247" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="280.796875" height="61"><g class="lineRoot" id="lineRoot247" transform="translate(14, 19)"><g class="beatView role_sw" beatId="69" id="69" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="250" class="atomViewRootGroup" id="atomViewRootGroup250" transform="translate(0,0)"><text atomid="250" class="atomViewTextRoot" id="atomViewTextRoot250" x="0"><tspan atomid="250" id="atomGlyph250">S</tspan></text></g></g><g class="beatView role_sw" beatId="70" id="70" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(76.578125,0)"><g atomid="251" class="atomViewRootGroup" id="atomViewRootGroup251" transform="translate(0,0)"><text atomid="251" class="atomViewTextRoot" id="atomViewTextRoot251" x="0"><tspan atomid="251" id="atomGlyph251">R</tspan></text></g></g><g class="beatView role_sw" beatId="71" id="71" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(146.71875,0)"><g atomid="252" class="atomViewRootGroup" id="atomViewRootGroup252" transform="translate(0,0)"><text atomid="252" class="atomViewTextRoot" id="atomViewTextRoot252" x="0"><tspan atomid="252" id="atomGlyph252">G</tspan></text></g></g><g class="beatView role_sw" beatId="72" id="72" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(224.671875,0)"><g atomid="253" class="atomViewRootGroup" id="atomViewRootGroup253" transform="translate(0,0)"><text atomid="253" class="atomViewTextRoot" id="atomViewTextRoot253" x="0"><tspan atomid="253" id="atomGlyph253">M</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="266.796875" x2="266.796875" y1="-15" y2="3"></line><g class="beatView role_sh" beatId="73" id="73" roleName="sh" beatIndex="0" gridRow="1" gridCol="1" transform="translate(0,28)"><g atomid="254" class="atomViewRootGroup" id="atomViewRootGroup254" transform="translate(0,0)"><text atomid="254" class="atomViewTextRoot" id="atomViewTextRoot254" x="0"><tspan atomid="254" id="atomGlyph254">sa</tspan></text></g></g><g class="beatView role_sh" beatId="74" id="74" roleName="sh" beatIndex="1" gridRow="1" gridCol="4" transform="translate(76.578125,28)"><g atomid="255" class="atomViewRootGroup" id="atomViewRootGroup255" transform="translate(0,0)"><text atomid="255" class="atomViewTextRoot" id="atomViewTextRoot255" x="0"><tspan atomid="255" id="atomGlyph255">ri</tspan></text></g></g><g class="beatView role_sh" beatId="75" id="75" roleName="sh" beatIndex="2" gridRow="1" gridCol="7" transform="translate(146.71875,28)"><g atomid="256" class="atomViewRootGroup" id="atomViewRootGroup256" transform="translate(0,0)"><text atomid="256" class="atomViewTextRoot" id="atomViewTextRoot256" x="0"><tspan atomid="256" id="atomGlyph256">ga</tspan></text></g></g><g class="beatView role_sh" beatId="76" id="76" roleName="sh" beatIndex="3" gridRow="1" gridCol="10" transform="translate(224.671875,28)"><g atomid="257" class="atomViewRootGroup" id="atomViewRootGroup257" transform="translate(0,0)"><text atomid="257" class="atomViewTextRoot" id="atomViewTextRoot257" x="0"><tspan atomid="257" id="atomGlyph257">ma</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="13" y2="31"></line><line class="bar-end-line" x1="266.796875" x2="266.796875" y1="13" y2="31"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-two-roles" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-two-roles">
+            <notation id="render-two-roles">Sw: S R G M
+Sh: sa ri ga ma</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-cycle-beat">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Cycle/Beat</div>
+        <div class="visual-test-card-id">cycle-beat</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Notation with cycle configuration</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\cycle(&#34;|4|4|&#34;)
+Sw: S R G M P D N S.</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-cycle-beat">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow273"><td class="lineAnnotationCell" id="lineAnnotation273"></td><td class="lineContentCell" id="lineContent273" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="545.96875" height="34"><g class="lineRoot" id="lineRoot273" transform="translate(14, 20)"><g class="beatView role_sw" beatId="77" id="77" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="275" class="atomViewRootGroup" id="atomViewRootGroup275" transform="translate(0,0)"><text atomid="275" class="atomViewTextRoot" id="atomViewTextRoot275" x="0"><tspan atomid="275" id="atomGlyph275">S</tspan></text></g></g><g class="beatView role_sw" beatId="78" id="78" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="276" class="atomViewRootGroup" id="atomViewRootGroup276" transform="translate(0,0)"><text atomid="276" class="atomViewTextRoot" id="atomViewTextRoot276" x="0"><tspan atomid="276" id="atomGlyph276">R</tspan></text></g></g><g class="beatView role_sw" beatId="79" id="79" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g atomid="277" class="atomViewRootGroup" id="atomViewRootGroup277" transform="translate(0,0)"><text atomid="277" class="atomViewTextRoot" id="atomViewTextRoot277" x="0"><tspan atomid="277" id="atomGlyph277">G</tspan></text></g></g><g class="beatView role_sw" beatId="80" id="80" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(211.671875,0)"><g atomid="278" class="atomViewRootGroup" id="atomViewRootGroup278" transform="translate(0,0)"><text atomid="278" class="atomViewTextRoot" id="atomViewTextRoot278" x="0"><tspan atomid="278" id="atomGlyph278">M</tspan></text></g></g><g class="beatView role_sw" beatId="81" id="81" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(285.34375,0)"><g atomid="279" class="atomViewRootGroup" id="atomViewRootGroup279" transform="translate(0,0)"><text atomid="279" class="atomViewTextRoot" id="atomViewTextRoot279" x="0"><tspan atomid="279" id="atomGlyph279">P</tspan></text></g></g><g class="beatView role_sw" beatId="82" id="82" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(355.203125,0)"><g atomid="280" class="atomViewRootGroup" id="atomViewRootGroup280" transform="translate(0,0)"><text atomid="280" class="atomViewTextRoot" id="atomViewTextRoot280" x="0"><tspan atomid="280" id="atomGlyph280">D</tspan></text></g></g><g class="beatView role_sw" beatId="83" id="83" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(426.515625,0)"><g atomid="281" class="atomViewRootGroup" id="atomViewRootGroup281" transform="translate(0,0)"><text atomid="281" class="atomViewTextRoot" id="atomViewTextRoot281" x="0"><tspan atomid="281" id="atomGlyph281">N</tspan></text></g></g><g class="beatView role_sw" beatId="84" id="84" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(498.078125,0)"><g atomid="265" class="atomViewRootGroup" id="atomViewRootGroup265" transform="translate(0,0)"><text atomid="265" class="atomViewTextRoot" id="atomViewTextRoot265" x="0"><tspan atomid="265" id="atomGlyph265">S</tspan></text><g width="2" height="2" source="atom265" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><line class="bar-end-line" x1="245.34375" x2="245.34375" y1="-15" y2="3"></line><line class="bar-end-line" x1="527.96875" x2="527.96875" y1="-16" y2="3"></line><line class="bar-end-line" x1="531.96875" x2="531.96875" y1="-16" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-cycle-beat" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-cycle-beat">
+            <notation id="render-cycle-beat">\cycle(&#34;|4|4|&#34;)
+Sw: S R G M P D N S.</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-nested-groups">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Nested Groups</div>
+        <div class="visual-test-card-id">nested-groups</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Nested groups with depth-based bracket lines above each group container</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\beatDuration(4)
+
+Sw: S R G M  P D N S.
+A B [ S R [ P D [ W X ] ] ]
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-nested-groups">
+            
+            
+<table class="notationsContentRootTable"><tr class="lineRow" id="lineRow305"><td class="lineAnnotationCell" id="lineAnnotation305"></td><td class="lineContentCell" id="lineContent305" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="388" height="36.69999885559082"><g class="lineRoot" id="lineRoot305" transform="translate(14, 22.69999885559082)"><g class="beatView role_sw" beatId="85" id="85" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g class="groupViewRoot" id="groupViewRoot307" transform="translate(0,0)"><g atomid="310" class="atomViewRootGroup" id="atomViewRootGroup310" transform="translate(0,0)"><text atomid="310" class="atomViewTextRoot" id="atomViewTextRoot310" x="0"><tspan atomid="310" id="atomGlyph310">S</tspan></text></g><g atomid="311" class="atomViewRootGroup" id="atomViewRootGroup311" transform="translate(22,0)"><text atomid="311" class="atomViewTextRoot" id="atomViewTextRoot311" x="0"><tspan atomid="311" id="atomGlyph311">R</tspan></text></g><g atomid="312" class="atomViewRootGroup" id="atomViewRootGroup312" transform="translate(44,0)"><text atomid="312" class="atomViewTextRoot" id="atomViewTextRoot312" x="0"><tspan atomid="312" id="atomGlyph312">G</tspan></text></g><g atomid="313" class="atomViewRootGroup" id="atomViewRootGroup313" transform="translate(67,0)"><text atomid="313" class="atomViewTextRoot" id="atomViewTextRoot313" x="0"><tspan atomid="313" id="atomGlyph313">M</tspan></text></g></g></g><g class="beatView role_sw" beatId="86" id="86" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(129.671875,0)"><g class="groupViewRoot" id="groupViewRoot308" transform="translate(0,0)"><g atomid="314" class="atomViewRootGroup" id="atomViewRootGroup314" transform="translate(0,0)"><text atomid="314" class="atomViewTextRoot" id="atomViewTextRoot314" x="0"><tspan atomid="314" id="atomGlyph314">P</tspan></text></g><g atomid="315" class="atomViewRootGroup" id="atomViewRootGroup315" transform="translate(19,0)"><text atomid="315" class="atomViewTextRoot" id="atomViewTextRoot315" x="0"><tspan atomid="315" id="atomGlyph315">D</tspan></text></g><g atomid="316" class="atomViewRootGroup" id="atomViewRootGroup316" transform="translate(39,0)"><text atomid="316" class="atomViewTextRoot" id="atomViewTextRoot316" x="0"><tspan atomid="316" id="atomGlyph316">N</tspan></text></g><g atomid="289" class="atomViewRootGroup" id="atomViewRootGroup289" transform="translate(59,0)"><text atomid="289" class="atomViewTextRoot" id="atomViewTextRoot289" x="0"><tspan atomid="289" id="atomGlyph289">S</tspan></text><g width="2" height="2" source="atom289" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g></g><g class="beatView role_sw" beatId="87" id="87" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(248.5625,0)"><g class="groupViewRoot" id="groupViewRoot309" transform="translate(0,0)"><g atomid="317" class="atomViewRootGroup" id="atomViewRootGroup317" transform="translate(0,0)"><text atomid="317" class="atomViewTextRoot" id="atomViewTextRoot317" x="0"><tspan atomid="317" id="atomGlyph317">A</tspan></text></g><g atomid="318" class="atomViewRootGroup" id="atomViewRootGroup318" transform="translate(28,0)"><text atomid="318" class="atomViewTextRoot" id="atomViewTextRoot318" x="0"><tspan atomid="318" id="atomGlyph318">B</tspan></text></g><g class="groupViewRoot" id="groupViewRoot301" transform="translate(56,0) scale(0.7)"><g atomid="319" class="atomViewRootGroup" id="atomViewRootGroup319" transform="translate(0,0)"><text atomid="319" class="atomViewTextRoot" id="atomViewTextRoot319" x="0"><tspan atomid="319" id="atomGlyph319">S</tspan></text></g><g atomid="320" class="atomViewRootGroup" id="atomViewRootGroup320" transform="translate(15,0)"><text atomid="320" class="atomViewTextRoot" id="atomViewTextRoot320" x="0"><tspan atomid="320" id="atomGlyph320">R</tspan></text></g><g class="groupViewRoot" id="groupViewRoot300" transform="translate(30,0) scale(0.7)"><g atomid="321" class="atomViewRootGroup" id="atomViewRootGroup321" transform="translate(0,0)"><text atomid="321" class="atomViewTextRoot" id="atomViewTextRoot321" x="0"><tspan atomid="321" id="atomGlyph321">P</tspan></text></g><g atomid="322" class="atomViewRootGroup" id="atomViewRootGroup322" transform="translate(16,0)"><text atomid="322" class="atomViewTextRoot" id="atomViewTextRoot322" x="0"><tspan atomid="322" id="atomGlyph322">D</tspan></text></g><g class="groupViewRoot" id="groupViewRoot299" transform="translate(33,0) scale(0.7)"><g atomid="323" class="atomViewRootGroup" id="atomViewRootGroup323" transform="translate(0,0)"><text atomid="323" class="atomViewTextRoot" id="atomViewTextRoot323" x="0"><tspan atomid="323" id="atomGlyph323">W</tspan></text></g><g atomid="324" class="atomViewRootGroup" id="atomViewRootGroup324" transform="translate(20,0)"><text atomid="324" class="atomViewTextRoot" id="atomViewTextRoot324" x="0"><tspan atomid="324" id="atomGlyph324">X</tspan></text></g><g class="group-bracket" source="group299"><line class="group-bracket-line" x1="-2" y1="-24.077259063720703" x2="41.06851577758789" y2="-24.077259063720703"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-24.077259063720703"></circle><circle class="group-bracket-circle" r="1.5" cx="41.06851577758789" cy="-24.077259063720703"></circle></g></g><g class="group-bracket" source="group300"><line class="group-bracket-line" x1="-2" y1="-25.82653045654297" x2="68.39796447753906" y2="-25.82653045654297"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-25.82653045654297"></circle><circle class="group-bracket-circle" r="1.5" cx="68.39796447753906" cy="-25.82653045654297"></circle></g><text class="continuationMarker" x="49" y="0">,</text></g><g class="group-bracket" source="group301"><line class="group-bracket-line" x1="-2" y1="-25.214284896850586" x2="84.52857208251953" y2="-25.214284896850586"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-25.214284896850586"></circle><circle class="group-bracket-circle" r="1.5" cx="84.52857208251953" cy="-25.214284896850586"></circle></g><text class="continuationMarker" x="45" y="0">,</text><text class="continuationMarker" x="60" y="0">,</text></g><text class="continuationMarker" x="88" y="0">,</text><text class="continuationMarker" x="121" y="0">,</text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-nested-groups" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-nested-groups">
+            <notation id="render-nested-groups">\beatDuration(4)
+
+Sw: S R G M  P D N S.
+A B [ S R [ P D [ W X ] ] ]
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-baseline-alignment">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Baseline Alignment</div>
+        <div class="visual-test-card-id">baseline-alignment</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Beats with different nesting levels in the same row should have aligned atom baselines</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\cycle(&#34;|1|&#34;)
+\beatDuration(4)
+
+Sw: S R G M  [ P D [ N S. ] ]  G M P D
+    [ S R ] G M  P D N S.  [ [ W X ] ]
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-baseline-alignment">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow359"><td class="lineAnnotationCell" id="lineAnnotation359"></td><td class="lineContentCell" id="lineContent359" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="128.671875" height="146"><g class="lineRoot" id="lineRoot359" transform="translate(14, 19)"><g class="beatView role_sw" beatId="88" id="88" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g class="groupViewRoot" id="groupViewRoot361" transform="translate(0,0)"><g atomid="369" class="atomViewRootGroup" id="atomViewRootGroup369" transform="translate(0,0)"><text atomid="369" class="atomViewTextRoot" id="atomViewTextRoot369" x="0"><tspan atomid="369" id="atomGlyph369">S</tspan></text></g><g atomid="370" class="atomViewRootGroup" id="atomViewRootGroup370" transform="translate(29,0)"><text atomid="370" class="atomViewTextRoot" id="atomViewTextRoot370" x="0"><tspan atomid="370" id="atomGlyph370">R</tspan></text></g><g atomid="371" class="atomViewRootGroup" id="atomViewRootGroup371" transform="translate(58,0)"><text atomid="371" class="atomViewTextRoot" id="atomViewTextRoot371" x="0"><tspan atomid="371" id="atomGlyph371">G</tspan></text></g><g atomid="372" class="atomViewRootGroup" id="atomViewRootGroup372" transform="translate(87,0)"><text atomid="372" class="atomViewTextRoot" id="atomViewTextRoot372" x="0"><tspan atomid="372" id="atomGlyph372">M</tspan></text></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="89" id="89" roleName="sw" beatIndex="1" gridRow="1" gridCol="1" transform="translate(0,28)"><g class="groupViewRoot" id="groupViewRoot363" transform="translate(0,0)"><g class="groupViewRoot" id="groupViewRoot336" transform="translate(0,0) scale(0.7)"><g atomid="373" class="atomViewRootGroup" id="atomViewRootGroup373" transform="translate(0,0)"><text atomid="373" class="atomViewTextRoot" id="atomViewTextRoot373" x="0"><tspan atomid="373" id="atomGlyph373">P</tspan></text></g><g atomid="374" class="atomViewRootGroup" id="atomViewRootGroup374" transform="translate(18,0)"><text atomid="374" class="atomViewTextRoot" id="atomViewTextRoot374" x="0"><tspan atomid="374" id="atomGlyph374">D</tspan></text></g><g class="groupViewRoot" id="groupViewRoot335" transform="translate(37,0) scale(0.7)"><g atomid="375" class="atomViewRootGroup" id="atomViewRootGroup375" transform="translate(0,0)"><text atomid="375" class="atomViewTextRoot" id="atomViewTextRoot375" x="0"><tspan atomid="375" id="atomGlyph375">N</tspan></text></g><g atomid="333" class="atomViewRootGroup" id="atomViewRootGroup333" transform="translate(12,0)"><text atomid="333" class="atomViewTextRoot" id="atomViewTextRoot333" x="0"><tspan atomid="333" id="atomGlyph333">S</tspan></text><g width="2" height="2" source="atom333" transform="translate(3.9426021575927734,-17.40816307067871)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g><g class="group-bracket" source="group335"><line class="group-bracket-line" x1="-2" y1="-22.90816307067871" x2="23.885204315185547" y2="-22.90816307067871"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-22.90816307067871"></circle><circle class="group-bracket-circle" r="1.5" cx="23.885204315185547" cy="-22.90816307067871"></circle></g></g><g class="group-bracket" source="group336"><line class="group-bracket-line" x1="-2" y1="-20.21428680419922" x2="60.88520431518555" y2="-20.21428680419922"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-20.21428680419922"></circle><circle class="group-bracket-circle" r="1.5" cx="60.88520431518555" cy="-20.21428680419922"></circle></g></g><g atomid="376" class="atomViewRootGroup" id="atomViewRootGroup376" transform="translate(58.88520431518555,0)"><text atomid="376" class="atomViewTextRoot" id="atomViewTextRoot376" x="0"><tspan atomid="376" id="atomGlyph376">G</tspan></text></g><g atomid="377" class="atomViewRootGroup" id="atomViewRootGroup377" transform="translate(72,0)"><text atomid="377" class="atomViewTextRoot" id="atomViewTextRoot377" x="0"><tspan atomid="377" id="atomGlyph377">M</tspan></text></g><g atomid="378" class="atomViewRootGroup" id="atomViewRootGroup378" transform="translate(101,0)"><text atomid="378" class="atomViewTextRoot" id="atomViewTextRoot378" x="0"><tspan atomid="378" id="atomGlyph378">P</tspan></text></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="12.799999237060547" y2="31"></line><g class="beatView role_sw" beatId="90" id="90" roleName="sw" beatIndex="2" gridRow="2" gridCol="1" transform="translate(0,56)"><g class="groupViewRoot" id="groupViewRoot365" transform="translate(0,0)"><g atomid="362" class="atomViewRootGroup" id="atomViewRootGroup362" transform="translate(0,0)"><text atomid="362" class="atomViewTextRoot" id="atomViewTextRoot362" x="0"><tspan atomid="362" id="atomGlyph362">_</tspan></text></g><g atomid="379" class="atomViewRootGroup" id="atomViewRootGroup379" transform="translate(14,0)"><text atomid="379" class="atomViewTextRoot" id="atomViewTextRoot379" x="0"><tspan atomid="379" id="atomGlyph379">D</tspan></text></g><g class="groupViewRoot" id="groupViewRoot343" transform="translate(43,0) scale(0.7)"><g atomid="380" class="atomViewRootGroup" id="atomViewRootGroup380" transform="translate(0,0)"><text atomid="380" class="atomViewTextRoot" id="atomViewTextRoot380" x="0"><tspan atomid="380" id="atomGlyph380">S</tspan></text></g><g atomid="381" class="atomViewRootGroup" id="atomViewRootGroup381" transform="translate(11,0)"><text atomid="381" class="atomViewTextRoot" id="atomViewTextRoot381" x="0"><tspan atomid="381" id="atomGlyph381">R</tspan></text></g><g class="group-bracket" source="group343"><line class="group-bracket-line" x1="-2" y1="-20.21428680419922" x2="23.15625" y2="-20.21428680419922"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-20.21428680419922"></circle><circle class="group-bracket-circle" r="1.5" cx="23.15625" cy="-20.21428680419922"></circle></g></g><g atomid="382" class="atomViewRootGroup" id="atomViewRootGroup382" transform="translate(72,0)"><text atomid="382" class="atomViewTextRoot" id="atomViewTextRoot382" x="0"><tspan atomid="382" id="atomGlyph382">G</tspan></text></g><g atomid="383" class="atomViewRootGroup" id="atomViewRootGroup383" transform="translate(101,0)"><text atomid="383" class="atomViewTextRoot" id="atomViewTextRoot383" x="0"><tspan atomid="383" id="atomGlyph383">M</tspan></text></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="40.79999923706055" y2="59"></line><g class="beatView role_sw" beatId="91" id="91" roleName="sw" beatIndex="3" gridRow="3" gridCol="1" transform="translate(0,84)"><g class="groupViewRoot" id="groupViewRoot367" transform="translate(0,0)"><g atomid="364" class="atomViewRootGroup" id="atomViewRootGroup364" transform="translate(0,0)"><text atomid="364" class="atomViewTextRoot" id="atomViewTextRoot364" x="0"><tspan atomid="364" id="atomGlyph364">_</tspan></text></g><g atomid="384" class="atomViewRootGroup" id="atomViewRootGroup384" transform="translate(14,0)"><text atomid="384" class="atomViewTextRoot" id="atomViewTextRoot384" x="0"><tspan atomid="384" id="atomGlyph384">P</tspan></text></g><g atomid="385" class="atomViewRootGroup" id="atomViewRootGroup385" transform="translate(43,0)"><text atomid="385" class="atomViewTextRoot" id="atomViewTextRoot385" x="0"><tspan atomid="385" id="atomGlyph385">D</tspan></text></g><g atomid="386" class="atomViewRootGroup" id="atomViewRootGroup386" transform="translate(72,0)"><text atomid="386" class="atomViewTextRoot" id="atomViewTextRoot386" x="0"><tspan atomid="386" id="atomGlyph386">N</tspan></text></g><g atomid="348" class="atomViewRootGroup" id="atomViewRootGroup348" transform="translate(101,0)"><text atomid="348" class="atomViewTextRoot" id="atomViewTextRoot348" x="0"><tspan atomid="348" id="atomGlyph348">S</tspan></text><g width="2" height="2" source="atom348" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="68" y2="87"></line><g class="beatView role_sw" beatId="92" id="92" roleName="sw" beatIndex="4" gridRow="4" gridCol="1" transform="translate(0,113)"><g class="groupViewRoot" id="groupViewRoot368" transform="translate(0,0)"><g atomid="366" class="atomViewRootGroup" id="atomViewRootGroup366" transform="translate(0,0)"><text atomid="366" class="atomViewTextRoot" id="atomViewTextRoot366" x="0"><tspan atomid="366" id="atomGlyph366">_</tspan></text></g><g class="groupViewRoot" id="groupViewRoot353" transform="translate(58,0) scale(0.7)"><g class="groupViewRoot" id="groupViewRoot352" transform="translate(0,0) scale(0.7)"><g atomid="387" class="atomViewRootGroup" id="atomViewRootGroup387" transform="translate(0,0)"><text atomid="387" class="atomViewTextRoot" id="atomViewTextRoot387" x="0"><tspan atomid="387" id="atomGlyph387">W</tspan></text></g><g atomid="388" class="atomViewRootGroup" id="atomViewRootGroup388" transform="translate(16,0)"><text atomid="388" class="atomViewTextRoot" id="atomViewTextRoot388" x="0"><tspan atomid="388" id="atomGlyph388">X</tspan></text></g><g class="group-bracket" source="group352"><line class="group-bracket-line" x1="-2" y1="-20.82653045654297" x2="28.55484676361084" y2="-20.82653045654297"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-20.82653045654297"></circle><circle class="group-bracket-circle" r="1.5" cx="28.55484676361084" cy="-20.82653045654297"></circle></g></g><g class="group-bracket" source="group353"><line class="group-bracket-line" x1="-2" y1="-16.97857093811035" x2="28.55484676361084" y2="-16.97857093811035"></line><circle class="group-bracket-circle" r="1.5" cx="-2" cy="-16.97857093811035"></circle><circle class="group-bracket-circle" r="1.5" cx="28.55484676361084" cy="-16.97857093811035"></circle></g></g></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="98" y2="116"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-baseline-alignment" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-baseline-alignment">
+            <notation id="render-baseline-alignment">\cycle(&#34;|1|&#34;)
+\beatDuration(4)
+
+Sw: S R G M  [ P D [ N S. ] ]  G M P D
+    [ S R ] G M  P D N S.  [ [ W X ] ]
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="visual-test-category">
+  <h2>Markers &amp; Annotations (4)</h2>
+  <div class="visual-test-grid">
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-label-before">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Label Before</div>
+        <div class="visual-test-card-id">label-before</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Pre-marker label appearing before notes in a dedicated column</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\@label(&#34;V1&#34;) S R G M P D N S.
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-label-before">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow400"><td class="lineAnnotationCell" id="lineAnnotation400"></td><td class="lineContentCell" id="lineContent400" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="578.546875" height="34"><g class="lineRoot" id="lineRoot400" transform="translate(4, 20)"><g class="markerView" pre="true" roleName="sw" beatIndex="0" gridRow="0" gridCol="0" transform="translate(0,0)"><text class="markerText" pre="true" dx="0">V1</text></g><g class="beatView role_sw" beatId="93" id="93" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(42.578125,0)"><g class="groupViewRoot" id="groupViewRoot402" transform="translate(0,0)"><g atomid="403" class="atomViewRootGroup" id="atomViewRootGroup403" transform="translate(0,0)"><text atomid="403" class="atomViewTextRoot" id="atomViewTextRoot403" x="0"><tspan atomid="403" id="atomGlyph403">S</tspan></text></g></g></g><line class="bar-start-line" x1="32.578125" x2="32.578125" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="94" id="94" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(112.46875,0)"><g atomid="404" class="atomViewRootGroup" id="atomViewRootGroup404" transform="translate(0,0)"><text atomid="404" class="atomViewTextRoot" id="atomViewTextRoot404" x="0"><tspan atomid="404" id="atomGlyph404">R</tspan></text></g></g><g class="beatView role_sw" beatId="95" id="95" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(182.609375,0)"><g atomid="405" class="atomViewRootGroup" id="atomViewRootGroup405" transform="translate(0,0)"><text atomid="405" class="atomViewTextRoot" id="atomViewTextRoot405" x="0"><tspan atomid="405" id="atomGlyph405">G</tspan></text></g></g><g class="beatView role_sw" beatId="96" id="96" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(254.25,0)"><g atomid="406" class="atomViewRootGroup" id="atomViewRootGroup406" transform="translate(0,0)"><text atomid="406" class="atomViewTextRoot" id="atomViewTextRoot406" x="0"><tspan atomid="406" id="atomGlyph406">M</tspan></text></g></g><line class="bar-end-line" x1="287.921875" x2="287.921875" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="97" id="97" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(327.921875,0)"><g atomid="407" class="atomViewRootGroup" id="atomViewRootGroup407" transform="translate(0,0)"><text atomid="407" class="atomViewTextRoot" id="atomViewTextRoot407" x="0"><tspan atomid="407" id="atomGlyph407">P</tspan></text></g></g><g class="beatView role_sw" beatId="98" id="98" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(397.78125,0)"><g atomid="408" class="atomViewRootGroup" id="atomViewRootGroup408" transform="translate(0,0)"><text atomid="408" class="atomViewTextRoot" id="atomViewTextRoot408" x="0"><tspan atomid="408" id="atomGlyph408">D</tspan></text></g></g><line class="bar-end-line" x1="429.09375" x2="429.09375" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="99" id="99" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(469.09375,0)"><g atomid="409" class="atomViewRootGroup" id="atomViewRootGroup409" transform="translate(0,0)"><text atomid="409" class="atomViewTextRoot" id="atomViewTextRoot409" x="0"><tspan atomid="409" id="atomGlyph409">N</tspan></text></g></g><g class="beatView role_sw" beatId="100" id="100" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(540.65625,0)"><g atomid="396" class="atomViewRootGroup" id="atomViewRootGroup396" transform="translate(0,0)"><text atomid="396" class="atomViewTextRoot" id="atomViewTextRoot396" x="0"><tspan atomid="396" id="atomGlyph396">S</tspan></text><g width="2" height="2" source="atom396" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-end-line" x1="570.546875" x2="570.546875" y1="-16" y2="3"></line><line class="bar-end-line" x1="574.546875" x2="574.546875" y1="-16" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-label-before" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-label-before">
+            <notation id="render-label-before">\@label(&#34;V1&#34;) S R G M P D N S.
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-label-after">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Label After</div>
+        <div class="visual-test-card-id">label-after</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Post-marker label appearing after notes with position=after</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">S R G M \@label(&#34;End&#34;, position=&#34;after&#34;) P D N S.
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-label-after">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow421"><td class="lineAnnotationCell" id="lineAnnotation421"></td><td class="lineContentCell" id="lineContent421" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="578.734375" height="34"><g class="lineRoot" id="lineRoot421" transform="translate(14, 20)"><g class="beatView role_sw" beatId="101" id="101" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(0,0)"><g atomid="424" class="atomViewRootGroup" id="atomViewRootGroup424" transform="translate(0,0)"><text atomid="424" class="atomViewTextRoot" id="atomViewTextRoot424" x="0"><tspan atomid="424" id="atomGlyph424">S</tspan></text></g></g><line class="bar-start-line" x1="-10" x2="-10" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="102" id="102" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(69.890625,0)"><g atomid="425" class="atomViewRootGroup" id="atomViewRootGroup425" transform="translate(0,0)"><text atomid="425" class="atomViewTextRoot" id="atomViewTextRoot425" x="0"><tspan atomid="425" id="atomGlyph425">R</tspan></text></g></g><g class="beatView role_sw" beatId="103" id="103" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(140.03125,0)"><g atomid="426" class="atomViewRootGroup" id="atomViewRootGroup426" transform="translate(0,0)"><text atomid="426" class="atomViewTextRoot" id="atomViewTextRoot426" x="0"><tspan atomid="426" id="atomGlyph426">G</tspan></text></g></g><g class="beatView role_sw" beatId="104" id="104" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(211.671875,0)"><g atomid="427" class="atomViewRootGroup" id="atomViewRootGroup427" transform="translate(0,0)"><text atomid="427" class="atomViewTextRoot" id="atomViewTextRoot427" x="0"><tspan atomid="427" id="atomGlyph427">M</tspan></text></g></g><line class="bar-end-line" x1="245.34375" x2="245.34375" y1="-15" y2="3"></line><g class="markerView" pre="false" roleName="sw" beatIndex="4" gridRow="0" gridCol="14" transform="translate(315.203125,0)"><text class="markerText" pre="false" dx="15">End</text></g><g class="beatView role_sw" beatId="105" id="105" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(285.34375,0)"><g class="groupViewRoot" id="groupViewRoot423" transform="translate(0,0)"><g atomid="428" class="atomViewRootGroup" id="atomViewRootGroup428" transform="translate(0,0)"><text atomid="428" class="atomViewTextRoot" id="atomViewTextRoot428" x="0"><tspan atomid="428" id="atomGlyph428">P</tspan></text></g></g></g><g class="beatView role_sw" beatId="106" id="106" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(387.96875,0)"><g atomid="429" class="atomViewRootGroup" id="atomViewRootGroup429" transform="translate(0,0)"><text atomid="429" class="atomViewTextRoot" id="atomViewTextRoot429" x="0"><tspan atomid="429" id="atomGlyph429">D</tspan></text></g></g><line class="bar-end-line" x1="419.28125" x2="419.28125" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="107" id="107" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(459.28125,0)"><g atomid="430" class="atomViewRootGroup" id="atomViewRootGroup430" transform="translate(0,0)"><text atomid="430" class="atomViewTextRoot" id="atomViewTextRoot430" x="0"><tspan atomid="430" id="atomGlyph430">N</tspan></text></g></g><g class="beatView role_sw" beatId="108" id="108" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(530.84375,0)"><g atomid="417" class="atomViewRootGroup" id="atomViewRootGroup417" transform="translate(0,0)"><text atomid="417" class="atomViewTextRoot" id="atomViewTextRoot417" x="0"><tspan atomid="417" id="atomGlyph417">S</tspan></text><g width="2" height="2" source="atom417" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-end-line" x1="560.734375" x2="560.734375" y1="-16" y2="3"></line><line class="bar-end-line" x1="564.734375" x2="564.734375" y1="-16" y2="3"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-label-after" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-label-after">
+            <notation id="render-label-after">S R G M \@label(&#34;End&#34;, position=&#34;after&#34;) P D N S.
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-label-multi-role">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Label Multi-Role</div>
+        <div class="visual-test-card-id">label-multi-role</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Label marker on one role creates aligned column across all roles</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">Sw: \@label(&#34;V1&#34;) S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-label-multi-role">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow453"><td class="lineAnnotationCell" id="lineAnnotation453"></td><td class="lineContentCell" id="lineContent453" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="631.734375" height="67"><g class="lineRoot" id="lineRoot453" transform="translate(4, 20)"><g class="markerView" pre="true" roleName="sw" beatIndex="0" gridRow="0" gridCol="0" transform="translate(0,0)"><text class="markerText" pre="true" dx="0">V1</text></g><g class="beatView role_sw" beatId="109" id="109" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(42.578125,0)"><g class="groupViewRoot" id="groupViewRoot456" transform="translate(0,0)"><g atomid="457" class="atomViewRootGroup" id="atomViewRootGroup457" transform="translate(0,0)"><text atomid="457" class="atomViewTextRoot" id="atomViewTextRoot457" x="0"><tspan atomid="457" id="atomGlyph457">S</tspan></text></g></g></g><line class="bar-start-line" x1="32.578125" x2="32.578125" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="110" id="110" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(119.15625,0)"><g atomid="458" class="atomViewRootGroup" id="atomViewRootGroup458" transform="translate(0,0)"><text atomid="458" class="atomViewTextRoot" id="atomViewTextRoot458" x="0"><tspan atomid="458" id="atomGlyph458">R</tspan></text></g></g><g class="beatView role_sw" beatId="111" id="111" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(189.296875,0)"><g atomid="459" class="atomViewRootGroup" id="atomViewRootGroup459" transform="translate(0,0)"><text atomid="459" class="atomViewTextRoot" id="atomViewTextRoot459" x="0"><tspan atomid="459" id="atomGlyph459">G</tspan></text></g></g><g class="beatView role_sw" beatId="112" id="112" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(267.25,0)"><g atomid="460" class="atomViewRootGroup" id="atomViewRootGroup460" transform="translate(0,0)"><text atomid="460" class="atomViewTextRoot" id="atomViewTextRoot460" x="0"><tspan atomid="460" id="atomGlyph460">M</tspan></text></g></g><line class="bar-end-line" x1="309.375" x2="309.375" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="113" id="113" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(349.375,0)"><g atomid="461" class="atomViewRootGroup" id="atomViewRootGroup461" transform="translate(0,0)"><text atomid="461" class="atomViewTextRoot" id="atomViewTextRoot461" x="0"><tspan atomid="461" id="atomGlyph461">P</tspan></text></g></g><g class="beatView role_sw" beatId="114" id="114" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(427.34375,0)"><g atomid="462" class="atomViewRootGroup" id="atomViewRootGroup462" transform="translate(0,0)"><text atomid="462" class="atomViewTextRoot" id="atomViewTextRoot462" x="0"><tspan atomid="462" id="atomGlyph462">D</tspan></text></g></g><line class="bar-end-line" x1="474.484375" x2="474.484375" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="115" id="115" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(514.484375,0)"><g atomid="463" class="atomViewRootGroup" id="atomViewRootGroup463" transform="translate(0,0)"><text atomid="463" class="atomViewTextRoot" id="atomViewTextRoot463" x="0"><tspan atomid="463" id="atomGlyph463">N</tspan></text></g></g><g class="beatView role_sw" beatId="116" id="116" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(587.15625,0)"><g atomid="438" class="atomViewRootGroup" id="atomViewRootGroup438" transform="translate(0,0)"><text atomid="438" class="atomViewTextRoot" id="atomViewTextRoot438" x="0"><tspan atomid="438" id="atomGlyph438">S</tspan></text><g width="2" height="2" source="atom438" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-end-line" x1="623.734375" x2="623.734375" y1="-16" y2="3"></line><line class="bar-end-line" x1="627.734375" x2="627.734375" y1="-16" y2="3"></line><g class="beatView role_sh" beatId="117" id="117" roleName="sh" beatIndex="0" gridRow="1" gridCol="1" transform="translate(42.578125,33)"><g atomid="464" class="atomViewRootGroup" id="atomViewRootGroup464" transform="translate(0,0)"><text atomid="464" class="atomViewTextRoot" id="atomViewTextRoot464" x="0"><tspan atomid="464" id="atomGlyph464">sa</tspan></text></g></g><line class="bar-start-line" x1="32.578125" x2="32.578125" y1="18" y2="36"></line><g class="beatView role_sh" beatId="118" id="118" roleName="sh" beatIndex="1" gridRow="1" gridCol="4" transform="translate(119.15625,33)"><g atomid="465" class="atomViewRootGroup" id="atomViewRootGroup465" transform="translate(0,0)"><text atomid="465" class="atomViewTextRoot" id="atomViewTextRoot465" x="0"><tspan atomid="465" id="atomGlyph465">ri</tspan></text></g></g><g class="beatView role_sh" beatId="119" id="119" roleName="sh" beatIndex="2" gridRow="1" gridCol="7" transform="translate(189.296875,33)"><g atomid="466" class="atomViewRootGroup" id="atomViewRootGroup466" transform="translate(0,0)"><text atomid="466" class="atomViewTextRoot" id="atomViewTextRoot466" x="0"><tspan atomid="466" id="atomGlyph466">ga</tspan></text></g></g><g class="beatView role_sh" beatId="120" id="120" roleName="sh" beatIndex="3" gridRow="1" gridCol="10" transform="translate(267.25,33)"><g atomid="467" class="atomViewRootGroup" id="atomViewRootGroup467" transform="translate(0,0)"><text atomid="467" class="atomViewTextRoot" id="atomViewTextRoot467" x="0"><tspan atomid="467" id="atomGlyph467">ma</tspan></text></g></g><line class="bar-end-line" x1="309.375" x2="309.375" y1="18" y2="36"></line><g class="beatView role_sh" beatId="121" id="121" roleName="sh" beatIndex="4" gridRow="1" gridCol="13" transform="translate(349.375,33)"><g atomid="468" class="atomViewRootGroup" id="atomViewRootGroup468" transform="translate(0,0)"><text atomid="468" class="atomViewTextRoot" id="atomViewTextRoot468" x="0"><tspan atomid="468" id="atomGlyph468">pa</tspan></text></g></g><g class="beatView role_sh" beatId="122" id="122" roleName="sh" beatIndex="5" gridRow="1" gridCol="16" transform="translate(427.34375,33)"><g atomid="469" class="atomViewRootGroup" id="atomViewRootGroup469" transform="translate(0,0)"><text atomid="469" class="atomViewTextRoot" id="atomViewTextRoot469" x="0"><tspan atomid="469" id="atomGlyph469">dha</tspan></text></g></g><line class="bar-end-line" x1="474.484375" x2="474.484375" y1="18" y2="36"></line><g class="beatView role_sh" beatId="123" id="123" roleName="sh" beatIndex="6" gridRow="1" gridCol="19" transform="translate(514.484375,33)"><g atomid="470" class="atomViewRootGroup" id="atomViewRootGroup470" transform="translate(0,0)"><text atomid="470" class="atomViewTextRoot" id="atomViewTextRoot470" x="0"><tspan atomid="470" id="atomGlyph470">ni</tspan></text></g></g><g class="beatView role_sh" beatId="124" id="124" roleName="sh" beatIndex="7" gridRow="1" gridCol="22" transform="translate(587.15625,33)"><g atomid="471" class="atomViewRootGroup" id="atomViewRootGroup471" transform="translate(0,0)"><text atomid="471" class="atomViewTextRoot" id="atomViewTextRoot471" x="0"><tspan atomid="471" id="atomGlyph471">sa</tspan></text></g></g><line class="bar-end-line" x1="623.734375" x2="623.734375" y1="18" y2="36"></line><line class="bar-end-line" x1="627.734375" x2="627.734375" y1="18" y2="36"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-label-multi-role" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-label-multi-role">
+            <notation id="render-label-multi-role">Sw: \@label(&#34;V1&#34;) S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+
+    <div class="visual-test-card" id="test-label-multiple">
+      <div class="visual-test-card-header">
+        <div class="visual-test-card-title">Multiple Labels</div>
+        <div class="visual-test-card-id">label-multiple</div>
+      </div>
+      <div class="visual-test-card-body">
+        
+        <div class="visual-test-description">Multiple label markers in sequence</div>
+        
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Input</div>
+          <div class="visual-test-input">\@label(&#34;1.&#34;) S R G M P D N S.
+\@label(&#34;2.&#34;) S. N D P M G R S
+</div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label">Expected</div>
+          <div class="visual-test-expected" id="expected-label-multiple">
+            
+            <table class="notationsContentRootTable"><tr class="lineRow" id="lineRow492"><td class="lineAnnotationCell" id="lineAnnotation492"></td><td class="lineContentCell" id="lineContent492" colspan="1"><svg style="margin-bottom: 10px" class="lineRootSVG" width="580.078125" height="67"><g class="lineRoot" id="lineRoot492" transform="translate(4, 20)"><g class="markerView" pre="true" roleName="sw" beatIndex="0" gridRow="0" gridCol="0" transform="translate(0,0)"><text class="markerText" pre="true" dx="0">1.</text></g><g class="beatView role_sw" beatId="125" id="125" roleName="sw" beatIndex="0" gridRow="0" gridCol="1" transform="translate(38.546875,0)"><g class="groupViewRoot" id="groupViewRoot494" transform="translate(0,0)"><g atomid="496" class="atomViewRootGroup" id="atomViewRootGroup496" transform="translate(0,0)"><text atomid="496" class="atomViewTextRoot" id="atomViewTextRoot496" x="0"><tspan atomid="496" id="atomGlyph496">S</tspan></text></g></g></g><line class="bar-start-line" x1="28.546875" x2="28.546875" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="126" id="126" roleName="sw" beatIndex="1" gridRow="0" gridCol="4" transform="translate(108.4375,0)"><g atomid="497" class="atomViewRootGroup" id="atomViewRootGroup497" transform="translate(0,0)"><text atomid="497" class="atomViewTextRoot" id="atomViewTextRoot497" x="0"><tspan atomid="497" id="atomGlyph497">R</tspan></text></g></g><g class="beatView role_sw" beatId="127" id="127" roleName="sw" beatIndex="2" gridRow="0" gridCol="7" transform="translate(180,0)"><g atomid="498" class="atomViewRootGroup" id="atomViewRootGroup498" transform="translate(0,0)"><text atomid="498" class="atomViewTextRoot" id="atomViewTextRoot498" x="0"><tspan atomid="498" id="atomGlyph498">G</tspan></text></g></g><g class="beatView role_sw" beatId="128" id="128" roleName="sw" beatIndex="3" gridRow="0" gridCol="10" transform="translate(251.640625,0)"><g atomid="499" class="atomViewRootGroup" id="atomViewRootGroup499" transform="translate(0,0)"><text atomid="499" class="atomViewTextRoot" id="atomViewTextRoot499" x="0"><tspan atomid="499" id="atomGlyph499">M</tspan></text></g></g><line class="bar-end-line" x1="285.3125" x2="285.3125" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="129" id="129" roleName="sw" beatIndex="4" gridRow="0" gridCol="13" transform="translate(325.3125,0)"><g atomid="500" class="atomViewRootGroup" id="atomViewRootGroup500" transform="translate(0,0)"><text atomid="500" class="atomViewTextRoot" id="atomViewTextRoot500" x="0"><tspan atomid="500" id="atomGlyph500">P</tspan></text></g></g><g class="beatView role_sw" beatId="130" id="130" roleName="sw" beatIndex="5" gridRow="0" gridCol="16" transform="translate(398.984375,0)"><g atomid="501" class="atomViewRootGroup" id="atomViewRootGroup501" transform="translate(0,0)"><text atomid="501" class="atomViewTextRoot" id="atomViewTextRoot501" x="0"><tspan atomid="501" id="atomGlyph501">D</tspan></text></g></g><line class="bar-end-line" x1="430.625" x2="430.625" y1="-15" y2="3"></line><g class="beatView role_sw" beatId="131" id="131" roleName="sw" beatIndex="6" gridRow="0" gridCol="19" transform="translate(470.625,0)"><g atomid="502" class="atomViewRootGroup" id="atomViewRootGroup502" transform="translate(0,0)"><text atomid="502" class="atomViewTextRoot" id="atomViewTextRoot502" x="0"><tspan atomid="502" id="atomGlyph502">N</tspan></text></g></g><g class="beatView role_sw" beatId="132" id="132" roleName="sw" beatIndex="7" gridRow="0" gridCol="22" transform="translate(542.1875,0)"><g atomid="479" class="atomViewRootGroup" id="atomViewRootGroup479" transform="translate(0,0)"><text atomid="479" class="atomViewTextRoot" id="atomViewTextRoot479" x="0"><tspan atomid="479" id="atomGlyph479">S</tspan></text><g width="2" height="2" source="atom479" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g><line class="bar-end-line" x1="572.078125" x2="572.078125" y1="-16" y2="3"></line><line class="bar-end-line" x1="576.078125" x2="576.078125" y1="-16" y2="3"></line><g class="markerView" pre="true" roleName="sw" beatIndex="8" gridRow="1" gridCol="0" transform="translate(0,33)"><text class="markerText" pre="true" dx="0">2.</text></g><g class="beatView role_sw" beatId="133" id="133" roleName="sw" beatIndex="8" gridRow="1" gridCol="1" transform="translate(38.546875,33)"><g class="groupViewRoot" id="groupViewRoot495" transform="translate(0,0)"><g atomid="481" class="atomViewRootGroup" id="atomViewRootGroup481" transform="translate(0,0)"><text atomid="481" class="atomViewTextRoot" id="atomViewTextRoot481" x="0"><tspan atomid="481" id="atomGlyph481">S</tspan></text><g width="2" height="2" source="atom481" transform="translate(3.9453125,-15)"><circle cx="0" cy="0" r="1" class="notation-octave-dot"></circle></g></g></g></g><line class="bar-start-line" x1="28.546875" x2="28.546875" y1="17" y2="36"></line><g class="beatView role_sw" beatId="134" id="134" roleName="sw" beatIndex="9" gridRow="1" gridCol="4" transform="translate(108.4375,33)"><g atomid="503" class="atomViewRootGroup" id="atomViewRootGroup503" transform="translate(0,0)"><text atomid="503" class="atomViewTextRoot" id="atomViewTextRoot503" x="0"><tspan atomid="503" id="atomGlyph503">N</tspan></text></g></g><g class="beatView role_sw" beatId="135" id="135" roleName="sw" beatIndex="10" gridRow="1" gridCol="7" transform="translate(180,33)"><g atomid="504" class="atomViewRootGroup" id="atomViewRootGroup504" transform="translate(0,0)"><text atomid="504" class="atomViewTextRoot" id="atomViewTextRoot504" x="0"><tspan atomid="504" id="atomGlyph504">D</tspan></text></g></g><g class="beatView role_sw" beatId="136" id="136" roleName="sw" beatIndex="11" gridRow="1" gridCol="10" transform="translate(251.640625,33)"><g atomid="505" class="atomViewRootGroup" id="atomViewRootGroup505" transform="translate(0,0)"><text atomid="505" class="atomViewTextRoot" id="atomViewTextRoot505" x="0"><tspan atomid="505" id="atomGlyph505">P</tspan></text></g></g><line class="bar-end-line" x1="285.3125" x2="285.3125" y1="18" y2="36"></line><g class="beatView role_sw" beatId="137" id="137" roleName="sw" beatIndex="12" gridRow="1" gridCol="13" transform="translate(325.3125,33)"><g atomid="506" class="atomViewRootGroup" id="atomViewRootGroup506" transform="translate(0,0)"><text atomid="506" class="atomViewTextRoot" id="atomViewTextRoot506" x="0"><tspan atomid="506" id="atomGlyph506">M</tspan></text></g></g><g class="beatView role_sw" beatId="138" id="138" roleName="sw" beatIndex="13" gridRow="1" gridCol="16" transform="translate(398.984375,33)"><g atomid="507" class="atomViewRootGroup" id="atomViewRootGroup507" transform="translate(0,0)"><text atomid="507" class="atomViewTextRoot" id="atomViewTextRoot507" x="0"><tspan atomid="507" id="atomGlyph507">G</tspan></text></g></g><line class="bar-end-line" x1="430.625" x2="430.625" y1="18" y2="36"></line><g class="beatView role_sw" beatId="139" id="139" roleName="sw" beatIndex="14" gridRow="1" gridCol="19" transform="translate(470.625,33)"><g atomid="508" class="atomViewRootGroup" id="atomViewRootGroup508" transform="translate(0,0)"><text atomid="508" class="atomViewTextRoot" id="atomViewTextRoot508" x="0"><tspan atomid="508" id="atomGlyph508">R</tspan></text></g></g><g class="beatView role_sw" beatId="140" id="140" roleName="sw" beatIndex="15" gridRow="1" gridCol="22" transform="translate(542.1875,33)"><g atomid="509" class="atomViewRootGroup" id="atomViewRootGroup509" transform="translate(0,0)"><text atomid="509" class="atomViewTextRoot" id="atomViewTextRoot509" x="0"><tspan atomid="509" id="atomGlyph509">S</tspan></text></g></g><line class="bar-end-line" x1="572.078125" x2="572.078125" y1="18" y2="36"></line><line class="bar-end-line" x1="576.078125" x2="576.078125" y1="18" y2="36"></line></g></svg></td></tr></table>
+
+            
+          </div>
+        </div>
+
+        <div class="visual-test-section">
+          <div class="visual-test-label-row">
+            <span class="visual-test-label">Rendered</span>
+            <button class="visual-test-copy-btn" data-target="output-label-multiple" title="Copy to clipboard">Copy</button>
+          </div>
+          <div class="visual-test-output" id="output-label-multiple">
+            <notation id="render-label-multiple">\@label(&#34;1.&#34;) S R G M P D N S.
+\@label(&#34;2.&#34;) S. N D P M G R S
+</notation>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.visual-test-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var targetId = btn.getAttribute('data-target');
+      var container = document.getElementById(targetId);
+      if (!container) return;
+
+      
+      var notationView = container.querySelector('.notation-view');
+      var content = notationView ? notationView.innerHTML : container.innerHTML;
+
+      if (!content || content.trim() === '') {
+        alert('No content found to copy');
+        return;
+      }
+
+      navigator.clipboard.writeText(content).then(function() {
+        var originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() {
+          btn.textContent = originalText;
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy');
+      });
+    });
+  });
+});
+</script>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

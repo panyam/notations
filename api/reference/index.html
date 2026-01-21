@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Complete API reference for the Notations library">
+    <title>API Reference - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+<div class="section-nav-content">
+    <h3>Reference</h3>
+
+    <ul>
+        <li><a href="/notations/reference/">Overview</a></li>
+        <li><a href="/notations/reference/dsl-syntax/">DSL Syntax</a></li>
+        <li><a href="/notations/reference/commands/">Commands</a></li>
+        <li><a href="/notations/reference/embelishments/">Embelishments</a></li>
+        <li><a href="/notations/reference/cycles/">Cycles & Talas</a></li>
+        <li><a href="/notations/reference/quick-reference/">Quick Reference</a></li>
+    </ul>
+</div>
+
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>API Reference</h1>
+        
+        <p class="lead">Complete API reference for the Notations library</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>Complete API reference for the Notations library classes, interfaces, and functions.</p>
+
+<h2>Core Functions</h2>
+
+<h3>N.load(source: string)</h3>
+
+<p>Main function to parse and load notation from a source string.</p>
+
+<h4>Parameters</h4>
+
+<ul>
+  <li><strong>source</strong> (string) - The notation DSL source code</li>
+</ul>
+
+<h4>Returns</h4>
+
+<p>Tuple of <code>[Notation, BeatLayout, ParseError[]]</code></p>
+
+<ul>
+  <li><strong>Notation</strong> - Parsed notation object</li>
+  <li><strong>BeatLayout</strong> - Layout information for rendering</li>
+  <li><strong>ParseError[]</strong> - Array of parsing errors (empty if successful)</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>const [notation, beatLayout, errors] = N.load(source);
+if (errors.length === 0) {
+  // Use notation and beatLayout
+}
+</code></pre>
+
+<h2>Parser Class</h2>
+
+<h3>new Parser()</h3>
+
+<p>Creates a new parser instance for more control over parsing.</p>
+
+<h4>Methods</h4>
+
+<ul>
+  <li><strong>parse(source: string)</strong> - Parse the source and return the result</li>
+</ul>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>commands</strong> - Array of parsed commands</li>
+  <li><strong>metadata</strong> - Parsed frontmatter metadata</li>
+  <li><strong>errors</strong> - Array of parse errors</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>const parser = new Parser();
+const result = parser.parse(source);
+console.log("Commands:", parser.commands);
+console.log("Errors:", parser.errors);
+</code></pre>
+
+<h2>Notation Class</h2>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>blocks</strong> - Array of Block objects</li>
+  <li><strong>roles</strong> - Array of role definitions</li>
+  <li><strong>currentCycle</strong> - Current cycle pattern</li>
+  <li><strong>currentAPB</strong> - Current atoms per beat (beat duration)</li>
+  <li><strong>currentBreaks</strong> - Current line break pattern</li>
+  <li><strong>metadata</strong> - Metadata from frontmatter</li>
+</ul>
+
+<h3>Methods</h3>
+
+<ul>
+  <li><strong>newRoleDef(name, notesOnly)</strong> - Create a new role definition</li>
+  <li><strong>setCurrRole(name)</strong> - Set the current active role</li>
+  <li><strong>newLine()</strong> - Create a new line</li>
+  <li><strong>ensureNamedLayoutParams(name)</strong> - Get or create named layout parameters</li>
+</ul>
+
+<h2>Block Class</h2>
+
+<p>Represents a block of notation with multiple lines.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>lines</strong> - Array of Line objects</li>
+  <li><strong>index</strong> - Block index in the notation</li>
+</ul>
+
+<h2>Line Class</h2>
+
+<p>Represents a single line of notation containing multiple roles.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>roles</strong> - Map of role name to RoleView</li>
+  <li><strong>offset</strong> - Line offset (Fraction)</li>
+  <li><strong>marginText</strong> - Text to display in margin</li>
+  <li><strong>layoutParams</strong> - Layout parameters for this line</li>
+</ul>
+
+<h3>Methods</h3>
+
+<ul>
+  <li><strong>addAtoms(roleName, notesOnly, ...atoms)</strong> - Add atoms to a role</li>
+</ul>
+
+<h2>Atom Classes</h2>
+
+<h3>Note</h3>
+
+<p>Represents a musical note or syllable.</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>value</strong> - The note text (e.g., "S", "ri")</li>
+  <li><strong>octave</strong> - Octave offset (0 = middle)</li>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+  <li><strong>embellishments</strong> - Array of gamaka objects</li>
+</ul>
+
+<h3>Group</h3>
+
+<p>Represents a group of atoms sharing a beat.</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>atoms</strong> - Array of Atom objects</li>
+  <li><strong>duration</strong> - Total duration (Fraction)</li>
+</ul>
+
+<h3>Space</h3>
+
+<p>Represents an empty duration (karvai).</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>isSilent</strong> - Whether this is a silent space</li>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+</ul>
+
+<h3>Rest</h3>
+
+<p>Represents an explicit rest (no note continuation).</p>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>duration</strong> - Duration in units (Fraction)</li>
+</ul>
+
+<h2>BeatLayout Class</h2>
+
+<p>Contains layout information for rendering.</p>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>beats</strong> - Array of Beat objects</li>
+  <li><strong>totalDuration</strong> - Total duration of the layout</li>
+</ul>
+
+<h2>Carnatic Module</h2>
+
+<h3>N.Carnatic.NotationView</h3>
+
+<p>Class for rendering Carnatic notation to the DOM.</p>
+
+<h4>Constructor</h4>
+
+<pre><code>new N.Carnatic.NotationView(container, config?)</code></pre>
+
+<h4>Parameters</h4>
+
+<ul>
+  <li><strong>container</strong> (HTMLElement) - DOM element to render into</li>
+  <li><strong>config</strong> (optional) - Configuration object</li>
+</ul>
+
+<h4>Methods</h4>
+
+<ul>
+  <li><strong>renderNotation(notation, beatLayout)</strong> - Render notation to the view</li>
+</ul>
+
+<h4>Properties</h4>
+
+<ul>
+  <li><strong>notation</strong> - Current notation object</li>
+  <li><strong>beatLayout</strong> - Current beat layout</li>
+  <li><strong>rootElement</strong> - Root HTML element</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>const container = document.getElementById("notation");
+const view = new N.Carnatic.NotationView(container);
+view.renderNotation(notation, beatLayout);
+</code></pre>
+
+<h2>ParseError Interface</h2>
+
+<h3>Properties</h3>
+
+<ul>
+  <li><strong>message</strong> - Error message</li>
+  <li><strong>line</strong> - Line number where error occurred</li>
+  <li><strong>column</strong> - Column number where error occurred</li>
+</ul>
+
+<h2>TypeScript Types</h2>
+
+<p>The library includes full TypeScript type definitions:</p>
+
+<pre><code>import {
+  Notation,
+  BeatLayout,
+  ParseError,
+  Parser,
+  Note,
+  Group,
+  Space,
+  Rest,
+  Atom
+} from 'notations';
+</code></pre>
+
+<h2>Observer Pattern</h2>
+
+<p>The library uses the Observer pattern for model change notifications, enabling incremental updates:</p>
+
+<ul>
+  <li><strong>GroupObserver</strong> - Observe atom changes in Group</li>
+  <li><strong>RoleObserver</strong> - Observe atom changes in Role</li>
+  <li><strong>LineObserver</strong> - Observe role changes in Line</li>
+  <li><strong>BlockObserver</strong> - Observe item changes in Block</li>
+</ul>
+
+<p><a href="/notations/api/reference/observer-pattern/">See the full Observer Pattern API documentation</a></p>
+
+<h2>See Also</h2>
+
+<ul>
+  <li><a href="/notations/api/reference/observer-pattern/">Observer Pattern API</a> - Model change notifications</li>
+  <li><a href="/notations/api/integration-guide/">Integration Guide</a> - How to use the API</li>
+  <li><a href="/notations/api/examples/">Examples</a> - Code examples</li>
+  <li><a href="/notations/api/playgrounds/model-events/">Model Events Demo</a> - Interactive observer demo</li>
+  <li><a href="/notations/api/">API Overview</a> - Introduction to the API</li>
+</ul>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

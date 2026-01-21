@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive demos for the Notations library">
+    <title>Playgrounds - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        
+
+        
+        <nav class="section-nav">
+            
+                
+                <div class="section-nav-content">
+                    <h3>Getting Started</h3>
+                    <ul>
+                        <li><a href="/notations/getting-started/">Quick Start</a></li>
+                        <li><a href="/notations/getting-started/installation/">Installation</a></li>
+                    </ul>
+
+                    <h3>Learn</h3>
+                    <ul>
+                        <li><a href="/notations/tutorials/">Tutorials</a></li>
+                        <li><a href="/notations/reference/">Reference</a></li>
+                        <li><a href="/notations/examples/">Examples</a></li>
+                    </ul>
+
+                    <h3>Developers</h3>
+                    <ul>
+                        <li><a href="/notations/api/">API Documentation</a></li>
+                        <li><a href="/notations/contributing/">Contributing</a></li>
+                    </ul>
+                </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Playgrounds</h1>
+        
+        <p class="lead">Interactive demos for the Notations library</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<p>Try out the Notations library in these interactive playgrounds. Edit notation source and see the results in real-time.</p>
+
+<h2>Available Playgrounds</h2>
+
+<div class="playground-cards">
+    <div class="playground-card">
+        <h3><a href="/notations/api/playgrounds/side-by-side/">Side-by-Side Editor</a></h3>
+        <p>A resizable two-panel layout with the source editor on the left and rendered notation on the right. Uses DockView for flexible panel management.</p>
+        <ul>
+            <li>Drag panel dividers to resize</li>
+            <li>Rearrange panels by dragging tabs</li>
+            <li>Console panel shows parse results</li>
+        </ul>
+        <a href="/notations/api/playgrounds/side-by-side/" class="btn btn-primary">Open Side-by-Side Playground</a>
+    </div>
+
+    <div class="playground-card">
+        <h3><a href="/notations/api/playgrounds/notebook/">Notebook Editor</a></h3>
+        <p>A cell-based editor where each notation block becomes an editable cell. Similar to Jupyter notebooks but for music notation.</p>
+        <ul>
+            <li>Click cells to edit inline</li>
+            <li>Nested sections displayed hierarchically</li>
+            <li>Shared column alignment across cells</li>
+        </ul>
+        <a href="/notations/api/playgrounds/notebook/" class="btn btn-primary">Open Notebook Playground</a>
+    </div>
+
+    <div class="playground-card">
+        <h3><a href="/notations/api/playgrounds/model-events/">Model Events Demo</a></h3>
+        <p>Interactive demo showing the Observer pattern for model change events. Add, insert, and remove atoms while watching the event log.</p>
+        <ul>
+            <li>Real-time event notifications</li>
+            <li>Toggle events on/off</li>
+            <li>See typed observer callbacks</li>
+        </ul>
+        <a href="/notations/api/playgrounds/model-events/" class="btn btn-primary">Open Model Events Demo</a>
+    </div>
+</div>
+
+<h2>What You Can Do</h2>
+
+<p>Both playgrounds let you:</p>
+
+<ul>
+    <li><strong>Edit notation source</strong> - Write or modify Carnatic music notation using the DSL</li>
+    <li><strong>See live rendering</strong> - Watch notation render as you type or on demand</li>
+    <li><strong>Try sample notations</strong> - Load pre-built examples to learn the syntax</li>
+    <li><strong>Debug parsing</strong> - View console messages for parse errors and timing</li>
+</ul>
+
+<h2>Choosing a Playground</h2>
+
+<table class="docs-table">
+    <thead>
+        <tr>
+            <th>Use Case</th>
+            <th>Recommended Playground</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Quick experimentation with notation syntax</td>
+            <td>Side-by-Side Editor</td>
+        </tr>
+        <tr>
+            <td>Working with long compositions with sections</td>
+            <td>Notebook Editor</td>
+        </tr>
+        <tr>
+            <td>Learning the DSL with examples</td>
+            <td>Either (both have samples)</td>
+        </tr>
+        <tr>
+            <td>Editing individual sections independently</td>
+            <td>Notebook Editor</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>See Also</h2>
+
+<ul>
+    <li><a href="/notations/tutorials/01-basics/">Basic Tutorial</a> - Learn the notation syntax</li>
+    <li><a href="/notations/reference/syntax/">Syntax Reference</a> - Complete DSL specification</li>
+    <li><a href="/notations/examples/">Examples</a> - Real-world notation examples</li>
+</ul>
+
+<style>
+.playground-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.playground-card {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary, #f8f9fa);
+}
+
+.dark .playground-card {
+    background: var(--color-bg-secondary-dark, #1e1e1e);
+    border-color: var(--color-border-dark, #333);
+}
+
+.playground-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.playground-card h3 a {
+    color: var(--color-primary, #2196f3);
+    text-decoration: none;
+}
+
+.playground-card h3 a:hover {
+    text-decoration: underline;
+}
+
+.playground-card p {
+    color: var(--color-text-secondary, #666);
+    margin-bottom: 1rem;
+}
+
+.dark .playground-card p {
+    color: var(--color-text-secondary-dark, #aaa);
+}
+
+.playground-card ul {
+    margin-bottom: 1rem;
+    padding-left: 1.25rem;
+}
+
+.playground-card li {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #333);
+    text-decoration: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    background: var(--color-bg-hover, #f5f5f5);
+}
+
+.btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+    color: white;
+}
+
+.dark .btn {
+    background: var(--color-bg-dark, #333);
+    border-color: var(--color-border-dark, #444);
+    color: var(--color-text-dark, #e0e0e0);
+}
+
+.dark .btn:hover {
+    background: var(--color-bg-hover-dark, #444);
+}
+
+.dark .btn-primary {
+    background: #2196f3;
+    border-color: #2196f3;
+    color: white;
+}
+
+.dark .btn-primary:hover {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+</style>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Notations Library</h4>
+            <p>Comprehensive documentation for the Notations library - a TypeScript package for parsing, modeling, and rendering Carnatic music notation</p>
+            <p class="version">Version 1.0.9</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/notations/getting-started/">Getting Started</a></li>
+                <li><a href="/notations/tutorials/">Tutorials</a></li>
+                <li><a href="/notations/api/">API Documentation</a></li>
+                <li><a href="/notations/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/notations" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="" target="_blank" rel="noopener">npm Package</a></li>
+                <li><a href="/notations/contributing/">Contributing</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/notations/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/notations/static/js/gen/995.09db47d8602ed3295a4e.js"></script><script defer="defer" src="/notations/static/js/gen/446.ec16f95471958636c123.js"></script><script defer="defer" src="/notations/static/js/gen/359.e952f2a76e5cd57ba0c8.js"></script><script defer="defer" src="/notations/static/js/gen/126.734787bdf64205cf222c.js"></script><script defer="defer" src="/notations/static/js/gen/DocsPage.79625b3730fe414e66ad.js"></script></head>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
