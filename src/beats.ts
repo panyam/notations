@@ -108,40 +108,85 @@ export class Beat {
 
   /**
    * Gets all markers that should be displayed before this beat.
-   * @returns An array of Marker objects
+   * Extracts Marker atoms with position="before" from the beat's content.
+   * @returns An array of Marker objects with position="before"
    */
   get preMarkers(): Marker[] {
-    const out = [] as Marker[];
-    let curr: Atom | null = this.atom;
-    while (curr != null) {
-      for (const marker of curr.markersBefore || []) {
-        out.push(marker);
-      }
-      if (curr.TYPE == AtomType.GROUP) {
-        curr = (curr as Group).atoms.first;
-      } else {
-        curr = null;
-      }
-    }
-    return out;
+    return this.getMarkersWithPosition("before");
   }
 
   /**
    * Gets all markers that should be displayed after this beat.
-   * @returns An array of Marker objects
+   * Extracts Marker atoms with position="after" from the beat's content.
+   * @returns An array of Marker objects with position="after"
    */
   get postMarkers(): Marker[] {
-    const out = [] as Marker[];
-    let curr: Atom | null = this.atom;
-    while (curr != null) {
-      out.splice(0, 0, ...(curr.markersAfter || []));
-      if (curr.TYPE == AtomType.GROUP) {
-        curr = (curr as Group).atoms.last;
-      } else {
-        curr = null;
+    return this.getMarkersWithPosition("after");
+  }
+
+  /**
+   * Extracts Marker atoms with the specified position from the beat's content.
+   * @param position The position to filter by ("before" or "after")
+   * @returns An array of matching Marker objects
+   */
+  private getMarkersWithPosition(position: "before" | "after"): Marker[] {
+    const out: Marker[] = [];
+    if (!this.atom) return out;
+
+    // If the atom is a Group, iterate through its children
+    if (this.atom.TYPE === AtomType.GROUP) {
+      const group = this.atom as Group;
+      for (const child of group.atoms.values()) {
+        if (child.TYPE === AtomType.MARKER) {
+          const marker = child as Marker;
+          if (marker.position === position) {
+            out.push(marker);
+          }
+        }
+      }
+    } else if (this.atom.TYPE === AtomType.MARKER) {
+      // Single marker atom
+      const marker = this.atom as Marker;
+      if (marker.position === position) {
+        out.push(marker);
       }
     }
+
     return out;
+  }
+
+  /**
+   * Gets the content atom for rendering, with markers filtered out.
+   * If the beat contains only markers, returns null.
+   * Otherwise returns the original atom (views should skip markers during rendering).
+   * @returns The content atom, or null if only markers exist
+   */
+  get contentAtom(): Atom | null {
+    if (!this.atom) return null;
+
+    // Single marker atom - no content to render
+    if (this.atom.TYPE === AtomType.MARKER) {
+      return null;
+    }
+
+    // Not a group - return as-is (it's not a marker at this point)
+    if (this.atom.TYPE !== AtomType.GROUP) {
+      return this.atom;
+    }
+
+    // Group - check if it has any non-marker content
+    const group = this.atom as Group;
+    let hasNonMarkerContent = false;
+    for (const child of group.atoms.values()) {
+      if (child.TYPE !== AtomType.MARKER) {
+        hasNonMarkerContent = true;
+        break;
+      }
+    }
+
+    // If all atoms are markers, return null
+    // Otherwise return the original group (view will skip markers during iteration)
+    return hasNonMarkerContent ? this.atom : null;
   }
 }
 

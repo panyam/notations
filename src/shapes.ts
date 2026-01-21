@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { ZERO, Atom, LeafAtom, Group } from "./core";
+import { ZERO, Atom, LeafAtom, Group, AtomType } from "./core";
 
 /**
  * Represents an item to be positioned in collision-based layout.
@@ -553,7 +553,9 @@ export abstract class GroupView extends AtomView {
     });
 
     // now create child atom views for each atom in this Group
+    // Skip markers - they're rendered in separate pre/post marker columns
     for (const atom of this.group.atoms.values()) {
+      if (atom.TYPE === AtomType.MARKER) continue;
       const atomView = this.createAtomView(atom);
       this.atomViews.push(atomView);
     }

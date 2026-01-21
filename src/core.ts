@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity, TimedEntity } from "./entity";
+import { Entity, TimedEntity, CmdParam, ParamsMixin } from "./entity";
 import { LayoutParams } from "./layouts";
 import { AtomChangeType, GroupObserver, RoleObserver, LineObserver } from "./events";
 
@@ -34,10 +34,6 @@ export abstract class Atom extends TimedEntity {
   readonly TYPE: string = "Atom";
 
   protected _duration: Fraction;
-  /** Markers to be displayed before this atom */
-  markersBefore: Marker[];
-  /** Markers to be displayed after this atom */
-  markersAfter: Marker[];
   /** Next atom in the sequence */
   nextSibling: TSU.Nullable<Atom> = null;
   /** Previous atom in the sequence */
@@ -58,6 +54,15 @@ export abstract class Atom extends TimedEntity {
   }
 
   /**
+   * Whether this atom participates in timing calculations.
+   * Most atoms (notes, spaces) participate in timing.
+   * Markers do not - they exist at a point but don't advance time.
+   */
+  get participatesInTiming(): boolean {
+    return true;
+  }
+
+  /**
    * Splits this atom at the specified duration.
    * @param requiredDuration The duration at which to split the atom
    * @returns A new atom representing the portion beyond the split point, or null if no split is needed
@@ -75,12 +80,6 @@ export abstract class Atom extends TimedEntity {
     }
     if (this.isContinuation) {
       out.isContinuation = true;
-    }
-    if ((this.markersBefore || []).length > 0) {
-      out.mbef = this.markersBefore.map((m) => m.debugValue());
-    }
-    if ((this.markersAfter || []).length > 0) {
-      out.maft = this.markersAfter.map((m) => m.debugValue());
     }
     return out;
   }
@@ -156,23 +155,62 @@ export abstract class LeafAtom extends Atom {
   }
 }
 
+// Apply ParamsMixin to LeafAtom for Marker base class
+const LeafAtomWithParams = ParamsMixin(LeafAtom);
+
 /**
  * Represents a marker or annotation in the notation.
- * Markers can be placed before or after atoms to provide additional context.
+ * Markers are standalone atoms that exist at a point in the timeline
+ * but do not participate in timing calculations.
+ *
+ * Syntax: \@markerName(params...)
+ * Examples:
+ *   \@label("Variation 1")
+ *   \@label("End", position="after")
+ *   \@slide(duration=2)
  */
-export class Marker extends Entity {
+export class Marker extends LeafAtomWithParams {
   readonly TYPE = "Marker";
 
   /**
-   * Creates a new Marker with the specified text.
-   * @param text The text content of the marker
-   * @param isBefore Whether the marker should appear before (true) or after (false) its associated atom
+   * Creates a new Marker with the specified name and parameters.
+   * @param name The marker type name (e.g., "label", "slide"), normalized to lowercase
+   * @param params The parameters for this marker (same structure as command params)
    */
   constructor(
-    public text: string,
-    public isBefore = true,
+    public name: string,
+    params: CmdParam[] = [],
   ) {
-    super();
+    super(ZERO); // Markers have zero duration by default
+    this.name = name.toLowerCase();
+    this.params = params;
+  }
+
+  /**
+   * Markers do not participate in timing calculations.
+   * They exist at a point in the timeline but don't advance time.
+   */
+  get participatesInTiming(): boolean {
+    return false;
+  }
+
+  /**
+   * Convenience accessor for the text/label of the marker.
+   * Typically the first positional parameter.
+   */
+  get text(): string {
+    // First positional param is typically the text
+    const firstParam = this.params.find((p) => p.key === null);
+    return firstParam?.value ?? "";
+  }
+
+  /**
+   * Convenience accessor for the position hint.
+   * @returns "before" or "after", defaults to "before"
+   */
+  get position(): "before" | "after" {
+    const pos = this.getParam("position");
+    return pos === "after" ? "after" : "before";
   }
 
   /**
@@ -180,7 +218,11 @@ export class Marker extends Entity {
    * @returns An object containing debug information
    */
   debugValue(): any {
-    return { ...super.debugValue(), text: this.text, before: this.isBefore };
+    return {
+      type: this.TYPE,
+      name: this.name,
+      params: this.params,
+    };
   }
 
   /**
@@ -188,7 +230,7 @@ export class Marker extends Entity {
    * @returns A string representation
    */
   toString(): string {
-    return `Marker(${this.text}-${this.isBefore})`;
+    return `Marker(@${this.name}, ${JSON.stringify(this.params)})`;
   }
 }
 

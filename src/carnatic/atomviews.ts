@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Atom, Group, Literal, AtomType, Note, Space, Syllable } from "../core";
+import { Atom, Group, Literal, AtomType, Note, Space, Syllable, Marker } from "../core";
 import {
   LeafAtomView as LeafAtomViewBase,
   GroupView as GroupViewBase,
@@ -373,6 +373,31 @@ class SyllableView extends LeafAtomView {
   }
 }
 
+/**
+ * View for rendering Marker atoms (annotations like \@label).
+ * Displays the marker's text content.
+ */
+class MarkerView extends LeafAtomView {
+  get glyphLabel(): string {
+    return this.marker.text;
+  }
+
+  get marker(): Marker {
+    return this.leafAtom as Marker;
+  }
+}
+
+/**
+ * Placeholder view for unknown/unhandled atom types.
+ * Shows an error indicator instead of crashing the renderer.
+ */
+class UnknownAtomView extends LeafAtomView {
+  get glyphLabel(): string {
+    // Show the atom type in brackets as a visual error indicator
+    return `[?${this.leafAtom.TYPE}]`;
+  }
+}
+
 export function createAtomView(
   parent: SVGGraphicsElement,
   atom: Atom,
@@ -406,10 +431,13 @@ export function createAtomView(
       (out as GroupView).defaultToNotes = litDefaultsToNote;
       (out as GroupView).scaleFactor = groupViewScale;
       break;
+    case AtomType.MARKER:
+      out = new MarkerView(atom as Marker);
+      break;
     default:
-      // We should never get a group as we are iterating
-      // at leaf atom levels
-      throw new Error("Invalid atom type: " + atom.TYPE);
+      // Unknown atom type - show placeholder instead of crashing
+      console.warn(`Unknown atom type: ${atom.TYPE} - rendering placeholder`);
+      out = new UnknownAtomView(atom as any);
   }
   out.depth = depth;
   out.createElements(parent);

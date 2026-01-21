@@ -13,8 +13,8 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
   /** Embellishments applied to this beat view */
   private _embelishments: Embelishment[];
 
-  /** View for the atom contained in this beat */
-  atomView: AtomView;
+  /** View for the atom contained in this beat (null if beat has only markers) */
+  atomView: AtomView | null;
 
   /** Whether this view needs layout */
   needsLayout = true;
@@ -49,7 +49,9 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
       }),
     );
     this.atomView = this.createAtomView();
-    this.atomView.refreshLayout();
+    if (this.atomView) {
+      this.atomView.refreshLayout();
+    }
   }
 
   /**
@@ -78,7 +80,7 @@ export abstract class BeatView extends ElementShape<SVGGElement> implements Grid
 
   /**
    * Creates the atom view for this beat view.
-   * @returns The created atom view
+   * @returns The created atom view, or null if the beat has no renderable content
    */
-  protected abstract createAtomView(): AtomView;
+  protected abstract createAtomView(): AtomView | null;
 }

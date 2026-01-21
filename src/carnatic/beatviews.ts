@@ -8,6 +8,14 @@ import { Beat } from "../beats";
 import { BeatView as BeatViewBase } from "../beatview";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 
+/**
+ * View for rendering markers in dedicated grid columns.
+ * MarkerView displays the text content of label markers in pre/post columns
+ * adjacent to beat cells, separate from the main beat content.
+ *
+ * This is used by the grid layout system to render `\@label()` markers in
+ * their own columns, ensuring proper alignment across rows.
+ */
 export class MarkerView extends ElementShape<SVGGElement> implements GridCellView {
   needsLayout = true;
   rootGroup: SVGGElement;
@@ -69,7 +77,10 @@ export class MarkerView extends ElementShape<SVGGElement> implements GridCellVie
 
 export class BeatView extends BeatViewBase {
   createAtomView() {
-    return createAtomView(this.element, this.beat.atom, this.beat.role.defaultToNotes);
+    // Use contentAtom to exclude markers (they're rendered in separate pre/post columns)
+    const atom = this.beat.contentAtom;
+    if (!atom) return null;
+    return createAtomView(this.element, atom, this.beat.role.defaultToNotes);
   }
 
   /**
@@ -95,6 +106,7 @@ export class BeatView extends BeatViewBase {
 
     // Propagate column width to atomView for duration-based layout
     // This enables global alignment across beats in the same column
+    // atomView may be null if beat contains only markers
     if (this.hasWidth && this.atomView) {
       this.atomView.setBounds(0, 0, this.width, null, false);
       this.atomView.refreshLayout();

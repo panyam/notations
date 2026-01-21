@@ -207,12 +207,13 @@ export class WindowIterator {
 
   /**
    * Gets the next atom in the sequence and advances the iterator.
+   * For atoms with participatesInTiming=false, the offset is not advanced.
    * @returns The next Atom, or null if no more atoms are available
    */
   next(): TSU.Nullable<Atom> {
     const out = this.peek();
     this.peeked = null;
-    if (out != null) {
+    if (out != null && out.participatesInTiming) {
       this.currOffset = this.currOffset.plus(out.duration, true);
     }
     return out;
@@ -243,6 +244,9 @@ export class WindowIterator {
    * is returned. Otherwise, the duration of atoms returned will cover
    * the given duration even if padding with Space atoms is necessary.
    *
+   * Atoms with participatesInTiming=false (like Markers) are returned
+   * but don't consume any of the requested duration.
+   *
    * @param duration The duration to cover
    * @returns A tuple containing the array of atoms and whether the full duration was filled
    */
@@ -253,12 +257,17 @@ export class WindowIterator {
       const next = this.next();
       TSU.assert(next != null, "Next cannot be null here");
       out.push(next);
-      const spillOver = next.splitAt(remaining);
-      remaining = remaining.minus(next.duration);
-      if (spillOver != null) {
-        // push the spill over to the front of the queue to be
-        // picked up on the next "get" call
-        this.atomQueue.pushFront(spillOver);
+
+      // Only process timing for atoms that participate in timing
+      // Markers and other non-timing atoms are returned without consuming duration
+      if (next.participatesInTiming) {
+        const spillOver = next.splitAt(remaining);
+        remaining = remaining.minus(next.duration);
+        if (spillOver != null) {
+          // push the spill over to the front of the queue to be
+          // picked up on the next "get" call
+          this.atomQueue.pushFront(spillOver);
+        }
       }
     }
     return [out, remaining.isZero];

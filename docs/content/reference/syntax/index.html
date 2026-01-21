@@ -152,6 +152,49 @@ S ~kampita R G ~jaru M
 
 <p>See the <a href="{{.Site.PathPrefix}}/reference/embellishments/">Embellishments Reference</a> for details.</p>
 
+<h2>Markers</h2>
+
+<p>Markers are annotations that don't participate in timing. They use the <code>\@markerName(params)</code> syntax:</p>
+
+<notation id="markers-basic" showSource="true" caption="Basic Label Marker">
+\@label("V1") S R G M P D N S.
+\@label("V2") S. N D P M G R S
+</notation>
+
+<h3>Marker Parameters</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>(first positional)</td><td>string</td><td>-</td><td>The text/label</td></tr>
+    <tr><td><code>position</code></td><td>"before" | "after"</td><td>"before"</td><td>Where to render</td></tr>
+  </tbody>
+</table>
+
+<h3>Position</h3>
+
+<p>Use <code>position="after"</code> to place a marker after a note:</p>
+
+<notation id="markers-after" showSource="true" caption="After Position">
+S R G M \@label("End", position="after") P D N S.
+</notation>
+
+<h3>Per-Role Markers</h3>
+
+<p>Markers are per-role, not per-line. Each role can have its own markers independently:</p>
+
+<notation id="markers-role" showSource="true" caption="Role-Specific Markers">
+Sw: \@label("V1") S R G M P D N S.
+Sh: sa ri ga ma pa dha ni sa
+</notation>
+
 <h2>Comments</h2>
 
 <p>Use <code>//</code> for line comments:</p>
@@ -176,17 +219,17 @@ elements      := (command | roleSelector | atoms)*
 command       := "\\" name "(" params? ")"
 roleSelector  := name ":"
 atoms         := atom+
-atom          := duration? leaf marker?
-leaf          := literal | group | space | rest
+atom          := duration? leaf
+leaf          := literal | group | space | rest | marker
 literal       := (dots? ident dots?) embellishment?
 group         := "[" atoms "]"
 space         := "," | ";" | "_"
 rest          := "-"
+marker        := "\@" name "(" params ")"
 duration      := number | fraction
 fraction      := number "/" number
 octave        := "."+ (before or after literal)
 embellishment := "~" text
-marker        := "<<" text ">>" | ">>" text "<<"
 </code></pre>
 
 <h2>See Also</h2>

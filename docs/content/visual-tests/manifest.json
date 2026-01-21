@@ -14,6 +14,11 @@
       "id": "layout",
       "name": "Layout & Configuration",
       "cases": ["two-roles", "cycle-beat", "nested-groups", "baseline-alignment"]
+    },
+    {
+      "id": "markers",
+      "name": "Markers & Annotations",
+      "cases": ["label-before", "label-after", "label-multi-role", "label-multiple"]
     }
   ],
   "cases": {
@@ -68,6 +73,22 @@
     "baseline-alignment": {
       "name": "Baseline Alignment",
       "description": "Beats with different nesting levels in the same row should have aligned atom baselines"
+    },
+    "label-before": {
+      "name": "Label Before",
+      "description": "Pre-marker label appearing before notes in a dedicated column"
+    },
+    "label-after": {
+      "name": "Label After",
+      "description": "Post-marker label appearing after notes with position=after"
+    },
+    "label-multi-role": {
+      "name": "Label Multi-Role",
+      "description": "Label marker on one role creates aligned column across all roles"
+    },
+    "label-multiple": {
+      "name": "Multiple Labels",
+      "description": "Multiple label markers in sequence"
     }
   }
 }
