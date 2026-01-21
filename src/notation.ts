@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity } from "./entity";
+import { Entity, CmdParam } from "./entity";
 import { Cycle } from "./cycle";
 import { Line } from "./core";
 import {
@@ -39,10 +39,8 @@ export {
   findContainingBlock,
 };
 
-/**
- * Type representing a command parameter with optional key and value.
- */
-export type CmdParam = { key: TSU.Nullable<string>; value: any };
+// Re-export CmdParam for backwards compatibility
+export { CmdParam } from "./entity";
 
 /**
  * Base class for commands in the notation.

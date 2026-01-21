@@ -1,6 +1,12 @@
 import * as TSU from "@panyam/tsutils";
 
 /**
+ * Parameter type for commands and markers.
+ * Used by both Command and Marker classes.
+ */
+export type CmdParam = { key: TSU.Nullable<string>; value: any };
+
+/**
  * A common Entity base class with support for unique IDs, parent references,
  * copying, and debug info. This serves as the foundation for all entities
  * in the notation system.

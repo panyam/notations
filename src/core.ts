@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity, TimedEntity } from "./entity";
+import { Entity, TimedEntity, CmdParam } from "./entity";
 import { LayoutParams } from "./layouts";
 import { AtomChangeType, GroupObserver, RoleObserver, LineObserver } from "./events";
 
@@ -156,11 +156,6 @@ export abstract class LeafAtom extends Atom {
 }
 
 /**
- * Parameter type for markers, same as command params.
- */
-export type MarkerParam = { key: string | null; value: any };
-
-/**
  * Represents a marker or annotation in the notation.
  * Markers are standalone atoms that exist at a point in the timeline
  * but do not participate in timing calculations.
@@ -181,7 +176,7 @@ export class Marker extends LeafAtom {
    */
   constructor(
     public name: string,
-    public params: MarkerParam[] = [],
+    public params: CmdParam[] = [],
   ) {
     super(ZERO); // Markers have zero duration by default
     this.name = name.toLowerCase();
