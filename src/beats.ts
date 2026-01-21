@@ -154,6 +154,51 @@ export class Beat {
 
     return out;
   }
+
+  /**
+   * Gets the content atom for rendering, with markers filtered out.
+   * If the beat contains only markers, returns null.
+   * If the beat contains a mix of markers and other atoms, returns a filtered group.
+   * @returns The content atom without markers, or null if only markers exist
+   */
+  get contentAtom(): Atom | null {
+    if (!this.atom) return null;
+
+    // Single marker atom - no content to render
+    if (this.atom.TYPE === AtomType.MARKER) {
+      return null;
+    }
+
+    // Not a group - return as-is (it's not a marker at this point)
+    if (this.atom.TYPE !== AtomType.GROUP) {
+      return this.atom;
+    }
+
+    // Group - filter out markers
+    const group = this.atom as Group;
+    const nonMarkerAtoms: Atom[] = [];
+    for (const child of group.atoms.values()) {
+      if (child.TYPE !== AtomType.MARKER) {
+        nonMarkerAtoms.push(child);
+      }
+    }
+
+    // No non-marker atoms
+    if (nonMarkerAtoms.length === 0) {
+      return null;
+    }
+
+    // Only one non-marker atom - return it directly
+    if (nonMarkerAtoms.length === 1) {
+      return nonMarkerAtoms[0];
+    }
+
+    // Multiple non-marker atoms - create a new group
+    const filteredGroup = new Group(...nonMarkerAtoms);
+    // Preserve the original group's duration behavior
+    filteredGroup.durationIsSpeedMultiplier = group.durationIsSpeedMultiplier;
+    return filteredGroup;
+  }
 }
 
 /**
