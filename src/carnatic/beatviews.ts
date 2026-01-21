@@ -8,6 +8,14 @@ import { Beat } from "../beats";
 import { BeatView as BeatViewBase } from "../beatview";
 import { BeatStartLines, BeatEndLines } from "./embelishments";
 
+/**
+ * View for rendering markers in dedicated grid columns.
+ * MarkerView displays the text content of label markers in pre/post columns
+ * adjacent to beat cells, separate from the main beat content.
+ *
+ * This is used by the grid layout system to render `\@label()` markers in
+ * their own columns, ensuring proper alignment across rows.
+ */
 export class MarkerView extends ElementShape<SVGGElement> implements GridCellView {
   needsLayout = true;
   rootGroup: SVGGElement;
