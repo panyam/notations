@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Entity, TimedEntity, CmdParam } from "./entity";
+import { Entity, TimedEntity, CmdParam, ParamsMixin } from "./entity";
 import { LayoutParams } from "./layouts";
 import { AtomChangeType, GroupObserver, RoleObserver, LineObserver } from "./events";
 
@@ -155,6 +155,9 @@ export abstract class LeafAtom extends Atom {
   }
 }
 
+// Apply ParamsMixin to LeafAtom for Marker base class
+const LeafAtomWithParams = ParamsMixin(LeafAtom);
+
 /**
  * Represents a marker or annotation in the notation.
  * Markers are standalone atoms that exist at a point in the timeline
@@ -166,7 +169,7 @@ export abstract class LeafAtom extends Atom {
  *   \@label("End", position="after")
  *   \@slide(duration=2)
  */
-export class Marker extends LeafAtom {
+export class Marker extends LeafAtomWithParams {
   readonly TYPE = "Marker";
 
   /**
@@ -176,10 +179,11 @@ export class Marker extends LeafAtom {
    */
   constructor(
     public name: string,
-    public params: CmdParam[] = [],
+    params: CmdParam[] = [],
   ) {
     super(ZERO); // Markers have zero duration by default
     this.name = name.toLowerCase();
+    this.params = params;
   }
 
   /**
@@ -188,25 +192,6 @@ export class Marker extends LeafAtom {
    */
   get participatesInTiming(): boolean {
     return false;
-  }
-
-  /**
-   * Gets a parameter by key.
-   * @param key The parameter key to look for
-   * @returns The parameter value, or undefined if not found
-   */
-  getParam(key: string): any {
-    const param = this.params.find((p) => p.key === key);
-    return param?.value;
-  }
-
-  /**
-   * Gets a parameter by index (for positional params).
-   * @param index The parameter index
-   * @returns The parameter value, or undefined if not found
-   */
-  getParamAt(index: number): any {
-    return this.params[index]?.value;
   }
 
   /**

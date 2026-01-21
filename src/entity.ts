@@ -7,6 +7,44 @@ import * as TSU from "@panyam/tsutils";
 export type CmdParam = { key: TSU.Nullable<string>; value: any };
 
 /**
+ * Interface for entities that have parameters.
+ */
+export interface HasParams {
+  params: CmdParam[];
+}
+
+/**
+ * Mixin that adds parameter handling to a class.
+ * Provides getParam and getParamAt methods.
+ * Works with both concrete and abstract base classes.
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function ParamsMixin<T extends abstract new (...args: any[]) => object>(Base: T) {
+  abstract class Mixed extends Base implements HasParams {
+    params: CmdParam[] = [];
+
+    /**
+     * Gets a parameter value by key.
+     * @param key The parameter key to look for
+     * @returns The parameter value, or null if not found
+     */
+    getParam(key: string): any {
+      return this.params.find((p) => p.key === key)?.value ?? null;
+    }
+
+    /**
+     * Gets a parameter value by index (for positional params).
+     * @param index The parameter index
+     * @returns The parameter value, or null if not found
+     */
+    getParamAt(index: number): any {
+      return this.params[index]?.value ?? null;
+    }
+  }
+  return Mixed;
+}
+
+/**
  * A common Entity base class with support for unique IDs, parent references,
  * copying, and debug info. This serves as the foundation for all entities
  * in the notation system.
