@@ -66,3 +66,162 @@ describe("GlobalBeatLayout", () => {
     expect(a8.value).toBe("i");
   });
 });
+
+describe("Marker Rendering Tests", () => {
+  test("Pre-marker (\\@label) creates pre-marker column", () => {
+    const beatLayout = parseToBeats(`
+      \\cycle("4")
+      \\breaks(4)
+      Sw:
+      \\@label("V1") S R G M
+    `);
+    expect(beatLayout.roleBeatsForLine.size).toBe(1);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    // Should have 1 row
+    expect(gm.rows.length).toBe(1);
+    // Get first row's beat - it should have pre-marker data
+    const row = gm.getRow(0);
+    // Find the pre-marker column (col 0 in the grid usually)
+    let foundMarker = false;
+    for (let col = 0; col < row.cells.length; col++) {
+      const cell = row.cellAt(col);
+      if (cell?.value?.markers) {
+        foundMarker = true;
+        expect(cell.value.markers.length).toBe(1);
+        expect(cell.value.markers[0].text).toBe("V1");
+        expect(cell.value.markers[0].position).toBe("before");
+        break;
+      }
+    }
+    expect(foundMarker).toBe(true);
+  });
+
+  test("Post-marker (\\@label with position=after) in middle of line", () => {
+    // Post-marker in the middle of a line, attached to a beat
+    const beatLayout = parseToBeats(`
+      \\cycle("4")
+      \\breaks(4)
+      Sw:
+      S R \\@label("End", position="after") G M
+    `);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    expect(gm.rows.length).toBe(1);
+    // Find the post-marker column
+    const row = gm.getRow(0);
+    let foundMarker = false;
+    for (let col = 0; col < row.cells.length; col++) {
+      const cell = row.cellAt(col);
+      if (cell?.value?.markers) {
+        foundMarker = true;
+        expect(cell.value.markers.length).toBe(1);
+        expect(cell.value.markers[0].text).toBe("End");
+        expect(cell.value.markers[0].position).toBe("after");
+        break;
+      }
+    }
+    expect(foundMarker).toBe(true);
+  });
+
+  test("Multiple markers on same beat", () => {
+    const beatLayout = parseToBeats(`
+      \\cycle("4")
+      \\breaks(4)
+      Sw:
+      \\@label("A") \\@label("B") S R G M
+    `);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    const row = gm.getRow(0);
+    let markerCount = 0;
+    for (let col = 0; col < row.cells.length; col++) {
+      const cell = row.cellAt(col);
+      if (cell?.value?.markers) {
+        markerCount += cell.value.markers.length;
+      }
+    }
+    expect(markerCount).toBe(2);
+  });
+
+  test("Markers with roles - marker only on one role", () => {
+    const beatLayout = parseToBeats(`
+      \\cycle("4")
+      \\breaks(4)
+      Sw:
+      \\@label("V1") S R G M
+      Sh:
+      sa ri ga ma
+    `);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    // Should have 2 rows (Sw and Sh)
+    expect(gm.rows.length).toBe(2);
+    // First row (Sw) should have marker
+    const swRow = gm.getRow(0);
+    let swMarkerFound = false;
+    for (let col = 0; col < swRow.cells.length; col++) {
+      const cell = swRow.cellAt(col);
+      if (cell?.value?.markers) {
+        swMarkerFound = true;
+        expect(cell.value.markers[0].text).toBe("V1");
+        break;
+      }
+    }
+    expect(swMarkerFound).toBe(true);
+    // Second row (Sh) should NOT have marker in its cells
+    const shRow = gm.getRow(1);
+    let shMarkerFound = false;
+    for (let col = 0; col < shRow.cells.length; col++) {
+      const cell = shRow.cellAt(col);
+      if (cell?.value?.markers && cell.value.markers.length > 0) {
+        shMarkerFound = true;
+        break;
+      }
+    }
+    expect(shMarkerFound).toBe(false);
+  });
+
+  test("Complex notation from tutorial renders without error", () => {
+    // This test ensures the complex notation from the tutorial renders without error
+    const beatLayout = parseToBeats(`
+      \\beatDuration(2)
+      \\cycle("3|2|2")
+      \\breaks(7)
+      Sw:
+      \\@label("1.") , , , m g , m , , , p , , m p , , , , , p m p , d , n ,
+      s. , , , , r. s. n [d ,, n ] d p , , p m , d p m g , [m , , p ] g , m r
+
+      \\@label("2.") g , , m g , m , , , p , , m p , , , , , p m p , d , n ,
+      s. n s. , [g. r. , , ] s. n d n d p , , p s. n d p , p p m g [g , p m ] g ,
+
+      Sh:
+      , , , Ma na , su , , , svā , , , , , , , , , dhi , , , , , na ,
+      mai , , , , , na , , , ā , , , gha , , nu , , ni , , , ki , , ,
+
+      , , , Ma na , su , , , svā , , , , , , , , , dhi , , , , , na ,
+      mai , , , , , na , , , ā , , , gha , nu , , , ni , , , ki , , ,
+    `);
+    // Simply verify it parsed and created beat layout without error
+    expect(beatLayout.roleBeatsForLine.size).toBeGreaterThan(0);
+    expect(beatLayout.gridLayoutGroup.gridModels.length).toBeGreaterThan(0);
+  });
+
+  test("Markers with special characters in text", () => {
+    // Test that markers with special characters render without error
+    const beatLayout = parseToBeats(`
+      \\cycle("4")
+      \\breaks(4)
+      Sw:
+      \\@label("V1.") S R G M
+    `);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    const row = gm.getRow(0);
+    let foundMarker = false;
+    for (let col = 0; col < row.cells.length; col++) {
+      const cell = row.cellAt(col);
+      if (cell?.value?.markers) {
+        foundMarker = true;
+        expect(cell.value.markers[0].text).toBe("V1.");
+        break;
+      }
+    }
+    expect(foundMarker).toBe(true);
+  });
+});
