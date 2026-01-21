@@ -293,4 +293,30 @@ describe("Beat.contentAtom", () => {
     }
     expect(beatLayout.roleBeatsForLine.size).toBe(1);
   });
+
+  test("contentAtom does not error when group has multiple non-marker atoms", () => {
+    // This test verifies that contentAtom doesn't try to re-parent atoms
+    // when filtering markers from a group with multiple children
+    const beatLayout = parseToBeats(`
+      \\cycle("1")
+      \\breaks(1)
+      Sw:
+      [\\@label("A") S R]
+    `);
+    const gm = beatLayout.gridLayoutGroup.gridModels[0];
+    const row = gm.getRow(0);
+    // Find a beat with actual content
+    for (let col = 0; col < row.cells.length; col++) {
+      const cell = row.cellAt(col);
+      if (cell?.value && cell.value.atom) {
+        const beat = cell.value;
+        // This should not throw "Atom belongs to another parent"
+        const content = beat.contentAtom;
+        if (content) {
+          expect(content.TYPE).not.toBe("Marker");
+        }
+      }
+    }
+    expect(beatLayout.roleBeatsForLine.size).toBe(1);
+  });
 });
