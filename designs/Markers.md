@@ -187,6 +187,33 @@ When building beats:
 3. Multiple atoms at the same offset are grouped together
 4. Beat.preMarkers/postMarkers extract markers from the beat's content
 
+### Rendering Architecture
+
+The rendering system handles markers through a clean separation of concerns:
+
+1. **Beat.contentAtom**: A getter that returns the beat's atom, filtering out marker-only beats
+   - If beat contains only a Marker → returns `null`
+   - If beat contains a Group with only Markers → returns `null`
+   - Otherwise returns the original atom (no cloning)
+
+2. **BeatView.createAtomView()**: Uses `beat.contentAtom` instead of `beat.atom`
+   - Returns `null` if contentAtom is null (marker-only beat)
+   - The `atomView` property is nullable to handle this case
+
+3. **GroupView.createElements()**: Skips markers during iteration
+   - When iterating over group children to create views, markers are filtered out
+   - This prevents markers from being rendered inline with notes
+
+4. **MarkerView**: Dedicated view for rendering markers
+   - Extends `LeafAtomView` and renders the marker text
+   - Used in dedicated pre/post columns, not inline with beat content
+
+5. **UnknownAtomView**: Graceful fallback for unknown atom types
+   - Renders `[?TYPE]` placeholder instead of crashing
+   - Enables forward compatibility as new atom types are added
+
+This architecture ensures markers are rendered only once, in their dedicated columns, rather than both in columns AND inline with notes.
+
 ### Future Considerations
 
 - **Braces/Children**: Markers could support children in the future for things like sections:
