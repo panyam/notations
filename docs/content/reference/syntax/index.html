@@ -54,6 +54,22 @@ S    R    G    M
 
 <p>Both lines produce identical output.</p>
 
+<h3>Bar Separators</h3>
+
+<p>A <code>|</code> or <code>||</code> inside a role line is ignored the same way whitespace is, so
+you can mark avartanam boundaries in the source if you find them easier to read. The renderer draws
+its own lines from the cycle either way, one at the end of each bar and a double line at the end of
+the avartanam, so a bar you type is never what you see:</p>
+
+<notation id="bar-separators" showSource="true" caption="Bar Separators">
+\cycle("|4|2|2|")
+Sw: S R G M | P D | N S. ||
+</notation>
+
+<p>Because they are ignored rather than checked, a bar in the wrong place is not an error. The
+<code>|</code> characters inside <code>\cycle("|4|2|2|")</code> are a different thing entirely,
+since that argument is a quoted string and the bars in it define the cycle.</p>
+
 <h3>Spaces (Karvais)</h3>
 
 <p>Spaces represent empty durations where the previous note continues. Use commas:</p>
@@ -69,7 +85,7 @@ S    R    G    M
   <tbody>
     <tr><td><code>,</code></td><td>Space (Karvai)</td><td>1 unit</td></tr>
     <tr><td><code>;</code></td><td>Double space</td><td>2 units</td></tr>
-    <tr><td><code>_</code></td><td>Silent space (not implemented yet)</td><td>1 unit (not displayed)</td></tr>
+    <tr><td><code>_</code></td><td>Silent space</td><td>1 unit (not displayed)</td></tr>
   </tbody>
 </table>
 
@@ -77,7 +93,9 @@ S    R    G    M
 S , R ; G , , M
 </notation>
 
-<p>Silent spaces are meant to consume duration without displaying the space symbol, to avoid clutter. They are not implemented yet, so use <code>,</code> for now.</p>
+<p>Silent spaces consume duration without displaying the space symbol, to avoid clutter. Only a
+standalone <code>_</code> counts as one, so write <code>_ _ _</code> for three. A run such as
+<code>___</code> is an ordinary literal, as is an underscore inside a word.</p>
 
 <h3>Rests</h3>
 

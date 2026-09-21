@@ -152,12 +152,10 @@ describe("Playground Patterns", () => {
       expect(addAtomsCmd!.atoms.length).toBe(3);
     });
 
-    it("should throw on invalid commands", () => {
+    it("should report invalid commands as errors rather than throwing", () => {
       const parser = new Parser();
-      // Invalid commands throw an error
-      expect(() => {
-        parser.parse("S R G \\invalidCommand");
-      }).toThrow("Invalid command");
+      parser.parse("S R G \\invalidCommand");
+      expect(parser.errors.map((e: any) => e.message)).toEqual(["Invalid command: invalidcommand"]);
     });
   });
 });
