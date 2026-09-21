@@ -39,3 +39,4 @@ samples/gen
 *.code-workspace
 .env
 galorium/homepage/resources/_gen
+**/.claude/settings.local.json
