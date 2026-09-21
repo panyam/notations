@@ -116,13 +116,14 @@
     "precommit-msg",
     "clean",
     "build",
+    "check:esm",
     "lintfix",
     "test"
   ],
   "scripts": {
     "clean": "rm -Rf lib && jest --clearCache && rm -rf static/lib",
     "builddocs": "npx typedoc",
-    "buildbase": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "buildbase": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && node scripts/finalize-esm.mjs",
     "build:css": "mkdir -p dist && sass styles/NotationView.scss dist/NotationView.css --style=expanded && sass styles/NotationView.scss dist/NotationView.min.css --style=compressed",
     "build:umd": "webpack --mode=development && webpack --mode=production",
     "build:docs": "webpack --config docs/webpack.config.js --mode production",
@@ -130,6 +131,7 @@
     "build:docs:watch": "webpack --config docs/webpack.config.js --mode development --watch",
     "build": "npm run builddocs && npm run buildbase && npm run build:css && npm run build:umd",
     "test": "jest --coverage --runInBand",
+    "check:esm": "node scripts/check-esm.mjs",
     "lint": "eslint src --quiet",
     "lintfix": "eslint src --quiet --fix",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
