@@ -7,15 +7,17 @@ description: "Adding mridangam and tabla patterns to your notation"
 
 <h2>Basic Approach: Using Comments</h2>
 
-<p>The simplest way is to add percussion as comments or labels:</p>
+<p>The simplest way is to write the solkattu as a comment above the line it belongs to. Anything
+after <code>//</code> is ignored by the parser, so it stays in the source without becoming part of
+the notation:</p>
 
 <notation id="percussion-comments" showSource="true" caption="Percussion as Comments">
 \cycle("|4|2|2|")
 \beatDuration(4)
 
 \line("Pallavi with Mridangam")
-Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
-\line("Mridangam: ta ka dhi mi , ta ka jha nu , ___ ___ , ___ ___")
+// mridangam: ta ka dhi mi , ta ka jha nu
+Sw: S R G M , P D N S. , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Separate Percussion Line</h2>
@@ -27,10 +29,10 @@ Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
 \beatDuration(4)
 
 \line("Melody")
-Sw: S R G M , P D N S. , R. S. N D , P M G R |
+Sw: S R G M , P D N S. , R. S. N D , P M G R
 
 \line("Mridangam")
-Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta |
+Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta
 </notation>
 
 <h2>Common Mridangam Patterns</h2>
@@ -42,10 +44,10 @@ Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta |
 \beatDuration(4)
 
 \line("Swaras")
-Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
+Sw: S R G M , P D N S. , , , , , , , , , , , , , ,
 
 \line("Mridangam Pattern")
-Pe: ta ka ta ki , ta ta ka dhi , mi ta ka , jha nu ta |
+Pe: ta ka ta ki , ta ta ka dhi , mi ta ka , jha nu ta
 </notation>
 
 <h3>Chatusram in Adi Tala</h3>
@@ -54,8 +56,8 @@ Pe: ta ka ta ki , ta ta ka dhi , mi ta ka , jha nu ta |
 \cycle("|4|2|2|")
 \beatDuration(4)
 
-Sw: SRGM PDNS. R.G.M.P. D.N.S..R.. , ___ ___ ___ ___ , ___ ___ ___ ___ |
-Pe: taka dimi taka jhanu , taki tata kadhi mita , ___ ___ ___ ___ , ___ ___ ___ ___ |
+Sw: SRGM PDNS. R.G.M.P. D.N.S..R.. , , , , , , , , , , , , , , , , , , , , , , , , , ,
+Pe: taka dimi taka jhanu , taki tata kadhi mita , , , , , , , , , , , , , , , , , , , , , , , , , ,
 </notation>
 
 <h3>Tisram in Adi Tala</h3>
@@ -64,8 +66,8 @@ Pe: taka dimi taka jhanu , taki tata kadhi mita , ___ ___ ___ ___ , ___ ___ ___ 
 \cycle("|4|2|2|")
 \beatDuration(4)
 
-Sw: SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... ___ ___ , ___ ___ ___ ___ |
-Pe: tak adh imi tak adh , ita kit ata kat adh , imi tak adh ___ , ___ ___ ___ ___ |
+Sw: SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... , , , , , , , , , , , , , , , , , , ,
+Pe: tak adh imi tak adh , ita kit ata kat adh , imi tak adh , , , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Mridangam in Different Talas</h2>
@@ -76,8 +78,8 @@ Pe: tak adh imi tak adh , ita kit ata kat adh , imi tak adh ___ , ___ ___ ___ __
 \cycle("|2|4|")
 \beatDuration(4)
 
-Sw: S R , G M P D N S. |
-Pe: ta ka , dhi mi ta ka jha nu |
+Sw: S R , G M P D N S.
+Pe: ta ka , dhi mi ta ka jha nu
 </notation>
 
 <h3>Misra Chapu (7 beats)</h3>
@@ -86,8 +88,8 @@ Pe: ta ka , dhi mi ta ka jha nu |
 \cycle("|3|2|2|")
 \beatDuration(4)
 
-Sw: S R G , M P , D N |
-Pe: ta ka dhi , mi ta , ka jha ||
+Sw: S R G , M P , D N
+Pe: ta ka dhi , mi ta , ka jha
 </notation>
 
 <h2>Mridangam Korvai Patterns</h2>
@@ -99,16 +101,16 @@ Pe: ta ka dhi , mi ta , ka jha ||
 \beatDuration(4)
 
 \line("Korvai - First Iteration")
-Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu , , , , , , , , , , , , , , , ,
 
 \line("Korvai - Second Iteration")
-Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu , , , , , , , , , , , , , , , ,
 
 \line("Korvai - Third Iteration")
-Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu ___ , ___ ___ ___ ___ |
+Pe: ta ka dhi mi ta ka jha nu , ta ri ki ta ta ka dhi mi , ta ka jha nu , , , , , , , , , , , , , , , ,
 
 \line("Mohra (Ending)")
-Pe: ta ___ dhi mi ___ , ___ ta ___ , ___ ___ ___ ||
+Pe: ta , , , dhi mi , , , , , , , ta , , , , , , , , , , , , ,
 </notation>
 
 <h2>Thani Avartanam Structure</h2>
@@ -120,13 +122,13 @@ Pe: ta ___ dhi mi ___ , ___ ta ___ , ___ ___ ___ ||
 \beatDuration(4)
 
 \line("Section 1 - Simple Patterns")
-Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta |
+Pe: ta ka dhi mi , ta ka jha nu , ta ki ta ta , ka dhi mi ta
 
 \line("Section 2 - Increase Complexity")
-Pe: taka dimi taka jhanu , taki tata kadhi mita , takajhanu tari kita , dimi taka jhanu ta |
+Pe: taka dimi taka jhanu , taki tata kadhi mita , takajhanu tari kita , dimi taka jhanu ta
 
 \line("Section 3 - Korvai")
-Pe: takadimi takajhanu tarikita , takadimi takajhanu tarikita , takadimi takajhanu tarikita , ta ___ dhi mi ___ ||
+Pe: takadimi takajhanu tarikita , takadimi takajhanu tarikita , takadimi takajhanu tarikita , ta , , , dhi mi , , ,
 </notation>
 
 <h2>Combining with Swaras</h2>
@@ -138,12 +140,12 @@ Pe: takadimi takajhanu tarikita , takadimi takajhanu tarikita , takadimi takajha
 \beatDuration(4)
 
 \line("Pallavi")
-Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
-Pe: ta ka dhi mi , ta ka jha nu , ta ri ki ta , ta ___ ___ ___ ||
+Sw: S R G M , P M G R , S R G M , P , , , , , , , , ,
+Pe: ta ka dhi mi , ta ka jha nu , ta ri ki ta , ta , , , , , , , , ,
 
 \line("Swaram Passage")
-Sw: SR GM PD NS. , R.S. DP MG RS , ___ ___ ___ ___ , ___ ___ ___ ___ |
-Pe: taka dimi taka jhanu , taki tata kadh imi ta , ___ ___ ___ ___ , ___ ___ ___ ___ ||
+Sw: SR GM PD NS. , R.S. DP MG RS , , , , , , , , , , , , , , , , , , , , , , , , , ,
+Pe: taka dimi taka jhanu , taki tata kadh imi ta , , , , , , , , , , , , , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Tabla Patterns</h2>
@@ -155,10 +157,10 @@ Pe: taka dimi taka jhanu , taki tata kadh imi ta , ___ ___ ___ ___ , ___ ___ ___
 \beatDuration(4)
 
 \line("Melody")
-Sw: S R G M , P D N S. , R. G. M. P. , D. N. S.. R.. |
+Sw: S R G M , P D N S. , R. G. M. P. , D. N. S.. R..
 
 \line("Tabla (Teental)")
-Pe: dha dhin dhin dha , dha dhin dhin dha , dha tin tin ta , ta dhin dhin dha |
+Pe: dha dhin dhin dha , dha dhin dhin dha , dha tin tin ta , ta dhin dhin dha
 </notation>
 
 <h2>Notation Symbols</h2>
@@ -178,7 +180,7 @@ Pe: dha dhin dhin dha , dha dhin dhin dha , dha tin tin ta , ta dhin dhin dha |
   <li>Use a separate line prefixed with <code>Pe:</code> for percussion</li>
   <li>Align percussion syllables with corresponding melody beats</li>
   <li>Mark korvai iterations clearly (1st, 2nd, 3rd)</li>
-  <li>Use <code>___</code> for rests or sustained tones</li>
+  <li>Use <code>,</code> for a held beat and <code>-</code> for an explicit rest</li>
   <li>Study traditional korvai patterns and their variations</li>
   <li>Practice reciting solkattu (vocal percussion syllables)</li>
   <li>Consider the interaction between melody and percussion</li>

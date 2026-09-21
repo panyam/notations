@@ -16,19 +16,17 @@ description: "Structuring RTP (Ragam, Tanam, Pallavi) with different sections"
 
 <h2>Ragam Section</h2>
 
-<p>The ragam is a free exploration. Use <code>\noTala</code> to indicate no fixed rhythm:</p>
+<p>The ragam is a free exploration with no fixed rhythm. There is no command for that yet, so the example below leaves out <code>\cycle</code> and lets the default apply:</p>
 
 <notation id="ragam" showSource="true" caption="Ragam - Raga Kalyani Opening">
-\noTala
-\accidentals(M#)
 \line("Alapana - Lower Octave")
-S _ _ R , G _ M# _ , P _ _ _
+S , , R , G , "M#" , , P , , ,
 
 \line("Alapana - Middle Octave")
-M# P D N , S. _ _ R. , G. M#. P. D.
+"M#" P D N , S. , , R. , G. "M#." P. D.
 
 \line("Alapana - Descent")
-S. _ D N , P M# G R , S _ _ _
+S. , D N , P "M#" G R , S , , ,
 </notation>
 
 <h2>Tanam Section</h2>
@@ -36,14 +34,12 @@ S. _ D N , P M# G R , S _ _ _
 <p>Tanam introduces rhythm but maintains freedom. Mark it with <code>\line("Tanam")</code>:</p>
 
 <notation id="tanam" showSource="true" caption="Tanam - Raga Kalyani">
-\noTala
-\accidentals(M#)
 \line("Tanam")
-S R G M# , P D N S. , ta na na tom , ta na na tom
+S R G "M#" , P D N S. , ta na na tom , ta na na tom
 
-S. R. G. M#. , P. D. N. S.. , ta na na tom , ta na na tom
+S. R. G. "M#." , P. D. N. S.. , ta na na tom , ta na na tom
 
-S.. D. N. S. , P M# G R , S _ _ _ , ta nom _ _
+S.. D. N. S. , P "M#" G R , S , , , , ta nom , ,
 </notation>
 
 <h2>Pallavi - Setting the Tala</h2>
@@ -53,10 +49,9 @@ S.. D. N. S. , P M# G R , S _ _ _ , ta nom _ _
 <notation id="pallavi-setup" showSource="true" caption="Pallavi - Tala Introduction">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\accidentals(M#)
 \line("Pallavi - Misra Chapu")
-Sw: S R G M# , P D N , S. R. G. |
-Sh: ga na na tha , bho vi , ka ra na ||
+Sw: S R G "M#" , P D N , S. R. G.
+Sh: ga na na tha , bho vi , ka ra na
 </notation>
 
 <h2>Pallavi - First Speed</h2>
@@ -66,10 +61,9 @@ Sh: ga na na tha , bho vi , ka ra na ||
 <notation id="pallavi-first" showSource="true" caption="Pallavi Elaboration - First Speed">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\accidentals(M#)
 \line("1st Speed Variation")
-S R G M# , P M# G R , S R G M# |
-P D N S. , R. S. N D , P M# G R ||
+S R G "M#" , P "M#" G R , S R G "M#"
+P D N S. , R. S. N D , P "M#" G R
 </notation>
 
 <h2>Pallavi - Second Speed</h2>
@@ -77,10 +71,9 @@ P D N S. , R. S. N D , P M# G R ||
 <notation id="pallavi-second" showSource="true" caption="Pallavi Elaboration - Second Speed">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\accidentals(M#)
 \line("2nd Speed Variation")
-SR GM# PD , NS. R.S. ND , PM# GR SR |
-GM# PD NS. , R.G. M#.P. D.N. , S.R. G.M#. P.D. ||
+SR "GM#" PD , NS. R.S. ND , "PM#" GR SR
+"GM#" PD NS. , R.G. "M#.P." D.N. , S.R. "G.M#." P.D.
 </notation>
 
 <h2>Pallavi - Third Speed (Tisram)</h2>
@@ -88,10 +81,9 @@ GM# PD NS. , R.G. M#.P. D.N. , S.R. G.M#. P.D. ||
 <notation id="pallavi-third" showSource="true" caption="Pallavi Elaboration - Third Speed">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\accidentals(M#)
 \line("3rd Speed Variation (Tisram)")
-SRG GM#P PDN , NS.R. R.S.N NDP , PM#G GRS SRG |
-GM#P PDN NS.R. , R.G.M#. M#.P.D. D.N.S.. , S..D.N. N.S.P PM#G ||
+SRG "GM#P" PDN , NS.R. R.S.N NDP , "PM#G" GRS SRG
+"GM#P" PDN NS.R. , "R.G.M#." "M#.P.D." D.N.S.. , S..D.N. N.S.P "PM#G"
 </notation>
 
 <h2>Kalpana Swarams</h2>
@@ -101,16 +93,15 @@ GM#P PDN NS.R. , R.G.M#. M#.P.D. D.N.S.. , S..D.N. N.S.P PM#G ||
 <notation id="kalpana" showSource="true" caption="Kalpana Swarams">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\accidentals(M#)
 \line("Kalpana Swaram 1")
-SR GM# PD , NS. R.S. ND , PM# GR SR |
+SR "GM#" PD , NS. R.S. ND , "PM#" GR SR
 \line("Return to Pallavi")
-S R G M# , P D N , S. R. G. ||
+S R G "M#" , P D N , S. R. G.
 
 \line("Kalpana Swaram 2")
-S.D. N.S. S.P , PM# M#G GR , RS SR RG |
+S.D. N.S. S.P , "PM#" "M#G" GR , RS SR RG
 \line("Return to Pallavi")
-S R G M# , P D N , S. R. G. ||
+S R G "M#" , P D N , S. R. G.
 </notation>
 
 <h2>Complete RTP Structure</h2>
@@ -131,7 +122,7 @@ S R G M# , P D N , S. R. G. ||
 <h2>Tips for RTP Notation</h2>
 
 <ul>
-  <li>Use <code>\noTala</code> for ragam and tanam sections</li>
+  <li>Leave out <code>\cycle</code> in ragam and tanam sections, which have no fixed rhythm</li>
   <li>Choose interesting talas for pallavi (not just Adi tala)</li>
   <li>Mark each speed variation clearly with <code>\line()</code></li>
   <li>Always return to the pallavi line after kalpana swarams</li>
@@ -144,5 +135,5 @@ S R G M# , P D N , S. R. G. ||
 <ul>
   <li><a href="{{.Site.PathPrefix}}/examples/different-speeds/">Different Speeds</a> - Master speed variations</li>
   <li><a href="{{.Site.PathPrefix}}/examples/complex-gamakas/">Complex Gamakas</a> - Apply embellishments</li>
-  <li><a href="{{.Site.PathPrefix}}/reference/commands/">Commands Reference</a> - Learn <code>\noTala</code> and other commands</li>
+  <li><a href="{{.Site.PathPrefix}}/reference/commands/">Commands Reference</a> - Learn <code>\cycle</code>, <code>\beatDuration</code> and the rest</li>
 </ul>
