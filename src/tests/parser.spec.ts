@@ -913,3 +913,67 @@ describe("Block Syntax Tests", () => {
     ]);
   });
 });
+
+describe("Comment Tests", () => {
+  function parseOf(input: string): Parser {
+    const parser = new Parser();
+    parser.parse(input);
+    return parser;
+  }
+
+  function expectSameAsUncommented(commented: string, uncommented: string): void {
+    const withComments = parseOf(commented);
+    const without = parseOf(uncommented);
+    expect(withComments.errors).toEqual([]);
+    expect(withComments.commands.map((c: any) => c.debugValue())).toEqual(
+      without.commands.map((c: any) => c.debugValue()),
+    );
+  }
+
+  test("Line comment on its own line", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\n// a note to self\nSw: S R\n`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Line comment trailing a role line", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\nSw: S R // why this akshara splits here\n`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Line comment at end of input without a newline", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\nSw: S R\n// trailing`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Block comment on its own line", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\n/* a note */\nSw: S R\n`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Block comment spanning lines", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\n/* a note\n   continued */\nSw: S R\n`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Block comment between atoms", () => {
+    expectSameAsUncommented(`\\cycle("|2|")\nSw: S /* here */ R\n`, `\\cycle("|2|")\nSw: S R\n`);
+  });
+
+  test("Double slash inside a string is not a comment", () => {
+    const parser = parseOf(`\\line("a//b")`);
+    expect(parser.errors).toEqual([]);
+    expect(parser.commands.map((c: any) => c.debugValue())).toEqual([
+      { name: "CreateLine", index: 0, params: [{ key: null, value: "a//b" }] },
+    ]);
+  });
+
+  test("Fractions still parse alongside the line comment rule", () => {
+    const parser = parseOf(`\\line("x", offset = 3/4) // an offset`);
+    expect(parser.errors).toEqual([]);
+    expect(parser.commands.map((c: any) => c.debugValue())).toEqual([
+      {
+        name: "CreateLine",
+        index: 0,
+        params: [
+          { key: null, value: "x" },
+          { key: "offset", value: { num: 3, den: 4 } },
+        ],
+      },
+    ]);
+  });
+});

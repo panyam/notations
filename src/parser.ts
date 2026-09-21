@@ -34,7 +34,7 @@ const TWO = ONE.timesNum(2);
  * song.  So users spend more time writing notation and less worrying about
  * other things like headings etc.
  */
-const [parser /*itemGraph*/] = G.newParser(
+const [parser, tokenFunc /*itemGraph*/] = G.newParser(
   String.raw`
     %define IdentChar     /[^%!@$#&\^|\[\]={}()<>+\-,;~: \t\f\r\n\v\\\.\'\"]/
 
@@ -72,7 +72,7 @@ const [parser /*itemGraph*/] = G.newParser(
     %token  BSLASH_NUMBER /\\{NUMBER}/
     %token  HYPHEN        /-/
     %skip                 /[ \t\n\f\r]+/
-    %skip_flex            "//.*$"
+    %skip                 /\/\/[^\n]*/
     %skip                 /\/\*.*?\*\//
 
     Document -> Elements
@@ -575,6 +575,10 @@ export class Parser {
 
   parse(input: string): any {
     this.errors = [];
+    // The galore parser holds one TokenBuffer for its lifetime and does not drain it when a
+    // parse throws, so a token left over from a failed parse would be read back as the first
+    // token of the next one.  Handing it the tokenizer again gives us an empty buffer.
+    parser.setTokenizer(tokenFunc!);
     try {
       const ptree = parser.parse(input, {
         tokenizerContext: this,
