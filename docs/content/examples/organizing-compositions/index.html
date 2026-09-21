@@ -14,16 +14,16 @@ description: "Using lines, margins, and layouts effectively for readable notatio
 \beatDuration(4)
 
 \line("Pallavi")
-Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
-Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+Sw: S R G M , P D N S. , , , , , , , , , , , , , ,
+Sh: sa ri ga ma , pa dha ni sa , , , , , , , , , , , , , ,
 
 \line("Anupallavi")
-Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
-Sh: sa ri ga ma , pa dha ni sa , ___ ___ , ___ ___ ||
+Sw: S. R. G. M. , P. D. N. S.. , , , , , , , , , , , , , ,
+Sh: sa ri ga ma , pa dha ni sa , , , , , , , , , , , , , ,
 
 \line("Charanam")
-Sw: P D S. R. , S. D P M , G M P D , S. ___ |
-Sh: pa dha sa ri , sa dha pa ma , ga ma pa dha , sa ___ ||
+Sw: P D S. R. , S. D P M , G M P D , S. , , ,
+Sh: pa dha sa ri , sa dha pa ma , ga ma pa dha , sa , , ,
 </notation>
 
 <h2>Separating Swaras and Sahitya</h2>
@@ -35,10 +35,10 @@ Sh: pa dha sa ri , sa dha pa ma , ga ma pa dha , sa ___ ||
 \beatDuration(4)
 
 \line("Pallavi - Swaras")
-Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
+Sw: S R G M , P M G R , S R G M , P , , , , , , , , ,
 
 \line("Pallavi - Sahitya")
-Sh: nin nu ko ri , va ra da nun , nu ko ri , va ___ ___ ___ ||
+Sh: nin nu ko ri , va ra da nun , nu ko ri , va , , , , , , , , ,
 </notation>
 
 <h2>Multi-Speed Sections</h2>
@@ -50,13 +50,13 @@ Sh: nin nu ko ri , va ra da nun , nu ko ri , va ___ ___ ___ ||
 \beatDuration(4)
 
 \line("Muktayi Swaram - 1st Speed")
-S R G M , P D N S. , ___ ___ , ___ ___ |
+S R G M , P D N S. , , , , , , , , , , , , , ,
 
 \line("Muktayi Swaram - 2nd Speed")
-SR GM PD NS. , R.S. DP MG RS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+SR GM PD NS. , R.S. DP MG RS , , , , , , , , , , , , , , , , , , , , , , , , , ,
 
 \line("Muktayi Swaram - 3rd Speed")
-SRG GMP PDN NS.R. , R.S.D DPN PMG GRS , ___ ___ ___ ___ , ___ ___ ___ ___ |
+SRG GMP PDN NS.R. , R.S.D DPN PMG GRS , , , , , , , , , , , , , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Long Kriti Structure</h2>
@@ -68,35 +68,37 @@ SRG GMP PDN NS.R. , R.S.D DPN PMG GRS , ___ ___ ___ ___ , ___ ___ ___ ___ |
 \beatDuration(4)
 
 \line("==== PALLAVI ====")
-Sw: S R G M , P D N S. , ___ ___ , ___ ___ |
-Sh: bro va bha ra ma , moo la ra ma chan , dra ___ , ___ ___ ||
+Sw: S R G M , P D N S. , , , , , , , , , , , , , ,
+Sh: bro va bha ra ma , moo la ra ma chan , dra , , , , , , , , , ,
 
 \line("==== ANUPALLAVI ====")
-Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
-Sh: de va de va , ja ya ja ya , ___ ___ , ___ ___ ||
+Sw: S. R. G. M. , P. D. N. S.. , , , , , , , , , , , , , ,
+Sh: de va de va , ja ya ja ya , , , , , , , , , , , , , ,
 
 \line("==== CHARANAM 1 ====")
-Sw: P D S. R. , S. D P M , G R S ___ , ___ ___ ___ ___ |
-Sh: ka ru na ni dhi , ra ma bha dra , nin ne ___ , ___ ___ ___ ___ ||
+Sw: P D S. R. , S. D P M , G R S , , , , , , , , , , , , , , , ,
+Sh: ka ru na ni dhi , ra ma bha dra , nin ne , , , , , , , , , , , , , , , ,
 
 \line("==== CHARANAM 2 ====")
-Sw: S R G M , P M G R , S R G M , P ___ ___ ___ |
-Sh: sa da sa dhi ya , tya ga ra ja , vi nu ta , ra ___ ___ ___ ||
+Sw: S R G M , P M G R , S R G M , P , , , , , , , , ,
+Sh: sa da sa dhi ya , tya ga ra ja , vi nu ta , ra , , , , , , , , ,
 </notation>
 
 <h2>Using Comments for Annotations</h2>
 
-<p>Add performance notes or reminders:</p>
+<p>Anything after <code>//</code> on a line is ignored by the parser, so performance notes and
+reminders can sit next to the notation they describe rather than in a line title:</p>
 
 <notation id="comments" showSource="true" caption="Using Comments">
 \cycle("|4|2|2|")
 \beatDuration(4)
 
-\line("Pallavi - Slow tempo, emphasize gamakas")
-Sw: S (R~G) M P , (P~D) N S. , ___ ___ , ___ ___ |
-Sh: nin nu ko ri , va ra da , ___ ___ , ___ ___ ||
+// Slow tempo here, let the gamakas breathe
+\line("Pallavi")
+Sw: S [~ R G] M P , [~ P D] N S. , , , , , , , , , , , , , ,
+Sh: nin nu ko ri , va ra da , , , , , , , , , , , , , ,
 
-\line("Repeat pallavi 2x before anupallavi")
+// Repeat the pallavi twice before moving to the anupallavi
 </notation>
 
 <h2>Organizing Repetitions</h2>
@@ -108,10 +110,10 @@ Sh: nin nu ko ri , va ra da , ___ ___ , ___ ___ ||
 \beatDuration(4)
 
 \line("Pallavi [Repeat 2x]")
-Sw: S R G M , P D N S. , ___ ___ , ___ ___ ||
+Sw: S R G M , P D N S. , , , , , , , , , , , , , ,
 
 \line("Anupallavi")
-Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ ||
+Sw: S. R. G. M. , P. D. N. S.. , , , , , , , , , , , , , ,
 
 \line("[Return to Pallavi]")
 </notation>
@@ -125,10 +127,10 @@ Sw: S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ ||
 \beatDuration(4)
 
 \line("Extended Swaram - Part 1")
-SR GM PD NS. , R.S. DP MG RS , SR GM PD NS. , R.S. DP MG RS |
+SR GM PD NS. , R.S. DP MG RS , SR GM PD NS. , R.S. DP MG RS
 
 \line("Extended Swaram - Part 2")
-S.R. G.M. P.D. N.S.. , R..S.. D..N.. P..D.. M..P.. , G..M.. R..G.. S..R.. ___ , ___ ___ ___ ___ |
+S.R. G.M. P.D. N.S.. , R..S.. D..N.. P..D.. M..P.. , G..M.. R..G.. S..R.. , , , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Organizing by Tala Avartanams</h2>
@@ -140,13 +142,13 @@ S.R. G.M. P.D. N.S.. , R..S.. D..N.. P..D.. M..P.. , G..M.. R..G.. S..R.. ___ , 
 \beatDuration(4)
 
 \line("Avartanam 1")
-S R G M , P D N S. , ___ ___ , ___ ___ |
+S R G M , P D N S. , , , , , , , , , , , , , ,
 
 \line("Avartanam 2")
-S. R. G. M. , P. D. N. S.. , ___ ___ , ___ ___ |
+S. R. G. M. , P. D. N. S.. , , , , , , , , , , , , , ,
 
 \line("Avartanam 3")
-S.. D.. N.. S.. , P. M. G. R. , S. ___ ___ , ___ ___ ___ ||
+S.. D.. N.. S.. , P. M. G. R. , S. , , , , , , , , , , , , , , , ,
 </notation>
 
 <h2>Best Practices</h2>
@@ -156,7 +158,7 @@ S.. D.. N.. S.. , P. M. G. R. , S. ___ ___ , ___ ___ ___ ||
   <li><strong>Visual separation</strong> - Use <code>\line()</code> liberally to separate sections</li>
   <li><strong>Alignment</strong> - Keep swaras and sahitya aligned on the same beats</li>
   <li><strong>Speed markers</strong> - Always label speed changes (1st, 2nd, 3rd speed)</li>
-  <li><strong>Tala markers</strong> - Use <code>|</code> and <code>||</code> to mark avartanam boundaries</li>
+  <li><strong>Tala markers</strong> - Drawn for you from the cycle, one line at the end of each bar and a double line at the end of the avartanam</li>
   <li><strong>Whitespace</strong> - Don't be afraid of empty space for readability</li>
   <li><strong>Comments</strong> - Add performance notes where helpful</li>
   <li><strong>Logical grouping</strong> - Group related phrases together</li>
@@ -167,7 +169,6 @@ S.. D.. N.. S.. , P. M. G. R. , S. ___ ___ , ___ ___ ___ ||
 <notation id="template" showSource="true" caption="Composition Template">
 \cycle("|4|2|2|")
 \beatDuration(4)
-\accidentals()  // Add accidentals if needed
 
 \line("==== PALLAVI ====")
 Sw: // Add swaras
