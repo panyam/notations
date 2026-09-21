@@ -977,3 +977,98 @@ describe("Comment Tests", () => {
     ]);
   });
 });
+
+describe("Silent Space Tests", () => {
+  function atomsOf(input: string): any[] {
+    const parser = new Parser();
+    parser.parse(input);
+    expect(parser.errors).toEqual([]);
+    const addAtoms = parser.commands.map((c: any) => c.debugValue()).find((c: any) => c.atoms);
+    return addAtoms.atoms;
+  }
+
+  test("A lone underscore is a silent space", () => {
+    expect(atomsOf(`Sw: S _ R`)).toEqual([
+      { type: "Literal", value: "S" },
+      { type: "Space", isSilent: true },
+      { type: "Literal", value: "R" },
+    ]);
+  });
+
+  test("Separated underscores are one silent space each", () => {
+    expect(atomsOf(`Sw: _ _ _`)).toEqual([
+      { type: "Space", isSilent: true },
+      { type: "Space", isSilent: true },
+      { type: "Space", isSilent: true },
+    ]);
+  });
+
+  test("A comma is a space that is not silent", () => {
+    expect(atomsOf(`Sw: S , R`)).toEqual([
+      { type: "Literal", value: "S" },
+      { type: "Space", isSilent: false },
+      { type: "Literal", value: "R" },
+    ]);
+  });
+
+  // The token is guarded by a lookahead so that only a standalone underscore becomes a space.
+  // Runs and embedded underscores stay literals, which is what they were before the token existed.
+  test("An underscore run stays a literal", () => {
+    expect(atomsOf(`Sw: S ___ R`)).toEqual([
+      { type: "Literal", value: "S" },
+      { type: "Literal", value: "___" },
+      { type: "Literal", value: "R" },
+    ]);
+  });
+
+  test("An underscore inside a word stays part of the word", () => {
+    expect(atomsOf(`Sw: S_N_D _abc`)).toEqual([
+      { type: "Literal", value: "S_N_D" },
+      { type: "Literal", value: "_abc" },
+    ]);
+  });
+
+  test("Inside a group a silent space differs from a comma only by isSilent", () => {
+    const silent = atomsOf(`Sw: [S _ R]`);
+    const comma = atomsOf(`Sw: [S , R]`);
+    expect(silent[0].atoms[1]).toEqual({ type: "Space", isSilent: true });
+    expect(comma[0].atoms[1]).toEqual({ type: "Space", isSilent: false });
+    expect({ ...silent[0], atoms: null }).toEqual({ ...comma[0], atoms: null });
+  });
+});
+
+describe("Bar Separator Tests", () => {
+  function parseOf(input: string): Parser {
+    const parser = new Parser();
+    parser.parse(input);
+    return parser;
+  }
+
+  function expectSameAsUnbarred(barred: string, unbarred: string): void {
+    const withBars = parseOf(barred);
+    expect(withBars.errors).toEqual([]);
+    expect(withBars.commands.map((c: any) => c.debugValue())).toEqual(
+      parseOf(unbarred).commands.map((c: any) => c.debugValue()),
+    );
+  }
+
+  test("Single and double bars in a role line are ignored", () => {
+    expectSameAsUnbarred(`Sw: S R G M | P D | N S. ||`, `Sw: S R G M P D N S.`);
+  });
+
+  test("A bar with no surrounding whitespace is ignored", () => {
+    expectSameAsUnbarred(`Sw: S R|G M`, `Sw: S R G M`);
+  });
+
+  test("A bar between commands is ignored", () => {
+    expectSameAsUnbarred(`\\beatDuration(2) | Sw: S R`, `\\beatDuration(2) Sw: S R`);
+  });
+
+  // The skip rule must not reach inside a quoted string, which is where the cycle spec lives.
+  test("Bars inside the cycle spec still define the bars", () => {
+    const parser = parseOf(`\\cycle("|4|2|2|")\nSw: S R G M | P D | N S. ||`);
+    expect(parser.errors).toEqual([]);
+    const cycle = parser.commands[0].debugValue().params[0].value;
+    expect(cycle).toEqual("|4|2|2|");
+  });
+});

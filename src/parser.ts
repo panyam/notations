@@ -67,11 +67,13 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
     %token  DOTS_IDENT    /(\.+)({IdentChar}+)/     { toOctavedNote   }
     %token  IDENT_DOTS    /({IdentChar}+)(\.+)/     { toOctavedNote   }
     %token  IDENT_COLON   /{IdentChar}+:/           { toRoleSelector  }
+    %token  UNDER_SCORE   /_(?!{IdentChar})/
     %token  IDENT         /{IdentChar}+/
     %token  BSLASH_IDENT  /\\{IDENT}/               { toCommandName   }
     %token  BSLASH_NUMBER /\\{NUMBER}/
     %token  HYPHEN        /-/
     %skip                 /[ \t\n\f\r]+/
+    %skip                 /\|\|?/
     %skip                 /\/\/[^\n]*/
     %skip                 /\/\*.*?\*\//
 
@@ -477,6 +479,9 @@ export class Parser {
       const blockCommands = children[2].value as Command[] | null;
 
       const innerCommand = this.createCommand(name, params);
+      // The block's commands were already spliced out of this.commands by endBlock, so an unknown
+      // command takes its block down with it rather than leaving those commands at the top level.
+      if (innerCommand === null) return null;
 
       if (blockCommands !== null) {
         // Wrap in BlockCommand
@@ -503,8 +508,8 @@ export class Parser {
       return children[1].value;
     },
     appendCommand: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const command = children[1].value as Command;
-      this.addCommand(command);
+      const command = children[1].value as Command | null;
+      if (command !== null) this.addCommand(command);
 
       const atoms = children[2].value as Atom[];
       if (atoms.length > 0) {
@@ -540,7 +545,16 @@ export class Parser {
     // config = config || {};
   }
 
-  createCommand(name: string, params: CmdParam[]): Command {
+  /**
+   * Builds the command a `\\name(...)` directive names.
+   *
+   * Returns null for a name with no command behind it, after recording a ParseError on this
+   * parser, rather than throwing. Rule handlers run inside galore's parse loop, so a throw
+   * escapes `parse` and `load` entirely and reaches the caller as an exception while every other
+   * parse failure arrives in the errors array. Callers get one failure shape by being handed a
+   * null here and reading `errors`.
+   */
+  createCommand(name: string, params: CmdParam[]): Command | null {
     const lName = name.trim().toLowerCase();
     params = params || [];
     if (lName == "line") {
@@ -564,7 +578,8 @@ export class Parser {
       return new Repeat(params);
     } else {
       // Try to set this as the current role
-      throw new Error("Invalid command: " + lName);
+      this.errors.push(new G.ParseError("Invalid command: " + lName, "InvalidCommand", lName));
+      return null;
     }
   }
 

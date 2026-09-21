@@ -43,7 +43,7 @@ gh-pages: build
 		git add -A && \
 		git commit -m "Deploy to GitHub Pages" && \
 		git branch -M gh-pages && \
-		git remote add origin git@panyam-github:panyam/notations.git && \
+		git remote add origin git@github.com:panyam/notations.git && \
 		git push -f origin gh-pages
 	@echo "Deployed! Enable GitHub Pages in repo settings to serve from gh-pages branch"
 	@rm -rf dist/docs/.git

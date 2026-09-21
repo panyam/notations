@@ -68,3 +68,31 @@ describe("Parser State Isolation", () => {
     ]);
   });
 });
+
+describe("Invalid Commands", () => {
+  const BAD_COMMAND = `\\cycle("|4|")\nSw: S R G M\n\\nosuchcommand\n`;
+
+  test("An unknown command is reported rather than thrown", () => {
+    const [, , errors] = load(BAD_COMMAND);
+    expect(errors.map((e: any) => e.message)).toEqual(["Invalid command: nosuchcommand"]);
+  });
+
+  test("Parsing continues past an unknown command", () => {
+    const parser = new Parser();
+    parser.parse(BAD_COMMAND);
+    const names = parser.commands.map((c: any) => c.debugValue().name);
+    expect(names).toEqual(["SetCycle", "ActivateRole", "AddAtoms"]);
+  });
+
+  test("An unknown command carrying a block drops the block without crashing", () => {
+    const parser = new Parser();
+    parser.parse(`\\cycle("|2|")\n\\nosuchcommand {\n mrid: tham ,\n}\nmrid: thi ,\n`);
+    expect(parser.errors.map((e: any) => e.message)).toEqual(["Invalid command: nosuchcommand"]);
+    expect(parser.commands.map((c: any) => c.debugValue().name)).toEqual(["SetCycle", "ActivateRole", "AddAtoms"]);
+  });
+
+  test("A later load is unaffected by an earlier invalid command", () => {
+    expect(load(BAD_COMMAND)[2].length).toBeGreaterThan(0);
+    expect(load(GOOD)[2]).toEqual([]);
+  });
+});
