@@ -1,0 +1,26 @@
+name: Publish npm
+
+# Publishes notations when a release tag (v*) is pushed, through servicekit's shared
+# workflow, which uses npm trusted publishing (no token). The tag must match
+# package.json's version. Run it by hand (workflow_dispatch, ref = an existing
+# tag) to publish an older tag that has this file.
+#
+# npm side, once:
+#   npx npm@latest trust github notations --repo panyam/notations --file publish-npm.yml --allow-publish
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    uses: panyam/servicekit/.github/workflows/npm-publish.yml@master
+    with:
+      package-manager: pnpm
+      node-version: '22'
+      test-command: pnpm run check:esm && pnpm run lint && pnpm test
