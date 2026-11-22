@@ -1,6 +1,6 @@
 name: Publish npm
 
-# Publishes notations when a release tag (v*) is pushed, through servicekit's shared
+# Publishes notations when a release tag (v*) is pushed, through panyam/ci-actions' shared
 # workflow, which uses npm trusted publishing (no token). The tag must match
 # package.json's version. Run it by hand (workflow_dispatch, ref = an existing
 # tag) to publish an older tag that has this file.
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   publish:
-    uses: panyam/servicekit/.github/workflows/npm-publish.yml@master
+    uses: panyam/ci-actions/.github/workflows/npm-publish.yml@v0.1.4
     with:
       package-manager: pnpm
       node-version: '22'
