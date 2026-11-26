@@ -1,4 +1,5 @@
-import { extractNotation, transcribe, TranscriptionRefusedError } from "../../components/photo/transcriber";
+import { parseTranscription, transcribe, TranscriptionRefusedError } from "../../components/photo/transcriber";
+import type { Transcription } from "../../components/photo/grid";
 
 /** A stand-in for client.beta.messages.stream that replays canned replies and records requests. */
 function fakeClient(replies: Array<{ text: string; stop_reason?: string; explanation?: string }>) {
@@ -39,41 +40,63 @@ function fakeClient(replies: Array<{ text: string; stop_reason?: string; explana
 }
 
 const IMG = [{ data: "AAAA", mediaType: "image/jpeg" as const }];
-const fenced = (body: string, notes = "") => "```notation\n" + body + "\n```\n" + (notes ? `Notes: ${notes}\n` : "");
 
-const GOOD = `\\cycle("|4|")
-Sw: s r g m
-Sh: sa ri ga ma`;
+function grid(sw: string[], sh: string[]): string {
+  const t: Transcription = {
+    metadata: [{ key: "ragam", value: "Mohanam" }],
+    cycle: "|4|",
+    timing: "Eka, 2 per beat",
+    sections: [
+      {
+        heading: "Pallavi",
+        text: "",
+        cycle: "",
+        beatDuration: 2,
+        lines: [
+          {
+            label: "",
+            partial: false,
+            uncertain: "",
+            roles: [
+              { role: "Sw", beats: sw },
+              { role: "Sh", beats: sh },
+            ],
+          },
+        ],
+      },
+    ],
+    notes: ["sahitya aligned by position"],
+  };
+  return JSON.stringify(t);
+}
 
-describe("extractNotation", () => {
-  test("takes the notation block and the notes after it", () => {
-    const r = extractNotation(fenced(GOOD, "tala inferred"));
-    expect(r.notation).toBe(GOOD + "\n");
-    expect(r.notes).toBe("tala inferred");
-  });
+const GOOD = grid(["s *,", "r g", "p *,", "d s."], ["Sa *,", "ri ga", "pa *,", "da sa"]);
+const SHORT_BEAT = grid(["s", "r g", "p *,", "d s."], ["Sa *,", "ri ga", "pa *,", "da sa"]);
 
-  test("prefers a notation-tagged block over other fences", () => {
-    const r = extractNotation("```yaml\nx: 1\n```\n```notation\nSw: s\n```");
-    expect(r.notation).toBe("Sw: s\n");
-  });
-
-  test("survives an unterminated fence and no fence", () => {
-    expect(extractNotation("```notation\nSw: s r").notation).toBe("Sw: s r\n");
-    expect(extractNotation("Sw: s r").notation).toBe("Sw: s r");
+describe("parseTranscription", () => {
+  test("accepts a grid and rejects anything else", () => {
+    expect(parseTranscription(GOOD)?.cycle).toBe("|4|");
+    expect(parseTranscription('{"cycle": "|4|"')).toBeNull();
+    expect(parseTranscription('{"cycle": "|4|"}')).toBeNull();
   });
 });
 
 describe("transcribe", () => {
-  test("returns the first answer when it parses and aligns", async () => {
-    const { client, requests } = fakeClient([{ text: fenced(GOOD) }]);
+  test("turns a clean grid into DSL in one round", async () => {
+    const { client, requests } = fakeClient([{ text: GOOD }]);
     const r = await transcribe(client, { images: IMG, hints: "Ragam: Mohanam" });
     expect(requests).toHaveLength(1);
-    expect(r.notation).toBe(GOOD + "\n");
+    expect(r.notation).toContain("Sw: s , r g p , d s. ||");
+    expect(r.notation).toContain("Sh: Sa , ri ga pa , da sa ||");
+    expect(r.report.errors).toEqual([]);
+    expect(r.report.inferredSlots).toBe(4);
     expect(r.check.errors).toEqual([]);
 
     const req = requests[0];
     expect(req.model).toBe("claude-opus-5-5");
     expect(req.thinking).toEqual({ type: "adaptive" });
+    expect(req.output_config.effort).toBe("high");
+    expect(req.output_config.format.type).toBe("json_schema");
     expect(req.fallbacks).toBe("default");
     expect(req.system[0].cache_control).toEqual({ type: "ephemeral" });
     const content = req.messages[0].content;
@@ -81,44 +104,45 @@ describe("transcribe", () => {
     expect(content[content.length - 1].text).toContain("Ragam: Mohanam");
   });
 
-  test("sends parse errors back and keeps the corrected answer", async () => {
-    const { client, requests } = fakeClient([{ text: fenced('\\meta("x")\n' + GOOD) }, { text: fenced(GOOD) }]);
-    const r = await transcribe(client, { images: IMG });
+  test("sends located grid errors back and keeps the corrected grid", async () => {
+    const { client, requests } = fakeClient([{ text: SHORT_BEAT }, { text: GOOD }]);
+    const r = await transcribe(client, { images: IMG, effort: "xhigh" });
     expect(requests).toHaveLength(2);
     const second = requests[1].messages;
     expect(second).toHaveLength(3);
-    // The assistant turn goes back unchanged, thinking block included.
-    expect(second[1].content[0].type).toBe("thinking");
-    expect(second[2].content).toContain("Invalid command: meta");
+    expect(second[1].content[0].type).toBe("thinking"); // reply passed back unchanged
+    expect(second[2].content).toContain('"Pallavi", line 1, Sw, beat 1 ("s") has 1 slot(s)');
+    expect(requests[1].output_config.effort).toBe("xhigh");
     expect(r.attempts).toHaveLength(2);
-    expect(r.check.errors).toEqual([]);
+    expect(r.report.errors).toEqual([]);
     expect(r.usage.cacheReadTokens).toBe(160);
   });
 
-  test("asks about alignment warnings only once", async () => {
-    const short = `\\cycle("|4|")\nSw: s r g`;
-    const { client, requests } = fakeClient([{ text: fenced(short) }, { text: fenced(short) }]);
-    const r = await transcribe(client, { images: IMG, maxRepairs: 3 });
-    expect(requests).toHaveLength(2);
-    expect(r.check.warnings).toHaveLength(1);
-  });
-
-  test("keeps an earlier answer that parsed over a later broken one", async () => {
-    const short = `\\cycle("|4|")\nSw: s r g`;
-    const { client } = fakeClient([{ text: fenced(short) }, { text: fenced("\\bogus\n") }]);
+  test("keeps the attempt with fewest errors when the fixes run out", async () => {
+    const worse = grid(["s", "r", "p *,", "d s."], ["Sa *,", "ri ga", "pa *,", "da sa"]);
+    const { client, requests } = fakeClient([{ text: SHORT_BEAT }, { text: worse }]);
     const r = await transcribe(client, { images: IMG, maxRepairs: 1 });
-    expect(r.notation).toBe(short + "\n");
+    expect(requests).toHaveLength(2);
+    expect(r.report.errors).toHaveLength(1);
+    expect(r.notation).toContain("Sw: s r g"); // still written out, for fixing by hand
   });
 
-  test("gives up after maxRepairs and still returns the last attempt", async () => {
-    const { client, requests } = fakeClient([{ text: fenced("\\bogus\n") }]);
-    const r = await transcribe(client, { images: IMG, maxRepairs: 2 });
-    expect(requests).toHaveLength(3);
-    expect(r.check.errors.length).toBeGreaterThan(0);
+  test("an unreadable reply earns a retry", async () => {
+    const { client, requests } = fakeClient([{ text: "{" }, { text: GOOD }]);
+    const r = await transcribe(client, { images: IMG });
+    expect(requests).toHaveLength(2);
+    expect(requests[1].messages[2].content).toContain("not a readable grid");
+    expect(r.report.errors).toEqual([]);
+  });
+
+  test("a reply cut off at max_tokens with nothing usable fails clearly", async () => {
+    const { client, requests } = fakeClient([{ text: '{"metadata": [', stop_reason: "max_tokens" }]);
+    await expect(transcribe(client, { images: IMG })).rejects.toThrow("cut off");
+    expect(requests).toHaveLength(1);
   });
 
   test("labels pages when there are several photos", async () => {
-    const { client, requests } = fakeClient([{ text: fenced(GOOD) }]);
+    const { client, requests } = fakeClient([{ text: GOOD }]);
     await transcribe(client, { images: [IMG[0], IMG[0]] });
     const content = requests[0].messages[0].content;
     expect(content.map((c: any) => c.type)).toEqual(["text", "image", "text", "image", "text"]);
@@ -132,7 +156,7 @@ describe("transcribe", () => {
   });
 
   test("needs at least one photo", async () => {
-    const { client } = fakeClient([{ text: fenced(GOOD) }]);
+    const { client } = fakeClient([{ text: GOOD }]);
     await expect(transcribe(client, { images: [] })).rejects.toThrow("at least one photo");
   });
 });

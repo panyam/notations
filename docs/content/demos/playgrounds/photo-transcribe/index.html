@@ -26,6 +26,7 @@ bodyClass: "playground-page"
                 <p class="pt-muted">For a song over several pages, add them all; use the arrows to put them in order.</p>
             </div>
             <div id="pt-thumbs" class="pt-thumbs"></div>
+            <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
         </section>
 
         <section class="pt-section">
@@ -49,6 +50,7 @@ bodyClass: "playground-page"
                     <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster, cheaper)</option>
                 </select>
             </label>
+            <label class="pt-check"><input id="pt-careful" type="checkbox"> Careful reading (slower; for messy or sparse notation)</label>
         </section>
 
         <section class="pt-section">
@@ -133,6 +135,7 @@ bodyClass: "playground-page"
 
 .pt-thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
 .pt-thumb { margin: 0; border: 1px solid var(--pt-border); border-radius: 6px; overflow: hidden; background: var(--pt-bg); }
+.pt-thumb a { display: block; cursor: zoom-in; }
 .pt-thumb img { display: block; width: 100%; height: 120px; object-fit: contain; background: #fff; }
 .pt-thumb figcaption {
     display: flex; justify-content: space-between; align-items: center;
@@ -167,6 +170,7 @@ textarea.pt-input { resize: vertical; }
 .pt-report { font-size: 0.82rem; }
 .pt-report h4 { font-size: 0.85rem; margin: 0.75rem 0 0.25rem; }
 .pt-report ul { margin: 0; padding-left: 1.1rem; }
+.pt-report p { margin: 0.25rem 0; }
 .pt-report li { margin-bottom: 0.25rem; overflow-wrap: anywhere; }
 .pt-notes { white-space: pre-wrap; margin: 0; }
 

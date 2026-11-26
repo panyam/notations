@@ -14,10 +14,16 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 - Photo Transcribe demo on the docs site (`demos/playgrounds/photo-transcribe/`):
   take or upload photos of Carnatic notation and get editable Notations source
   back. Claude reads the photos with the visitor's own Anthropic API key, sent
-  straight from the browser. The result is run through the parser and an
-  alignment check (Sw and Sh lines of equal length, whole avartanams), and any
-  problems go back to the model for correction before the result reaches the
-  editor. Docs site only; the published package is unchanged.
+  straight from the browser. Built for real, imperfect pages: the model fills a
+  beat grid (every beat exactly `beatDuration` slots) instead of writing DSL,
+  placing karvais the author left out from spacing and from how the sahitya
+  sits under the swaras, and marking each one it supplied. The grid is checked
+  beat by beat, located errors go back to the model for correction, and the DSL
+  is generated from the grid with bars drawn from the tala, so roles and
+  avartanams line up by construction. Filled-in beats and doubtful readings are
+  left as comments for the proofreader. An optional enhancement flattens
+  shadows and yellowed paper before upload. Docs site only; the published
+  package is unchanged.
 
 ## [1.1.0] - 2026-09-21
 

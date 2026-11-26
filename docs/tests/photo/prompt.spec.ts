@@ -1,27 +1,55 @@
 import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt } from "../../components/photo/prompt";
+import { parseBeat, TRANSCRIPTION_SCHEMA } from "../../components/photo/grid";
 import { checkNotation } from "../../components/photo/notationChecks";
 
 describe("SYSTEM_PROMPT", () => {
-  // The prompt teaches by example, so every example in it has to be valid DSL that lines up.
-  const examples = Array.from(SYSTEM_PROMPT.matchAll(/```notation\n([\s\S]*?)```/g)).map((m) => m[1]);
-
-  test("has examples", () => {
-    expect(examples.length).toBeGreaterThanOrEqual(2);
+  test("its worked example obeys the grid rules it teaches", () => {
+    // The example is Adi tala at 2 slots per beat; every beat shown must hold exactly 2 slots.
+    const rows = Array.from(SYSTEM_PROMPT.matchAll(/"(Sw|Sh)": \[(.*)\]/g)).map((m) =>
+      Array.from(m[2].matchAll(/"([^"]*)"/g)).map((b) => b[1]),
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].length).toBe(rows[1].length);
+    for (const row of rows) {
+      for (const beat of row) {
+        const parsed = parseBeat(beat);
+        expect(parsed.error).toBeNull();
+        expect(parsed.slots).toHaveLength(2);
+      }
+    }
   });
 
-  test.each(examples.map((e, i) => [i, e]))("example %i parses and aligns", (_i, src) => {
-    const r = checkNotation(src as string);
-    expect(r.errors).toEqual([]);
-    expect(r.warnings).toEqual([]);
+  test("every embellishment it names parses as written", () => {
+    const gamakas = Array.from(SYSTEM_PROMPT.matchAll(/"(~\S* g)"/g)).map((m) => m[1]);
+    expect(gamakas).toContain("~\\ g");
+    expect(gamakas.length).toBeGreaterThanOrEqual(6);
+    const dsl = '\\cycle("|' + gamakas.length + '|")\nSw: ' + gamakas.join(" ");
+    expect(checkNotation(dsl).errors).toEqual([]);
   });
 
-  test("names the embellishments the parser accepts", () => {
-    expect(SYSTEM_PROMPT).toContain("`~\\` irakka jaaru");
-    expect(checkNotation('\\cycle("|4|")\nSw: s ~\\ r ~/ g ~w m').errors).toEqual([]);
+  test("every tala it lists is a valid cycle", () => {
+    const cycles = Array.from(SYSTEM_PROMPT.matchAll(/"(\|[\d|]+\|)"/g)).map((m) => m[1]);
+    expect(cycles.length).toBeGreaterThanOrEqual(9);
+    for (const c of cycles) expect(checkNotation(`\\cycle("${c}")\nSw: s`).errors).toEqual([]);
   });
 
   test("has nothing that varies per call, so it stays cacheable", () => {
     expect(SYSTEM_PROMPT).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+});
+
+describe("schema", () => {
+  test("is strict-mode friendly: every object closed, every property required", () => {
+    const visit = (node: any) => {
+      if (node && typeof node === "object") {
+        if (node.type === "object") {
+          expect(node.additionalProperties).toBe(false);
+          expect([...node.required].sort()).toEqual(Object.keys(node.properties).sort());
+        }
+        Object.values(node).forEach(visit);
+      }
+    };
+    visit(TRANSCRIPTION_SCHEMA);
   });
 });
 
@@ -33,9 +61,11 @@ describe("user and repair prompts", () => {
     expect(multi).toContain("Ragam: Mohanam");
   });
 
-  test("repair prompt lists errors and warnings", () => {
-    const p = buildRepairPrompt(["Invalid command: meta"], ["Line 2: short"]);
-    expect(p).toContain("- Invalid command: meta");
-    expect(p).toContain("- Line 2: short");
+  test("repair prompt lists the errors and caps a long list", () => {
+    expect(buildRepairPrompt(["line 2, beat 6 has 1 slot"])).toContain("- line 2, beat 6 has 1 slot");
+    const many = buildRepairPrompt(Array.from({ length: 50 }, (_, i) => `e${i}`));
+    expect(many).toContain("- e39");
+    expect(many).not.toContain("- e40");
+    expect(many).toContain("10 more");
   });
 });

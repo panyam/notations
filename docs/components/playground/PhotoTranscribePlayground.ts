@@ -16,7 +16,7 @@ import "../../../styles/NotationView.scss";
 
 import { createMarkdownParser } from "../NotationViewer";
 import { prepareImage, PreparedImage } from "../photo/imageUtils";
-import { DEFAULT_MODEL, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
+import { DEFAULT_MODEL, TranscribeResult, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
 
 const KEY_STORAGE = "notations-photo-anthropic-key";
 const MODEL_STORAGE = "notations-photo-model";
@@ -70,6 +70,8 @@ export class PhotoTranscribePlayground {
   private keyInput = $("pt-api-key") as HTMLInputElement;
   private rememberBox = $("pt-remember") as HTMLInputElement;
   private modelSelect = $("pt-model") as HTMLSelectElement;
+  private enhanceBox = $("pt-enhance") as HTMLInputElement;
+  private carefulBox = $("pt-careful") as HTMLInputElement;
   private hintsInput = $("pt-hints") as HTMLTextAreaElement;
   private transcribeBtn = $("pt-transcribe") as HTMLButtonElement;
   private cancelBtn = $("pt-cancel") as HTMLButtonElement;
@@ -114,6 +116,7 @@ export class PhotoTranscribePlayground {
       safeSet(KEY_STORAGE, this.rememberBox.checked ? this.keyInput.value.trim() || null : null);
     });
     this.modelSelect.addEventListener("change", () => safeSet(MODEL_STORAGE, this.modelSelect.value));
+    this.enhanceBox.addEventListener("change", () => this.reprepareAll());
 
     const fileInputs = [$("pt-file") as HTMLInputElement, $("pt-camera") as HTMLInputElement];
     for (const input of fileInputs) {
@@ -169,7 +172,7 @@ export class PhotoTranscribePlayground {
     this.setStatus(`Preparing ${images.length} photo(s)...`);
     for (const file of images) {
       try {
-        const prepared = await prepareImage(file, file.name);
+        const prepared = await prepareImage(file, file.name, 0, this.enhanceBox.checked);
         this.photos.push({ file, name: file.name, rotation: 0, prepared });
       } catch (e: any) {
         const hint = /\.(heic|heif)$/i.test(file.name)
@@ -196,9 +199,21 @@ export class PhotoTranscribePlayground {
     if (!item) return;
     item.rotation = (item.rotation + 1) % 4;
     const old = item.prepared.previewUrl;
-    item.prepared = await prepareImage(item.file, item.name, item.rotation);
+    item.prepared = await prepareImage(item.file, item.name, item.rotation, this.enhanceBox.checked);
     URL.revokeObjectURL(old);
     this.renderThumbs();
+  }
+
+  /** Re-encodes every photo after the enhance setting changes, so the thumbnails show what is sent. */
+  private async reprepareAll(): Promise<void> {
+    this.setStatus(this.enhanceBox.checked ? "Enhancing photos..." : "Restoring original photos...");
+    for (const item of this.photos) {
+      const old = item.prepared.previewUrl;
+      item.prepared = await prepareImage(item.file, item.name, item.rotation, this.enhanceBox.checked);
+      URL.revokeObjectURL(old);
+    }
+    this.renderThumbs();
+    this.setStatus(this.photos.length ? `${this.photos.length} photo(s) ready.` : "");
   }
 
   private movePhoto(index: number, delta: number): void {
@@ -214,7 +229,9 @@ export class PhotoTranscribePlayground {
       .map(
         (p, i) => `
       <figure class="pt-thumb">
-        <img src="${p.prepared.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
+        <a href="${p.prepared.previewUrl}" target="_blank" rel="noopener" title="Open full size to proofread">
+          <img src="${p.prepared.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
+        </a>
         <figcaption>
           <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}</span>
           <span class="pt-thumb-actions">
@@ -264,6 +281,7 @@ export class PhotoTranscribePlayground {
         images: this.photos.map((p) => ({ data: p.prepared.data, mediaType: p.prepared.mediaType })),
         hints: this.hintsInput.value,
         model: this.modelSelect.value || DEFAULT_MODEL,
+        effort: this.carefulBox.checked ? "xhigh" : "high",
         signal: this.abort.signal,
         onStatus: (m) => {
           this.setStatus(m);
@@ -281,17 +299,21 @@ export class PhotoTranscribePlayground {
       this.playground.source = result.notation;
       this.playground.render();
       this.rawDetails.open = false;
-      this.showReport(result.check.errors, result.check.warnings, result.notes, result.attempts.length);
+      this.showReport(result);
       const u = result.usage;
       this.playground.log(
         `Done in ${result.attempts.length} round(s) on ${result.model}: ${u.inputTokens} input tokens ` +
           `(${u.cacheReadTokens} from cache), ${u.outputTokens} output tokens.`,
         "info",
       );
-      if (result.check.errors.length > 0) {
-        this.setStatus("Transcribed, but the result still has parse errors. Fix them in the editor.", "error");
-      } else if (result.check.warnings.length > 0) {
-        this.setStatus("Transcribed. Some lines need a look; see below.", "ok");
+      const gridErrors = result.report.errors.length;
+      if (result.check.errors.length > 0 || gridErrors > 0) {
+        this.setStatus(
+          "Transcribed, but some lines still do not add up. See below and fix them in the editor.",
+          "error",
+        );
+      } else if (result.report.checks.length > 0 || result.report.inferredSlots > 0) {
+        this.setStatus("Transcribed. Check the marked spots against the photo; see below.", "ok");
       } else {
         this.setStatus(`Transcribed ${result.check.lineCount} line(s). Proofread it against the photo.`, "ok");
       }
@@ -320,22 +342,34 @@ export class PhotoTranscribePlayground {
     this.playground.log(msg, "error");
   }
 
-  private showReport(errors: string[], warnings: string[], notes: string, rounds: number): void {
+  private showReport(result: TranscribeResult): void {
+    const list = (items: string[]) => `<ul>${items.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+    const { report, transcription, check } = result;
     const parts: string[] = [];
-    if (errors.length > 0) {
-      parts.push(`<h4>Parse errors</h4><ul>${errors.map((e) => `<li>${escapeHtml(e)}</li>`).join("")}</ul>`);
+    const problems = [...report.errors, ...check.errors];
+    if (problems.length > 0) {
+      parts.push(`<h4>Still wrong</h4>${list(problems)}`);
     }
-    if (warnings.length > 0) {
+    if (transcription.timing) {
+      parts.push(`<h4>Timing</h4><p class="pt-notes">${escapeHtml(transcription.timing)}</p>`);
+    }
+    if (report.inferredSlots > 0) {
       parts.push(
-        `<h4>Lines to check</h4><ul>${warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}</ul>` +
-          `<p class="pt-muted">A line that is not a whole avartanam can be right, for example the end of a song.</p>`,
+        `<h4>Filled in</h4><p>${report.inferredSlots} unit(s) were not written on the page and were placed from ` +
+          `spacing and alignment. Each line that has them carries a <code>// unwritten units filled in</code> ` +
+          `comment naming the beats.</p>`,
       );
     }
-    if (notes) {
-      parts.push(`<h4>Notes from the model</h4><p class="pt-notes">${escapeHtml(notes)}</p>`);
+    if (report.checks.length > 0) {
+      parts.push(`<h4>Check against the photo</h4>${list(report.checks)}`);
     }
-    if (rounds > 1) {
-      parts.push(`<p class="pt-muted">Took ${rounds} rounds: the parser's feedback was sent back for correction.</p>`);
+    if (transcription.notes?.length) {
+      parts.push(`<h4>Notes from the model</h4>${list(transcription.notes)}`);
+    }
+    if (result.attempts.length > 1) {
+      parts.push(
+        `<p class="pt-muted">Took ${result.attempts.length} rounds: lines that did not add up were sent back for correction.</p>`,
+      );
     }
     this.reportEl.innerHTML = parts.join("");
   }

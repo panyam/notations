@@ -115,8 +115,9 @@ export function checkNotation(source: string): NotationCheck {
 
     // Roles in one line should end together.
     if (beatsByRole.length > 1) {
-      const distinct = new Set(beatsByRole.map((r) => r.beats.toString()));
-      if (distinct.size > 1) {
+      // Compare numerically: the same length can come out as 12/2 in one role and 6/1 in another.
+      const first = beatsByRole[0].beats;
+      if (beatsByRole.some((r) => !r.beats.equals(first))) {
         const desc = beatsByRole
           .map((r) => `${roleLabel(r.name)} ${fmtBeats(r.beats.num, r.beats.den)} beats`)
           .join(", ");
