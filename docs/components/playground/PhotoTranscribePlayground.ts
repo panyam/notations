@@ -36,6 +36,12 @@ interface PhotoItem {
   rotation: number;
   /** Region to keep, on the rotated photo; null for the whole photo. */
   crop: CropRect | null;
+  /**
+   * Whether the user has chosen what to send from this photo: a region, or the whole photo on
+   * purpose. Transcription waits until every photo has one. A whole page is a lot of counting
+   * in one go and gives each swara few pixels; a section at a time reads better and costs less.
+   */
+  regionSet: boolean;
   prepared: PreparedImage;
 }
 
@@ -194,7 +200,14 @@ export class PhotoTranscribePlayground {
     this.setStatus(`Preparing ${images.length} photo(s)...`);
     for (const file of images) {
       try {
-        const item: PhotoItem = { file, name: file.name, rotation: 0, crop: null, prepared: null as any };
+        const item: PhotoItem = {
+          file,
+          name: file.name,
+          rotation: 0,
+          crop: null,
+          regionSet: false,
+          prepared: null as any,
+        };
         item.prepared = await this.prep(item);
         this.photos.push(item);
       } catch (e: any) {
@@ -205,9 +218,19 @@ export class PhotoTranscribePlayground {
         return;
       }
     }
-    this.setStatus(`${this.photos.length} photo(s) ready.`);
     this.renderThumbs();
     this.updateButtons();
+    this.pickNextRegion();
+  }
+
+  /** Opens the region picker on the first photo still without a region, if any. */
+  private pickNextRegion(): void {
+    const next = this.photos.findIndex((p) => !p.regionSet);
+    if (next >= 0) {
+      this.openCrop(next);
+    } else if (this.photos.length > 0) {
+      this.setStatus("Ready. Transcribe, or crop (\u2702) to change a region.");
+    }
   }
 
   private removePhoto(index: number): void {
@@ -222,6 +245,7 @@ export class PhotoTranscribePlayground {
     if (!item) return;
     item.rotation = (item.rotation + 1) % 4;
     item.crop = null; // a crop measured on the old orientation no longer means anything
+    item.regionSet = false;
     const old = item.prepared.previewUrl;
     item.prepared = await this.prep(item);
     URL.revokeObjectURL(old);
@@ -253,11 +277,12 @@ export class PhotoTranscribePlayground {
   private async duplicatePhoto(index: number): Promise<void> {
     const src = this.photos[index];
     if (!src) return;
-    const copy: PhotoItem = { ...src, crop: null, prepared: null as any };
+    const copy: PhotoItem = { ...src, crop: null, regionSet: false, prepared: null as any };
     copy.prepared = await this.prep(copy);
     this.photos.splice(index + 1, 0, copy);
     this.renderThumbs();
     this.updateButtons();
+    this.openCrop(index + 1);
   }
 
   // ---- Cropping -------------------------------------------------------------------------
@@ -292,7 +317,14 @@ export class PhotoTranscribePlayground {
     stage.addEventListener("pointerup", end);
     stage.addEventListener("pointercancel", end);
 
-    $("pt-crop-apply").addEventListener("click", () => this.applyCrop(normalizeCrop(this.cropRect)));
+    $("pt-crop-apply").addEventListener("click", () => {
+      const crop = normalizeCrop(this.cropRect);
+      if (!crop) {
+        $("pt-crop-help").textContent = "Drag a box around a section first, or choose Use whole photo.";
+        return;
+      }
+      this.applyCrop(crop);
+    });
     $("pt-crop-clear").addEventListener("click", () => this.applyCrop(null));
     $("pt-crop-cancel").addEventListener("click", () => this.closeCrop());
     this.cropDialog.addEventListener("close", () => {
@@ -328,7 +360,11 @@ export class PhotoTranscribePlayground {
     });
     this.cropImg.src = whole.previewUrl;
     this.setCropRect(item.crop);
-    this.cropDialog.showModal();
+    const which = this.photos.length > 1 ? ` (photo ${index + 1} of ${this.photos.length})` : "";
+    $("pt-crop-help").textContent =
+      `Drag a box around the part to transcribe${which}: one section, or a few rows. ` +
+      "Include its heading if it has one.";
+    if (!this.cropDialog.open) this.cropDialog.showModal();
   }
 
   private closeCrop(): void {
@@ -341,11 +377,13 @@ export class PhotoTranscribePlayground {
     this.closeCrop();
     if (!item) return;
     item.crop = crop;
+    item.regionSet = true;
     const old = item.prepared.previewUrl;
     item.prepared = await this.prep(item);
     URL.revokeObjectURL(old);
     this.renderThumbs();
-    this.setStatus(crop ? "Cropped. Only the selected region is sent, at higher detail." : "Using the whole photo.");
+    this.updateButtons();
+    this.pickNextRegion();
   }
 
   private movePhoto(index: number, delta: number): void {
@@ -365,7 +403,13 @@ export class PhotoTranscribePlayground {
           <img src="${p.prepared.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
         </a>
         <figcaption>
-          <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}${p.crop ? ' <em class="pt-badge">cropped</em>' : ""}</span>
+          <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}${
+            !p.regionSet
+              ? ' <em class="pt-badge pt-badge-todo">pick a region</em>'
+              : p.crop
+                ? ' <em class="pt-badge">cropped</em>'
+                : ' <em class="pt-badge">whole photo</em>'
+          }</span>
           <span class="pt-thumb-actions">
             ${many ? `<button type="button" data-action="left" data-index="${i}" title="Earlier page" ${i === 0 ? "disabled" : ""}>&larr;</button>` : ""}
             ${many ? `<button type="button" data-action="right" data-index="${i}" title="Later page" ${i === this.photos.length - 1 ? "disabled" : ""}>&rarr;</button>` : ""}
@@ -384,9 +428,16 @@ export class PhotoTranscribePlayground {
 
   private updateButtons(): void {
     const busy = this.abort != null;
-    this.transcribeBtn.disabled = busy || this.photos.length === 0 || this.keyInput.value.trim() === "";
+    const unpicked = this.photos.filter((p) => !p.regionSet).length;
+    this.transcribeBtn.disabled = busy || this.photos.length === 0 || unpicked > 0 || this.keyInput.value.trim() === "";
     this.transcribeBtn.title =
-      this.photos.length === 0 ? "Add a photo first" : this.keyInput.value.trim() === "" ? "Enter your API key" : "";
+      this.photos.length === 0
+        ? "Add a photo first"
+        : unpicked > 0
+          ? "Pick the region to transcribe on each photo (\u2702)"
+          : this.keyInput.value.trim() === ""
+            ? "Enter your API key"
+            : "";
     this.cancelBtn.hidden = !busy;
   }
 

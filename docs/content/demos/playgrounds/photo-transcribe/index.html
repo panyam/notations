@@ -24,7 +24,8 @@ bodyClass: "playground-page"
                     </label>
                 </div>
                 <p class="pt-muted">For a song over several pages, add them all and use the arrows to order them.
-                    For a long page, crop (&#9986;) to one section at a time: you get more detail and fewer mistakes.</p>
+                    You then pick the region to transcribe on each photo: one section at a time reads
+                    better and costs less than a whole page.</p>
             </div>
             <div id="pt-thumbs" class="pt-thumbs"></div>
             <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
@@ -122,15 +123,15 @@ bodyClass: "playground-page"
     </aside>
 
     <dialog id="pt-crop-dialog" class="pt-crop-dialog">
-        <p class="pt-crop-help">Drag a box around the part to transcribe. Include the section heading if there is one.</p>
+        <p id="pt-crop-help" class="pt-crop-help">Drag a box around the part to transcribe.</p>
         <div id="pt-crop-stage" class="pt-crop-stage">
             <img id="pt-crop-img" alt="Photo to crop" draggable="false">
             <div id="pt-crop-box" class="pt-crop-box"></div>
         </div>
         <div class="pt-crop-actions">
             <button id="pt-crop-apply" class="btn btn-primary" type="button">Use selection</button>
-            <button id="pt-crop-clear" class="btn" type="button">Whole photo</button>
-            <button id="pt-crop-cancel" class="btn" type="button">Cancel</button>
+            <button id="pt-crop-clear" class="btn" type="button">Use whole photo</button>
+            <button id="pt-crop-cancel" class="btn" type="button">Later</button>
         </div>
     </dialog>
 
@@ -215,6 +216,7 @@ bodyClass: "playground-page"
     border-radius: 4px; cursor: pointer; font-size: 0.8rem; line-height: 1; padding: 0.15rem 0.35rem;
 }
 .pt-badge { font-style: normal; font-size: 0.7rem; color: var(--pt-accent); }
+.pt-badge-todo { color: var(--pt-error); }
 .pt-crop-dialog {
     border: 1px solid var(--pt-border); border-radius: 8px; padding: 0.75rem;
     background: var(--pt-bg); color: var(--pt-text); max-width: min(96vw, 1100px);
