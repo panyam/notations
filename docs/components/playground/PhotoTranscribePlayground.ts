@@ -15,9 +15,9 @@ import "dockview-core/dist/styles/dockview.css";
 import "../../../styles/NotationView.scss";
 
 import { createMarkdownParser } from "../NotationViewer";
-import { parseCycle } from "../photo/grid";
+import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
-import { prepareImage, PreparedImage } from "../photo/imageUtils";
+import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
 import { DEFAULT_MODEL, TranscribeResult, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
 
 const KEY_STORAGE = "notations-photo-anthropic-key";
@@ -34,6 +34,8 @@ interface PhotoItem {
   file: Blob;
   name: string;
   rotation: number;
+  /** Region to keep, on the rotated photo; null for the whole photo. */
+  crop: CropRect | null;
   prepared: PreparedImage;
 }
 
@@ -87,6 +89,13 @@ export class PhotoTranscribePlayground {
   private rawDetails = $("pt-raw-details") as HTMLDetailsElement;
   private reportEl = $("pt-report");
   private thumbsEl = $("pt-thumbs");
+  private onlyInput = $("pt-only") as HTMLInputElement;
+  private modeSelect = $("pt-mode") as HTMLSelectElement;
+  private cropDialog = $("pt-crop-dialog") as HTMLDialogElement;
+  private cropImg = $("pt-crop-img") as HTMLImageElement;
+  private cropBox = $("pt-crop-box");
+  private cropIndex = -1;
+  private cropRect: CropRect | null = null;
 
   constructor() {
     this.playground = new DockViewPlayground($("dockview-container"), {
@@ -162,7 +171,10 @@ export class PhotoTranscribePlayground {
       else if (action === "rotate") this.rotatePhoto(index);
       else if (action === "left") this.movePhoto(index, -1);
       else if (action === "right") this.movePhoto(index, 1);
+      else if (action === "crop") this.openCrop(index);
+      else if (action === "duplicate") this.duplicatePhoto(index);
     });
+    this.setupCropDialog();
 
     this.transcribeBtn.addEventListener("click", () => this.run());
     this.cancelBtn.addEventListener("click", () => this.abort?.abort());
@@ -182,8 +194,9 @@ export class PhotoTranscribePlayground {
     this.setStatus(`Preparing ${images.length} photo(s)...`);
     for (const file of images) {
       try {
-        const prepared = await prepareImage(file, file.name, 0, this.enhanceBox.checked);
-        this.photos.push({ file, name: file.name, rotation: 0, prepared });
+        const item: PhotoItem = { file, name: file.name, rotation: 0, crop: null, prepared: null as any };
+        item.prepared = await this.prep(item);
+        this.photos.push(item);
       } catch (e: any) {
         const hint = /\.(heic|heif)$/i.test(file.name)
           ? " This browser cannot open HEIC photos; export the photo as JPEG, or take it from this page's camera button."
@@ -208,8 +221,9 @@ export class PhotoTranscribePlayground {
     const item = this.photos[index];
     if (!item) return;
     item.rotation = (item.rotation + 1) % 4;
+    item.crop = null; // a crop measured on the old orientation no longer means anything
     const old = item.prepared.previewUrl;
-    item.prepared = await prepareImage(item.file, item.name, item.rotation, this.enhanceBox.checked);
+    item.prepared = await this.prep(item);
     URL.revokeObjectURL(old);
     this.renderThumbs();
   }
@@ -219,11 +233,119 @@ export class PhotoTranscribePlayground {
     this.setStatus(this.enhanceBox.checked ? "Enhancing photos..." : "Restoring original photos...");
     for (const item of this.photos) {
       const old = item.prepared.previewUrl;
-      item.prepared = await prepareImage(item.file, item.name, item.rotation, this.enhanceBox.checked);
+      item.prepared = await this.prep(item);
       URL.revokeObjectURL(old);
     }
     this.renderThumbs();
     this.setStatus(this.photos.length ? `${this.photos.length} photo(s) ready.` : "");
+  }
+
+  private prep(item: PhotoItem): Promise<PreparedImage> {
+    return prepareImage(item.file, {
+      name: item.name,
+      rotation: item.rotation,
+      enhance: this.enhanceBox.checked,
+      crop: item.crop,
+    });
+  }
+
+  /** A second copy of a photo, so two regions of one page can be cropped and sent in order. */
+  private async duplicatePhoto(index: number): Promise<void> {
+    const src = this.photos[index];
+    if (!src) return;
+    const copy: PhotoItem = { ...src, crop: null, prepared: null as any };
+    copy.prepared = await this.prep(copy);
+    this.photos.splice(index + 1, 0, copy);
+    this.renderThumbs();
+    this.updateButtons();
+  }
+
+  // ---- Cropping -------------------------------------------------------------------------
+
+  private setupCropDialog(): void {
+    const stage = $("pt-crop-stage");
+    let start: { x: number; y: number } | null = null;
+    const at = (e: PointerEvent) => {
+      const r = this.cropImg.getBoundingClientRect();
+      return {
+        x: Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1),
+        y: Math.min(Math.max((e.clientY - r.top) / r.height, 0), 1),
+      };
+    };
+    stage.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      stage.setPointerCapture(e.pointerId);
+      start = at(e);
+      this.setCropRect({ x: start.x, y: start.y, w: 0, h: 0 });
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!start) return;
+      const p = at(e);
+      this.setCropRect({
+        x: Math.min(start.x, p.x),
+        y: Math.min(start.y, p.y),
+        w: Math.abs(p.x - start.x),
+        h: Math.abs(p.y - start.y),
+      });
+    });
+    const end = () => (start = null);
+    stage.addEventListener("pointerup", end);
+    stage.addEventListener("pointercancel", end);
+
+    $("pt-crop-apply").addEventListener("click", () => this.applyCrop(normalizeCrop(this.cropRect)));
+    $("pt-crop-clear").addEventListener("click", () => this.applyCrop(null));
+    $("pt-crop-cancel").addEventListener("click", () => this.closeCrop());
+    this.cropDialog.addEventListener("close", () => {
+      if (this.cropImg.src) URL.revokeObjectURL(this.cropImg.src);
+      this.cropImg.removeAttribute("src");
+    });
+  }
+
+  private setCropRect(rect: CropRect | null): void {
+    this.cropRect = rect;
+    const box = this.cropBox.style;
+    if (!rect) {
+      box.display = "none";
+      return;
+    }
+    box.display = "block";
+    box.left = `${rect.x * 100}%`;
+    box.top = `${rect.y * 100}%`;
+    box.width = `${rect.w * 100}%`;
+    box.height = `${rect.h * 100}%`;
+  }
+
+  private async openCrop(index: number): Promise<void> {
+    const item = this.photos[index];
+    if (!item) return;
+    this.cropIndex = index;
+    // Show the whole photo, rotated and enhanced as it will be sent, so the box lands where meant.
+    const whole = await prepareImage(item.file, {
+      name: item.name,
+      rotation: item.rotation,
+      enhance: this.enhanceBox.checked,
+      maxEdge: 1600,
+    });
+    this.cropImg.src = whole.previewUrl;
+    this.setCropRect(item.crop);
+    this.cropDialog.showModal();
+  }
+
+  private closeCrop(): void {
+    this.cropIndex = -1;
+    if (this.cropDialog.open) this.cropDialog.close();
+  }
+
+  private async applyCrop(crop: CropRect | null): Promise<void> {
+    const item = this.photos[this.cropIndex];
+    this.closeCrop();
+    if (!item) return;
+    item.crop = crop;
+    const old = item.prepared.previewUrl;
+    item.prepared = await this.prep(item);
+    URL.revokeObjectURL(old);
+    this.renderThumbs();
+    this.setStatus(crop ? "Cropped. Only the selected region is sent, at higher detail." : "Using the whole photo.");
   }
 
   private movePhoto(index: number, delta: number): void {
@@ -243,10 +365,12 @@ export class PhotoTranscribePlayground {
           <img src="${p.prepared.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
         </a>
         <figcaption>
-          <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}</span>
+          <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}${p.crop ? ' <em class="pt-badge">cropped</em>' : ""}</span>
           <span class="pt-thumb-actions">
             ${many ? `<button type="button" data-action="left" data-index="${i}" title="Earlier page" ${i === 0 ? "disabled" : ""}>&larr;</button>` : ""}
             ${many ? `<button type="button" data-action="right" data-index="${i}" title="Later page" ${i === this.photos.length - 1 ? "disabled" : ""}>&rarr;</button>` : ""}
+            <button type="button" data-action="crop" data-index="${i}" title="Crop to one section">&#9986;</button>
+            <button type="button" data-action="duplicate" data-index="${i}" title="Duplicate, to crop another region">&#10697;</button>
             <button type="button" data-action="rotate" data-index="${i}" title="Rotate 90&deg; clockwise">&#8635;</button>
             <button type="button" data-action="remove" data-index="${i}" title="Remove">&times;</button>
           </span>
@@ -289,6 +413,8 @@ export class PhotoTranscribePlayground {
     this.rawEl.textContent = "";
     this.rawDetails.open = true;
     this.playground.log(`Transcribing ${this.photos.length} photo(s) with ${this.modelSelect.value}`, "info");
+    const existing = this.playground.source;
+    const append = this.modeSelect.value === "append" && !isBlankNotation(existing);
 
     try {
       const result = await transcribe(client, {
@@ -297,6 +423,7 @@ export class PhotoTranscribePlayground {
         model: this.modelSelect.value || DEFAULT_MODEL,
         effort: this.carefulBox.checked ? "xhigh" : "high",
         known: this.knownFacts(),
+        snippet: { only: this.onlyInput.value.trim() || undefined, context: append ? existing : undefined },
         signal: this.abort.signal,
         onStatus: (m) => {
           this.setStatus(m);
@@ -311,7 +438,9 @@ export class PhotoTranscribePlayground {
         },
       });
 
-      this.playground.source = result.notation;
+      this.playground.source = append ? mergeNotation(existing, result.transcription) : result.notation;
+      // After the first section, the natural next step is the next section: add, don't replace.
+      this.modeSelect.value = "append";
       this.playground.render();
       this.rawDetails.open = false;
       this.showReport(result);

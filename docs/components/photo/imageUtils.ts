@@ -112,37 +112,111 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/** A region of the (rotated) photo, as fractions of its width and height. */
+export interface CropRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface PrepareOptions {
+  name?: string;
+  /** Extra clockwise quarter turns, for photos taken sideways. */
+  rotation?: number;
+  /** Convert to high-contrast grayscale (see enhancePixels). */
+  enhance?: boolean;
+  /** Keep only this region, measured on the rotated photo. */
+  crop?: CropRect | null;
+  /** Long-edge cap for the output; MAX_EDGE by default. */
+  maxEdge?: number;
+}
+
+/** Clamps a crop to the photo and drops one too small to mean anything. */
+export function normalizeCrop(crop: CropRect | null | undefined): CropRect | null {
+  if (!crop) return null;
+  const x = Math.min(Math.max(crop.x, 0), 1);
+  const y = Math.min(Math.max(crop.y, 0), 1);
+  const w = Math.min(Math.max(crop.w, 0), 1 - x);
+  const h = Math.min(Math.max(crop.h, 0), 1 - y);
+  if (w < 0.02 || h < 0.02) return null;
+  if (x === 0 && y === 0 && w === 1 && h === 1) return null;
+  return { x, y, w, h };
+}
+
 /**
- * Downscales and re-encodes one image file.
+ * Where the output canvas sits on the rotated photo, and how big it is.
  *
- * @param rotateQuarterTurns extra clockwise rotation, for photos taken sideways
- * @param enhance convert to high-contrast grayscale (see enhancePixels)
+ * The crop is taken from the full-resolution photo before scaling down, so a crop that covers a
+ * quarter of a 12 MP page keeps four times the detail it would have had as part of the whole
+ * page. That is the point of cropping: small handwriting and octave dots stay legible.
  */
-export async function prepareImage(
-  file: Blob,
-  name = "photo",
-  rotateQuarterTurns = 0,
-  enhance = false,
-): Promise<PreparedImage> {
+export function cropGeometry(
+  naturalWidth: number,
+  naturalHeight: number,
+  rotation: number,
+  crop: CropRect | null,
+  maxEdge: number,
+): {
+  turns: number;
+  rotatedW: number;
+  rotatedH: number;
+  sx: number;
+  sy: number;
+  sw: number;
+  sh: number;
+  scale: number;
+  outW: number;
+  outH: number;
+} {
+  const turns = ((rotation % 4) + 4) % 4;
+  const swap = turns % 2 === 1;
+  const rotatedW = swap ? naturalHeight : naturalWidth;
+  const rotatedH = swap ? naturalWidth : naturalHeight;
+  const c = normalizeCrop(crop) || { x: 0, y: 0, w: 1, h: 1 };
+  const sx = c.x * rotatedW;
+  const sy = c.y * rotatedH;
+  const sw = c.w * rotatedW;
+  const sh = c.h * rotatedH;
+  const scale = Math.min(1, maxEdge / Math.max(sw, sh));
+  return {
+    turns,
+    rotatedW,
+    rotatedH,
+    sx,
+    sy,
+    sw,
+    sh,
+    scale,
+    outW: Math.max(1, Math.round(sw * scale)),
+    outH: Math.max(1, Math.round(sh * scale)),
+  };
+}
+
+/**
+ * Rotates, crops, downscales and re-encodes one image file.
+ */
+export async function prepareImage(file: Blob, options: PrepareOptions = {}): Promise<PreparedImage> {
+  const { name = "photo", rotation = 0, enhance = false, crop = null, maxEdge = MAX_EDGE } = options;
   const sourceUrl = URL.createObjectURL(file);
   try {
     const img = await loadImage(sourceUrl);
-    const scale = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
-    const w = Math.round(img.naturalWidth * scale);
-    const h = Math.round(img.naturalHeight * scale);
-    const turns = ((rotateQuarterTurns % 4) + 4) % 4;
-    const swap = turns % 2 === 1;
+    const g = cropGeometry(img.naturalWidth, img.naturalHeight, rotation, crop, maxEdge);
 
     const canvas = document.createElement("canvas");
-    canvas.width = swap ? h : w;
-    canvas.height = swap ? w : h;
+    canvas.width = g.outW;
+    canvas.height = g.outH;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("This browser cannot process images (no canvas support).");
     ctx.fillStyle = "#fff"; // transparent PNGs would otherwise turn black in JPEG
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((turns * Math.PI) / 2);
-    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    // Map rotated-photo coordinates to the output: shift the crop to the origin, then scale.
+    ctx.scale(g.scale, g.scale);
+    ctx.translate(-g.sx, -g.sy);
+    // Draw the photo rotated about the centre of the rotated frame.
+    ctx.translate(g.rotatedW / 2, g.rotatedH / 2);
+    ctx.rotate((g.turns * Math.PI) / 2);
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
     if (enhance) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);

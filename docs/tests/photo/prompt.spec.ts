@@ -1,4 +1,4 @@
-import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt } from "../../components/photo/prompt";
+import { MAX_CONTEXT_CHARS, SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt } from "../../components/photo/prompt";
 import { parseBeat, TRANSCRIPTION_SCHEMA } from "../../components/photo/grid";
 import { checkNotation } from "../../components/photo/notationChecks";
 
@@ -92,5 +92,26 @@ describe("known facts", () => {
   test("the prompt teaches case as swarasthana, not length, by default", () => {
     expect(SYSTEM_PROMPT).toContain("case usually names the swarasthana");
     expect(SYSTEM_PROMPT).toContain("Clusters are phrases, not beats");
+  });
+});
+
+describe("snippets", () => {
+  test("only-this-part and earlier notation as context", () => {
+    const p = buildUserPrompt(1, "", {}, { only: "Charanam swaram 3 (Mohanam)", context: "Sw: s r g" });
+    expect(p).toContain("Transcribe only this part of the photo above: Charanam swaram 3 (Mohanam).");
+    expect(p).toContain("<earlier_notation>\nSw: s r g\n</earlier_notation>");
+    expect(p.indexOf("earlier_notation")).toBeLessThan(p.indexOf("Transcribe only"));
+  });
+
+  test("long context keeps its end, nearest the new part", () => {
+    const long = "a".repeat(MAX_CONTEXT_CHARS) + "THE END";
+    const p = buildUserPrompt(1, "", {}, { context: long });
+    expect(p).toContain("THE END");
+    expect(p).toContain("...\n");
+    expect(p.length).toBeLessThan(MAX_CONTEXT_CHARS + 500);
+  });
+
+  test("the system prompt explains crops cut mid-row", () => {
+    expect(SYSTEM_PROMPT).toContain("A crop can cut a row in the middle");
   });
 });

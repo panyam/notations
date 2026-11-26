@@ -1,4 +1,5 @@
 import {
+  mergeNotation,
   normalizeRole,
   parseBeat,
   parseCycle,
@@ -251,5 +252,49 @@ describe("a handwritten ragamalika notebook (conventions from a real page)", () 
     expect(check.errors).toEqual([]);
     expect(check.warnings).toEqual([]);
     expect(check.lineCount).toBe(3);
+  });
+});
+
+describe("mergeNotation (adding a snippet after earlier ones)", () => {
+  const snippet = (heading: string, meta: Transcription["metadata"] = []) =>
+    adi([line(SW, SH)], {
+      metadata: meta,
+      sections: [{ heading, text: "", cycle: "", beatDuration: 2, lines: [line(SW, SH)] }],
+    });
+
+  test("into an empty or placeholder editor it is the whole document", () => {
+    const t = snippet("Pallavi", [{ key: "ragam", value: "Mohanam" }]);
+    expect(mergeNotation("", t)).toBe(toNotation(t));
+    expect(mergeNotation("// placeholder\n\n", t)).toBe(toNotation(t));
+  });
+
+  test("snippets in sequence make one valid document with one front matter", () => {
+    let doc = mergeNotation("", snippet("Pallavi", [{ key: "ragam", value: "Mohanam" }]));
+    doc = mergeNotation(
+      doc,
+      snippet("Anupallavi", [
+        { key: "Ragam", value: "ignored, already set" },
+        { key: "composer", value: "X" },
+      ]),
+    );
+    doc = mergeNotation(doc, snippet("Charanam"));
+    expect(doc.match(/^---$/gm)).toHaveLength(2);
+    expect(doc).toContain('ragam: "Mohanam"');
+    expect(doc).not.toContain("ignored, already set");
+    expect(doc).toContain('composer: "X"');
+    expect(doc.indexOf("Pallavi")).toBeLessThan(doc.indexOf("Anupallavi"));
+    expect(doc.indexOf("Anupallavi")).toBeLessThan(doc.indexOf("Charanam"));
+    const check = checkNotation(doc);
+    expect(check.errors).toEqual([]);
+    expect(check.lineCount).toBe(3);
+  });
+
+  test("metadata from a snippet goes to the top when the editor had none", () => {
+    const doc = mergeNotation(
+      '\\cycle("|4|2|2|")\nSw: s r g m p d n s.\n',
+      snippet("Charanam", [{ key: "talam", value: "Adi" }]),
+    );
+    expect(doc.startsWith('---\ntalam: "Adi"\n---\n\\cycle')).toBe(true);
+    expect(checkNotation(doc).errors).toEqual([]);
   });
 });

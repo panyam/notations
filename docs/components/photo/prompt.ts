@@ -80,9 +80,31 @@ In English-letter notation, case usually names the swarasthana, not the length: 
 - The photo may be rotated, at an angle, or cut off. If a line is cut off, transcribe what is visible, mark it partial, and say "cut off in photo" in uncertain. Do not complete passages from memory of the composition, even when you recognise it.
 - Pages often repeat a line with small variations (sangatis). Transcribe each as printed; do not merge them.
 
+# Snippets
+
+Often you are given part of a page: a photo cropped to one section, or a request to transcribe only one part ("only the Charanam"). Then:
+
+- Transcribe only what you are asked for, or only what the crop shows, and nothing from memory of the rest of the composition.
+- Still give it a section heading, from the page if one is visible, else from the user's request.
+- A crop can cut a row in the middle. Transcribe what is visible, mark the line partial, and say where it was cut in uncertain.
+- Metadata: include only what is visible in this snippet; leave the rest out rather than guessing.
+
+The user may also send notation already transcribed and proofread from earlier parts of the same composition. Treat it as settled: match its tala, its speeds (beatDuration per kind of section), its letter case and its heading style, and do not transcribe it again.
+
 # Corrections
 
 When the user sends back validation errors, reply with the complete corrected grid. Look at the photo again for each line mentioned, fix those, and keep everything else as it was.`;
+
+/** Earlier notation sent as context is capped, keeping its end (the part nearest the snippet). */
+export const MAX_CONTEXT_CHARS = 12000;
+
+/** Asking for part of a page, possibly following on from earlier parts. */
+export interface SnippetRequest {
+  /** The part to transcribe, e.g. "Charanam swaram 3 (Mohanam)". */
+  only?: string;
+  /** DSL already transcribed from earlier parts of the same composition. */
+  context?: string;
+}
 
 /** Facts the user supplies up front, so the model does not have to infer them. All optional. */
 export interface KnownFacts {
@@ -103,11 +125,29 @@ export interface KnownFacts {
  * @param hints free text from the user; may be empty
  * @param known structured facts from the user; these are stated as facts, not hints
  */
-export function buildUserPrompt(pageCount: number, hints: string, known: KnownFacts = {}): string {
+export function buildUserPrompt(
+  pageCount: number,
+  hints: string,
+  known: KnownFacts = {},
+  snippet: SnippetRequest = {},
+): string {
   const parts: string[] = [];
-  if (pageCount > 1) {
+  const context = snippet.context?.trim();
+  if (context) {
+    const shown = context.length > MAX_CONTEXT_CHARS ? "...\n" + context.slice(-MAX_CONTEXT_CHARS) : context;
     parts.push(
-      `The ${pageCount} photos above are consecutive pages of the same composition, in order. Transcribe them as one grid.`,
+      "Already transcribed and proofread from earlier parts of this composition (for consistency only; do not repeat it):\n" +
+        "<earlier_notation>\n" +
+        shown +
+        "\n</earlier_notation>",
+    );
+  }
+  const what = pageCount > 1 ? `the ${pageCount} photos above` : "the photo above";
+  if (snippet.only?.trim()) {
+    parts.push(`Transcribe only this part of ${what}: ${snippet.only.trim()}.`);
+  } else if (pageCount > 1) {
+    parts.push(
+      `The ${pageCount} photos above are consecutive pages (or crops) of the same composition, in order. Transcribe them as one grid.`,
     );
   } else {
     parts.push("Transcribe the notation in the photo above.");

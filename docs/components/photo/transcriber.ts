@@ -17,7 +17,7 @@
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt, KnownFacts } from "./prompt";
+import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt, KnownFacts, SnippetRequest } from "./prompt";
 import { checkNotation, NotationCheck } from "./notationChecks";
 import { GridReport, parseCycle, toNotation, Transcription, TRANSCRIPTION_SCHEMA, validateTranscription } from "./grid";
 
@@ -40,6 +40,8 @@ export interface TranscribeOptions {
   hints?: string;
   /** Facts the user is sure of. A given cycle is enforced, not just suggested. */
   known?: KnownFacts;
+  /** Transcribe only part of the photos, and/or follow on from earlier notation. */
+  snippet?: SnippetRequest;
   model?: string;
   /** How much the model thinks. Poor photos and sparse notation benefit from "xhigh". */
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
@@ -133,7 +135,10 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
     if (opts.images.length > 1) firstTurn.push({ type: "text", text: `Page ${i + 1}:` });
     firstTurn.push({ type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } });
   });
-  firstTurn.push({ type: "text", text: buildUserPrompt(opts.images.length, opts.hints || "", opts.known) });
+  firstTurn.push({
+    type: "text",
+    text: buildUserPrompt(opts.images.length, opts.hints || "", opts.known, opts.snippet),
+  });
   const messages: BetaMessageParam[] = [{ role: "user", content: firstTurn }];
 
   const attempts: TranscribeAttempt[] = [];

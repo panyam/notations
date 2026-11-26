@@ -18,7 +18,7 @@ import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { parseCycle } from "../components/photo/grid";
+import { mergeNotation, parseCycle } from "../components/photo/grid";
 import type { KnownFacts } from "../components/photo/prompt";
 import { transcribe, TranscribeImage } from "../components/photo/transcriber";
 
@@ -31,6 +31,9 @@ const USAGE = `usage: transcribe-photos.ts FILE... [options]
   --case swarasthana|length
                        what letter case means (m vs M, or S = s ,)
   --hints TEXT         anything else about the page
+  --only TEXT          transcribe only this part, e.g. "Charanam swaram 3"
+  --append FILE.sng    follow on from this file: it is sent as context, and the
+                       result is written back to it with the new part added
   --model ID           default claude-opus-5-5
   --careful            effort xhigh instead of high
   --repairs N          correction rounds (default 2)
@@ -113,6 +116,8 @@ async function main(): Promise<number> {
   }
 
   const images = loadImages(files);
+  const appendTo = opts.append ? String(opts.append) : null;
+  const existing = appendTo && fs.existsSync(appendTo) ? fs.readFileSync(appendTo, "utf8") : "";
   const client = new Anthropic(); // reads ANTHROPIC_API_KEY (or an `ant auth login` profile)
   const started = Date.now();
   process.stderr.write(`Transcribing ${images.length} page(s)...\n`);
@@ -120,6 +125,7 @@ async function main(): Promise<number> {
     images,
     known,
     hints: opts.hints ? String(opts.hints) : "",
+    snippet: { only: opts.only ? String(opts.only) : undefined, context: existing || undefined },
     model: opts.model ? String(opts.model) : undefined,
     effort: opts.careful ? "xhigh" : "high",
     maxRepairs: opts.repairs != null ? Number(opts.repairs) : 2,
@@ -147,9 +153,11 @@ async function main(): Promise<number> {
     ...result.transcription.notes.map((n) => `  - ${n}`),
   ].join("\n");
   fs.writeFileSync(path.join(outDir, `${name}.sng`), result.notation);
+  if (appendTo) fs.writeFileSync(appendTo, mergeNotation(existing, result.transcription));
   fs.writeFileSync(path.join(outDir, `${name}.grid.json`), JSON.stringify(result.transcription, null, 2) + "\n");
   fs.writeFileSync(path.join(outDir, `${name}.report.txt`), report + "\n");
   process.stdout.write(report + "\n\n" + `Wrote ${path.join(outDir, name)}.{sng,grid.json,report.txt}\n`);
+  if (appendTo) process.stdout.write(`Added this part to ${appendTo}\n`);
   return result.report.errors.length + result.check.errors.length > 0 ? 1 : 0;
 }
 

@@ -369,6 +369,46 @@ function describeFilled(filled: Map<number, string[]>): string {
     .replace(/^/, "beats ");
 }
 
+function metadataLines(t: Transcription): string[] {
+  return (t.metadata || []).map((m) => yamlLine(m.key, m.value)).filter((l): l is string => l != null);
+}
+
+const FRONT_MATTER = /^\s*---\n([\s\S]*?)\n---[ \t]*(\n|$)/;
+
+/** True when the source has no notation yet: only blank lines and comments. */
+export function isBlankNotation(source: string): boolean {
+  return source.split("\n").every((l) => l.trim() === "" || l.trim().startsWith("//"));
+}
+
+/**
+ * Appends a transcribed snippet to notation already in the editor.
+ *
+ * Front matter may only open a document, so the snippet's metadata is merged into the existing
+ * front matter (keys already there are kept as the user has them), or a new block is put at the
+ * top. The snippet itself follows the existing notation, with its own \cycle and \beatDuration
+ * so it reads correctly whatever came before.
+ */
+export function mergeNotation(existing: string, t: Transcription): string {
+  if (isBlankNotation(existing)) return toNotation(t);
+  const body = toNotation(t, { metadata: false });
+  let head = existing.replace(/\s+$/, "");
+  const meta = metadataLines(t);
+  if (meta.length > 0) {
+    const fm = FRONT_MATTER.exec(head);
+    if (fm) {
+      const have = new Set(Array.from(fm[1].matchAll(/^([A-Za-z0-9_]+):/gm)).map((m) => m[1].toLowerCase()));
+      const add = meta.filter((l) => !have.has(l.slice(0, l.indexOf(":"))));
+      if (add.length > 0) {
+        const block = `---\n${fm[1]}\n${add.join("\n")}\n---\n`;
+        head = block + head.slice(fm[0].length);
+      }
+    } else {
+      head = `---\n${meta.join("\n")}\n---\n` + head;
+    }
+  }
+  return `${head}\n\n${body}`;
+}
+
 function comment(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -377,10 +417,10 @@ function comment(text: string): string {
  * Writes the DSL for a transcription. Call validateTranscription first; this does not check
  * counts, it only lays out what it is given.
  */
-export function toNotation(t: Transcription): string {
+export function toNotation(t: Transcription, options: { metadata?: boolean } = {}): string {
   const out: string[] = [];
-  const meta = (t.metadata || []).map((m) => yamlLine(m.key, m.value)).filter((l): l is string => l != null);
-  if (meta.length > 0) out.push("---", ...meta, "---");
+  const meta = metadataLines(t);
+  if (meta.length > 0 && options.metadata !== false) out.push("---", ...meta, "---");
 
   const docCycle = parseCycle(t.cycle) || [4, 2, 2];
   const cycleText = (angas: number[]) => `\\cycle("|${angas.join("|")}|")`;

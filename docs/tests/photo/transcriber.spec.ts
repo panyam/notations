@@ -176,3 +176,13 @@ describe("known facts", () => {
     expect(r.report.errors.join("\n")).toContain("not a multiple of the 8-beat avartanam");
   });
 });
+
+describe("snippets", () => {
+  test("the part and the earlier notation reach the model", async () => {
+    const { client, requests } = fakeClient([{ text: GOOD }]);
+    await transcribe(client, { images: IMG, snippet: { only: "Pallavi", context: "Sw: s r g m" } });
+    const text = requests[0].messages[0].content.at(-1).text;
+    expect(text).toContain("Transcribe only this part of the photo above: Pallavi.");
+    expect(text).toContain("Sw: s r g m");
+  });
+});

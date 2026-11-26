@@ -23,7 +23,8 @@ bodyClass: "playground-page"
                         <input id="pt-file" type="file" accept="image/*" multiple hidden>
                     </label>
                 </div>
-                <p class="pt-muted">For a song over several pages, add them all; use the arrows to put them in order.</p>
+                <p class="pt-muted">For a song over several pages, add them all and use the arrows to order them.
+                    For a long page, crop (&#9986;) to one section at a time: you get more detail and fewer mistakes.</p>
             </div>
             <div id="pt-thumbs" class="pt-thumbs"></div>
             <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
@@ -97,6 +98,16 @@ bodyClass: "playground-page"
         </section>
 
         <section class="pt-section">
+            <label class="pt-field">Only this part <span class="pt-muted">(optional)</span>
+                <input id="pt-only" class="pt-input" type="text" placeholder="e.g. Pallavi, or Charanam swaram 3 (Mohanam)">
+            </label>
+            <label class="pt-field">Result
+                <select id="pt-mode" class="pt-input">
+                    <option value="replace">Replace what is in the editor</option>
+                    <option value="append">Add after what is in the editor</option>
+                </select>
+            </label>
+            <p class="pt-muted">When adding, the notation already in the editor is sent along so the new part matches it.</p>
             <div class="pt-actions">
                 <button id="pt-transcribe" class="btn btn-primary" type="button">Transcribe</button>
                 <button id="pt-cancel" class="btn" type="button" hidden>Cancel</button>
@@ -109,6 +120,19 @@ bodyClass: "playground-page"
             </details>
         </section>
     </aside>
+
+    <dialog id="pt-crop-dialog" class="pt-crop-dialog">
+        <p class="pt-crop-help">Drag a box around the part to transcribe. Include the section heading if there is one.</p>
+        <div id="pt-crop-stage" class="pt-crop-stage">
+            <img id="pt-crop-img" alt="Photo to crop" draggable="false">
+            <div id="pt-crop-box" class="pt-crop-box"></div>
+        </div>
+        <div class="pt-crop-actions">
+            <button id="pt-crop-apply" class="btn btn-primary" type="button">Use selection</button>
+            <button id="pt-crop-clear" class="btn" type="button">Whole photo</button>
+            <button id="pt-crop-cancel" class="btn" type="button">Cancel</button>
+        </div>
+    </dialog>
 
     <main class="pt-main">
         <div class="pt-toolbar">
@@ -190,6 +214,20 @@ bodyClass: "playground-page"
     border: 1px solid var(--pt-border); background: var(--pt-bg); color: var(--pt-text);
     border-radius: 4px; cursor: pointer; font-size: 0.8rem; line-height: 1; padding: 0.15rem 0.35rem;
 }
+.pt-badge { font-style: normal; font-size: 0.7rem; color: var(--pt-accent); }
+.pt-crop-dialog {
+    border: 1px solid var(--pt-border); border-radius: 8px; padding: 0.75rem;
+    background: var(--pt-bg); color: var(--pt-text); max-width: min(96vw, 1100px);
+}
+.pt-crop-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+.pt-crop-help { margin: 0 0 0.5rem; font-size: 0.875rem; }
+.pt-crop-stage { position: relative; display: inline-block; overflow: hidden; touch-action: none; cursor: crosshair; user-select: none; line-height: 0; }
+.pt-crop-stage img { display: block; max-width: min(92vw, 1060px); max-height: 75vh; }
+.pt-crop-box {
+    position: absolute; display: none; border: 2px solid var(--pt-accent);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none;
+}
+.pt-crop-actions { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
 .pt-thumb-actions button:disabled { opacity: 0.35; cursor: default; }
 
 .pt-input {
