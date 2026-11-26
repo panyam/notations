@@ -61,6 +61,8 @@
     {{# include "gen.SideBySidePlayground.html" #}}
     {{ else if .FrontMatter.useNotebookPlayground }}
     {{# include "gen.NotebookPlayground.html" #}}
+    {{ else if .FrontMatter.usePhotoTranscribePlayground }}
+    {{# include "gen.PhotoTranscribePlayground.html" #}}
     {{ else }}
     {{# include "gen.DocsPage.html" #}}
     {{ end }}

@@ -7,6 +7,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
+## [Unreleased]
+
+### Added
+
+- Photo Transcribe demo on the docs site (`demos/playgrounds/photo-transcribe/`):
+  take or upload photos of Carnatic notation and get editable Notations source
+  back. Claude reads the photos with the visitor's own Anthropic API key, sent
+  straight from the browser. The result is run through the parser and an
+  alignment check (Sw and Sh lines of equal length, whole avartanams), and any
+  problems go back to the model for correction before the result reaches the
+  editor. Docs site only; the published package is unchanged.
+
 ## [1.1.0] - 2026-09-21
 
 Full notes: [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md)

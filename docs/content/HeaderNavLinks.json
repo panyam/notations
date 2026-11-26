@@ -105,6 +105,10 @@
         "url": "demos/playgrounds/model-events/"
       },
       {
+        "name": "Photo Transcribe",
+        "url": "demos/playgrounds/photo-transcribe/"
+      },
+      {
         "name": "Visual Tests",
         "url": "demos/visual-tests/"
       }

@@ -3,6 +3,10 @@
 # Skip any version published less than 3 days ago (minutes). Most hijacked releases are
 # caught and unpublished within that window.
 minimumReleaseAge: 4320
+# The photo transcriber needs SDK 1.14.0 before it is 3 days old. This names the exact
+# version, so later SDK releases still wait.
+minimumReleaseAgeExclude:
+  - '@anthropic-ai/sdk@1.14.0'
 
 # Fail if a package's newer version drops the provenance or trusted-publisher evidence
 # an older version had.
