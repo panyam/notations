@@ -89,6 +89,7 @@
     "style-loader": "^4.0.0",
     "ts-jest": "^29.4.15",
     "ts-loader": "^9.6.2",
+    "tsx": "^4.23.15",
     "typedoc": "^0.28.20",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.74.0",
@@ -124,7 +125,8 @@
     "prepublishOnly": "echo prepublishOnly...",
     "preversion": "npm run build && npm run lintfix",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "transcribe:photos": "tsx docs/scripts/transcribe-photos.ts"
   },
   "directories": {
     "lib": "lib"

@@ -22,8 +22,13 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   is generated from the grid with bars drawn from the tala, so roles and
   avartanams line up by construction. Filled-in beats and doubtful readings are
   left as comments for the proofreader. An optional enhancement flattens
-  shadows and yellowed paper before upload. Docs site only; the published
-  package is unchanged.
+  shadows and yellowed paper before upload. Optional fields for ragam(s),
+  talam (enforced), swaras per beat and what letter case means. The prompt
+  reads letter case as swarasthana (m / M) by default, reads two-column
+  notebook rows across, and treats letter clusters as phrasing rather than
+  beats. `pnpm run transcribe:photos` runs the same pipeline on image or PDF
+  files from the command line. Docs site only; the published package is
+  unchanged.
 
 ## [1.1.0] - 2026-09-21
 

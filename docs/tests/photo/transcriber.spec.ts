@@ -160,3 +160,19 @@ describe("transcribe", () => {
     await expect(transcribe(client, { images: [] })).rejects.toThrow("at least one photo");
   });
 });
+
+describe("known facts", () => {
+  test("a talam the user gave is enforced", async () => {
+    const { client, requests } = fakeClient([
+      { text: GOOD },
+      { text: GOOD.replace('"cycle":"|4|"', '"cycle":"|4|2|2|"') },
+    ]);
+    // GOOD is Eka (|4|); the user says Adi, so the first answer is sent back.
+    const r = await transcribe(client, { images: IMG, known: { cycle: "|4|2|2|" }, maxRepairs: 1 });
+    expect(requests).toHaveLength(2);
+    expect(requests[0].messages[0].content.at(-1).text).toContain('cycle "|4|2|2|"');
+    expect(requests[1].messages[2].content).toContain('The user gave the tala as "|4|2|2|"');
+    // The second answer uses Adi, but its 4-beat line is now half an avartanam: still reported.
+    expect(r.report.errors.join("\n")).toContain("not a multiple of the 8-beat avartanam");
+  });
+});

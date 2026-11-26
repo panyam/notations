@@ -69,3 +69,28 @@ describe("user and repair prompts", () => {
     expect(many).toContain("10 more");
   });
 });
+
+describe("known facts", () => {
+  test("are stated as facts, ahead of free-text hints", () => {
+    const p = buildUserPrompt(2, "underline means double speed", {
+      ragams: "Kedaram, Shankarabharanam",
+      cycle: "|4|2|2|",
+      notesPerBeat: 4,
+      letterCase: "swarasthana",
+    });
+    expect(p).toContain("- Raga(s): Kedaram, Shankarabharanam");
+    expect(p).toContain('cycle "|4|2|2|". Use exactly this cycle.');
+    expect(p).toContain("Swaras per beat: 4");
+    expect(p).toContain("names the swarasthana");
+    expect(p.indexOf("Facts from the user")).toBeLessThan(p.indexOf("underline means double speed"));
+  });
+
+  test("nothing given, nothing added", () => {
+    expect(buildUserPrompt(1, "", {})).toBe("Transcribe the notation in the photo above.");
+  });
+
+  test("the prompt teaches case as swarasthana, not length, by default", () => {
+    expect(SYSTEM_PROMPT).toContain("case usually names the swarasthana");
+    expect(SYSTEM_PROMPT).toContain("Clusters are phrases, not beats");
+  });
+});

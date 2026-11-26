@@ -185,3 +185,71 @@ describe("toNotation", () => {
     expect(check.lineCount).toBe(2);
   });
 });
+
+describe("a handwritten ragamalika notebook (conventions from a real page)", () => {
+  // Hand-made grid in the shape the model is asked for: Adi at 4 per beat, one section per raga,
+  // letter case as swarasthana (m = suddha, M = prati), an underlined double-speed run as groups,
+  // sahitya only under the first lines.
+  const t: Transcription = {
+    metadata: [
+      { key: "composer", value: "Patnam Subramanya Iyer" },
+      { key: "talam", value: "Adi" },
+    ],
+    cycle: "|4|2|2|",
+    timing: "Each row spans both columns: 16 units on the left (laghu), 16 on the right (drutams).",
+    notes: ["Ticks and hooks above the swaras are the writer's gamaka marks; left out."],
+    sections: [
+      {
+        heading: "Pallavi - Kedaram",
+        text: "",
+        cycle: "",
+        beatDuration: 4,
+        lines: [
+          line(
+            ["P , N ,", "S , , ,", "S N S R", "S S N N", "S m G m", "P N P P", "m m G G", "R R S N"],
+            ["Va , la ,", "chi , , ,", "va , , ,", "chi , , ,", "yun , , ,", "naa , , ,", "naa , , ,", "pai , , ,"],
+          ),
+        ],
+      },
+      {
+        heading: "Anupallavi - Shankarabharanam",
+        text: "",
+        cycle: "",
+        beatDuration: 4,
+        lines: [
+          line([
+            "S , P ,",
+            "P m G R",
+            "G , m ,",
+            "P , , ,",
+            "G m P D",
+            "D P m P",
+            "D N S N",
+            "[S N] [D P] [m G] [R S]",
+          ]),
+        ],
+      },
+      {
+        heading: "Chittaswaram - Kalyani",
+        text: "",
+        cycle: "",
+        beatDuration: 4,
+        lines: [line(["D N S R", ", G S R", "G M , D", "P M G R", "M G R S", ", D N S", "R , , G", ", M P D"])],
+      },
+    ],
+  };
+
+  test("validates, keeps letter case, and parses", () => {
+    expect(validateTranscription(t).errors).toEqual([]);
+    const dsl = toNotation(t);
+    expect(dsl).toContain("> #### Pallavi - Kedaram");
+    expect(dsl).toContain("Sw: P , N , S , , , S N S R S S N N | S m G m P N P P | m m G G R R S N ||");
+    expect(dsl).toContain("[S N] [D P] [m G] [R S] ||");
+    expect(dsl).toContain("G M , D"); // prati madhyamam stays upper case
+    expect(dsl).not.toMatch(/Sh: *\n/); // swara-only lines get no empty sahitya row
+    const check = checkNotation(dsl);
+    expect(check.errors).toEqual([]);
+    expect(check.warnings).toEqual([]);
+    expect(check.lineCount).toBe(3);
+  });
+});

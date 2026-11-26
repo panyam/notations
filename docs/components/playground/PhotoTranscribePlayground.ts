@@ -15,6 +15,8 @@ import "dockview-core/dist/styles/dockview.css";
 import "../../../styles/NotationView.scss";
 
 import { createMarkdownParser } from "../NotationViewer";
+import { parseCycle } from "../photo/grid";
+import type { KnownFacts } from "../photo/prompt";
 import { prepareImage, PreparedImage } from "../photo/imageUtils";
 import { DEFAULT_MODEL, TranscribeResult, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
 
@@ -73,6 +75,11 @@ export class PhotoTranscribePlayground {
   private enhanceBox = $("pt-enhance") as HTMLInputElement;
   private carefulBox = $("pt-careful") as HTMLInputElement;
   private hintsInput = $("pt-hints") as HTMLTextAreaElement;
+  private ragamsInput = $("pt-ragams") as HTMLInputElement;
+  private talamSelect = $("pt-talam") as HTMLSelectElement;
+  private cycleInput = $("pt-cycle") as HTMLInputElement;
+  private npbSelect = $("pt-npb") as HTMLSelectElement;
+  private caseSelect = $("pt-case") as HTMLSelectElement;
   private transcribeBtn = $("pt-transcribe") as HTMLButtonElement;
   private cancelBtn = $("pt-cancel") as HTMLButtonElement;
   private statusEl = $("pt-status");
@@ -117,6 +124,9 @@ export class PhotoTranscribePlayground {
     });
     this.modelSelect.addEventListener("change", () => safeSet(MODEL_STORAGE, this.modelSelect.value));
     this.enhanceBox.addEventListener("change", () => this.reprepareAll());
+    this.talamSelect.addEventListener("change", () => {
+      $("pt-cycle-field").hidden = this.talamSelect.value !== "custom";
+    });
 
     const fileInputs = [$("pt-file") as HTMLInputElement, $("pt-camera") as HTMLInputElement];
     for (const input of fileInputs) {
@@ -264,6 +274,10 @@ export class PhotoTranscribePlayground {
   private async run(): Promise<void> {
     const apiKey = this.keyInput.value.trim();
     if (!apiKey || this.photos.length === 0) return;
+    if (this.talamSelect.value === "custom" && !parseCycle(this.cycleInput.value)) {
+      this.setStatus('Write the cycle as beats per anga, e.g. "|4|2|2|".', "error");
+      return;
+    }
 
     // Load the SDK only when someone actually transcribes, to keep the page light.
     const { default: Anthropic } = await import(/* webpackChunkName: "anthropic-sdk" */ "@anthropic-ai/sdk");
@@ -282,6 +296,7 @@ export class PhotoTranscribePlayground {
         hints: this.hintsInput.value,
         model: this.modelSelect.value || DEFAULT_MODEL,
         effort: this.carefulBox.checked ? "xhigh" : "high",
+        known: this.knownFacts(),
         signal: this.abort.signal,
         onStatus: (m) => {
           this.setStatus(m);
@@ -323,6 +338,17 @@ export class PhotoTranscribePlayground {
       this.abort = null;
       this.updateButtons();
     }
+  }
+
+  private knownFacts(): KnownFacts {
+    const talam = this.talamSelect.value;
+    const cycle = talam === "custom" ? this.cycleInput.value.trim() : talam;
+    return {
+      ragams: this.ragamsInput.value.trim() || undefined,
+      cycle: cycle && parseCycle(cycle) ? cycle : undefined,
+      notesPerBeat: Number(this.npbSelect.value) || undefined,
+      letterCase: (this.caseSelect.value || undefined) as KnownFacts["letterCase"],
+    };
   }
 
   private handleError(e: any, Anthropic: any): void {

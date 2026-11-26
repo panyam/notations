@@ -17,9 +17,9 @@
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt } from "./prompt";
+import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt, KnownFacts } from "./prompt";
 import { checkNotation, NotationCheck } from "./notationChecks";
-import { GridReport, toNotation, Transcription, TRANSCRIPTION_SCHEMA, validateTranscription } from "./grid";
+import { GridReport, parseCycle, toNotation, Transcription, TRANSCRIPTION_SCHEMA, validateTranscription } from "./grid";
 
 type BetaMessage = Anthropic.Beta.Messages.BetaMessage;
 type BetaMessageParam = Anthropic.Beta.Messages.BetaMessageParam;
@@ -38,6 +38,8 @@ export interface TranscribeOptions {
   images: TranscribeImage[];
   /** Free-text hints from the user: raga, tala, composer, conventions. */
   hints?: string;
+  /** Facts the user is sure of. A given cycle is enforced, not just suggested. */
+  known?: KnownFacts;
   model?: string;
   /** How much the model thinks. Poor photos and sparse notation benefit from "xhigh". */
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
@@ -84,6 +86,26 @@ function textOf(message: BetaMessage): string {
     .join("");
 }
 
+/** Adds errors for anything that contradicts what the user told us. */
+export function withKnownFacts(report: GridReport, t: Transcription, known?: KnownFacts): GridReport {
+  const want = known?.cycle ? parseCycle(known.cycle) : null;
+  if (!want) return report;
+  const same = (c: string) => (parseCycle(c) || []).join(",") === want.join(",");
+  const errors = [...report.errors];
+  if (!same(t.cycle)) {
+    errors.push(`The user gave the tala as "${known!.cycle}", but the grid uses "${t.cycle}". Use the user's cycle.`);
+  }
+  t.sections.forEach((s, i) => {
+    if (s.cycle?.trim() && !same(s.cycle)) {
+      const name = s.heading?.trim() ? `"${s.heading.trim()}"` : `section ${i + 1}`;
+      errors.push(
+        `${name} uses cycle "${s.cycle}", but the user gave "${known!.cycle}". Leave the section cycle empty.`,
+      );
+    }
+  });
+  return { ...report, errors };
+}
+
 /** Parses the model's JSON; structured outputs make failure rare, but a cut-off reply can still fail. */
 export function parseTranscription(text: string): Transcription | null {
   try {
@@ -111,7 +133,7 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
     if (opts.images.length > 1) firstTurn.push({ type: "text", text: `Page ${i + 1}:` });
     firstTurn.push({ type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } });
   });
-  firstTurn.push({ type: "text", text: buildUserPrompt(opts.images.length, opts.hints || "") });
+  firstTurn.push({ type: "text", text: buildUserPrompt(opts.images.length, opts.hints || "", opts.known) });
   const messages: BetaMessageParam[] = [{ role: "user", content: firstTurn }];
 
   const attempts: TranscribeAttempt[] = [];
@@ -153,7 +175,7 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
 
     const transcription = parseTranscription(textOf(message));
     const report: GridReport = transcription
-      ? validateTranscription(transcription)
+      ? withKnownFacts(validateTranscription(transcription), transcription, opts.known)
       : {
           errors: [
             message.stop_reason === "max_tokens"

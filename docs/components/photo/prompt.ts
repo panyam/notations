@@ -19,7 +19,7 @@ The answer is a JSON object (the schema is enforced):
 - cycle: the tala as beats per anga. Adi "|4|2|2|", Rupaka "|2|4|", Misra Chapu "|3|2|2|", Khanda Chapu "|2|3|", Dhruva "|4|2|4|4|", Matya "|4|2|4|", Jhampa "|7|1|2|", Ata "|5|5|2|2|", Eka "|4|". A jati changes the laghu: Tisra Triputa is "|3|2|2|". For Rupaka, follow the page: some books count it "|2|4|", others "|4|2|". Trust the bar lines on the page over the tala's name.
 - timing: one or two sentences saying how you settled the tala and the units per beat, e.g. "Adi; the clean lines have 32 swara positions per avartanam, so 4 per beat".
 - sections: one per printed section (Pallavi, Anupallavi, Charanam, Muktayi Swaram, Chittai Swaram 1, ...), each with
-  - heading, and text for any prose printed with it;
+  - heading, and text for any prose printed with it. In a ragamalika each segment names its raga; give every segment its own section and put both names in the heading, e.g. "Pallavi - Kedaram", "Charanam swaram 2 - Bilahari";
   - cycle (empty unless this section's tala differs);
   - beatDuration: slots per beat. Sections often differ, e.g. a swaram passage in second speed;
   - lines: one per printed line, each with label (usually empty), partial, uncertain, and roles. A role is "Sw" (swaras) or "Sh" (sahitya), or another short name for an extra row (a second language, jathis), with beats: one string per beat.
@@ -29,8 +29,8 @@ The answer is a JSON object (the schema is enforced):
 
 Every beat string holds exactly beatDuration slots, separated by spaces. A slot is one of:
 
-- a swara: s r g m p d n (keep the page's letter case). Higher octave: dots after, "s." "r..". Lower octave: dots before, ".n". A dot printed above a swara is higher octave; below is lower.
-- a sahitya syllable: "Sa", "ra", "ja". Keep the script and diacritics as printed (ā, ś, ṇ, Tamil, Telugu, Devanagari...) unless the user asks for transliteration. Drop apostrophes, hyphens and other punctuation inside a syllable.
+- a swara: s r g m p d n, in the page's letter case (see "Letter case" below: it usually names the swarasthana, so it must be kept exactly). Higher octave: dots after, "s." "r..". Lower octave: dots before, ".n". A dot printed above a swara is higher octave; below is lower.
+- a sahitya syllable: "Sa", "ra", "ja". Keep the script and diacritics as printed (ā, ś, ṇ, Tamil, Telugu, Devanagari...) unless the user asks for transliteration. Drop apostrophes, hyphens and other punctuation inside a syllable. Dashes or underscores after a syllable ("va__ chi__") mean it is held: they become "," slots, counted against the swaras above.
 - "," karvai: the previous swara or syllable continues for this slot.
 - "_" silence for this slot, drawn as nothing.
 - "[s r]" a group: several notes squeezed into ONE slot, for a passage written faster than its surroundings (underlined once or twice, or bracketed on the page).
@@ -60,7 +60,18 @@ Work this out before writing anything:
    - The other row is the second clue. A syllable placed under a swara starts in that swara's slot. A syllable with a gap after it means the swara above is held (or the swaras above move faster). Equally, karvais printed in one row give the timing of the other. Time both rows together, never one alone.
    - Without either clue, spread the written symbols evenly across the beat ("s r" in a beat of 4 becomes "s *, r *,"), and say so in uncertain if the choice matters.
 4. Count again: every avartanam must come out exactly beats x beatDuration slots, in every row. If it does not, the usual causes are a swara read twice, a group that should be bracketed, a missed or extra karvai, or a printed line that does not match an avartanam (printed lines need not match avartanams; follow the bar lines, and make each grid line whole avartanams).
-5. Capital letters as long notes: some books write a long (two-unit) swara as a capital and a short one in lower case. If the page mixes S and s, R and r, and lines only add up when capitals count double, write a capital as the lower-case letter followed by "," (not "*,": it was written, just in another form) and say so in notes.
+5. Clusters are phrases, not beats. Writers group letters with spaces ("SNSR SSNN", "PNP PmmGGR") to show phrasing; a cluster can be 3, 5 or 7 units long. Count units, not clusters: every swara letter and every comma is one unit, except inside a faster passage (step 3's groups).
+
+# Letter case
+
+In English-letter notation, case usually names the swarasthana, not the length: lower-case m is suddha madhyamam and M prati madhyamam; g sadharana and G antara gandharam; n kaisiki and N kakali nishadam; likewise r/R and d/D. So Kalyani appears as "S R G M P D N", Begada and Shankarabharanam with "m", Shri with "g" and "n". Keep every letter's case exactly as written, and use the raga's scale to read a letter whose case is unclear in the handwriting. Only a few books use a capital for a long (two-unit) swara instead; assume that only when the user says so or the page explains it, and then write the capital as the lower-case letter followed by "," (not "*,": it was written, in another form).
+
+# Page layout
+
+- Columns: notebooks often split each avartanam across two columns, the laghu on the left and the drutams on the right, so a single row reads across both columns. Other pages put separate lines in each column, read down. Decide by counting: if a left-column line and the right-column line on the same row add up to one avartanam, read across. Headings in the two columns can label the same rows (the raga on the left, the section on the right).
+- Sahitya is often written only under the first lines of a section, or only for the pallavi, anupallavi and charanam. A line without sahitya has only the Sw role; do not invent an empty Sh row.
+- Marks above or below the swaras (ticks, hooks, small curves, a "γ"-like sign, numbers) are usually the writer's gamaka or counting marks. They take no time. Transcribe one only when it clearly matches an embellishment listed above; otherwise leave it out and describe the convention once in notes.
+- Numbering ("1)", "2)"), repeat or return marks ("(R)", a "C" in the margin) and arrows are not notation: mention them in the section's text, not in the beats.
 
 # Reading the symbols on a poor photo
 
@@ -73,13 +84,26 @@ Work this out before writing anything:
 
 When the user sends back validation errors, reply with the complete corrected grid. Look at the photo again for each line mentioned, fix those, and keep everything else as it was.`;
 
+/** Facts the user supplies up front, so the model does not have to infer them. All optional. */
+export interface KnownFacts {
+  /** Raga, or the ragas of a ragamalika in order. */
+  ragams?: string;
+  /** Tala as a cycle string, e.g. "|4|2|2|". */
+  cycle?: string;
+  /** Usual swaras per beat (for the slowest-written sections). */
+  notesPerBeat?: number;
+  /** What letter case means on this page. */
+  letterCase?: "swarasthana" | "length";
+}
+
 /**
  * The text that accompanies the photos in the first user turn.
  *
  * @param pageCount how many photos are attached, in reading order
- * @param hints free text from the user (raga, tala, composer, conventions); may be empty
+ * @param hints free text from the user; may be empty
+ * @param known structured facts from the user; these are stated as facts, not hints
  */
-export function buildUserPrompt(pageCount: number, hints: string): string {
+export function buildUserPrompt(pageCount: number, hints: string, known: KnownFacts = {}): string {
   const parts: string[] = [];
   if (pageCount > 1) {
     parts.push(
@@ -88,10 +112,26 @@ export function buildUserPrompt(pageCount: number, hints: string): string {
   } else {
     parts.push("Transcribe the notation in the photo above.");
   }
+  const facts: string[] = [];
+  if (known.ragams?.trim()) facts.push(`Raga(s): ${known.ragams.trim()}`);
+  if (known.cycle?.trim()) facts.push(`Tala: cycle "${known.cycle.trim()}". Use exactly this cycle.`);
+  if (known.notesPerBeat) {
+    facts.push(
+      `Swaras per beat: ${known.notesPerBeat} in the normally written sections (faster passages may have more).`,
+    );
+  }
+  if (known.letterCase === "swarasthana") {
+    facts.push("Letter case names the swarasthana (m vs M, g vs G, n vs N...); every letter is one unit.");
+  } else if (known.letterCase === "length") {
+    facts.push("A capital letter is a long swara (two units); a lower-case letter is one unit.");
+  }
+  if (facts.length > 0) {
+    parts.push("Facts from the user about this composition:\n" + facts.map((f) => `- ${f}`).join("\n"));
+  }
   const trimmed = hints.trim();
   if (trimmed) {
     parts.push(
-      `Notes from the user about this composition (trust these over your own inference, but the photo wins where they disagree):\n${trimmed}`,
+      `Notes from the user (trust these over your own inference, but the photo wins where they disagree):\n${trimmed}`,
     );
   }
   return parts.join("\n\n");

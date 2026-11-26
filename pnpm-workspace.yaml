@@ -26,6 +26,8 @@ strictDepBuilds: true
 
 # Install scripts allowed to run. Everything else is skipped.
 allowBuilds:
+  # tsx runs the photo CLI through esbuild, which fetches its native binary in postinstall.
+  esbuild: true
   # pre-commit installs the git hook that runs the "pre-commit" list in package.json.
   pre-commit: true
   # The rest need no script: sass ships watcher prebuilds, core-js only prints a banner,
