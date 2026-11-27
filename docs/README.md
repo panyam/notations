@@ -188,12 +188,14 @@ NOTATIONS_DOCS_ENV=production go run docs/main.go
 
 ### Deploy to GitHub Pages
 
-```bash
-# Copy output to gh-pages branch or docs/ folder in main branch
-cp -r docs/dist/docs/* ../gh-pages/
+The `Docs` workflow (`.github/workflows/docs.yml`) builds the site and publishes it after CI
+passes on master. To deploy master now without a new push:
 
-# Or configure GitHub Pages to serve from /docs directory
+```bash
+cd docs && make deploy   # runs the workflow; needs the gh CLI
 ```
+
+`make site` builds the same production site into `docs/dist/docs/` without deploying.
 
 ### Deploy to Netlify/Vercel
 

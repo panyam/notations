@@ -71,7 +71,7 @@ The documentation includes a visual regression testing page:
 1. Webpack builds TypeScript components → static/js/gen/
 2. s3gen generates static HTML from content/ + templates/
 3. Static folder manually copied to dist/docs/
-4. Deployment script pushes to gh-pages branch
+4. The Docs workflow publishes dist/docs to GitHub Pages after CI passes on master
 
 ## Patterns and Conventions
 
@@ -122,20 +122,18 @@ ColAlign.setOffset() → BeatView.setBounds(columnWidth) → GroupView.setBounds
 
 ### GitHub Pages Setup
 - Repository: panyam/notations
-- Branch: gh-pages (auto-deployed)
+- Source: GitHub Actions (`.github/workflows/docs.yml`), after CI passes on master
 - URL: https://panyam.github.io/notations/
 - `.nojekyll` file prevents Jekyll processing
 
-### Deployment Command
+### Deployment Commands
 ```bash
-make gh-pages
+make deploy   # run the Docs workflow on master now
+make site     # build the production site into dist/docs, without deploying
 ```
 
-This command:
-1. Rebuilds TypeScript components
-2. Rebuilds static site
-3. Copies static assets
-4. Force-pushes to gh-pages branch
+The workflow rebuilds the TypeScript components, renders the site with s3gen, copies the
+static assets in, and publishes the result with actions/deploy-pages.
 
 ## Recent Updates
 

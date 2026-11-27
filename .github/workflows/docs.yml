@@ -1,0 +1,117 @@
+name: Docs
+
+# Builds the docs site and publishes it to GitHub Pages
+# (https://panyam.github.io/notations/).
+#
+# It runs after CI passes on a push to master, so a red build never deploys. Run it by hand
+# from the Actions tab, or with `cd docs && make deploy`.
+#
+# Repo settings, once: Settings > Pages > Source = "GitHub Actions".
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time. A newer push queues behind a running deploy instead of cancelling it
+# halfway through.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # workflow_run fires for any CI run whose branch is named master. That includes a pull
+    # request from a fork's master, so check that CI ran on a push to this repo. A manual run
+    # deploys master only.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    # A full build takes about 2 minutes. This stops a hung `go run main.go -build` early.
+    timeout-minutes: 15
+    outputs:
+      deploy: ${{ steps.fresh.outputs.deploy }}
+    steps:
+      # The default ref: master's tip. Checking out the commit CI tested instead would mean
+      # running code from a ref CodeQL treats as untrusted, in the default branch's context
+      # (actions/cache-poisoning).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Two merges close together: CI passes on the first, but master already points at the
+      # second, whose CI is still running. Build nothing here; the second's CI run deploys it.
+      - id: fresh
+        name: Check master is still the commit CI tested
+        env:
+          TESTED: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -z "$TESTED" ] || [ "$(git rev-parse HEAD)" = "$TESTED" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::master moved past $TESTED. Its own CI run deploys the newer commit."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # No version here: action-setup reads package.json's packageManager, which pins pnpm
+      # by sha512.
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      # No dependency caches. The deploy job holds Pages credentials, and a cache shared with
+      # the default branch is one more path for a bad build to reach CI.
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: docs/go.mod
+          cache: false
+
+      # --ignore-scripts skips the root `prepare` build. The docs bundle compiles src/ itself.
+      - if: steps.fresh.outputs.deploy == 'true'
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - if: steps.fresh.outputs.deploy == 'true'
+        run: pnpm run build:docs
+
+      # The same steps as `make site`.
+      - if: steps.fresh.outputs.deploy == 'true'
+        name: Render the site
+        working-directory: docs
+        run: |
+          NOTATIONS_DOCS_ENV=production go run main.go -build
+          rm -rf dist/docs/static
+          cp -r static dist/docs
+          touch dist/docs/.nojekyll
+
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: docs/dist/docs
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
