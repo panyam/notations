@@ -44,7 +44,8 @@ with `--no-verify`, because the hook builds code that branch does not have.
   and `?url` imports.
 - ts-jest compiles to CommonJS, so code that jest loads cannot use `import.meta`. For an
   asset URL in docs code, import `"file?url"`; webpack emits the file.
-- dockview-core stays on 4.x; 8 moves styles into JS (#43).
+- `DockViewPlayground` is a `createDock` from `@panyam/tsappkit-dock`, which supports dockview-core
+  4.13 to 8.x. On 8 the stylesheet comes from the `dockview` package (`dockview/dist/styles/dockview.css`).
 
 ## Docs site
 

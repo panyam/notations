@@ -52,9 +52,13 @@
     "yaml": "^2.9.1"
   },
   "peerDependencies": {
-    "dockview-core": "^4.0.0"
+    "@panyam/tsappkit-dock": "^0.7.40",
+    "dockview-core": ">=4.13.0 <9.0.0"
   },
   "peerDependenciesMeta": {
+    "@panyam/tsappkit-dock": {
+      "optional": true
+    },
     "dockview-core": {
       "optional": true
     }
@@ -63,6 +67,7 @@
     "@anthropic-ai/sdk": "^1.14.0",
     "@babel/core": "^8.1.3",
     "@eslint/js": "^10.0.1",
+    "@panyam/tsappkit-dock": "0.7.40",
     "@types/jest": "^30.0.0",
     "@types/markdown-it": "^14.2.0",
     "@types/node": "^22.20.5",
@@ -72,7 +77,8 @@
     "babel-loader": "^10.1.1",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^7.1.5",
-    "dockview-core": "^4.13.1",
+    "dockview": "8.9.1",
+    "dockview-core": "8.9.1",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",

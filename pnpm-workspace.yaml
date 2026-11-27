@@ -7,6 +7,9 @@ minimumReleaseAge: 4320
 # version, so later SDK releases still wait.
 minimumReleaseAgeExclude:
   - '@anthropic-ai/sdk@1.14.0'
+  # DockViewPlayground needs the dock that re-reads its theme on an <html class> change, which
+  # goapplib published as 0.7.40 the day this moved onto it. Exact version, so later ones wait.
+  - '@panyam/tsappkit-dock@0.7.40'
 
 # Fail if a package's newer version drops the provenance or trusted-publisher evidence
 # an older version had.
