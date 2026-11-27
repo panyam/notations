@@ -216,8 +216,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0(supports-color@8.1.1))
       '@panyam/tsappkit-dock':
-        specifier: 0.7.40
-        version: 0.7.40(dockview-core@8.9.1)
+        specifier: 0.7.44
+        version: 0.7.44(dockview-core@8.9.1)
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
@@ -1331,8 +1331,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@panyam/tsappkit-dock@0.7.40':
-    resolution: {integrity: sha512-RtyuU+xerS049NC06y9DYdQeHeOpG1X0gSgiYxHonLg7xolNWLwby2/dp+nKtB6uGSukuLZ5xB42BPJfgrgYHg==}
+  '@panyam/tsappkit-dock@0.7.44':
+    resolution: {integrity: sha512-e+ML87ulX8PhO6hy8PXN+Z5ZLOlUrSQOKlaaHdwX/28B2AZNTajQki7YbWR0Vwzn1LjhIsOwW0gy4SRY89ei2w==}
     peerDependencies:
       dockview-core: '>=4.13.0 <9.0.0'
 
@@ -4918,7 +4918,7 @@ snapshots:
   '@pagefind/windows-x64@1.6.0':
     optional: true
 
-  '@panyam/tsappkit-dock@0.7.40(dockview-core@8.9.1)':
+  '@panyam/tsappkit-dock@0.7.44(dockview-core@8.9.1)':
     dependencies:
       dockview-core: 8.9.1
 
