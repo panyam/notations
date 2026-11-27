@@ -18,6 +18,7 @@ import { createMarkdownParser } from "../NotationViewer";
 import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
 import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
+import { isPdf, PDF_PAGE_WARN, pdfToImages } from "../photo/pdfPages";
 import { DEFAULT_MODEL, TranscribeResult, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
 
 const KEY_STORAGE = "notations-photo-anthropic-key";
@@ -96,7 +97,6 @@ export class PhotoTranscribePlayground {
   private reportEl = $("pt-report");
   private thumbsEl = $("pt-thumbs");
   private onlyInput = $("pt-only") as HTMLInputElement;
-  private modeSelect = $("pt-mode") as HTMLSelectElement;
   private cropDialog = $("pt-crop-dialog") as HTMLDialogElement;
   private cropImg = $("pt-crop-img") as HTMLImageElement;
   private cropBox = $("pt-crop-box");
@@ -165,7 +165,7 @@ export class PhotoTranscribePlayground {
     // Pasting a screenshot is the quickest path on desktop.
     document.addEventListener("paste", (e) => {
       const files = Array.from(e.clipboardData?.files || []);
-      if (files.some((f) => f.type.startsWith("image/"))) this.addFiles(files);
+      if (files.some((f) => f.type.startsWith("image/") || isPdf(f))) this.addFiles(files);
     });
 
     this.thumbsEl.addEventListener("click", (e) => {
@@ -185,6 +185,7 @@ export class PhotoTranscribePlayground {
     this.transcribeBtn.addEventListener("click", () => this.run());
     this.cancelBtn.addEventListener("click", () => this.abort?.abort());
     $("pt-copy").addEventListener("click", () => this.copySource());
+    $("pt-clear").addEventListener("click", () => this.clearEditor());
     $("pt-download").addEventListener("click", () => this.downloadSource());
     $("pt-reset-layout").addEventListener("click", () => this.playground.resetLayout());
   }
@@ -192,9 +193,21 @@ export class PhotoTranscribePlayground {
   // ---- Photos ---------------------------------------------------------------------------
 
   private async addFiles(files: File[]): Promise<void> {
-    const images = files.filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
+    const images: File[] = [];
+    for (const file of files) {
+      if (isPdf(file)) {
+        try {
+          images.push(...(await this.expandPdf(file)));
+        } catch (e: any) {
+          this.setStatus(`${file.name}: could not read this PDF (${e.message || e}).`, "error");
+          return;
+        }
+      } else if (file.type.startsWith("image/") || /\.(heic|heif)$/i.test(file.name)) {
+        images.push(file);
+      }
+    }
     if (images.length === 0) {
-      this.setStatus("Those files are not images.", "error");
+      this.setStatus("Those files are not images or PDFs.", "error");
       return;
     }
     this.setStatus(`Preparing ${images.length} photo(s)...`);
@@ -221,6 +234,16 @@ export class PhotoTranscribePlayground {
     this.renderThumbs();
     this.updateButtons();
     this.pickNextRegion();
+  }
+
+  /** One PNG per PDF page, in order. Each page then behaves like a photo. */
+  private expandPdf(file: File): Promise<File[]> {
+    this.setStatus(`Opening ${file.name}...`);
+    return pdfToImages(file, {
+      confirmPages: (count) =>
+        count <= PDF_PAGE_WARN || confirm(`${file.name} has ${count} pages. Add all of them as photos?`),
+      onPage: (n, count) => this.setStatus(`Rendering ${file.name}: page ${n} of ${count}...`),
+    });
   }
 
   /** Opens the region picker on the first photo still without a region, if any. */
@@ -465,7 +488,7 @@ export class PhotoTranscribePlayground {
     this.rawDetails.open = true;
     this.playground.log(`Transcribing ${this.photos.length} photo(s) with ${this.modelSelect.value}`, "info");
     const existing = this.playground.source;
-    const append = this.modeSelect.value === "append" && !isBlankNotation(existing);
+    const append = !isBlankNotation(existing);
 
     try {
       const result = await transcribe(client, {
@@ -490,8 +513,6 @@ export class PhotoTranscribePlayground {
       });
 
       this.playground.source = append ? mergeNotation(existing, result.transcription) : result.notation;
-      // After the first section, the natural next step is the next section: add, don't replace.
-      this.modeSelect.value = "append";
       this.playground.render();
       this.rawDetails.open = false;
       this.showReport(result);
@@ -581,6 +602,17 @@ export class PhotoTranscribePlayground {
   }
 
   // ---- Output ---------------------------------------------------------------------------
+
+  /** Empties the editor, so the next transcription starts a new song. */
+  private clearEditor(): void {
+    if (!isBlankNotation(this.playground.source) && !confirm("Clear the editor? Copy or download first to keep it.")) {
+      return;
+    }
+    this.playground.source = PLACEHOLDER_SOURCE;
+    this.playground.render();
+    this.reportEl.innerHTML = "";
+    this.setStatus("Editor cleared. The next transcription starts a new song.");
+  }
 
   private async copySource(): Promise<void> {
     try {

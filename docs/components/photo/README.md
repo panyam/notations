@@ -20,6 +20,7 @@ see "Next steps".
 | `grid.ts` | The beat-grid JSON schema the model fills, `validateTranscription` (located errors), `toNotation` (DSL generation), `mergeNotation` (append a snippet) |
 | `transcriber.ts` | Claude call (streaming, structured output, adaptive thinking, server-side fallback) and the repair loop |
 | `notationChecks.ts` | Runs the real parser on generated DSL; alignment warnings |
+| `pdfPages.ts` | Renders each page of an uploaded PDF to a PNG with pdf.js, loaded on demand. Each page then works like a photo |
 | `imageUtils.ts` | Browser image prep: rotate, crop (from full resolution), downscale to 2400 px, optional enhancement (flat-field + contrast) |
 | `../playground/PhotoTranscribePlayground.ts` | The page: photos, region picker, known-facts fields, API key, editor/preview |
 | `../../content/demos/playgrounds/photo-transcribe/index.html` | Page markup and styles |
@@ -40,8 +41,9 @@ see "Next steps".
    slots, needs 4"); a user-given talam is enforced. Errors go back to the model, up to 2 rounds.
 5. `toNotation` writes the DSL, drawing `|`/`||` from the tala, so roles and avartanams line up
    by construction. Filled-in beats and doubtful readings become `//` comments.
-6. In append mode, `mergeNotation` adds the snippet after the editor's content and merges
-   metadata into the single front-matter block (front matter may only open a document).
+6. On the page, every result goes after the editor's content. `mergeNotation` adds the snippet and
+   merges its metadata into the single front-matter block, because front matter may only open a
+   document. An empty editor just takes the notation. Clear empties the editor for a new song.
 
 ## Decisions and why
 

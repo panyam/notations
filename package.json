@@ -81,6 +81,7 @@
     "jest-environment-jsdom": "^30.5.2",
     "jsdom": "^31.0.1",
     "markdown-it": "^15.0.3",
+    "pdfjs-dist": "^6.5.438",
     "pre-commit": "^2.0.0",
     "prettier": "^3.10.1",
     "sass": "^1.108.2",

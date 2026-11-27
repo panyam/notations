@@ -37,6 +37,11 @@ module.exports = (_env, options) => {
           ],
         },
         {
+          // `import x from "file?url"` emits the file as-is and gives back its URL (the pdf.js worker).
+          resourceQuery: /url/,
+          type: "asset/resource",
+        },
+        {
           test: /\.s?css$/,
           use: ["style-loader", "css-loader", "sass-loader"],
         },
@@ -56,7 +61,7 @@ module.exports = (_env, options) => {
         path: false,
         querystring: false,
         stream: require.resolve("stream-browserify"),
-        buffer: require.resolve("buffer"),
+        buffer: false,
         tls: false,
         url: false,
         util: false,
@@ -73,9 +78,6 @@ module.exports = (_env, options) => {
       globalObject: "this",
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        Buffer: ["buffer", "Buffer"],
-      }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         chunks: ["DocsPage"],
