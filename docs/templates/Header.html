@@ -9,7 +9,13 @@
             </a>
         </div>
 
-        <nav class="main-nav">
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+
+        <nav class="main-nav" id="main-nav" aria-label="Main">
             {{ $navLinks := (json "HeaderNavLinks.json" "") }}
             {{ range $navLinks }}
             <div class="nav-item{{ if .children }} has-children{{ end }}">
@@ -29,6 +35,14 @@
         </nav>
 
         <div class="header-actions">
+            <button type="button" class="search-trigger" id="search-trigger" aria-label="Search the docs" title="Search (/ or Ctrl+K)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke-width="2" />
+                    <path stroke-linecap="round" stroke-width="2" d="M20 20l-3.5-3.5" />
+                </svg>
+                <span class="search-trigger-label">Search</span>
+                <kbd>/</kbd>
+            </button>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                 <!-- Sun icon (shown in dark mode) -->
                 <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
