@@ -46,6 +46,8 @@ jobs:
 
       - run: pnpm run lint
 
-      - run: pnpm run spell
+      # Spelling doesn't depend on Node, and cspell 10 needs Node 22.18 or later.
+      - if: matrix.node == 22
+        run: pnpm run spell
 
       - run: pnpm test
