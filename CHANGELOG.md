@@ -11,6 +11,12 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ### Changed
 
+- Front matter is read by a small parser for flat `key: value` lines instead of the `yaml`
+  package. Values can be quoted or plain strings, numbers, booleans, null, or a one-line list such
+  as `[8, 8]`, and they read as YAML reads them. Nested values, `- item` lists and multi-line
+  strings are now a parse error that names the line, where `yaml` used to accept them. A front
+  matter error no longer throws out of the parser. `import { load }` from `notations/parser` drops
+  from 247 KB to 151 KB minified, 71 KB to 42 KB gzipped (#87).
 - The `@panyam/tsappkit-dock` peer range is now `^0.7.44`, up from `^0.7.40`. Older versions put a
   focusable close button inside each dock tab, and axe reports that as `nested-interactive`.
   0.7.44 renders the close icon with no role and no tabindex (#89, #90).

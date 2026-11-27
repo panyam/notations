@@ -174,12 +174,13 @@ This enables:
 Minified sizes from webpack production bundles (#18):
 - **galore** (92 KB) + **tlex** (56 KB) - Parser generator and lexer
 - **@panyam/tsutils** (18 KB) - Utility library
-- **yaml** (102 KB) - Front matter only; about 40% of the parse bundle (#87)
+- Front matter is read by `src/frontmatter.ts`, a flat `key: value` subset of YAML. The `yaml`
+  package (102 KB) is a devDependency, kept only to check the subset against real YAML (#87).
 - **@lume/kiwi** - Constraint solver for layouts
 
 ### Bundle Analysis
 Run `webpack --mode=production --env analyze` to open interactive bundle visualization.
 
-For `import { load }`: the main entry bundles to 256 KB minified (72 KB gzipped), `notations/parser`
-to 240 KB (69 KB), and `notations/core` (runtime only) to 29 KB (8 KB). The grammar libraries and
-yaml are most of the parse cost; the renderer is the smaller part.
+For `import { load }` from `notations/parser`, the bundle is 151 KB minified (42 KB gzipped), down
+from 247 KB (71 KB) before #87. `notations/core` (runtime only) is 29 KB (8 KB). The grammar
+libraries are most of the parse cost; the renderer is the smaller part.

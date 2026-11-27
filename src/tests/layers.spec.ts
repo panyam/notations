@@ -36,7 +36,7 @@ function reachable(entry: string): Set<string> {
 
 const rel = (p: string) => (p.startsWith(SRC) ? path.relative(SRC, p) : p);
 const RENDERER = ["shapes.ts", "beatview.ts", "carnatic/index.ts", "carnatic/atomviews.ts", "carnatic/beatviews.ts"];
-const PARSING = ["parser.ts", "loader.ts", "galore", "tlex", "yaml"];
+const PARSING = ["parser.ts", "frontmatter.ts", "loader.ts", "galore", "tlex", "yaml"];
 
 describe("layers", () => {
   test("the runtime (notations/core) reaches neither the parser nor the renderer", () => {

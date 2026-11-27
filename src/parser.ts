@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import * as TLEX from "tlex";
-import YAML from "yaml";
+import { parseFrontMatter } from "./frontmatter";
 import { Literal, AtomType, Note, Atom, Rest, Space, Syllable, Group, Marker } from "./core";
 import { Notation, MetaData as Meta, Command, CmdParam } from "./notation";
 import {
@@ -566,10 +566,10 @@ export class Parser {
       return null;
     },
     prependFrontMatter: (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
-      const fm = children[0].value;
-      // console.log("Child 0: ", fm);
-      // console.log("Child 1: ", children[1].value);
-      const data = YAML.parse(fm);
+      const { data, errors } = parseFrontMatter(children[0].value);
+      for (const e of errors) {
+        this.errors.push(new G.ParseError(`front matter line ${e.line}: ${e.message}`, "FrontMatter", e.line));
+      }
       this.metadata = data;
       return children[1].value;
     },
