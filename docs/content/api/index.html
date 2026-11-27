@@ -110,6 +110,15 @@ import { AtomIterator } from "notations/core";
 const [notation, , errors] = load(source);
 </code></pre>
 
+<h2>Printing</h2>
+
+<p><code>notations/export</code> prints a notation on its own, sized to the page. <code>printNotation(source)</code> renders the source again into a print-only copy and opens the print dialog, where "Save as PDF" gives a PDF. Every line scales by the same factor, so the widest line fills the page. It needs a browser, and it doesn't pull in the editor or the playgrounds from <code>notations/web</code>.</p>
+
+<pre><code>import { printNotation } from "notations/export";
+
+printNotation(source);
+</code></pre>
+
 <h2>Rendering</h2>
 
 <p>The library provides rendering capabilities through the NotationView:</p>

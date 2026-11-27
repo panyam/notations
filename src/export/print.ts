@@ -1,5 +1,5 @@
 /**
- * printNotation.ts - Prints a notation on its own, sized to the page.
+ * print.ts - Prints a notation on its own, sized to the page.
  *
  * A playground prints badly as it stands. The browser prints the header, the editor and the
  * console, and the output panel cuts off any line wider than the panel. So printing renders the
@@ -9,8 +9,8 @@
  * print dialog gives the PDF.
  */
 
-import { load } from "../../loader";
-import { NotationView } from "../../carnatic";
+import { load } from "../loader";
+import { NotationView } from "../carnatic";
 
 /** Options for preparePrint and printNotation. */
 export interface PrintOptions {

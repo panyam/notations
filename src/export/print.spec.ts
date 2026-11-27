@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { preparePrint, printNotation } from "./printNotation";
+import { preparePrint, printNotation } from "./print";
 
 // The notation renderer measures SVG text, and jsdom has no layout. Ten pixels per text element
 // gives a line with more notes a wider box.

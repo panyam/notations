@@ -49,6 +49,14 @@ describe("layers", () => {
     expect(hits).toEqual([]);
   });
 
+  // notations/export works on any page that renders notation, so it can't pull in the playground.
+  test("export (notations/export) reaches the renderer but not the editor or the dock", () => {
+    expect(fs.existsSync(path.join(SRC, "entry-export.ts"))).toBe(true);
+    const mods = [...reachable("entry-export.ts")].map(rel);
+    expect(mods).toContain("carnatic/NotationView.ts");
+    expect(mods.filter((m) => m.startsWith("web/") || /dockview|tsappkit-dock/.test(m))).toEqual([]);
+  });
+
   test("parser.ts doesn't import Carnatic code; load() wires the gamakas in", () => {
     const direct = importsOf(path.join(SRC, "parser.ts")).map(rel);
     expect(direct.filter((m) => m.startsWith("carnatic/"))).toEqual([]);

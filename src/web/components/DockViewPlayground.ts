@@ -16,7 +16,7 @@
 import { createDock, type Dock, type PanelDef } from "@panyam/tsappkit-dock";
 import type { DockviewApi } from "dockview-core";
 import SideBySideEditor, { SideBySideEditorConfig } from "./SideBySideEditor";
-import { preparePrint, printNotation } from "./printNotation";
+import { preparePrint, printNotation } from "../../export/print";
 import { Notation } from "../../notation";
 import { GlobalBeatLayout } from "../../beats";
 

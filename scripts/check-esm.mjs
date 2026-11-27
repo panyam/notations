@@ -58,5 +58,7 @@ if (parsed == null) fail("notations/parser load() returned no notation");
 const coreEntry = await import(join(ESM_DIR, "entry-core.js"));
 if (typeof coreEntry.AtomIterator !== "function") fail("notations/core has no AtomIterator");
 if ("Parser" in coreEntry) fail("notations/core exports Parser; the runtime shouldn't include the parser");
+const exportEntry = await import(join(ESM_DIR, "entry-export.js"));
+if (typeof exportEntry.printNotation !== "function") fail("notations/export has no printNotation");
 
 console.log(`check-esm: ${ESM_DIR} imports and parses under Node ${process.version}`);
