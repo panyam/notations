@@ -85,10 +85,15 @@ pnpm run build:docs
 cd docs && NOTATIONS_DOCS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
 # open http://localhost:8085/notations/demos/playgrounds/photo-transcribe/
 
-# CLI (needs ANTHROPIC_API_KEY; PDFs need pdftoppm from poppler)
-pnpm run transcribe:photos page-1.jpg --only "Pallavi - Kedaram" \
-  --talam "|4|2|2|" --npb 4 --case swarasthana --append song.sng --out out/
+# CLI (needs ANTHROPIC_API_KEY; PDFs need pdftoppm and pdfinfo from poppler)
+pnpm run transcribe:photos notebook.pdf --page 1 --crop 0,0.048,0.96,0.183 \
+  --only "Pallavi - Kedaram" --talam "|4|2|2|" --npb 4 --case swarasthana \
+  --append song.sng --out out/
 ```
+
+`--crop x,y,w,h` takes fractions of the page from the top left and cuts the region at 300 dpi,
+the way the page's region picker does. Crop to a section rather than sending a whole page. A
+whole page gets downscaled, and marks a few pixels wide, like octave dots, disappear.
 
 The CLI writes `<name>.sng`, `<name>.grid.json` and `<name>.report.txt` (rounds, tokens,
 filled-in units, lines to check). With `--append`, the file is sent as context and the new part is
@@ -127,7 +132,18 @@ added to it.
 
 ## Known misses
 
-- **Faint octave dots on a whole page.** Row 1 of the Kedaram pallavi has a dot a few pixels wide
-  under the N of `SNSR`. A whole-page run downscales it to one or two pixels, and the model reads
-  a plain `N` even with the octave-dot guidance in `prompt.ts`. Crop the rows instead of sending
-  the page. #52 tracks it.
+- **Octave dots the page doesn't show.** The notebook dots only some lower-octave notes. The
+  model writes a dot it can see, and flags the doubtful ones in the report. At normal effort it
+  sometimes adds a dot from the phrase shape and says so. Check the flagged beats.
+
+## Effort: normal against careful
+
+Two runs on the same Kedaram crop, after #52:
+
+| Effort | Read the dot under `SNSR` | Time | Output tokens | Cost |
+|---|---|---|---|---|
+| high (normal) | yes | 79 s | 7,798 | $0.19 |
+| xhigh (Careful reading) | yes | 212 s | 21,143 | $0.46 |
+
+Careful reading cost 2.4 times as much and found nothing the normal run missed. Keep it for
+pages where normal effort leaves grid errors after its repair rounds.
