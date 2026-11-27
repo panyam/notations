@@ -9,6 +9,10 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-27
+
+Details and migration: [docs/releases/v2.0.0.md](docs/releases/v2.0.0.md).
+
 ### Breaking
 
 - `new Parser()` no longer knows any gamakas. The parser now depends on the runtime model only, and
@@ -59,8 +63,26 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   Transcribe button, so one part can be Adi at 2 per beat and the next Misra Chapu at 3. A
   re-run waits for Insert instead of adding to the editor again.
 
+- `DockViewPlayground`: a `consoleHeight` option sets the console's share of the default layout
+  and of `showConsole()` (PR 63), and a `dock` property exposes the underlying dock (PR 58).
+- `ParseError` is exported as a type, so callers can type what `parse()` and `load()` return
+  (PR 67).
+
 ### Changed
 
+- `DockViewPlayground` is built on `@panyam/tsappkit-dock` (PR 58). Its public API is unchanged.
+  Peer dependencies are now `dockview-core >=4.13 <9` and `@panyam/tsappkit-dock ^0.7.40`, both
+  optional. The layout saves under `${storageKey}-v${layoutVersion}`, so a layout saved by 1.x
+  isn't restored. `isConsoleVisible()` asks the dock, so a console the reader closed stays closed
+  after a reload.
+- `NotationBlock`'s source and output boxes take keyboard focus and carry a label from the
+  caption, so a keyboard can scroll them on a narrow screen. The `DockViewPlayground` console is a
+  focusable `role="log"` (PR 67).
+- `Utils.parseSyllable` follows the DSL's rule for underscores: a lone `_` is silence, and an
+  underscore next to a letter or another underscore is part of the syllable, so `"S_N_D"` is one
+  syllable (issue 33, PR 68).
+- The parser no longer prints parsed front matter or skipped embellishments to the console
+  (PR 54, PR 88).
 - `NotationBlock.updatePreview()` and `applyEdit()` return a Promise. The output carries
   `aria-busy="true"` while a render is pending, and `block.rendering` is the latest render.
 - `NotationBlock` no longer logs to the console on every render.
@@ -72,6 +94,9 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ### Fixed
 
+- A lone `_` is one unit of silence instead of a visible literal, `|` and `||` in a line are
+  accepted and ignored (the renderer draws bars from the cycle), and an unknown command is a
+  ParseError instead of an exception (PR 32).
 - `NotationBlock` built its markup from strings, so a notation source, `id` or `caption`
   containing HTML was parsed as HTML. It now builds the DOM directly and inserts those values
   as text (#30).
@@ -81,6 +106,12 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   cycle, made `load()` throw. It is a ParseError naming the command, and `load()` no longer
   throws (#69).
 - `Cycle` had no `toString`, so the source serializer wrote `\cycle("Entity(id = 19)")` (#59).
+
+### Build
+
+- npm publishing runs from release tags through GitHub Actions with trusted publishing, with no
+  token (PR 35, PR 37). pnpm is 12, pinned by hash, with a minimum release age and trust checks
+  for dependencies (PR 38).
 
 ## [1.1.0] - 2026-09-21
 
@@ -107,4 +138,5 @@ Full notes: [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md)
 
 - Dependency updates from dependabot (PR 15, PR 16).
 
+[2.0.0]: https://github.com/panyam/notations/releases/tag/v2.0.0
 [1.1.0]: https://github.com/panyam/notations/releases/tag/v1.1.0
