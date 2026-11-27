@@ -3,74 +3,63 @@ title: "Different Speeds"
 description: "How to notate music at first, second, and third speeds"
 ---
 
-<p>Carnatic music often progresses through multiple speeds. This recipe shows how to notate the same phrase at different speeds using the <code>\beatDuration</code> command.</p>
+<p>Carnatic music often takes a phrase through several speeds. The tala stays the same, and each speed puts twice as many notes in a beat as the one before. A composition's first speed is whatever it starts at, often 1 or 2 notes per beat, so the numbers aren't fixed. Only the doubling is.</p>
 
-<h2>First Speed (1-2 notes per beat)</h2>
+<p>In the DSL, a speed is a <code>\beatDuration</code>. Double it for each speed. The examples below start at 1 note per beat, so they use 1, 2 and 4. A composition that starts at 2 notes per beat would use 2, 4 and 8.</p>
 
-<p>At first speed, typically 1 or 2 notes occupy each beat:</p>
+<h2>First Speed</h2>
+
+<p>One note per beat, so an avartanam of Adi holds 8 notes:</p>
 
 <notation id="first-speed" showSource="true" caption="First Speed">
 \cycle("|4|2|2|")
 \beatDuration(1)
-\line("First Speed - 1 note per beat")
+\line("First Speed")
 Sw: S R G M P D N S.
 Sh: sa ri ga ma pa dha ni sa
 </notation>
 
-<notation id="first-speed-2" showSource="true" caption="First Speed with Groups">
-\cycle("|4|2|2|")
-\beatDuration(2)
-\line("First Speed - 2 notes per beat")
-Sw: S R [G M] P D [N S.]
-Sh: sa ri ga ma pa dha ni sa
-</notation>
+<h2>Second Speed</h2>
 
-<h2>Second Speed (4 notes per beat)</h2>
-
-<p>Second speed uses 4 notes per beat. This is the most common notation speed:</p>
+<p>Twice as many notes per beat: 16 in the same avartanam.</p>
 
 <notation id="second-speed" showSource="true" caption="Second Speed">
 \cycle("|4|2|2|")
-\beatDuration(4)
+\beatDuration(2)
 \line("Second Speed")
-Sw: S R G M P D N S. R. S. N D P M G R S
+Sw: S R G M P D N S. S. N D P M G R S
 Sh: sa ri ga ma pa dha ni sa sa ni dha pa ma ga ri sa
 </notation>
 
-<h2>Third Speed (8 notes per beat)</h2>
+<h2>Third Speed</h2>
 
-<p>Third speed doubles the density again to 8 notes per beat:</p>
+<p>Twice again: 32 notes in the same avartanam.</p>
 
 <notation id="third-speed" showSource="true" caption="Third Speed">
 \cycle("|4|2|2|")
-\beatDuration(8)
+\beatDuration(4)
 \line("Third Speed")
-Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D
+Sw: S R G M P D N S. S. N D P M G R S S R G M P D N S. S. N D P M G R S
 </notation>
 
-<h2>Progressive Speed Changes</h2>
+<h2>All Three Together</h2>
 
-<p>A composition often transitions between speeds. Here's how to notate that:</p>
+<p>Change <code>\beatDuration</code> between lines to move through the speeds within one notation:</p>
 
-<notation id="progressive" showSource="true" caption="Progressive Speeds">
+<notation id="progressive" showSource="true" caption="Three speeds">
 \cycle("|4|2|2|")
 
-\beatDuration(2)
+\beatDuration(1)
 \line("First Speed")
 Sw: S R G M P D N S.
 
-\beatDuration(4)
+\beatDuration(2)
 \line("Second Speed")
-Sw: S R G M P D N S. R. S. N D P M G R S
-
-\beatDuration(8)
-\line("Third Speed")
-Sw: S R G M P D N S. R. S. N D P M G R S .N .D S R G M P D
+Sw: S R G M P D N S. S. N D P M G R S
 
 \beatDuration(4)
-\line("Back to Second")
-Sw: S. , , , , , , S
-Sh: sa , , , , , , sa
+\line("Third Speed")
+Sw: S R G M P D N S. S. N D P M G R S S R G M P D N S. S. N D P M G R S
 </notation>
 
 <h2>Using Groups for Variety</h2>
@@ -88,11 +77,10 @@ Sw: S R [G M] P [D N S.] R. [S. N D P] M G R S
 <h2>Tips</h2>
 
 <ul>
-  <li>Use <code>\beatDuration(1)</code> or <code>\beatDuration(2)</code> for first speed</li>
-  <li>Use <code>\beatDuration(4)</code> for second speed (most common)</li>
-  <li>Use <code>\beatDuration(8)</code> for third speed</li>
-  <li>Use <code>\line</code> with margin text to mark speed transitions</li>
-  <li>Square brackets create subdivisions within beats</li>
+  <li>Pick the first speed's <code>\beatDuration</code> from the composition, then double it for each speed after</li>
+  <li>Use <code>\line</code> with margin text to mark speed changes</li>
+  <li>Square brackets create subdivisions within a beat</li>
+  <li>Speed is separate from gati: tisram puts 3 notes in a beat, at any speed. See <a href="{{.Site.PathPrefix}}/examples/tisram/">Tisram</a></li>
 </ul>
 
 <h2>See Also</h2>

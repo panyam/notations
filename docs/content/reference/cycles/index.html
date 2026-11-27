@@ -116,15 +116,15 @@ S R G M P D N S.
 S R G M P D N S.
 </notation>
 
-<h2>Kalai (Speed)</h2>
+<h2>Kalai and Speed</h2>
 
-<p>Kalai refers to the repetition factor of the cycle. While not directly represented in the DSL, you can think of different beat durations as representing different kalais:</p>
+<p>These are two different things, and both get called "speed".</p>
 
-<ul>
-  <li><strong>First kalai</strong> - <code>\beatDuration(1)</code> or <code>\beatDuration(2)</code></li>
-  <li><strong>Second kalai</strong> - <code>\beatDuration(4)</code></li>
-  <li><strong>Third kalai</strong> - <code>\beatDuration(8)</code></li>
-</ul>
+<p><strong>Kalai</strong> is how many counts each beat of the tala gets while keeping time. In 1-kalai Adi, each of the 8 beats is one count. In 2-kalai Adi, each beat is counted twice, so the avartanam has 16 counts, and the claps, finger counts and waves are each held for two. Many varnams and kritis are set in 2-kalai Adi. The DSL counts beats, so you write 2-kalai Adi either as <code>"|4|2|2|"</code> with each beat holding twice the notes, or count by count as <code>"|8|4|4|"</code>.</p>
+
+<p><strong>Speed</strong> (kalam) is how many notes go into each beat while the tala stays the same. A composition's first speed is whatever it starts with, often 1 or 2 notes per beat. Second speed doubles that, and third speed doubles it again. In the DSL, double <code>\beatDuration</code> for each speed: for example 2, 4 and 8.</p>
+
+<p><strong>Gati</strong>, above, is a third thing: whether each beat divides into 4, 3, 5, 7 or 9.</p>
 
 <h2>Sapta Talas (Seven Primary Talas)</h2>
 
@@ -133,22 +133,23 @@ S R G M P D N S.
     <tr>
       <th>Tala</th>
       <th>Structure</th>
-      <th>Cycle Pattern (Chatusra)</th>
+      <th>Jati</th>
+      <th>Cycle Pattern</th>
       <th>Beats</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>Dhruva</td><td>| O || O ||</td><td><code>"|4|2|4|4|"</code></td><td>14</td></tr>
-    <tr><td>Matya</td><td>| O |</td><td><code>"|4|2|4|"</code></td><td>10</td></tr>
-    <tr><td>Rupaka</td><td>O |</td><td><code>"|2|4|"</code></td><td>6</td></tr>
-    <tr><td>Jhampa</td><td>| U O</td><td><code>"|7|1|2|"</code></td><td>10</td></tr>
-    <tr><td>Triputa (Adi)</td><td>| O O</td><td><code>"|4|2|2|"</code></td><td>8</td></tr>
-    <tr><td>Ata</td><td>| | O O</td><td><code>"|5|5|2|2|"</code></td><td>14</td></tr>
-    <tr><td>Eka</td><td>|</td><td><code>"|4|"</code></td><td>4</td></tr>
+    <tr><td>Dhruva</td><td>| O | |</td><td>Chatusra</td><td><code>"|4|2|4|4|"</code></td><td>14</td></tr>
+    <tr><td>Matya</td><td>| O |</td><td>Chatusra</td><td><code>"|4|2|4|"</code></td><td>10</td></tr>
+    <tr><td>Rupaka</td><td>O |</td><td>Chatusra</td><td><code>"|2|4|"</code></td><td>6</td></tr>
+    <tr><td>Jhampa</td><td>| U O</td><td>Misra</td><td><code>"|7|1|2|"</code></td><td>10</td></tr>
+    <tr><td>Triputa</td><td>| O O</td><td>Tisra</td><td><code>"|3|2|2|"</code></td><td>7</td></tr>
+    <tr><td>Ata</td><td>| | O O</td><td>Khanda</td><td><code>"|5|5|2|2|"</code></td><td>14</td></tr>
+    <tr><td>Eka</td><td>|</td><td>Chatusra</td><td><code>"|4|"</code></td><td>4</td></tr>
   </tbody>
 </table>
 
-<p>Note: | = Laghu, O = Dhrutam, U = Anudhrutam. The beats shown assume Chatusra laghu (4 beats).</p>
+<p>| = Laghu, O = Dhrutam, U = Anudhrutam. Each tala is shown in its standard jati, the form the alankaram books use. The jati sets the laghu's length: tisra 3, chatusra 4, khanda 5, misra 7, sankeerna 9. Adi tala is triputa in chatusra jati, <code>"|4|2|2|"</code>.</p>
 
 <h2>Hand Gestures (Kriyas)</h2>
 

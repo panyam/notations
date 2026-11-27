@@ -1,0 +1,92 @@
+---
+title: "Glossary"
+description: "Carnatic music terms used on this site, and how each is written in the DSL"
+---
+
+<p>The terms these docs use, in one line each. Where the DSL has a way to write the idea, the last column says how.</p>
+
+<h2>Rhythm (Tala)</h2>
+
+<table>
+  <thead>
+    <tr><th>Term</th><th>Meaning</th><th>In the DSL</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tala</td><td>The rhythmic cycle a composition is set in, kept with claps, finger counts and waves</td><td><code>\cycle("|4|2|2|")</code></td></tr>
+    <tr><td>Avartanam</td><td>One full round of the tala</td><td>One cycle; the renderer ends it with a double bar</td></tr>
+    <tr><td>Anga</td><td>A part of the tala: laghu, drutam or anudrutam</td><td>One bar of the cycle</td></tr>
+    <tr><td>Laghu</td><td>An anga of a clap and finger counts; its length depends on the jati</td><td>A bar of 3, 4, 5, 7 or 9 beats</td></tr>
+    <tr><td>Drutam</td><td>An anga of 2 beats: a clap and a wave</td><td>A bar of 2 beats</td></tr>
+    <tr><td>Anudrutam</td><td>An anga of 1 beat: a single clap</td><td>A bar of 1 beat</td></tr>
+    <tr><td>Jati</td><td>The length of the laghu: tisra 3, chatusra 4, khanda 5, misra 7, sankeerna 9</td><td>The laghu's number in <code>\cycle</code></td></tr>
+    <tr><td>Sapta talas</td><td>The seven basic talas: Dhruva, Matya, Rupaka, Jhampa, Triputa, Ata, Eka</td><td>See <a href="{{.Site.PathPrefix}}/reference/cycles/">Cycles</a></td></tr>
+    <tr><td>Adi tala</td><td>Triputa in chatusra jati: 4 + 2 + 2 = 8 beats</td><td><code>\cycle("|4|2|2|")</code></td></tr>
+    <tr><td>Chapu</td><td>A family of talas counted without the laghu-drutam structure, such as Misra Chapu (3 + 2 + 2) and Khanda Chapu (2 + 3)</td><td><code>\cycle("|3|2|2|")</code>, <code>\cycle("|2|3|")</code></td></tr>
+    <tr><td>Gati (nadai)</td><td>How each beat divides: tisram 3, chatusram 4, khandam 5, misram 7, sankeernam 9</td><td><code>\beatDuration(3)</code> and so on</td></tr>
+    <tr><td>Kalai</td><td>How many counts each beat of the tala gets while keeping time; in 2-kalai Adi each beat is counted twice</td><td>Not a command; write the counts as beats, or fit more notes in each beat</td></tr>
+    <tr><td>Speed (kalam)</td><td>Notes per beat. Second speed doubles the first, and third doubles it again</td><td>Double <code>\beatDuration</code> for each speed</td></tr>
+    <tr><td>Samam</td><td>The first beat of the avartanam</td><td>The start of the cycle</td></tr>
+    <tr><td>Eduppu</td><td>The point in the tala where a line of the composition begins; it can come after samam</td><td>Fill the beats before it with <code>_</code></td></tr>
+    <tr><td>Karvai</td><td>A unit where the previous note or syllable is held</td><td><code>,</code></td></tr>
+    <tr><td>Korvai</td><td>A pattern played three times that ends on a set point of the tala</td><td>Lines, labelled with <code>\line</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Melody</h2>
+
+<table>
+  <thead>
+    <tr><th>Term</th><th>Meaning</th><th>In the DSL</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Swara</td><td>A note: Sa, Ri, Ga, Ma, Pa, Dha, Ni</td><td><code>S R G M P D N</code></td></tr>
+    <tr><td>Sthayi</td><td>Octave: lower (mandra), middle (madhya), upper (tara)</td><td>Dots: <code>.S</code> lower, <code>S.</code> upper</td></tr>
+    <tr><td>Swarasthana</td><td>Which variant of a swara a raga uses, such as suddha or prati madhyamam</td><td>Often letter case, by the notation's convention</td></tr>
+    <tr><td>Raga</td><td>A melodic framework: its swaras, their order up and down, and their characteristic phrases and gamakas</td><td>Front matter, e.g. <code>ragam: "Mohanam"</code></td></tr>
+    <tr><td>Arohanam, avarohanam</td><td>A raga's ascending and descending scales</td><td>Front matter</td></tr>
+    <tr><td>Sahitya</td><td>The words of a composition</td><td>A role line, <code>Sh:</code></td></tr>
+    <tr><td>Jantai</td><td>The same swara twice in a row, as in S S R R</td><td>Two notes</td></tr>
+  </tbody>
+</table>
+
+<h2>Gamakas</h2>
+
+<p>A gamaka is an ornament on a note. In the DSL each one is a prefix, written directly before its note. The <a href="{{.Site.PathPrefix}}/reference/embellishments/">Embellishments reference</a> has the full list of symbols.</p>
+
+<table>
+  <thead>
+    <tr><th>Term</th><th>Meaning</th><th>In the DSL</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Kampitam</td><td>An oscillation on a note</td><td><code>~ G</code></td></tr>
+    <tr><td>Eetra jaaru</td><td>A slide up into a note</td><td><code>~/ G</code></td></tr>
+    <tr><td>Irakka jaaru</td><td>A slide down into a note</td><td><code>~\ G</code></td></tr>
+    <tr><td>Nokku</td><td>A stress on a note, reached from the note above it</td><td><code>~w G</code></td></tr>
+    <tr><td>Raavi</td><td>A struck emphasis on a note</td><td><code>~^ G</code></td></tr>
+    <tr><td>Kandippu</td><td>A sharp, cut-off touch on a note</td><td><code>~./ G</code></td></tr>
+    <tr><td>Odukkal</td><td>On the veena, deflecting the string to reach the next note without a fresh pluck</td><td><code>~x G</code></td></tr>
+    <tr><td>Sphuritam</td><td>A stress on the second note of a jantai, from the note below</td><td><code>~:- G</code></td></tr>
+    <tr><td>Prathyagatam</td><td>Sphuritam's counterpart in descent</td><td><code>~-: G</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Forms and Sections</h2>
+
+<table>
+  <thead>
+    <tr><th>Term</th><th>Meaning</th><th>In the DSL</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Pallavi</td><td>The opening section of a composition</td><td>A heading or <code>\line("Pallavi")</code></td></tr>
+    <tr><td>Anupallavi</td><td>The second section</td><td>Same</td></tr>
+    <tr><td>Charanam</td><td>The later section or sections</td><td>Same</td></tr>
+    <tr><td>Kriti</td><td>The main composed song form: pallavi, anupallavi and charanam</td><td></td></tr>
+    <tr><td>Varnam</td><td>A composition of swaras and sahitya, often learned first and sung to open a concert</td><td>See <a href="{{.Site.PathPrefix}}/examples/basic-varnam/">Basic Varnam</a></td></tr>
+    <tr><td>Muktayi swaram</td><td>The swara passage that closes the first half of a varnam</td><td></td></tr>
+    <tr><td>Chitta swaram</td><td>A composed swara passage; in a varnam, the charanam swarams</td><td></td></tr>
+    <tr><td>Kalpana swaram</td><td>Swara passages improvised during a performance, returning to a line of the song</td><td></td></tr>
+    <tr><td>Alapana (ragam)</td><td>Improvised exploration of a raga, without tala</td><td>Leave out <code>\cycle</code></td></tr>
+    <tr><td>Tanam</td><td>Improvisation with a pulse but no tala</td><td>Leave out <code>\cycle</code></td></tr>
+    <tr><td>RTP</td><td>Ragam, tanam and pallavi, performed in that order</td><td>See <a href="{{.Site.PathPrefix}}/examples/ragam-tanam-pallavi/">Ragam Tanam Pallavi</a></td></tr>
+  </tbody>
+</table>

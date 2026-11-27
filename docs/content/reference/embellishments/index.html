@@ -53,7 +53,7 @@ P ~\ D N ~\ S.
 
 <h3>Nokku (~w)</h3>
 
-<p>A gentle touch or glance at a note.</p>
+<p>A stress on a note, reached from the note above it.</p>
 
 <notation id="nokku" showSource="true" caption="Nokku">
 \beatDuration(4)
@@ -71,7 +71,7 @@ S ~^ R G M ~^ P
 
 <h3>Kandippu (~✓ or ~./ or ~.\)</h3>
 
-<p>A subtle touch on a note, like in Shankarabharanam where the note appears briefly.</p>
+<p>A sharp, cut-off touch on a note.</p>
 
 <notation id="kandippu" showSource="true" caption="Kandippu">
 \beatDuration(4)
@@ -89,7 +89,7 @@ S R ~~ G M
 
 <h3>Odukkal (~x)</h3>
 
-<p>A veena gamaka where the note is stretched to reach the next note effect without plucking. On voice, it sounds like an Eetra Jaaru.</p>
+<p>A veena gamaka: the string is deflected to reach the next note without a fresh pluck.</p>
 
 <notation id="odukkal" showSource="true" caption="Odukkal">
 \beatDuration(4)
@@ -141,9 +141,9 @@ S ~Y R G ~Y M
     <tr><td><code>~</code></td><td>Kampitam</td><td>Oscillation between notes</td></tr>
     <tr><td><code>~/</code></td><td>Eetra Jaaru</td><td>Ascending slide</td></tr>
     <tr><td><code>~\</code></td><td>Irakka Jaaru</td><td>Descending slide</td></tr>
-    <tr><td><code>~w</code></td><td>Nokku</td><td>Gentle touch</td></tr>
+    <tr><td><code>~w</code></td><td>Nokku</td><td>Stress from the note above</td></tr>
     <tr><td><code>~^</code></td><td>Raavi</td><td>Struck emphasis</td></tr>
-    <tr><td><code>~./</code> or <code>~✓</code></td><td>Kandippu</td><td>Subtle touch</td></tr>
+    <tr><td><code>~./</code> or <code>~✓</code></td><td>Kandippu</td><td>Sharp, cut-off touch</td></tr>
     <tr><td><code>~~</code></td><td>Vaali</td><td>Curved ornament</td></tr>
     <tr><td><code>~x</code></td><td>Odukkal</td><td>Stretched note (veena)</td></tr>
     <tr><td><code>~Y</code> or <code>~γ</code></td><td>Orikkai</td><td>Complex oscillation</td></tr>
@@ -155,9 +155,9 @@ S ~Y R G ~Y M
 <h2>Usage Notes</h2>
 
 <ul>
-  <li>Embellishments can appear before or after a note depending on the gamaka type</li>
+  <li>Every embellishment is a prefix: write it directly before the note it belongs to</li>
   <li>The Carnatic plugin determines whether an embellishment is valid in a given position</li>
-  <li>Embellishments work with groups and can be nested within complex phrases</li>
+  <li>An embellishment applies to one note. It can sit on a note inside a group, but not on the group as a whole</li>
   <li>Use embellishments sparingly for clarity, or abundantly for detailed notation</li>
 </ul>
 
