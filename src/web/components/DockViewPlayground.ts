@@ -35,6 +35,13 @@ export interface DockViewPlaygroundConfig {
   showConsole?: boolean;
 
   /**
+   * The console's height in the default layout, and when `showConsole()` opens it, as a share of
+   * the container's height. A layout the reader saved keeps its own size.
+   * @default 0.1
+   */
+  consoleHeight?: number;
+
+  /**
    * Whether to persist layout to localStorage.
    * @default true
    */
@@ -104,6 +111,7 @@ export interface DockViewPlaygroundConfig {
 
 const DEFAULT_CONFIG: DockViewPlaygroundConfig = {
   showConsole: true,
+  consoleHeight: 0.1,
   persistLayout: true,
   storageKey: "notations-playground-layout",
   layoutVersion: 1,
@@ -306,7 +314,7 @@ export default class DockViewPlayground {
 
   /**
    * Editor and output side by side, half the width each, with the console spanning the bottom
-   * at a tenth of the height.
+   * at `consoleHeight` of the height.
    */
   private defaultLayout(api: DockviewApi): void {
     const width = this.container.clientWidth || 800;
@@ -332,7 +340,7 @@ export default class DockViewPlayground {
 
   private sizeConsole(api: DockviewApi): void {
     const height = this.container.clientHeight || 600;
-    api.getPanel("console")?.group?.api.setSize({ height: Math.floor(height * 0.1) });
+    api.getPanel("console")?.group?.api.setSize({ height: Math.floor(height * (this.config.consoleHeight ?? 0.1)) });
   }
 
   private editorConfig(): SideBySideEditorConfig {
