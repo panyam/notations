@@ -11,6 +11,7 @@ pnpm install                 # pnpm version is pinned by sha512 in package.json'
 pnpm test                    # jest, library and docs tests (docs/tests/)
 pnpm run build               # typedoc, ESM + CJS, CSS, UMD
 pnpm run check:esm && pnpm run lint
+pnpm run spell               # cspell over docs/content; add domain words to cspell.config.yaml
 pnpm run build:docs          # docs JS into docs/static/js/gen/
 cd docs && make run          # docs site on http://localhost:8085/notations/
 cd docs && make site         # production site and search index into docs/dist/docs, no deploy
