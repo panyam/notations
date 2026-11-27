@@ -1,0 +1,2 @@
+"use strict";(Array.isArray(this.webpackChunknotations)?this.webpackChunknotations:this.webpackChunknotations=[]).push([[131],{1131(t,n,i){var s=i(4491);function e(t){return new Proxy({},{get(n,i){if("symbol"!=typeof i)throw new s.pJ(`\`${t}.${i}\` is not available in this environment; it needs a Node.js-compatible runtime`)}})}const a=e("fs"),o=e("path");i.d(n,["fs",0,a,"path",0,o])}}]);
+//# sourceMappingURL=131.d37b15b474276c5037d3.js.map

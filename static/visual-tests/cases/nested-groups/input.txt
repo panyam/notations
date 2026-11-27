@@ -1,0 +1,4 @@
+\beatDuration(4)
+
+Sw: S R G M  P D N S.
+A B [ S R [ P D [ W X ] ] ]

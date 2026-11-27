@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Turn a photo of Carnatic music notation into editable Notations source, transcribed by Claude and checked by the parser">
+    <title>Photo Transcribe - Notations Library Documentation</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/notations/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/notations/static/images/favicon.png">
+</head>
+<body class="playground-page">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/notations/">
+                <img src="/notations/static/images/logo.png" alt="Notations" class="logo-img" onerror="this.style.display='none'">
+                
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/notations/" class="nav-link">
+                    <i class="icon-home"></i>
+                    Home
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/getting-started/" class="nav-link">
+                    <i class="icon-rocket"></i>
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/tutorials/" class="nav-link">
+                    <i class="icon-book"></i>
+                    Tutorials
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/tutorials/01-basics/" class="dropdown-item">Basics</a>
+                    
+                    <a href="/notations/tutorials/02-commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/tutorials/03-embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/tutorials/04-advanced/" class="dropdown-item">Advanced</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/reference/" class="nav-link">
+                    <i class="icon-book-open"></i>
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/reference/syntax/" class="dropdown-item">Syntax</a>
+                    
+                    <a href="/notations/reference/commands/" class="dropdown-item">Commands</a>
+                    
+                    <a href="/notations/reference/embellishments/" class="dropdown-item">Embellishments</a>
+                    
+                    <a href="/notations/reference/cycles/" class="dropdown-item">Cycles</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/examples/" class="nav-link">
+                    <i class="icon-music"></i>
+                    Examples
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/api/" class="nav-link">
+                    <i class="icon-code"></i>
+                    API
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/api/" class="dropdown-item">Overview</a>
+                    
+                    <a href="/notations/api/integration-guide/" class="dropdown-item">Integration Guide</a>
+                    
+                    <a href="/notations/api/reference/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/notations/api/styling/" class="dropdown-item">Styling &amp; Theming</a>
+                    
+                    <a href="/notations/api/examples/" class="dropdown-item">Examples</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/notations/demos/playgrounds/" class="nav-link">
+                    <i class="icon-play"></i>
+                    Demos
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/notations/demos/playgrounds/side-by-side/" class="dropdown-item">Side by Side</a>
+                    
+                    <a href="/notations/demos/playgrounds/notebook/" class="dropdown-item">Notebook</a>
+                    
+                    <a href="/notations/demos/playgrounds/model-events/" class="dropdown-item">Model Events</a>
+                    
+                    <a href="/notations/demos/playgrounds/photo-transcribe/" class="dropdown-item">Photo Transcribe</a>
+                    
+                    <a href="/notations/demos/visual-tests/" class="dropdown-item">Visual Tests</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/notations/contributing/" class="nav-link">
+                    <i class="icon-users"></i>
+                    Contributing
+                </a>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/notations" class="btn-github" target="_blank" rel="noopener">
+                <i class="icon-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    
+    <main class="main-content-full">
+        
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Photo Transcribe</h1>
+        
+        <p class="lead">Turn a photo of Carnatic music notation into editable Notations source, transcribed by Claude and checked by the parser</p>
+        
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<div id="photo-transcribe-container" class="pt-container">
+    <aside class="pt-side">
+        <section class="pt-section">
+            <h3>1. Photos</h3>
+            <div id="pt-drop" class="pt-drop">
+                <p>Drop photos or PDFs here, paste a screenshot, or</p>
+                <div class="pt-drop-buttons">
+                    <label class="btn btn-sm">
+                        Take photo
+                        <input id="pt-camera" type="file" accept="image/*" capture="environment" hidden>
+                    </label>
+                    <label class="btn btn-sm">
+                        Choose files
+                        <input id="pt-file" type="file" accept="image/*,application/pdf,.pdf" multiple hidden>
+                    </label>
+                </div>
+                <p class="pt-muted">Each PDF page becomes a photo. For a song over several pages, add them all and use the arrows to order them.
+                    You then pick the region to transcribe on each photo: one section at a time reads
+                    better and costs less than a whole page.</p>
+            </div>
+            <div id="pt-thumbs" class="pt-thumbs"></div>
+            <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
+        </section>
+
+        <section class="pt-section">
+            <h3>2. What you know <span class="pt-muted">(optional, but it helps a lot)</span></h3>
+            <div class="pt-grid2">
+                <label class="pt-field">Ragam(s)
+                    <input id="pt-ragams" class="pt-input" type="text" placeholder="e.g. Mohanam, or a ragamalika list">
+                </label>
+                <label class="pt-field">Talam
+                    <select id="pt-talam" class="pt-input">
+                        <option value="">Read from the page</option>
+                        <option value="|4|2|2|">Adi (4+2+2)</option>
+                        <option value="|2|4|">Rupakam (2+4)</option>
+                        <option value="|4|2|">Rupakam (4+2)</option>
+                        <option value="|3|2|2|">Misra Chapu (3+2+2)</option>
+                        <option value="|2|3|">Khanda Chapu (2+3)</option>
+                        <option value="|3|2|2|">Tisra Triputa (3+2+2)</option>
+                        <option value="|4|2|4|4|">Dhruva (4+2+4+4)</option>
+                        <option value="|4|2|4|">Matya (4+2+4)</option>
+                        <option value="|7|1|2|">Jhampa (7+1+2)</option>
+                        <option value="|5|5|2|2|">Ata (5+5+2+2)</option>
+                        <option value="|4|">Eka (4)</option>
+                        <option value="custom">Other...</option>
+                    </select>
+                </label>
+                <label class="pt-field" id="pt-cycle-field" hidden>Cycle
+                    <input id="pt-cycle" class="pt-input" type="text" placeholder="|4|2|2|">
+                </label>
+                <label class="pt-field">Swaras per beat
+                    <select id="pt-npb" class="pt-input">
+                        <option value="">Read from the page</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="6">6</option>
+                        <option value="8">8</option>
+                    </select>
+                </label>
+                <label class="pt-field">Letter case means
+                    <select id="pt-case" class="pt-input">
+                        <option value="">Work it out</option>
+                        <option value="swarasthana">Swarasthana (m / M)</option>
+                        <option value="length">Long note (S = s ,)</option>
+                    </select>
+                </label>
+            </div>
+            <textarea id="pt-hints" class="pt-input" rows="3"
+                placeholder="Anything else: composer, how this writer marks things, e.g. &quot;underline means double speed, the ticks above are gamakas&quot;"></textarea>
+        </section>
+
+        <section class="pt-section">
+            <h3>3. Your Anthropic API key</h3>
+            <div class="pt-key-row">
+                <input id="pt-api-key" class="pt-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
+                <button id="pt-key-toggle" class="btn btn-sm" type="button" aria-controls="pt-api-key" aria-pressed="false">Show</button>
+            </div>
+            <label class="pt-check"><input id="pt-remember" type="checkbox"> Remember on this device</label>
+            <p class="pt-muted">
+                The key is sent only to api.anthropic.com, straight from your browser; this site has no server.
+                Usage is billed to your account. Get a key from the
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Anthropic Console</a>.
+            </p>
+            <label class="pt-field">Model
+                <select id="pt-model" class="pt-input">
+                    <option value="claude-opus-5-5" selected>Claude Opus 5.5 (most accurate)</option>
+                    <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster, cheaper)</option>
+                </select>
+            </label>
+            <label class="pt-check"><input id="pt-careful" type="checkbox"> Careful reading (slower; for messy or sparse notation)</label>
+        </section>
+
+        <section class="pt-section">
+            <label class="pt-field">Only this part <span class="pt-muted">(optional)</span>
+                <input id="pt-only" class="pt-input" type="text" placeholder="e.g. Pallavi, or Charanam swaram 3 (Mohanam)">
+            </label>
+            <p class="pt-muted">Each result goes after what is in the editor. The model gets the editor's notation
+                too, so the new part matches it. Press Clear to start a new song.</p>
+            <div class="pt-actions">
+                <button id="pt-transcribe" class="btn btn-primary" type="button">Transcribe</button>
+                <button id="pt-cancel" class="btn" type="button" hidden>Cancel</button>
+            </div>
+            <p id="pt-status" class="pt-status" role="status" aria-live="polite"></p>
+            <div id="pt-report" class="pt-report"></div>
+            <details id="pt-raw-details" class="pt-raw-details">
+                <summary>Model output</summary>
+                <pre id="pt-raw" class="pt-raw"></pre>
+            </details>
+        </section>
+    </aside>
+
+    <dialog id="pt-crop-dialog" class="pt-crop-dialog">
+        <p id="pt-crop-help" class="pt-crop-help">Drag a box around the part to transcribe.</p>
+        <div id="pt-crop-stage" class="pt-crop-stage">
+            <img id="pt-crop-img" alt="Photo to crop" draggable="false">
+            <div id="pt-crop-box" class="pt-crop-box"></div>
+        </div>
+        <div class="pt-crop-actions">
+            <button id="pt-crop-apply" class="btn btn-primary" type="button">Use selection</button>
+            <button id="pt-crop-clear" class="btn" type="button">Use whole photo</button>
+            <button id="pt-crop-cancel" class="btn" type="button">Later</button>
+        </div>
+    </dialog>
+
+    <main class="pt-main">
+        <div class="pt-toolbar">
+            <span class="pt-muted">Proofread against the photo and edit here.</span>
+            <span class="pt-toolbar-buttons">
+                <button id="pt-clear" class="btn btn-sm" type="button" title="Empty the editor to start a new song">Clear</button>
+                <button id="pt-copy" class="btn btn-sm" type="button">Copy</button>
+                <button id="pt-download" class="btn btn-sm" type="button">Download .sng</button>
+                <button id="pt-reset-layout" class="btn btn-sm" type="button" title="Reset to default layout">Reset Layout</button>
+            </span>
+        </div>
+        <div id="dockview-container" class="dockview-container"></div>
+    </main>
+</div>
+
+<style>
+.playground-page { margin: 0; padding: 0; }
+.main-content-full { padding: 0; margin: 0; max-width: none; }
+
+.pt-container {
+    --pt-border: var(--color-border, #e0e0e0);
+    --pt-bg: var(--color-bg, #fff);
+    --pt-bg-2: var(--color-bg-secondary, #f8f9fa);
+    --pt-text: var(--color-text, #333);
+    --pt-muted: #6b7280;
+    --pt-accent: #2196f3;
+    --pt-error: #c62828;
+    --pt-ok: #2e7d32;
+    display: flex;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+    color: var(--pt-text);
+}
+.dark .pt-container {
+    --pt-border: var(--color-border-dark, #333);
+    --pt-bg: var(--color-bg-dark, #1e1e1e);
+    --pt-bg-2: var(--color-bg-secondary-dark, #252525);
+    --pt-text: var(--color-text-dark, #e0e0e0);
+    --pt-muted: #9ca3af;
+    --pt-error: #ef9a9a;
+    --pt-ok: #a5d6a7;
+}
+
+.pt-side {
+    width: 360px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 1px solid var(--pt-border);
+    background: var(--pt-bg-2);
+    padding: 0.75rem 1rem 2rem;
+    box-sizing: border-box;
+}
+.pt-section { margin-bottom: 1.1rem; }
+.pt-section h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+.pt-muted { color: var(--pt-muted); font-size: 0.8rem; font-weight: normal; }
+
+.pt-drop {
+    border: 2px dashed var(--pt-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    background: var(--pt-bg);
+    font-size: 0.875rem;
+}
+.pt-drop p { margin: 0.25rem 0; }
+.pt-drop-active { border-color: var(--pt-accent); }
+.pt-drop-buttons { display: flex; gap: 0.5rem; justify-content: center; margin: 0.5rem 0; }
+
+.pt-thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
+.pt-thumb { margin: 0; border: 1px solid var(--pt-border); border-radius: 6px; overflow: hidden; background: var(--pt-bg); }
+.pt-thumb a { display: block; cursor: zoom-in; }
+.pt-thumb img { display: block; width: 100%; height: 120px; object-fit: contain; background: #fff; }
+.pt-thumb figcaption {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.75rem; padding: 0.2rem 0.3rem; gap: 0.25rem;
+}
+.pt-thumb figcaption > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-thumb-actions { display: flex; gap: 0.15rem; flex-shrink: 0; }
+.pt-thumb-actions button {
+    border: 1px solid var(--pt-border); background: var(--pt-bg); color: var(--pt-text);
+    border-radius: 4px; cursor: pointer; font-size: 0.8rem; line-height: 1; padding: 0.15rem 0.35rem;
+}
+.pt-badge { font-style: normal; font-size: 0.7rem; color: var(--pt-accent); }
+.pt-badge-todo { color: var(--pt-error); }
+.pt-crop-dialog {
+    border: 1px solid var(--pt-border); border-radius: 8px; padding: 0.75rem;
+    background: var(--pt-bg); color: var(--pt-text); max-width: min(96vw, 1100px);
+}
+.pt-crop-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+.pt-crop-help { margin: 0 0 0.5rem; font-size: 0.875rem; }
+.pt-crop-stage { position: relative; display: inline-block; overflow: hidden; touch-action: none; cursor: crosshair; user-select: none; line-height: 0; }
+.pt-crop-stage img { display: block; max-width: min(92vw, 1060px); max-height: 75vh; }
+.pt-crop-box {
+    position: absolute; display: none; border: 2px solid var(--pt-accent);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none;
+}
+.pt-crop-actions { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+.pt-thumb-actions button:disabled { opacity: 0.35; cursor: default; }
+
+.pt-input {
+    width: 100%; box-sizing: border-box; padding: 0.4rem 0.5rem;
+    border: 1px solid var(--pt-border); border-radius: 4px;
+    background: var(--pt-bg); color: var(--pt-text); font: inherit; font-size: 0.875rem;
+}
+textarea.pt-input { resize: vertical; }
+.pt-key-row { display: flex; gap: 0.4rem; align-items: center; }
+.pt-key-row .pt-input { flex: 1; min-width: 0; }
+.pt-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; margin: 0.4rem 0; }
+.pt-field { display: block; font-size: 0.85rem; margin-top: 0.5rem; }
+.pt-field[hidden] { display: none; }
+.pt-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.5rem; margin-bottom: 0.5rem; }
+.pt-grid2 .pt-field { margin-top: 0.4rem; }
+.pt-field select { margin-top: 0.25rem; }
+
+.pt-actions { display: flex; gap: 0.5rem; }
+.pt-actions [hidden] { display: none; }
+.pt-actions .btn { padding: 0.45rem 1.1rem; font-size: 0.95rem; }
+.pt-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.pt-status { font-size: 0.85rem; margin: 0.6rem 0 0; min-height: 1.2em; }
+.pt-status-error { color: var(--pt-error); }
+.pt-status-ok { color: var(--pt-ok); }
+
+.pt-report { font-size: 0.82rem; }
+.pt-report h4 { font-size: 0.85rem; margin: 0.75rem 0 0.25rem; }
+.pt-report ul { margin: 0; padding-left: 1.1rem; }
+.pt-report p { margin: 0.25rem 0; }
+.pt-report li { margin-bottom: 0.25rem; overflow-wrap: anywhere; }
+.pt-notes { white-space: pre-wrap; margin: 0; }
+
+.pt-raw-details { margin-top: 0.75rem; font-size: 0.85rem; }
+.pt-raw {
+    max-height: 260px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+    font-size: 0.75rem; background: var(--pt-bg); border: 1px solid var(--pt-border);
+    border-radius: 4px; padding: 0.5rem; margin: 0.4rem 0 0;
+}
+
+.pt-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pt-toolbar {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 1rem; border-bottom: 1px solid var(--pt-border); background: var(--pt-bg-2); flex-shrink: 0;
+}
+.pt-toolbar-buttons { display: flex; gap: 0.4rem; }
+.dockview-container { flex: 1; min-height: 0; }
+
+ 
+.btn {
+    padding: 0.25rem 0.75rem; border: 1px solid var(--color-border, #e0e0e0); border-radius: 4px;
+    background: var(--color-bg, #fff); color: var(--color-text, #333); cursor: pointer;
+    font-size: 0.875rem; transition: all 0.15s ease; display: inline-block;
+}
+.btn:hover { background: var(--color-bg-hover, #f5f5f5); }
+.dark .btn { background: var(--color-bg-dark, #333); border-color: var(--color-border-dark, #555); color: var(--color-text-dark, #e0e0e0); }
+.dark .btn:hover { background: var(--color-bg-hover-dark, #444); }
+.btn-primary, .dark .btn-primary { background: #2196f3; border-color: #2196f3; color: white; }
+.btn-primary:hover:not(:disabled), .dark .btn-primary:hover:not(:disabled) { background: #1976d2; border-color: #1976d2; }
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+
+.playground-editor {
+    width: 100%; height: 100%; border: none; outline: none; resize: none;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 14px; line-height: 1.5; padding: 0.75rem;
+    background: var(--color-bg, #fff); color: var(--color-text, #333);
+}
+.dark .playground-editor { background: var(--color-bg-dark, #1e1e1e); color: var(--color-text-dark, #e0e0e0); }
+.dvp-panel { background: var(--color-bg, #fff); color: var(--color-text, #333); }
+.dark .dvp-panel { background: var(--color-bg-dark, #1e1e1e); color: var(--color-text-dark, #e0e0e0); }
+
+ 
+@media (max-width: 800px) {
+    .pt-container { flex-direction: column; height: auto; overflow: visible; }
+    .pt-side { width: 100%; border-right: none; border-bottom: 1px solid var(--pt-border); overflow: visible; }
+    .pt-main { height: 85vh; }
+    .pt-toolbar { flex-wrap: wrap; padding: 0.4rem 16px; }
+}
+</style>
+
+    </div>
+
+    
+    <footer class="content-footer">
+        
+
+        
+        
+
+        
+        
+    </footer>
+</article>
+
+    </main>
+    
+
+    
+    
+
+    
+    
+    <script defer src=/notations/static/js/gen/510.71b59732faeb2771358f.js></script><script defer src=/notations/static/js/gen/446.44dc68f433ff5b238e07.js></script><script defer src=/notations/static/js/gen/597.fdc1532497b278980766.js></script><script defer src=/notations/static/js/gen/476.5fae1d30521ed22a718e.js></script><script defer src=/notations/static/js/gen/318.e33d3617f2d3b7a84901.js></script><script defer src=/notations/static/js/gen/PhotoTranscribePlayground.f761f7f6837f0bfdb39e.js></script>
+    
+
+    
+    <script src="/notations/static/js/tabbed-examples.js"></script>
+
+    
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

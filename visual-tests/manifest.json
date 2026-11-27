@@ -1,0 +1,94 @@
+{
+  "categories": [
+    {
+      "id": "basic",
+      "name": "Basic Notation",
+      "cases": ["basic-notes", "octaves", "groups", "durations", "rests"]
+    },
+    {
+      "id": "embellishments",
+      "name": "Embellishments",
+      "cases": ["jaaru", "kampitam", "multi-emb", "collision"]
+    },
+    {
+      "id": "layout",
+      "name": "Layout & Configuration",
+      "cases": ["two-roles", "cycle-beat", "nested-groups", "baseline-alignment"]
+    },
+    {
+      "id": "markers",
+      "name": "Markers & Annotations",
+      "cases": ["label-before", "label-after", "label-multi-role", "label-multiple"]
+    }
+  ],
+  "cases": {
+    "basic-notes": {
+      "name": "Simple Notes",
+      "description": "Basic swara sequence with octave marker"
+    },
+    "octaves": {
+      "name": "Octaves",
+      "description": "Notes across lower, middle, and upper octaves"
+    },
+    "groups": {
+      "name": "Groups",
+      "description": "Grouped notes played in same time duration"
+    },
+    "durations": {
+      "name": "Durations",
+      "description": "Notes with explicit duration modifiers"
+    },
+    "rests": {
+      "name": "Rests/Spaces",
+      "description": "Notes with rests/spaces between them"
+    },
+    "jaaru": {
+      "name": "Jaaru (slide)",
+      "description": "Left embellishment indicating slide from previous note"
+    },
+    "kampitam": {
+      "name": "Kampitam (oscillation)",
+      "description": "Top embellishment indicating oscillation"
+    },
+    "multi-emb": {
+      "name": "Multiple Embellishments",
+      "description": "Multiple embellishments on a single note"
+    },
+    "collision": {
+      "name": "Collision Test",
+      "description": "Consecutive notes with embellishments (collision test)"
+    },
+    "two-roles": {
+      "name": "Two Roles",
+      "description": "Multi-role notation with swaras and sahitya"
+    },
+    "cycle-beat": {
+      "name": "Cycle/Beat",
+      "description": "Notation with cycle configuration"
+    },
+    "nested-groups": {
+      "name": "Nested Groups",
+      "description": "Nested groups with depth-based bracket lines above each group container"
+    },
+    "baseline-alignment": {
+      "name": "Baseline Alignment",
+      "description": "Beats with different nesting levels in the same row should have aligned atom baselines"
+    },
+    "label-before": {
+      "name": "Label Before",
+      "description": "Pre-marker label appearing before notes in a dedicated column"
+    },
+    "label-after": {
+      "name": "Label After",
+      "description": "Post-marker label appearing after notes with position=after"
+    },
+    "label-multi-role": {
+      "name": "Label Multi-Role",
+      "description": "Label marker on one role creates aligned column across all roles"
+    },
+    "label-multiple": {
+      "name": "Multiple Labels",
+      "description": "Multiple label markers in sequence"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+\beatDuration(2)
+Sw: 
+~/ S ~/ R ~/ G ~/ M ~/ P ~/ D ~/ N ~/ S.
+~/ S. ~/ N ~/ D ~/ P ~/ M ~/ G ~/ R ~/ S
+
+Sh: A B C D E F G H I J K L M N O P Q R S T
