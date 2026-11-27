@@ -15,6 +15,12 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   focusable close button inside each dock tab, and axe reports that as `nested-interactive`.
   0.7.44 renders the close icon with no role and no tabindex (#89, #90).
 
+### Fixed
+
+- One bad command no longer blanks the playground. `SideBySideEditor.render()` reports the errors
+  through `onParseError`, then renders whatever parsed and calls `onNotationParsed`. It still
+  returns false when there were errors (#94).
+
 ## [2.0.0] - 2026-11-27
 
 Details and migration: [docs/releases/v2.0.0.md](docs/releases/v2.0.0.md).

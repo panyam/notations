@@ -158,6 +158,8 @@ const editor = new SideBySideEditor(config);
 leftPanel.appendChild(editor.editorElement);
 rightPanel.appendChild(editor.outputElement);
 
+// A bad line goes to onParseError, and the rest still renders and reaches onNotationParsed.
+// render() returns false when there were errors.
 // Programmatic control
 editor.source = "new source";
 editor.render();
