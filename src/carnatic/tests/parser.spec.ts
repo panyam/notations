@@ -169,6 +169,6 @@ describe("Parser Tests", () => {
   });
 
   test("POST Embelishments - Should throw error for now.", () => {
-    expect(() => testV4(String.raw` ~^ ~W S ~ `)).toThrowError();
+    expect(() => testV4(String.raw` ~^ ~W S ~ `)).toThrow();
   });
 });

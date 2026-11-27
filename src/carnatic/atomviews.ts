@@ -123,7 +123,7 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
 
     // now layout leftSlots
     let currX = 0;
-    let currY = this.hasY ? this.y : 0;
+    let currY: number;
     // place left embelishments
     for (const emb of this.leftSlot) {
       emb.x = currX;

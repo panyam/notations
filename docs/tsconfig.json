@@ -3,7 +3,6 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": false,
     "declaration": true,
-    "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -14,6 +13,8 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "outDir": "./dist/",
+    "rootDir": "..",
+    "types": ["node"],
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
@@ -24,5 +25,5 @@
     "resolveJsonModule": true
   },
   "include": ["./components/**/*.ts", "../src/**/*.ts"],
-  "exclude": ["../node_modules", "dist", "../src/tests"]
+  "exclude": ["../node_modules", "dist", "../src/**/tests", "../src/**/*.spec.ts", "./tests"]
 }

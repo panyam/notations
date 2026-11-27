@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   publish:
-    uses: panyam/ci-actions/.github/workflows/npm-publish.yml@v0.1.4
+    uses: panyam/ci-actions/.github/workflows/npm-publish.yml@73f816432c03fc3680877114f22ebe54659eb175 # v0.1.4
     with:
       package-manager: pnpm
       node-version: '22'
