@@ -46,4 +46,6 @@ jobs:
 
       - run: pnpm run lint
 
+      - run: pnpm run spell
+
       - run: pnpm test
