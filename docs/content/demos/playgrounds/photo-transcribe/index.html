@@ -10,7 +10,7 @@ bodyClass: "playground-page"
 <div id="photo-transcribe-container" class="pt-container">
     <aside class="pt-side">
         <section class="pt-section">
-            <h3>1. Photos</h3>
+            <h3>1. Pages</h3>
             <div id="pt-drop" class="pt-drop">
                 <p>Drop photos or PDFs here, paste a screenshot, or</p>
                 <div class="pt-drop-buttons">
@@ -23,16 +23,15 @@ bodyClass: "playground-page"
                         <input id="pt-file" type="file" accept="image/*,application/pdf,.pdf" multiple hidden>
                     </label>
                 </div>
-                <p class="pt-muted">Each PDF page becomes a photo. For a song over several pages, add them all and use the arrows to order them.
-                    You then pick the region to transcribe on each photo: one section at a time reads
-                    better and costs less than a whole page.</p>
+                <p class="pt-muted">Each PDF page becomes a page here. Add every page of the song. You pick the
+                    parts to read in step 4.</p>
             </div>
             <div id="pt-thumbs" class="pt-thumbs"></div>
             <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
         </section>
 
         <section class="pt-section">
-            <h3>2. What you know <span class="pt-muted">(optional, but it helps a lot)</span></h3>
+            <h3>2. About the song <span class="pt-muted">(optional, but it helps a lot)</span></h3>
             <div class="pt-grid2">
                 <label class="pt-field">Ragam(s)
                     <input id="pt-ragams" class="pt-input" type="text" placeholder="e.g. Mohanam, or a ragamalika list">
@@ -102,13 +101,14 @@ bodyClass: "playground-page"
         </section>
 
         <section class="pt-section">
-            <label class="pt-field">Only this part <span class="pt-muted">(optional)</span>
-                <input id="pt-only" class="pt-input" type="text" placeholder="e.g. Pallavi, or Charanam swaram 3 (Mohanam)">
-            </label>
-            <p class="pt-muted">Each result goes after what is in the editor. The model gets the editor's notation
-                too, so the new part matches it. Press Clear to start a new song.</p>
+            <h3>4. Transcriptions</h3>
+            <p class="pt-muted">One per part of the song, in order: name it, pick its region(s), and press
+                Transcribe. A part can take regions from several pages. The first result goes after what
+                is in the editor, and the model sees the editor's notation so the parts match. A re-run
+                waits for you to press Insert.</p>
+            <ol id="pt-entries" class="pt-entries"></ol>
             <div class="pt-actions">
-                <button id="pt-transcribe" class="btn btn-primary" type="button">Transcribe</button>
+                <button id="pt-add-entry" class="btn" type="button">+ New transcription</button>
                 <button id="pt-cancel" class="btn" type="button" hidden>Cancel</button>
             </div>
             <p id="pt-status" class="pt-status" role="status" aria-live="polite"></p>
@@ -121,6 +121,9 @@ bodyClass: "playground-page"
     </aside>
 
     <dialog id="pt-crop-dialog" class="pt-crop-dialog">
+        <label class="pt-field" id="pt-crop-page-field" hidden>Page
+            <select id="pt-crop-page" class="pt-input"></select>
+        </label>
         <p id="pt-crop-help" class="pt-crop-help">Drag a box around the part to transcribe.</p>
         <div id="pt-crop-stage" class="pt-crop-stage">
             <img id="pt-crop-img" alt="Photo to crop" draggable="false">
@@ -129,7 +132,7 @@ bodyClass: "playground-page"
         <div class="pt-crop-actions">
             <button id="pt-crop-apply" class="btn btn-primary" type="button">Use selection</button>
             <button id="pt-crop-clear" class="btn" type="button">Use whole photo</button>
-            <button id="pt-crop-cancel" class="btn" type="button">Later</button>
+            <button id="pt-crop-cancel" class="btn" type="button">Cancel</button>
         </div>
     </dialog>
 
@@ -138,7 +141,7 @@ bodyClass: "playground-page"
             <span class="pt-muted">Proofread against the photo and edit here.</span>
             <span class="pt-toolbar-buttons">
                 <button id="pt-clear" class="btn btn-sm" type="button" title="Empty the editor to start a new song">Clear</button>
-                <button id="pt-forget" class="btn btn-sm" type="button" title="Remove all photos from this page and from this browser">Forget files</button>
+                <button id="pt-forget" class="btn btn-sm" type="button" title="Remove all pages and transcriptions from this page and from this browser">Forget files</button>
                 <button id="pt-copy" class="btn btn-sm" type="button">Copy</button>
                 <button id="pt-download" class="btn btn-sm" type="button">Download .sng</button>
                 <button id="pt-reset-layout" class="btn btn-sm" type="button" title="Reset to default layout">Reset Layout</button>
@@ -307,4 +310,23 @@ textarea.pt-input { resize: vertical; }
     .pt-main { height: 85vh; }
     .pt-toolbar { flex-wrap: wrap; padding: 0.4rem 16px; }
 }
+
+/* Transcription entries */
+.pt-entries { list-style: none; margin: 0.5rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.pt-entry { border: 1px solid var(--pt-border); border-radius: 6px; padding: 0.5rem; background: var(--pt-bg); }
+.pt-entry-running { border-color: var(--pt-accent); }
+.pt-entry-failed { border-color: var(--pt-error); }
+.pt-entry-head { display: flex; gap: 0.3rem; align-items: center; }
+.pt-entry-head .pt-input { flex: 1; min-width: 0; font-weight: 600; }
+.pt-entry-row { display: flex; gap: 0.3rem; align-items: center; margin-top: 0.35rem; flex-wrap: wrap; }
+.pt-entry-row .pt-input { flex: 1; min-width: 8rem; }
+.pt-regions { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+.pt-region { display: inline-flex; align-items: center; gap: 0.2rem; border: 1px solid var(--pt-border);
+    border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.8rem; }
+.pt-region img { height: 28px; max-width: 80px; object-fit: contain; background: #fff; }
+.pt-icon-btn { border: none; background: none; cursor: pointer; padding: 0 0.2rem; font-size: 0.9rem; color: inherit; }
+.pt-icon-btn:disabled { opacity: 0.35; cursor: default; }
+.pt-entry .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.pt-entry-status { font-size: 0.8rem; margin-top: 0.35rem; }
+.pt-entry-status-failed { color: var(--pt-error); }
 </style>
