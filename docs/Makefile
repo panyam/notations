@@ -41,3 +41,7 @@ render:
 deploy:
 	gh workflow run docs.yml --ref master
 	@echo "Started. Follow it with: gh run watch"
+
+# The #48 mission exercise in headless Chromium. ARGS="--base http://localhost:8085/notations/"
+exercise-48:
+	cd .. && pnpm run exercise:48 $(ARGS)

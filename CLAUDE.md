@@ -16,6 +16,7 @@ pnpm run build:docs          # docs JS into docs/static/js/gen/
 cd docs && make run          # docs site on http://localhost:8085/notations/
 cd docs && make site         # production site and search index into docs/dist/docs, no deploy
 pnpm run transcribe:photos   # photo transcriber CLI; needs ANTHROPIC_API_KEY
+pnpm run exercise:48         # mission #48's exercise in headless Chromium; --base for a local site
 ```
 
 The pre-commit hook runs clean, build, check:esm, lintfix and test. PRs merge with merge
