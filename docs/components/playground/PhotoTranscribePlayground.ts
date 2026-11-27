@@ -19,6 +19,7 @@ import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
 import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
 import { isPdf, PDF_PAGE_WARN, pdfToImages } from "../photo/pdfPages";
+import { PhotoStore, StoredPhoto } from "../photo/photoStore";
 import { formatCost } from "../photo/pricing";
 import {
   DEFAULT_MODEL,
@@ -40,6 +41,10 @@ const PLACEHOLDER_SOURCE = `// Your transcription will appear here.
 
 interface PhotoItem {
   file: Blob;
+  /** The uploaded file this photo came from, as kept in PhotoStore. */
+  fileId: string;
+  /** 1-based page when the upload was a PDF; null for an image. */
+  page: number | null;
   name: string;
   rotation: number;
   /** Region to keep, on the rotated photo; null for the whole photo. */
@@ -70,6 +75,11 @@ function safeSet(key: string, value: string | null): void {
   }
 }
 
+/** An id for an uploaded file. randomUUID needs a secure context, which localhost and Pages are. */
+function newFileId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
 function $(id: string): HTMLElement {
   const el = document.getElementById(id);
   if (!el) throw new Error(`Missing element #${id}`);
@@ -84,6 +94,12 @@ export class PhotoTranscribePlayground {
   private playground: DockViewPlayground;
   private photos: PhotoItem[] = [];
   private abort: AbortController | null = null;
+  /** Null when this browser has no usable IndexedDB; the page then forgets on reload. */
+  private storeReady: Promise<PhotoStore | null> = PhotoStore.open();
+  /** Writes run one after another, so a file is stored before the photo list that names it. */
+  private saving: Promise<void> = Promise.resolve();
+  /** True until the last visit's photos and notation are back, so nothing overwrites them first. */
+  private restoring = true;
 
   private keyInput = $("pt-api-key") as HTMLInputElement;
   private rememberBox = $("pt-remember") as HTMLInputElement;
@@ -119,11 +135,13 @@ export class PhotoTranscribePlayground {
       syncScroll: true,
       markdownParser: createMarkdownParser(),
       editorClass: "playground-editor",
+      onSourceChange: (source) => this.saveNotation(source),
       onParseError: (errors) => errors.forEach((e) => this.playground?.log(`Parse error: ${e.message || e}`, "error")),
     });
     this.playground.source = PLACEHOLDER_SOURCE;
     this.setupControls();
     this.updateButtons();
+    this.restore();
   }
 
   private setupControls(): void {
@@ -201,6 +219,7 @@ export class PhotoTranscribePlayground {
     this.cancelBtn.addEventListener("click", () => this.abort?.abort());
     $("pt-copy").addEventListener("click", () => this.copySource());
     $("pt-clear").addEventListener("click", () => this.clearEditor());
+    $("pt-forget").addEventListener("click", () => this.forgetFiles());
     $("pt-download").addEventListener("click", () => this.downloadSource());
     $("pt-reset-layout").addEventListener("click", () => this.playground.resetLayout());
   }
@@ -208,17 +227,22 @@ export class PhotoTranscribePlayground {
   // ---- Photos ---------------------------------------------------------------------------
 
   private async addFiles(files: File[]): Promise<void> {
-    const images: File[] = [];
+    const images: Array<{ image: File; fileId: string; page: number | null }> = [];
+    const sources = new Map<string, File>();
     for (const file of files) {
+      const fileId = newFileId();
       if (isPdf(file)) {
         try {
-          images.push(...(await this.expandPdf(file)));
+          const pages = await this.expandPdf(file);
+          pages.forEach((image, i) => images.push({ image, fileId, page: i + 1 }));
+          if (pages.length > 0) sources.set(fileId, file);
         } catch (e: any) {
           this.setStatus(`${file.name}: could not read this PDF (${e.message || e}).`, "error");
           return;
         }
       } else if (file.type.startsWith("image/") || /\.(heic|heif)$/i.test(file.name)) {
-        images.push(file);
+        images.push({ image: file, fileId, page: null });
+        sources.set(fileId, file);
       }
     }
     if (images.length === 0) {
@@ -226,11 +250,14 @@ export class PhotoTranscribePlayground {
       return;
     }
     this.setStatus(`Preparing ${images.length} photo(s)...`);
-    for (const file of images) {
+    let failed = false;
+    for (const { image, fileId, page } of images) {
       try {
         const item: PhotoItem = {
-          file,
-          name: file.name,
+          file: image,
+          fileId,
+          page,
+          name: image.name,
           rotation: 0,
           crop: null,
           regionSet: false,
@@ -239,16 +266,24 @@ export class PhotoTranscribePlayground {
         item.prepared = await this.prep(item);
         this.photos.push(item);
       } catch (e: any) {
-        const hint = /\.(heic|heif)$/i.test(file.name)
+        const hint = /\.(heic|heif)$/i.test(image.name)
           ? " This browser cannot open HEIC photos; export the photo as JPEG, or take it from this page's camera button."
           : "";
-        this.setStatus(`${file.name}: ${e.message || e}${hint}`, "error");
-        return;
+        this.setStatus(`${image.name}: ${e.message || e}${hint}`, "error");
+        failed = true;
+        break;
       }
     }
+    for (const [id, file] of sources) {
+      if (!this.photos.some((p) => p.fileId === id)) continue;
+      this.queueSave(async (store) =>
+        store.putFile({ id, name: file.name, type: file.type, bytes: await file.arrayBuffer() }),
+      );
+    }
+    this.savePhotos();
     this.renderThumbs();
     this.updateButtons();
-    this.pickNextRegion();
+    if (!failed) this.pickNextRegion();
   }
 
   /** One PNG per PDF page, in order. Each page then behaves like a photo. */
@@ -274,6 +309,7 @@ export class PhotoTranscribePlayground {
   private removePhoto(index: number): void {
     const [gone] = this.photos.splice(index, 1);
     if (gone) URL.revokeObjectURL(gone.prepared.previewUrl);
+    this.savePhotos();
     this.renderThumbs();
     this.updateButtons();
   }
@@ -287,6 +323,7 @@ export class PhotoTranscribePlayground {
     const old = item.prepared.previewUrl;
     item.prepared = await this.prep(item);
     URL.revokeObjectURL(old);
+    this.savePhotos();
     this.renderThumbs();
   }
 
@@ -318,6 +355,7 @@ export class PhotoTranscribePlayground {
     const copy: PhotoItem = { ...src, crop: null, regionSet: false, prepared: null as any };
     copy.prepared = await this.prep(copy);
     this.photos.splice(index + 1, 0, copy);
+    this.savePhotos();
     this.renderThumbs();
     this.updateButtons();
     this.openCrop(index + 1);
@@ -416,6 +454,7 @@ export class PhotoTranscribePlayground {
     if (!item) return;
     item.crop = crop;
     item.regionSet = true;
+    this.savePhotos();
     const old = item.prepared.previewUrl;
     item.prepared = await this.prep(item);
     URL.revokeObjectURL(old);
@@ -428,6 +467,7 @@ export class PhotoTranscribePlayground {
     const to = index + delta;
     if (to < 0 || to >= this.photos.length) return;
     [this.photos[index], this.photos[to]] = [this.photos[to], this.photos[index]];
+    this.savePhotos();
     this.renderThumbs();
   }
 
@@ -533,6 +573,7 @@ export class PhotoTranscribePlayground {
       thinking.flush();
 
       this.playground.source = append ? mergeNotation(existing, result.transcription) : result.notation;
+      this.saveNotation(this.playground.source);
       this.playground.render();
       this.rawDetails.open = false;
       this.showReport(result);
@@ -653,6 +694,109 @@ export class PhotoTranscribePlayground {
     this.reportEl.innerHTML = parts.join("");
   }
 
+  // ---- Keeping work across reloads -----------------------------------------------------
+
+  private queueSave(write: (store: PhotoStore) => Promise<void>): void {
+    this.saving = this.saving
+      .then(async () => {
+        const store = await this.storeReady;
+        if (store) await write(store);
+      })
+      .catch((e: any) => this.playground.log(`Could not save to this browser: ${e?.message || e}`, "warning"));
+  }
+
+  /** Saves the photo list. The store then drops any uploaded file no photo uses. */
+  private savePhotos(): void {
+    if (this.restoring) return;
+    const photos: StoredPhoto[] = this.photos.map((p) => ({
+      fileId: p.fileId,
+      page: p.page,
+      name: p.name,
+      rotation: p.rotation,
+      crop: p.crop,
+      regionSet: p.regionSet,
+    }));
+    this.queueSave((store) => store.savePhotos(photos));
+  }
+
+  private saveNotation(source: string): void {
+    if (this.restoring) return;
+    const text = isBlankNotation(source) ? "" : source;
+    this.queueSave((store) => store.saveNotation(text));
+  }
+
+  /**
+   * Brings back the last visit's notation and photos. A PDF comes back as its stored bytes and is
+   * rendered again, once, however many of its pages are in the list.
+   */
+  private async restore(): Promise<void> {
+    let failed = false;
+    try {
+      const store = await this.storeReady;
+      if (!store) return;
+      const notation = await store.notation();
+      if (notation && !isBlankNotation(notation)) {
+        this.playground.source = notation;
+        this.playground.render();
+      }
+      const saved = await store.photos();
+      if (saved.length === 0) return;
+      this.setStatus(`Restoring ${saved.length} photo(s) from your last visit...`);
+      const files = new Map((await store.files()).map((f) => [f.id, f]));
+      const rendered = new Map<string, File[]>();
+      const restored: PhotoItem[] = [];
+      for (const s of saved) {
+        const stored = files.get(s.fileId);
+        if (!stored) continue;
+        const source = new File([stored.bytes], stored.name, { type: stored.type });
+        let image: File | undefined = source;
+        if (s.page != null) {
+          if (!rendered.has(stored.id)) {
+            rendered.set(
+              stored.id,
+              await pdfToImages(source, {
+                onPage: (n, count) => this.setStatus(`Rendering ${stored.name}: page ${n} of ${count}...`),
+              }),
+            );
+          }
+          image = rendered.get(stored.id)![s.page - 1];
+        }
+        if (!image) continue;
+        const item: PhotoItem = { ...s, file: image, prepared: null as any };
+        item.prepared = await this.prep(item);
+        restored.push(item);
+      }
+      // Photos added while this ran go after the restored ones.
+      this.photos = [...restored, ...this.photos];
+      this.renderThumbs();
+      this.updateButtons();
+      this.setStatus(`Restored ${restored.length} photo(s) from your last visit.`);
+    } catch (e: any) {
+      // Saving now would replace the stored list with a partial one and delete its files. Leave
+      // the store alone for this visit, so a reload can try again.
+      this.storeReady = Promise.resolve(null);
+      this.setStatus(
+        `Could not restore your last visit (${e?.message || e}). Reload to try again; changes here won't be saved.`,
+        "error",
+      );
+      failed = true;
+    } finally {
+      this.restoring = false;
+      if (!failed) this.savePhotos();
+    }
+  }
+
+  /** Removes every photo from the page and from this browser. The editor keeps its notation. */
+  private forgetFiles(): void {
+    if (this.photos.length > 0 && !confirm("Remove all photos from this page and from this browser?")) return;
+    for (const p of this.photos) URL.revokeObjectURL(p.prepared.previewUrl);
+    this.photos = [];
+    this.renderThumbs();
+    this.updateButtons();
+    this.queueSave((store) => store.forgetFiles());
+    this.setStatus("Photos removed from this browser. The editor keeps its notation.");
+  }
+
   // ---- Output ---------------------------------------------------------------------------
 
   /** Empties the editor, so the next transcription starts a new song. */
@@ -662,6 +806,7 @@ export class PhotoTranscribePlayground {
     }
     this.playground.source = PLACEHOLDER_SOURCE;
     this.playground.render();
+    this.saveNotation("");
     this.reportEl.innerHTML = "";
     this.setStatus("Editor cleared. The next transcription starts a new song.");
   }

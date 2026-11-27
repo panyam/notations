@@ -20,6 +20,7 @@ went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests
 | `transcriber.ts` | Claude call (streaming, structured output, adaptive thinking, server-side fallback) and the repair loop |
 | `notationChecks.ts` | Runs the real parser on generated DSL; alignment warnings |
 | `pdfPages.ts` | Renders each page of an uploaded PDF to a PNG with pdf.js, loaded on demand. Each page then works like a photo |
+| `photoStore.ts` | IndexedDB store for the page: uploaded files (a PDF as the PDF), the photo list with rotation and region, and the editor text |
 | `imageUtils.ts` | Browser image prep: rotate, crop (from full resolution), downscale to 2400 px, optional enhancement (flat-field + contrast) |
 | `../playground/PhotoTranscribePlayground.ts` | The page: photos, region picker, known-facts fields, API key, editor/preview |
 | `../../content/demos/playgrounds/photo-transcribe/index.html` | Page markup and styles |
@@ -46,6 +47,11 @@ went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests
 
 ## Decisions and why
 
+- **Work survives a reload.** The page keeps uploads, the photo list and the editor text in
+  IndexedDB (`photoStore.ts`). A PDF is stored once, as the PDF, and rendered again on load.
+  "Forget files" removes the photos and keeps the editor text; Clear empties the editor. If a
+  restore fails, the page stops saving for that visit, so a partial list never replaces the
+  stored one.
 - **Bring your own key, in the browser.** The docs site is static (GitHub Pages), so there is no
   server to hold a key. The key goes only to api.anthropic.com and is stored only if the user
   ticks "Remember". A proxy could be added later without touching `transcriber.ts` (it takes a client).
@@ -101,8 +107,9 @@ added to it.
    highlighted (the grid already knows which slots were inferred).
 4. **Cost controls:** show cost per run on the page; try Sonnet 5.5 and lower effort on clean
    sections; Batch API (50% off) for CLI bulk runs.
-5. **Page layout:** separate uploaded files from an ordered list of transcriptions (#40), and
-   keep them across reloads in IndexedDB (#41).
+5. **Page layout:** separate uploaded files from an ordered list of transcriptions (#40). Uploads
+   and the editor already survive a reload; the transcriptions list should go in `photoStore.ts`
+   too.
 
 ## Gotchas
 
