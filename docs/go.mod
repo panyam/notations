@@ -2,7 +2,7 @@ module github.com/panyam/notations/docs
 
 go 1.26.0
 
-require github.com/panyam/s3gen v0.1.7
+require github.com/panyam/s3gen v0.1.8
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -29,6 +29,6 @@ require (
 
 // replace github.com/panyam/templar v0.0.22 => ./locallinks/templar/
 
-// replace github.com/panyam/s3gen v0.1.7 => ./locallinks/s3gen/
+// replace github.com/panyam/s3gen v0.1.8 => ./locallinks/s3gen/
 
 // replace github.com/panyam/goutils v0.1.11 => ./locallinks/goutils/

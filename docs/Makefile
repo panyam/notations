@@ -29,12 +29,10 @@ resymlink:
 # Production site in dist/docs, without deploying.
 site: webpack render
 
-# Renders the pages, copies static/ (s3gen doesn't in build mode), and builds the Pagefind search
-# index into dist/docs/pagefind. The Docs workflow runs this target after its own webpack build.
+# Renders the pages and copies static/ (s3gen does both), then builds the Pagefind search index
+# into dist/docs/pagefind. The Docs workflow runs this target after its own webpack build.
 render:
 	NOTATIONS_DOCS_ENV=production go run main.go -build
-	rm -Rf dist/docs/static
-	cp -r static dist/docs
 	pnpm exec pagefind --site dist/docs
 	touch dist/docs/.nojekyll
 
