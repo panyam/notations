@@ -23,7 +23,7 @@ description: "Interactive demo for the Observer pattern and model change events"
       </div>
     </div>
     <div class="control-group inline-group">
-      <label>Remove Count:</label>
+      <label for="remove-count">Remove Count:</label>
       <input type="number" id="remove-count" value="1" min="1" max="100" class="demo-input small">
       <button id="btn-remove" class="btn btn-danger">Remove at Caret</button>
       <button id="btn-clear" class="btn btn-outline">Clear All</button>
@@ -535,8 +535,8 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 }
 
 .btn-primary {
-  background: #2196f3;
-  border-color: #2196f3;
+  background: #1565c0;
+  border-color: #1565c0;
   color: white;
 }
 
@@ -545,18 +545,18 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 }
 
 .btn-secondary {
-  background: #4caf50;
-  border-color: #4caf50;
+  background: #2e7d32;
+  border-color: #2e7d32;
   color: white;
 }
 
 .btn-secondary:hover {
-  background: #388e3c;
+  background: #1b5e20;
 }
 
 .btn-danger {
-  background: #f44336;
-  border-color: #f44336;
+  background: #c62828;
+  border-color: #c62828;
   color: white;
 }
 
@@ -677,8 +677,12 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
 }
 
 .empty-message {
-  color: #999;
+  color: #6b6b6b;
   font-style: italic;
+}
+
+.dark .empty-message {
+  color: #a0aec0;
 }
 
 .event-log {
