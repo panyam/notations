@@ -9,6 +9,12 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+### Changed
+
+- The `@panyam/tsappkit-dock` peer range is now `^0.7.44`, up from `^0.7.40`. Older versions put a
+  focusable close button inside each dock tab, and axe reports that as `nested-interactive`.
+  0.7.44 renders the close icon with no role and no tabindex (#89, #90).
+
 ## [2.0.0] - 2026-11-27
 
 Details and migration: [docs/releases/v2.0.0.md](docs/releases/v2.0.0.md).
