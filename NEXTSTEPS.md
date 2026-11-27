@@ -7,7 +7,7 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 - master — photo transcriber — next: one real transcription from the page, then go on down the notebook (Shankarabharanam)
 - This run: #70 and #73 merged (close #59, #69); panyam/notation_demos#4 merged, so all 97 demo files load; filed #71 (a docs page per demo song). Dropped the #59 open questions, which #70 settled.
-- Docs site (other session): #61, #62, #65, #67, #72 merged (close #51, #50, #64, #47); #27 and #33 settled (#68). Example pages now checked for swaras run together, tala names vs cycles, and broken links. Leftovers: #66 (Safari/Firefox, DockView tabs via panyam/goapplib#254), #48 (parked).
+- Docs site and library (other session): #61, #62, #65, #67, #72, #88 merged (close #51, #50, #64, #47, #18). #88 splits `notations/core` and `notations/parser` and breaks `new Parser()` without gamakas, so the next release is 2.0.0. Leftovers: #66 (Safari/Firefox, DockView tabs via panyam/goapplib#254), #87 (yaml size), #48 (parked).
 
 ## Across threads
 

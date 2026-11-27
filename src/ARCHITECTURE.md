@@ -4,6 +4,23 @@
 
 The notations library provides a DSL parser, data model, and SVG renderer for Carnatic music notation.
 
+## Layers
+
+Each layer imports only the ones below it (#18):
+
+1. **Runtime** (`notations/core`, `src/entry-core.ts`): the model, cycles, iterators, layouts and
+   `GlobalBeatLayout`. No parser, no DOM, no grammar libraries.
+2. **Parser** (`parser.ts`): builds the runtime model from the DSL. It declares
+   `EmbellishmentParser` and takes one in `ParserOptions`; it imports nothing from `carnatic/`.
+3. **Carnatic gamakas** (`carnatic/gamakas.ts`): the gamaka model and `carnaticGamakas`, which
+   implements the parser's interface (a type-only import).
+4. **Composition** (`loader.ts`): `load()` and `parse()` create a Parser with `carnaticGamakas`.
+   `notations/parser` (`src/entry-parser.ts`) exports layers 2 to 4.
+5. **Renderer** (`shapes.ts`, `beatview.ts`, the rest of `carnatic/`): the SVG views.
+
+`src/tests/layers.spec.ts` walks the imports and fails if a lower layer reaches a higher one.
+Modules inside `src/` import from the module that defines a name, never from the package index.
+
 ## Core Modules
 
 ### Entity Hierarchy (`entity.ts`)
@@ -115,7 +132,7 @@ SVG renderers for Carnatic notation:
 - `LineView.ts` - Line rendering
 - `atomviews.ts` - Atom rendering
 - `beatviews.ts` - Beat rendering
-- `embelishments.ts`, `gamakas.ts` - Ornament rendering
+- `embelishments.ts` - Ornament rendering (`gamakas.ts` is the gamaka model, layer 3 above)
 
 ## Property Inheritance
 
@@ -151,15 +168,15 @@ This enables:
 ## Build & Bundle
 
 ### Dependencies
-- **galore** + **tlex** - Parser generator and lexer (~220 KB bundled)
-- **@panyam/tsutils** - Utility library (~30 KB bundled)
-- **yaml** - YAML front-matter parsing (~50 KB bundled, replaced heavier gray-matter)
+Minified sizes from webpack production bundles (#18):
+- **galore** (92 KB) + **tlex** (56 KB) - Parser generator and lexer
+- **@panyam/tsutils** (18 KB) - Utility library
+- **yaml** (102 KB) - Front matter only; about 40% of the parse bundle (#87)
 - **@lume/kiwi** - Constraint solver for layouts
 
 ### Bundle Analysis
 Run `webpack --mode=production --env analyze` to open interactive bundle visualization.
 
-The UMD bundle (`dist/notations.umd.min.js`) is ~261 KB minified. Main contributors:
-- Parser infrastructure (galore, tlex): ~220 KB
-- yaml package: ~50 KB
-- Library code: ~15-20 KB
+For `import { load }`: the main entry bundles to 256 KB minified (72 KB gzipped), `notations/parser`
+to 240 KB (69 KB), and `notations/core` (runtime only) to 29 KB (8 KB). The grammar libraries and
+yaml are most of the parse cost; the renderer is the smaller part.

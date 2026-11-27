@@ -43,6 +43,9 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - TS 6 loads no `@types` packages by default. `tsconfig.test.json` (jest) and
   `docs/tsconfig.json` list theirs. `docs/components/styles.d.ts` declares `.css`, `.scss`
   and `?url` imports.
+- Layers: runtime (`notations/core`) < parser (takes an `EmbellishmentParser`) < Carnatic gamakas
+  < `load()` < renderer. `src/tests/layers.spec.ts` enforces it; inside `src/`, never import from
+  the package index (`"./"`). Details: `src/ARCHITECTURE.md` (#18).
 - Parser errors contract, galore tokenizer priorities and command validation:
   `src/ARCHITECTURE.md`. `load()` never throws; a new command reports bad params as errors.
 - ts-jest compiles to CommonJS, so code that jest loads cannot use `import.meta`. For an
