@@ -135,8 +135,11 @@ func main() {
 		Site.Watch()
 	}
 
+	// Serve returns once SIGINT or SIGTERM has drained in-flight requests.
 	if !*build {
-		Site.Serve(*addr)
+		if err := Site.Serve(*addr); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
