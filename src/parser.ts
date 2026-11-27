@@ -19,9 +19,6 @@ import {
   Repeat,
 } from "./commands";
 
-// TODO - Make this plugable from the client instead of hard coded
-import * as carnatic from "./carnatic";
-
 const ONE = TSU.Num.Fraction.ONE;
 
 /** Front matter keys that set document defaults, lowercased, mapped to the command for each. */
@@ -162,10 +159,13 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
       toEmbelishment: (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => {
         const [emb, pre] = owner.parseEmbelishment(token.value);
         if (emb == null) {
-          console.log("Skipping Embelishment: ", token.value);
+          const message =
+            owner.embellishments == null
+              ? `No embellishment parser for ${token.value}: pass embellishments to Parser, or use load() or parse()`
+              : `Invalid embelishment: ${token.value}`;
           owner.errors.push(
             new TLEX.TokenizerError(
-              `Invalid embelishment: ${token.value}`,
+              message,
               token.start,
               1 + token.end - token.start,
               "InvalidEmbelishment",
@@ -386,8 +386,36 @@ export class BlockCommand extends Command {
   }
 }
 
+/**
+ * Reads one embellishment token, such as `~/` or `~w`, into the object attached to the next note.
+ *
+ * The parser knows the `~` syntax but not what any gamaka means, so whoever builds a Parser supplies
+ * this. Return `[embellishment, true]` for a prefix embellishment, or `[null, false]` for a token
+ * it doesn't recognise, which the parser reports as an error. `carnaticGamakas` in
+ * `carnatic/gamakas.ts` is the one this library ships, and `load()` and `parse()` use it.
+ */
+export type EmbellishmentParser = (token: string) => [unknown, boolean];
+
+/** Options for a Parser. */
+export interface ParserOptions {
+  /**
+   * Reads `~` tokens. Without one, every embellishment in the source is reported as an error that
+   * says to pass this or use `load()`.
+   */
+  embellishments?: EmbellishmentParser;
+}
+
+/**
+ * Parses the notation DSL into commands that build a Notation.
+ *
+ * It depends on the runtime model only. Gamakas come in through `options.embellishments`, so the
+ * parser carries no musical tradition of its own. `load()` and `parse()` create one with the
+ * Carnatic gamakas.
+ */
 export class Parser {
   errors: (TLEX.TokenizerError | G.ParseError)[] = [];
+  /** The embellishment parser this Parser was given, or null. */
+  readonly embellishments: EmbellishmentParser | null;
   metadata: any = {};
   readonly commands: Command[] = [];
   // Stack to track command indices when entering blocks
@@ -579,8 +607,8 @@ export class Parser {
     },
   };
 
-  constructor(_config?: any) {
-    // config = config || {};
+  constructor(options: ParserOptions = {}) {
+    this.embellishments = options.embellishments ?? null;
   }
 
   /**
@@ -711,7 +739,8 @@ export class Parser {
     return commands;
   }
 
+  /** Reads an embellishment token with the parser from the options, or returns `[null, false]`. */
   parseEmbelishment(value: string): [any, boolean] {
-    return carnatic.parseEmbelishment(value);
+    return this.embellishments ? this.embellishments(value) : [null, false];
   }
 }

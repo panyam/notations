@@ -59,6 +59,20 @@ if (errors.length === 0) {
 }
 ```
 
+### Parsing without the renderer
+
+`notations/core` is the runtime model alone (atoms, cycles, notations, `AtomIterator`, the beat
+layout), about 8 KB gzipped. `notations/parser` adds the DSL parser and `load()`. Neither includes
+the SVG renderer.
+
+```typescript
+import { load } from 'notations/parser';
+import { AtomIterator } from 'notations/core';
+```
+
+To use `Parser` directly, give it the gamakas to read: `new Parser({ embellishments: carnaticGamakas })`.
+`load()` and `parse()` do that for you.
+
 ## Documentation
 
 - **[Getting Started](https://panyam.github.io/notations/getting-started/)** - Installation and setup

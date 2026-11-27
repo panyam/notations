@@ -2,16 +2,19 @@ import * as TSU from "@panyam/tsutils";
 import * as G from "galore";
 import { GlobalBeatLayout } from "./beats";
 import { Parser } from "./parser";
+import { carnaticGamakas } from "./carnatic/gamakas";
 import { Notation } from "./notation";
 
 /**
- * Parses a notation string into a Notation object.
+ * Parses a notation string into a Notation object, reading `~` gamakas as Carnatic ones.
+ *
+ * This is where the parser and the Carnatic gamakas meet. Neither knows the other.
  *
  * @param input The notation string to parse
  * @returns A tuple containing the parsed Notation and any parsing errors
  */
 export function parse(input: string): [Notation, G.ParseError[]] {
-  return new Parser().parseAndBuild(input);
+  return new Parser({ embellishments: carnaticGamakas }).parseAndBuild(input);
 }
 
 /**

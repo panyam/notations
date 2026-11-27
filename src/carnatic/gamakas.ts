@@ -1,3 +1,4 @@
+import type { EmbellishmentParser } from "../parser";
 import { Note } from "../core";
 
 export enum GamakaType {
@@ -94,3 +95,9 @@ export function parseEmbelishment(value: string): [any, boolean] {
   // throw new Error("Invalid carnatic embelishment: " + value);
   return [null, false];
 }
+
+/**
+ * The Carnatic gamakas, as an EmbellishmentParser to give a Parser: `~` kampitam, `~/` and `~\`
+ * jaarus, `~w` nokku and the rest. `load()` and `parse()` use it.
+ */
+export const carnaticGamakas: EmbellishmentParser = parseEmbelishment;

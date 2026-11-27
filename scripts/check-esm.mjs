@@ -49,4 +49,14 @@ const [notation, , errors] = notations.load(`\\cycle("|4|2|2|")\nmrid: tham , th
 if (errors.length > 0) fail(`load() reported ${errors.length} errors on valid input`);
 if (notation == null) fail("load() returned no notation");
 
+// The subpath entries: notations/parser parses on its own, gamakas included, and notations/core
+// loads without the parser's grammar libraries.
+const parserEntry = await import(join(ESM_DIR, "entry-parser.js"));
+const [parsed, , parseErrors] = parserEntry.load(`\\cycle("|4|")\nSw: ~/ g m p d\n`);
+if (parseErrors.length > 0) fail(`notations/parser load() reported ${parseErrors.length} errors on valid input`);
+if (parsed == null) fail("notations/parser load() returned no notation");
+const coreEntry = await import(join(ESM_DIR, "entry-core.js"));
+if (typeof coreEntry.AtomIterator !== "function") fail("notations/core has no AtomIterator");
+if ("Parser" in coreEntry) fail("notations/core exports Parser; the runtime shouldn't include the parser");
+
 console.log(`check-esm: ${ESM_DIR} imports and parses under Node ${process.version}`);

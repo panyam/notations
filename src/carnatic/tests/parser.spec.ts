@@ -3,9 +3,10 @@
  */
 import * as TSU from "@panyam/tsutils";
 import { Parser } from "../../parser";
+import { carnaticGamakas } from "../gamakas";
 
 function testV4(input: string, debug = false, expected: any = null): void {
-  const parser = new Parser();
+  const parser = new Parser({ embellishments: carnaticGamakas });
   const root = parser.parse(input);
   const cmds = parser.commands.map((c: any) => c.debugValue());
   if (debug || expected == null) {

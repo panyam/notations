@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Space } from "./";
+import { Space } from "./core";
 import { FlatAtom } from "./iterators";
 
 /**

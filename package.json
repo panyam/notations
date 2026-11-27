@@ -14,6 +14,16 @@
       "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js"
     },
+    "./core": {
+      "types": "./lib/esm/entry-core.d.ts",
+      "import": "./lib/esm/entry-core.js",
+      "require": "./lib/cjs/entry-core.js"
+    },
+    "./parser": {
+      "types": "./lib/esm/entry-parser.d.ts",
+      "import": "./lib/esm/entry-parser.js",
+      "require": "./lib/cjs/entry-parser.js"
+    },
     "./web": {
       "types": "./lib/esm/web/index.d.ts",
       "import": "./lib/esm/web/index.js",
