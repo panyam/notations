@@ -1072,3 +1072,18 @@ describe("Bar Separator Tests", () => {
     expect(cycle).toEqual("|4|2|2|");
   });
 });
+
+describe("Front matter", () => {
+  test("parsing it prints nothing", () => {
+    const log = jest.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      const parser = new Parser();
+      parser.parse('---\nragam: Kedaram\n---\n\\cycle("|4|")\nSw: s r g m\n');
+      expect(parser.errors).toEqual([]);
+      expect(parser.metadata).toEqual({ ragam: "Kedaram" });
+      expect(log).not.toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
+  });
+});
