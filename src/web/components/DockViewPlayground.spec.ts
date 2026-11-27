@@ -115,6 +115,15 @@ describe("DockViewPlayground", () => {
     expect(darkDock()).toBe(true);
   });
 
+  test("opens the console at consoleHeight of the container", () => {
+    const consoleHeight = (p: DockViewPlayground) => p.dock.api.getPanel("console")!.group.api.height;
+    const byDefault = consoleHeight(make());
+    for (const p of made.splice(0)) p.destroy();
+    localStorage.clear();
+    expect(consoleHeight(make({ consoleHeight: 0.25 }))).toBe(200);
+    expect(byDefault).toBeLessThan(200);
+  });
+
   test("exposes the dock for a Panels menu", () => {
     const p = make();
     const host = document.createElement("div");
