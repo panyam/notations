@@ -122,6 +122,24 @@ export class Bar extends TimedEntity {
   }
 
   /**
+   * Writes this bar the way parseBar reads it.  A bar of plain unit beats is just its beat
+   * count ("4").  Any other bar lists each beat as "<length>" or "<length>:<count>", with ":1"
+   * added to a lone whole-number beat so it isn't read back as a count of unit beats.
+   */
+  toString(): string {
+    const count = (i: number) => this.beatCounts[i] || 1;
+    if (this.beatLengths.every((l, i) => l.isOne && count(i) == 1)) {
+      return String(this.beatLengths.length);
+    }
+    const beats = this.beatLengths.map((l, i) => {
+      const length = l.den == 1 ? String(l.num) : `${l.num}/${l.den}`;
+      return count(i) == 1 ? length : `${length}:${count(i)}`;
+    });
+    if (beats.length == 1 && /^\d+$/.test(beats[0])) beats[0] += ":1";
+    return beats.join(" ");
+  }
+
+  /**
    * Returns a debug-friendly representation of this Bar.
    * @returns An object containing debug information
    */
@@ -243,6 +261,11 @@ export class Cycle extends TimedEntity {
    */
   debugValue(): any {
     return { ...super.debugValue(), name: name, bars: this.bars.map((p) => p.debugValue()) };
+  }
+
+  /** Writes this cycle the way parseCycle reads it, for example "|4|2|2|". */
+  toString(): string {
+    return "|" + this.bars.map((b) => b.toString()).join("|") + "|";
   }
 
   /**

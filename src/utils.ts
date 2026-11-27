@@ -37,63 +37,47 @@ export function parseCycle(cycleStr: string): Cycle {
 /**
  * Parses a bar string into a Bar object.
  *
- * A bar string is a space delimited string in the following format:
- * "<beat1> <spaces> <beat2> .... <beatN>"
+ * A bar with no spaces made only of numbers and commas lists unit beats: a number adds that many
+ * beats and each comma adds one, so "4", "4,," (6 beats) and "10" all work.
  *
- * beatX substring cannot contain "|" or spaces.
- *
- * Each Beat string is in the following format:
- * "<length>(:<count>)?"  or "<length>?:<count>"
- *
- * Both length and count are optional but at least one of them must be specified.
- * When not specified the other defaults to 1.
- * Length can also be a fraction of the form <num>"/"<den> (without spaces).
+ * Otherwise the bar is a space-separated list of beats, each in the form
+ * "<length>(:<count>)?" or "<length>?:<count>".  Length is a whole number, a fraction like 3/2,
+ * or a run of commas (its length is the number of commas).  Commas after a number are ignored,
+ * so "5,," is a beat of length 5.  Count says how many times the beat
+ * repeats.  Either may be left out and defaults to 1, so "6 4 4" is one bar of three beats with
+ * lengths 6, 4 and 4, and "4:2" is two beats of length 4.
  *
  * @param barStr The bar string to parse
  * @returns A new Bar object
+ * @throws Error naming the beat when a beat is not in one of these forms
  */
 export function parseBar(barStr: string): Bar {
-  const bars = barStr.replace(/\s+/g, " ").split(" ");
+  const beats = barStr.trim().split(/\s+/);
   const cp = new Bar();
-  if (bars.length == 1) {
-    for (let i = 0; i < barStr.length; i++) {
-      let count = 0;
-      const ch = barStr[i];
-      if (ch == ",") {
-        count = 1;
-      } else {
-        const num = parseInt(ch);
-        if (num) {
-          count = num;
-        }
-      }
-      while (count > 0) {
+  if (beats.length == 1 && /^[\d,]*$/.test(beats[0])) {
+    for (const run of beats[0].match(/\d+|,/g) ?? []) {
+      const count = run == "," ? 1 : parseInt(run);
+      for (let i = 0; i < count; i++) {
         cp.beatLengths.push(ONE);
-        count--;
-      }
-    }
-  } else {
-    for (let i = 0; i < bars.length; i++) {
-      const comps = bars[i].split(":");
-      const length = comps[0];
-      const count = comps[1] || "";
-      if (length.length == 0) {
-        cp.beatLengths.push(TSU.Num.Frac(1));
-      } else if (/^,+$/.test(length)) {
-        cp.beatLengths.push(TSU.Num.Frac(length.length));
-      } else {
-        // parse length as a number or as a fraction
-        cp.beatLengths.push(TSU.Num.Fraction.parse(length));
-      }
-
-      // Now the count
-      const beatCount = parseInt(count);
-      if (isNaN(beatCount)) {
         cp.beatCounts.push(1);
-      } else {
-        cp.beatCounts.push(beatCount);
       }
     }
+    return cp;
+  }
+  for (const beat of beats) {
+    if (!/^(\d+(\/\d+)?,*|,+)?(:\d*)?$/.test(beat)) {
+      throw new Error(`Invalid beat "${beat}" in bar "${barStr}"`);
+    }
+    const [length, count = ""] = beat.split(":");
+    if (length.length == 0) {
+      cp.beatLengths.push(ONE);
+    } else if (/^,+$/.test(length)) {
+      cp.beatLengths.push(TSU.Num.Frac(length.length));
+    } else {
+      cp.beatLengths.push(TSU.Num.Fraction.parse(length.replace(/,+$/, "")));
+    }
+    const beatCount = parseInt(count);
+    cp.beatCounts.push(isNaN(beatCount) ? 1 : beatCount);
   }
   return cp;
 }

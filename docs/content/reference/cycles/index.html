@@ -13,6 +13,33 @@ description: "Complete reference for talas and rhythmic cycles"
 
 <p>For example, Adi tala is <code>"|4|2|2|"</code> meaning 4 beats in the first bar, 2 in the second, and 2 in the third, totaling 8 beats per cycle.</p>
 
+<h3>Writing a bar</h3>
+
+<p>The <code>|</code> character separates bars. What goes between two bars takes one of two forms.</p>
+
+<p>A bar without spaces counts beats of one unit each. A number adds that many beats, and each comma adds one more.</p>
+
+<table>
+  <thead>
+    <tr><th>Cycle</th><th>Bars</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>"|4|2|2|"</code></td><td>4, 2 and 2 beats</td></tr>
+    <tr><td><code>"|10|4|"</code></td><td>10 and 4 beats</td></tr>
+    <tr><td><code>"|,,,,|,,|"</code></td><td>4 and 2 beats</td></tr>
+  </tbody>
+</table>
+
+<p>A bar with spaces lists its beats one by one, and each beat can have its own length. A beat is written <code>length</code> or <code>length:count</code>, where count repeats the beat. So <code>"|6 4 4|"</code> is one bar of three beats, 6, 4 and 4 units long, and <code>"|4:2|"</code> is two beats of 4 units. The bar below has a long first beat and two short ones:</p>
+
+<notation id="uneven-beats" showSource="true" caption="One bar of beats 2, 1 and 1 units long">
+\cycle("|2 1 1|")
+\beatDuration(2)
+S R G M P D N S.
+</notation>
+
+<p>Leave out the <code>|</code> characters and the whole string is one bar. So <code>"6 4 4"</code> means one bar of three beats, not three bars.</p>
+
 <h2>Common Talas</h2>
 
 <h3>Adi Tala (4+2+2 = 8 beats)</h3>
