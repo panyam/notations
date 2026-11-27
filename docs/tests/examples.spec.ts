@@ -46,18 +46,23 @@ export function stripComments(html: string): string {
   return out;
 }
 
-/** The text of the last <h2> or <h3> before `index`, so a check can see what the example claims. */
 /**
- * The text of an HTML fragment. Entities are decoded first, so the result can't regain a `<` from
- * `&lt;`, and the last step removes every angle bracket left after the tags.
+ * The text of an HTML fragment: entities decoded, then everything from a `<` to the next `>`
+ * dropped, brackets included. A character loop rather than a regex replace, so no partial tag can
+ * survive (CodeQL js/incomplete-multi-character-sanitization).
  */
 function textOf(html: string): string {
-  return decode(html)
-    .replace(/<[^>]*>/g, "")
-    .replace(/[<>]/g, "")
-    .trim();
+  let out = "";
+  let inTag = false;
+  for (const ch of decode(html)) {
+    if (ch === "<") inTag = true;
+    else if (ch === ">") inTag = false;
+    else if (!inTag) out += ch;
+  }
+  return out.trim();
 }
 
+/** The text of the last <h2> or <h3> before `index`, so a check can see what the example claims. */
 function headingBefore(src: string, index: number): string {
   const headings = [...src.slice(0, index).matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/g)];
   return headings.length ? textOf(headings[headings.length - 1][1]) : "";
