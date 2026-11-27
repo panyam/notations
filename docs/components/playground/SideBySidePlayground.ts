@@ -8,7 +8,7 @@
  */
 
 import { DockViewPlayground, DockViewPlaygroundConfig } from "../../../src/web/dockview";
-import "dockview-core/dist/styles/dockview.css";
+import "dockview/dist/styles/dockview.css";
 
 import * as N from "../../../src";
 import { createMarkdownParser } from "../NotationViewer";
