@@ -2,7 +2,17 @@ import { parseTranscription, transcribe, TranscriptionRefusedError } from "../..
 import type { Transcription } from "../../components/photo/grid";
 
 /** A stand-in for client.beta.messages.stream that replays canned replies and records requests. */
-function fakeClient(replies: Array<{ text: string; thinking?: string; stop_reason?: string; explanation?: string }>) {
+function fakeClient(
+  replies: Array<{
+    text: string;
+    thinking?: string;
+    stop_reason?: string;
+    explanation?: string;
+    /** The model that served the reply, as after a server-side fallback. */
+    model?: string;
+    cacheWrite?: number;
+  }>,
+) {
   const requests: any[] = [];
   let i = 0;
   const client: any = {
@@ -27,14 +37,19 @@ function fakeClient(replies: Array<{ text: string; thinking?: string; stop_reaso
               if (r.thinking) emit("thinking", r.thinking);
               emit("text", r.text);
               return {
-                model: params.model,
+                model: r.model || params.model,
                 content: [
                   { type: "thinking", thinking: "", signature: "sig" },
                   { type: "text", text: r.text },
                 ],
                 stop_reason: r.stop_reason || "end_turn",
                 stop_details: r.explanation ? { type: "refusal", explanation: r.explanation } : null,
-                usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 80 },
+                usage: {
+                  input_tokens: 100,
+                  output_tokens: 50,
+                  cache_read_input_tokens: 80,
+                  cache_creation_input_tokens: r.cacheWrite || 0,
+                },
               };
             },
           };
@@ -223,6 +238,46 @@ describe("transcribe progress", () => {
     const phases = progress.filter((p) => p.kind === "streaming").map((p) => p.phase);
     expect(phases).toEqual(["thinking", "writing"]);
     const last = progress[progress.length - 1];
-    expect(last).toEqual({ kind: "finished", attempt: 0, outputTokens: 50, stopReason: "end_turn" });
+    expect(last).toEqual({
+      kind: "finished",
+      attempt: 0,
+      model: "claude-opus-5-5",
+      outputTokens: 50,
+      stopReason: "end_turn",
+      costUsd: ONE_OPUS_ROUND,
+    });
+  });
+});
+
+// Each fake reply: 100 uncached input, 80 cache read, 50 output tokens.
+const ONE_OPUS_ROUND = (100 * 4 + 80 * 0.2 + 50 * 20) / 1e6;
+const ONE_SONNET_ROUND = (100 * 2 + 80 * 0.1 + 50 * 10) / 1e6;
+
+describe("transcribe cost", () => {
+  test("sums the estimate over repair rounds", async () => {
+    const { client } = fakeClient([{ text: SHORT_BEAT }, { text: GOOD }]);
+    const r = await transcribe(client, { images: IMG });
+    expect(r.attempts).toHaveLength(2);
+    expect(r.costUsd).toBeCloseTo(2 * ONE_OPUS_ROUND, 9);
+  });
+
+  test("prices a fallback round at the rates of the model that served it", async () => {
+    const { client } = fakeClient([{ text: SHORT_BEAT }, { text: GOOD, model: "claude-sonnet-5-5" }]);
+    const r = await transcribe(client, { images: IMG });
+    expect(r.model).toBe("claude-sonnet-5-5");
+    expect(r.costUsd).toBeCloseTo(ONE_OPUS_ROUND + ONE_SONNET_ROUND, 9);
+  });
+
+  test("counts cache writes in the usage and the cost", async () => {
+    const { client } = fakeClient([{ text: GOOD, cacheWrite: 1000 }]);
+    const r = await transcribe(client, { images: IMG });
+    expect(r.usage.cacheWriteTokens).toBe(1000);
+    expect(r.costUsd).toBeCloseTo(ONE_OPUS_ROUND + (1000 * 5) / 1e6, 9);
+  });
+
+  test("has no estimate when a round ran on a model without rates", async () => {
+    const { client } = fakeClient([{ text: SHORT_BEAT }, { text: GOOD, model: "claude-unpriced" }]);
+    const r = await transcribe(client, { images: IMG });
+    expect(r.costUsd).toBeNull();
   });
 });

@@ -657,6 +657,30 @@ pre code {
     padding: 0.5rem 0;
 }
 
+/* Parse errors, shown in place of the rendered notation. */
+.notation-error {
+    margin: 0.5rem 0;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #e53e3e;
+    border-left-width: 4px;
+    border-radius: 4px;
+    background-color: rgba(229, 62, 62, 0.08);
+    color: inherit;
+    font-size: 0.9rem;
+}
+
+.notation-error ul {
+    margin: 0.3rem 0 0;
+    padding-left: 1.2rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* While a render is pending. */
+.notation-view[aria-busy="true"] {
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
 .notation-apply-btn {
     background-color: #48bb78;
     color: white;

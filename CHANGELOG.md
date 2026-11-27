@@ -33,6 +33,23 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   `pnpm run transcribe:photos` runs the same pipeline on image or PDF files
   from the command line, with `--only` and `--append`. Docs site only; the published package is
   unchanged.
+- Photo Transcribe shows an estimated cost for each reply and for the whole run, on the page
+  and in the CLI's report. Each round is priced at the rates of the model that served it.
+- `NotationBlock`: parse errors show in the output, in a `.notation-error` box with
+  `role="alert"`, instead of only in the console. In edit mode, Ctrl+Enter (Cmd+Enter on a
+  Mac) applies and Escape cancels.
+
+### Changed
+
+- `NotationBlock.updatePreview()` and `applyEdit()` return a Promise. The output carries
+  `aria-busy="true"` while a render is pending, and `block.rendering` is the latest render.
+- `NotationBlock` no longer logs to the console on every render.
+
+### Fixed
+
+- `NotationBlock` built its markup from strings, so a notation source, `id` or `caption`
+  containing HTML was parsed as HTML. It now builds the DOM directly and inserts those values
+  as text (#30).
 
 ## [1.1.0] - 2026-09-21
 
