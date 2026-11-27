@@ -9,7 +9,7 @@ A docs-site demo (`/demos/playgrounds/photo-transcribe/`) and a CLI that turn ph
 Carnatic notation (printed books, handwritten notebooks) into Notations DSL using Claude.
 
 It has run against the real API on the Kedaram rows of the Valachi Vachi notebook. Every swara
-went in the right beat, in about 50 s and $0.12 per run. Fixes from those runs are in #42. The
+went in the right beat, in about 50 s and $0.10 to $0.13 per run. Fixes from those runs are in #42. The
 unit tests use a mocked API.
 
 ## Files

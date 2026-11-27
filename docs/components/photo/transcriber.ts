@@ -18,6 +18,7 @@
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { SYSTEM_PROMPT, buildRepairPrompt, buildUserPrompt, KnownFacts, SnippetRequest } from "./prompt";
+import { estimateCost, TokenUsage } from "./pricing";
 import { checkNotation, NotationCheck } from "./notationChecks";
 import { GridReport, parseCycle, toNotation, Transcription, TRANSCRIPTION_SCHEMA, validateTranscription } from "./grid";
 
@@ -65,7 +66,16 @@ export interface TranscribeOptions {
 export type StreamProgress =
   | { kind: "started"; attempt: number; inputTokens: number; cacheReadTokens: number }
   | { kind: "streaming"; attempt: number; phase: "thinking" | "writing"; estimatedOutputTokens: number }
-  | { kind: "finished"; attempt: number; outputTokens: number; stopReason: string | null };
+  | {
+      kind: "finished";
+      attempt: number;
+      /** The model that served this round, which a server-side fallback can change. */
+      model: string;
+      outputTokens: number;
+      stopReason: string | null;
+      /** Estimated US dollars for this round, or null when `model` has no rates. */
+      costUsd: number | null;
+    };
 
 /** Rough characters per token, for the mid-stream estimate only. */
 const CHARS_PER_TOKEN = 4;
@@ -85,8 +95,15 @@ export interface TranscribeResult {
   /** The parser's verdict on the generated DSL. */
   check: NotationCheck;
   attempts: TranscribeAttempt[];
+  /** The model that served the last round. */
   model: string;
-  usage: { inputTokens: number; outputTokens: number; cacheReadTokens: number };
+  /** Tokens summed over every round. */
+  usage: TokenUsage;
+  /**
+   * Estimated US dollars summed over every round, each priced at the rates of the model that
+   * served it. Null when any round ran on a model without rates.
+   */
+  costUsd: number | null;
 }
 
 /** The model declined to transcribe the image. */
@@ -158,7 +175,8 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
   const messages: BetaMessageParam[] = [{ role: "user", content: firstTurn }];
 
   const attempts: TranscribeAttempt[] = [];
-  const usage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
+  const usage: TokenUsage = { inputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0, outputTokens: 0 };
+  let costUsd: number | null = 0;
   let servedBy = model;
 
   for (let attempt = 0; attempt <= maxRepairs; attempt++) {
@@ -213,16 +231,27 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
       }
     });
     const message = await stream.finalMessage();
+    const round: TokenUsage = {
+      inputTokens: message.usage.input_tokens,
+      cacheWriteTokens: message.usage.cache_creation_input_tokens || 0,
+      cacheReadTokens: message.usage.cache_read_input_tokens || 0,
+      outputTokens: message.usage.output_tokens,
+    };
+    const roundCost = estimateCost(message.model, round);
     opts.onProgress?.({
       kind: "finished",
       attempt,
-      outputTokens: message.usage.output_tokens,
+      model: message.model,
+      outputTokens: round.outputTokens,
       stopReason: message.stop_reason,
+      costUsd: roundCost,
     });
 
-    usage.inputTokens += message.usage.input_tokens;
-    usage.outputTokens += message.usage.output_tokens;
-    usage.cacheReadTokens += message.usage.cache_read_input_tokens || 0;
+    usage.inputTokens += round.inputTokens;
+    usage.cacheWriteTokens += round.cacheWriteTokens;
+    usage.cacheReadTokens += round.cacheReadTokens;
+    usage.outputTokens += round.outputTokens;
+    costUsd = costUsd === null || roundCost === null ? null : costUsd + roundCost;
     servedBy = message.model;
 
     if (message.stop_reason === "refusal") {
@@ -271,5 +300,6 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
     attempts,
     model: servedBy,
     usage,
+    costUsd,
   };
 }

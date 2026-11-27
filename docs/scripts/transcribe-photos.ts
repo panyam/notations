@@ -20,6 +20,7 @@ import * as os from "os";
 import * as path from "path";
 import { mergeNotation, parseCycle } from "../components/photo/grid";
 import type { KnownFacts } from "../components/photo/prompt";
+import { formatCost } from "../components/photo/pricing";
 import { transcribe, TranscribeImage } from "../components/photo/transcriber";
 
 const USAGE = `usage: transcribe-photos.ts FILE... [options]
@@ -136,7 +137,9 @@ async function main(): Promise<number> {
       if (p.kind === "started") {
         process.stderr.write(`  request: ${p.inputTokens} input tokens (${p.cacheReadTokens} from cache)\n`);
       } else if (p.kind === "finished") {
-        process.stderr.write(`\n  reply: ${p.outputTokens} output tokens, stop: ${p.stopReason}\n`);
+        process.stderr.write(
+          `\n  reply: ${p.outputTokens} output tokens, estimated ${formatCost(p.costUsd)}, stop: ${p.stopReason}\n`,
+        );
       }
     },
   });
@@ -148,7 +151,8 @@ async function main(): Promise<number> {
     `model: ${result.model}`,
     `rounds: ${result.attempts.length} (errors per round: ${result.attempts.map((a) => a.report.errors.length).join(", ")})`,
     `time: ${((Date.now() - started) / 1000).toFixed(0)} s`,
-    `tokens: ${result.usage.inputTokens} in (${result.usage.cacheReadTokens} cached), ${result.usage.outputTokens} out`,
+    `tokens: ${result.usage.inputTokens} in (${result.usage.cacheReadTokens} cached, ${result.usage.cacheWriteTokens} written to cache), ${result.usage.outputTokens} out`,
+    `estimated cost: ${formatCost(result.costUsd)} (the Anthropic Console has the actual bill)`,
     `timing: ${result.transcription.timing}`,
     `filled-in units: ${result.report.inferredSlots}`,
     "",
