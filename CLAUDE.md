@@ -36,6 +36,8 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - After a pull, if the hook's typedoc step fails with "linkify-it does not provide an export
   named 'default'", delete `node_modules` and run `pnpm install --frozen-lockfile` again.
 - CI pins every action by commit SHA and runs `pnpm audit --prod`.
+- Typedoc stays on minimatch 10 through a `typedoc>minimatch` override, so Dependabot alert 127
+  is dismissed as tolerable. Recheck the override whenever typedoc is bumped.
 
 ## TypeScript and tests
 
@@ -73,6 +75,8 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - White header, footer and hero text sits on `--header-bg` and `--footer-bg`. Don't put it on
   `--primary-color`, which is light blue in dark mode (#65).
 - The docs webpack config has no Node polyfills (`buffer: false`).
+- Restart `make run` after `pnpm run build:docs`. The running server keeps the old
+  `gen.*.html` templates, and the page then 404s on the old bundle.
 - Run Prettier on files by path. Running it over all of `docs/components` reformats unrelated
   files.
 
