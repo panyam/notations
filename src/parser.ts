@@ -303,7 +303,6 @@ import {
   RoleBlock,
   GroupBlock,
 } from "./block";
-import { parseCycle } from "./utils";
 
 /**
  * Wrapper for a command that has a block of child commands.
@@ -334,8 +333,7 @@ export class BlockCommand extends Command {
     } else if (cmd instanceof Repeat) {
       return new RepeatBlock(cmd.count, parent);
     } else if (cmd instanceof SetCycle) {
-      const cycle = parseCycle(cmd.getParamAt(0));
-      return new CycleBlock(cycle, parent);
+      return new CycleBlock(cmd.cycle, parent);
     } else if (cmd instanceof SetBeatDuration) {
       return new BeatDurationBlock(cmd.beatDuration, parent);
     } else if (cmd instanceof SetBreaks) {
@@ -588,13 +586,24 @@ export class Parser {
   /**
    * Builds the command a `\\name(...)` directive names.
    *
-   * Returns null for a name with no command behind it, after recording a ParseError on this
-   * parser, rather than throwing. Rule handlers run inside galore's parse loop, so a throw
-   * escapes `parse` and `load` entirely and reaches the caller as an exception while every other
-   * parse failure arrives in the errors array. Callers get one failure shape by being handed a
-   * null here and reading `errors`.
+   * Returns null, after recording a ParseError on this parser, for a name with no command behind
+   * it and for params the command rejects.  The error for bad params names the command, as in
+   * `\\cycle: Invalid beat "4x" in bar "4x"`.  Rule handlers run inside galore's parse loop, so a
+   * throw would escape `parse` and `load` as an exception while every other parse failure arrives
+   * in the errors array.  Callers get one failure shape by being handed a null here and reading
+   * `errors`.
    */
   createCommand(name: string, params: CmdParam[]): Command | null {
+    try {
+      return this.buildCommand(name, params);
+    } catch (e: any) {
+      const lName = name.trim().toLowerCase();
+      this.errors.push(new G.ParseError(`\\${name.trim()}: ${e?.message ?? e}`, "InvalidCommandParams", lName));
+      return null;
+    }
+  }
+
+  private buildCommand(name: string, params: CmdParam[]): Command | null {
     const lName = name.trim().toLowerCase();
     params = params || [];
     if (lName == "line") {
@@ -662,8 +671,15 @@ export class Parser {
 
     // First add the metadata then we can set it
     for (const key in this.metadata) notation.addMetaData(new Meta(key, this.metadata[key]));
-    for (const cmd of this.frontMatterCommands(errors)) cmd.applyToNotation(notation);
-    for (const cmd of this.commands) cmd.applyToNotation(notation);
+    // Commands validate their params when built, so applying one should not throw.  If one
+    // does, report it like any other error so load() still returns.
+    for (const cmd of [...this.frontMatterCommands(errors), ...this.commands]) {
+      try {
+        cmd.applyToNotation(notation);
+      } catch (e: any) {
+        errors.push(new G.ParseError(`${cmd.name}: ${e?.message ?? e}`, "CommandFailed", cmd.name));
+      }
+    }
     return [notation, errors];
   }
 
@@ -686,7 +702,7 @@ export class Parser {
       const params: CmdParam[] = values.map((value: any) => ({ key: null, value }));
       try {
         // The command's constructor validates the params and throws on a bad value.
-        const cmd = this.createCommand(name, params);
+        const cmd = this.buildCommand(name, params);
         if (cmd) commands.push(cmd);
       } catch (e: any) {
         errors.push(new Error(`front matter ${key}: ${e?.message ?? e}`) as unknown as G.ParseError);
