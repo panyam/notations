@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Atom } from "./core";
+import { Cycle } from "./cycle";
 import { parseCycle } from "./utils";
 import { Command, RawBlock, Notation, MetaData as Meta, BlockItem, Block } from "./notation";
 
@@ -185,6 +186,16 @@ export class CreateLine extends Command {
  */
 export class CreateRole extends Command {
   /**
+   * @throws Error if the first param isn't a non-empty role name
+   */
+  validateParams(): void {
+    const name = this.params[0]?.value;
+    if (typeof name !== "string" || name.trim().length == 0) {
+      throw new Error("role command must start with a role name");
+    }
+  }
+
+  /**
    * Applies this command to a block.
    * Creates a role definition local to the container.
    */
@@ -329,14 +340,30 @@ export class SetBreaks extends LayoutParamCommand {
  */
 export class SetCycle extends LayoutParamCommand {
   /**
+   * Parses the cycle string up front, so a bad one fails when the command is built.
+   * @throws Error if there isn't exactly one string param, or parseCycle rejects it
+   */
+  validateParams(): void {
+    if (this.params.length != 1 || typeof this.params[0].value !== "string") {
+      throw new Error("cycle command must contain one string");
+    }
+    parseCycle(this.params[0].value);
+  }
+
+  /**
+   * The cycle this command sets.  Each call parses the string again and returns a new Cycle,
+   * so containers never share one.
+   */
+  get cycle(): Cycle {
+    return parseCycle(this.params[0].value);
+  }
+
+  /**
    * Applies this command to a block.
    * Sets the local cycle on the container.
    */
   applyToBlock(container: Block): void {
-    const value = this.params[0].value;
-    // TODO - move the parsing to validation
-    const cycle = parseCycle(value);
-    container.localCycle = cycle;
+    container.localCycle = this.cycle;
     if (container instanceof Notation) {
       container.resetLayoutParams();
     }

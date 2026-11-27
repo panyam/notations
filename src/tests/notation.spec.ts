@@ -148,35 +148,39 @@ describe("Testing Applying Commands after Parsing", () => {
     });
   });
 
+  // A bad param is a ParseError naming the command, not an exception (#69).
+  const expectParamError = (input: string, message: string) => {
+    const parser = new Parser();
+    parser.parse(input);
+    expect(parser.errors).toHaveLength(1);
+    expect(parser.errors[0].message).toContain(message);
+  };
+
   test("Test param validation", () => {
-    expect(() =>
-      testV4(
-        String.raw`
+    expectParamError(
+      String.raw`
         \beatDuration("hello")
         `,
-      ),
-    ).toThrow("beatDuration command must contain one number");
-    expect(() =>
-      testV4(
-        String.raw`
+      "beatDuration command must contain one number",
+    );
+    expectParamError(
+      String.raw`
         \breaks(1, "b")
         `,
-      ),
-    ).toThrow("Breaks command must be a list of integers");
-    expect(() =>
-      testV4(
-        String.raw`
+      "Breaks command must be a list of integers",
+    );
+    expectParamError(
+      String.raw`
         \breaks(a = 1)
         `,
-      ),
-    ).toThrow("Breaks command cannot have keyword params");
-    expect(() =>
-      testV4(
-        String.raw`
+      "Breaks command cannot have keyword params",
+    );
+    expectParamError(
+      String.raw`
         \layout(3)
         `,
-      ),
-    ).toThrow("layout command must contain one string argument");
+      "layout command must contain one string argument",
+    );
   });
 
   test("Test default currRole", () => {
