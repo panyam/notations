@@ -90,19 +90,30 @@ describe("Utils Tests", () => {
     let atom = parseSyllable("SNDP") as Atom;
     expect(atom.equals(new Syllable("SNDP"))).toBe(true);
 
+    // An underscore inside a word belongs to the word, as in the DSL (S_N_D is one literal).
     atom = parseSyllable("S_N_D,P");
+    expect(atom.equals(new Group(new Syllable("S_N_D"), new Space(ONE, false), new Syllable("P")))).toBe(true);
+  });
+
+  test("a lone underscore is one beat of silence, as in the DSL", () => {
+    expect(parseSyllable("_").equals(new Space(ONE, true))).toBe(true);
+    const atom = parseSyllable("S,_,N");
     expect(
       atom.equals(
         new Group(
           new Syllable("S"),
-          new Space(ONE, true),
-          new Syllable("N"),
-          new Space(ONE, true),
-          new Syllable("D"),
           new Space(ONE, false),
-          new Syllable("P"),
+          new Space(ONE, true),
+          new Space(ONE, false),
+          new Syllable("N"),
         ),
       ),
     ).toBe(true);
+  });
+
+  test("underscores next to each other or to letters stay text", () => {
+    expect(parseSyllable("___").equals(new Syllable("___"))).toBe(true);
+    expect(parseSyllable("Sa_").equals(new Syllable("Sa_"))).toBe(true);
+    expect(parseSyllable("_ri").equals(new Syllable("_ri"))).toBe(true);
   });
 });
