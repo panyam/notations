@@ -215,6 +215,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0(supports-color@8.1.1))
+      '@panyam/tsappkit-dock':
+        specifier: 0.7.40
+        version: 0.7.40(dockview-core@8.9.1)
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
@@ -242,9 +245,12 @@ importers:
       css-loader:
         specifier: ^7.1.5
         version: 7.1.5(webpack@5.113.0)
+      dockview:
+        specifier: 8.9.1
+        version: 8.9.1
       dockview-core:
-        specifier: ^4.13.1
-        version: 4.13.1
+        specifier: 8.9.1
+        version: 8.9.1
       eslint:
         specifier: ^10.15.0
         version: 10.15.0(supports-color@8.1.1)
@@ -1088,6 +1094,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@panyam/tsappkit-dock@0.7.40':
+    resolution: {integrity: sha512-RtyuU+xerS049NC06y9DYdQeHeOpG1X0gSgiYxHonLg7xolNWLwby2/dp+nKtB6uGSukuLZ5xB42BPJfgrgYHg==}
+    peerDependencies:
+      dockview-core: '>=4.13.0 <9.0.0'
+
   '@panyam/tsutils@1.0.0':
     resolution: {integrity: sha512-Be5+95He4toostuwjv43Qh2+YAMaPhCXq4ANGqgf15IWtBOquxjPHaRi3Xw2b8x5RV5DU4LDFYVFjNa7TlcPbQ==}
 
@@ -1848,8 +1859,11 @@ packages:
     resolution: {integrity: sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==}
     engines: {node: '>=8'}
 
-  dockview-core@4.13.1:
-    resolution: {integrity: sha512-+7vR0ZEoL8CNck6NqDVUMqBT22niwBu5CMMI137dZ3c8NDc7c5Si+3dGEqQgM4lNtHBLAtvypo1C4p21J2wkiQ==}
+  dockview-core@8.9.1:
+    resolution: {integrity: sha512-OzqB63P65qeSquFoyYjQi5yT85ERcmceaJ0+YdQL68IZJmBd5kAfe4UD9bl3xILuXJ1tlXIoExdZ+vLpv30u1g==}
+
+  dockview@8.9.1:
+    resolution: {integrity: sha512-y35BxYANBtHJ4q7AIkd2c1Oh2pPx3dsaMhm6s4YvMXyIWlklxHRZupXtN6bS8QuJ/hmy/5ih/Ow2oARbEx4Yog==}
 
   dom-converter@0.2.0:
     resolution: {integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==}
@@ -4331,6 +4345,10 @@ snapshots:
   '@pagefind/windows-x64@1.6.0':
     optional: true
 
+  '@panyam/tsappkit-dock@0.7.40(dockview-core@8.9.1)':
+    dependencies:
+      dockview-core: 8.9.1
+
   '@panyam/tsutils@1.0.0': {}
 
   '@parcel/watcher-android-arm64@2.6.0':
@@ -5120,7 +5138,11 @@ snapshots:
 
   detect-newline@3.1.0: {}
 
-  dockview-core@4.13.1: {}
+  dockview-core@8.9.1: {}
+
+  dockview@8.9.1:
+    dependencies:
+      dockview-core: 8.9.1
 
   dom-converter@0.2.0:
     dependencies:
