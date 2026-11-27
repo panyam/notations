@@ -63,6 +63,8 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
 
     %token  FRONT_MATTER                 /^---$/m    { toFrontMatter }
     %token  SINGLE_LINE_RAW_STRING       />(.*)$/m    { toSingleLineRawString }
+    %token  OLD_PRE_MARKER  /"([^"\\\n]|\\.)*">>/  { toOldMarker }
+    %token  OLD_POST_MARKER /<<"([^"\\\n]|\\.)*"/  { toOldMarker }
     %token  MULTI_LINE_RAW_STRING        /r(#{0,})"/  { toMultiLineRawString }
 
     %token  EMBELISHMENT  /~[^\s]*/                 { toEmbelishment }
@@ -220,10 +222,42 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
         token.value = token.value.substring(1);
         return token;
       },
-      toSingleLineRawString: (token: TLEX.Token, _tape: TLEX.TapeInterface, _owner: any) => {
-        // skip the initial ">"
+      // A ">" starts an embed only when nothing but whitespace precedes it on its line.  Anywhere
+      // else it would swallow the rest of the line, so report it and resume just after the ">".
+      toSingleLineRawString: (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => {
+        const lineStart = tape.substring(0, token.start).lastIndexOf("\n") + 1;
+        if (tape.substring(lineStart, token.start).trim().length > 0) {
+          owner.errors.push(
+            new TLEX.TokenizerError(
+              'Unexpected ">": an embed must start its own line',
+              token.start,
+              1,
+              "MidLineEmbed",
+              ">",
+            ),
+          );
+          tape.index = token.start + 1;
+          return null;
+        }
         token.value = token.value.substring(1);
         return token;
+      },
+      // The "x">> and <<"x" markers were removed in favour of \@label (#59).  Report them by name
+      // and drop the token, so the notes around them still parse.
+      toOldMarker: (token: TLEX.Token, _tape: TLEX.TapeInterface, owner: any) => {
+        const post = token.value.startsWith("<<");
+        const text = post ? token.value.substring(2) : token.value.substring(0, token.value.length - 2);
+        const replacement = post ? `\\@label(${text}, position="after")` : `\\@label(${text})`;
+        owner.errors.push(
+          new TLEX.TokenizerError(
+            `Old marker syntax ${token.value}: write ${replacement}`,
+            token.start,
+            1 + token.end - token.start,
+            "OldMarkerSyntax",
+            token.value,
+          ),
+        );
+        return null;
       },
       toMultiLineRawString: (token: TLEX.Token, tape: TLEX.TapeInterface, _owner: any) => {
         // consume everything until "#<N times> as start
