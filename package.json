@@ -63,8 +63,7 @@
     "@lume/kiwi": "^0.4.4",
     "@panyam/tsutils": "^1.0.0",
     "galore": "^1.0.7",
-    "tlex": "^1.2.0",
-    "yaml": "^2.9.1"
+    "tlex": "^1.2.0"
   },
   "peerDependencies": {
     "@panyam/tsappkit-dock": "^0.7.44",
@@ -106,6 +105,7 @@
     "markdown-it": "^15.0.3",
     "pagefind": "^1.6.0",
     "pdfjs-dist": "^6.5.438",
+    "playwright": "^1.65.1",
     "pre-commit": "^2.0.0",
     "prettier": "^3.10.1",
     "sass": "^1.108.2",
@@ -120,7 +120,8 @@
     "typescript-eslint": "^8.74.0",
     "webpack": "^5.113.0",
     "webpack-bundle-analyzer": "^5.4.3",
-    "webpack-cli": "^7.3.1"
+    "webpack-cli": "^7.3.1",
+    "yaml": "^2.9.1"
   },
   "pre-commit": [
     "precommit-msg",
@@ -152,7 +153,8 @@
     "preversion": "npm run build && npm run lintfix",
     "version": "git add -A src",
     "postversion": "git push && git push --tags",
-    "transcribe:photos": "tsx docs/scripts/transcribe-photos.ts"
+    "transcribe:photos": "tsx docs/scripts/transcribe-photos.ts",
+    "exercise:48": "node docs/scripts/exercise-48.mjs"
   },
   "directories": {
     "lib": "lib"

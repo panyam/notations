@@ -38,6 +38,10 @@ Sw: s , r m p , d p m p d p</code></pre>
   <li>For a part of the song with a different tala or speed, wrap it in a block:
     <code>\section("Charanam") { \beatDuration(4) ... }</code>. The change ends with the block.</li>
   <li>A value the command would reject shows as a parse error naming the key.</li>
+  <li>Front matter is one <code>key: value</code> per line. A value is a quoted or plain string,
+    a number, <code>true</code>, <code>false</code>, <code>null</code>, or a list on one line such
+    as <code>[8, 8]</code>. Nested values, <code>- item</code> lists and multi-line strings show as
+    a parse error naming the line.</li>
 </ul>
 
 <h2>\beatDuration Command</h2>
