@@ -405,6 +405,10 @@ export default class DockViewPlayground {
   private buildConsoleOutput(): HTMLElement {
     const out = document.createElement("div");
     out.className = "dvp-console-output";
+    // Focusable so a keyboard can scroll it; a log, so screen readers announce new lines.
+    out.setAttribute("tabindex", "0");
+    out.setAttribute("role", "log");
+    out.setAttribute("aria-label", "Console");
     out.style.cssText = `flex: 1; overflow: auto; padding: 0.5rem; font-family: ${MONO}; font-size: 0.75rem;`;
     return out;
   }

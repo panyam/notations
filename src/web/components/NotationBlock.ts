@@ -90,6 +90,7 @@ export default class NotationBlock {
     this.errorElement.setAttribute("role", "alert");
     this.viewElement = el("div", "notation-view " + (classes.outputContainer || ""));
     this.viewElement.id = `notationViewer_${this.id}`;
+    this.makeScrollable(this.viewElement, "Rendered notation");
     output.append(label, this.viewElement);
 
     const parent = container.parentNode as HTMLElement;
@@ -203,6 +204,16 @@ export default class NotationBlock {
     this.exitEditMode();
   }
 
+  /**
+   * Lets a keyboard reach a box that scrolls sideways on a narrow screen (WCAG 2.1.1), and names
+   * it for screen readers after the block's caption.
+   */
+  private makeScrollable(box: HTMLElement, what: string): void {
+    box.setAttribute("tabindex", "0");
+    box.setAttribute("role", "group"); // aria-label isn't allowed on an element with no role
+    box.setAttribute("aria-label", this.caption ? `${what}: ${this.caption}` : what);
+  }
+
   private buildSourceSection(): HTMLElement {
     const classes = this.config.cssClasses || {};
     const figure = el("figure", "notation-source-block " + (classes.sourceContainer || ""));
@@ -221,6 +232,7 @@ export default class NotationBlock {
     const sourceBox = el("div", "notation-source");
     sourceBox.id = `notationSource_${this.id}`;
     this.sourcePre = el("pre", "notation-source-pre");
+    this.makeScrollable(this.sourcePre, "Notation source");
     this.sourceCodeElement = el("code", classes.sourceCode || "");
     this.sourceCodeElement.id = `sourceCode_${this.id}`;
     this.sourcePre.appendChild(this.sourceCodeElement);
