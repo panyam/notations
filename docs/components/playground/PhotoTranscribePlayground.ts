@@ -19,6 +19,7 @@ import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
 import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
 import { isPdf, PDF_PAGE_WARN, pdfToImages } from "../photo/pdfPages";
+import { formatCost } from "../photo/pricing";
 import {
   DEFAULT_MODEL,
   StreamProgress,
@@ -536,9 +537,11 @@ export class PhotoTranscribePlayground {
       this.rawDetails.open = false;
       this.showReport(result);
       const u = result.usage;
+      const inputTotal = u.inputTokens + u.cacheWriteTokens + u.cacheReadTokens;
       this.playground.log(
-        `Done in ${result.attempts.length} round(s) on ${result.model}: ${u.inputTokens} input tokens ` +
-          `(${u.cacheReadTokens} from cache), ${u.outputTokens} output tokens.`,
+        `Done in ${result.attempts.length} round(s) on ${result.model}: ` +
+          `${inputTotal.toLocaleString()} input tokens (${u.cacheReadTokens.toLocaleString()} from cache), ` +
+          `${u.outputTokens.toLocaleString()} output tokens, estimated cost ${formatCost(result.costUsd)}.`,
         "info",
       );
       const gridErrors = result.report.errors.length;
@@ -573,7 +576,8 @@ export class PhotoTranscribePlayground {
     } else if (p.kind === "finished") {
       thinking.flush();
       this.playground.log(
-        `Reply${round}: ${p.outputTokens.toLocaleString()} output tokens (thinking included), stop: ${p.stopReason}.`,
+        `Reply${round}: ${p.outputTokens.toLocaleString()} output tokens (thinking included), ` +
+          `estimated cost ${formatCost(p.costUsd)}, stop: ${p.stopReason}.`,
         "info",
       );
     } else {
@@ -642,6 +646,10 @@ export class PhotoTranscribePlayground {
         `<p class="pt-muted">Took ${result.attempts.length} rounds: lines that did not add up were sent back for correction.</p>`,
       );
     }
+    parts.push(
+      `<p class="pt-muted">Estimated cost: ${escapeHtml(formatCost(result.costUsd))}. ` +
+        `Your Anthropic Console has the actual bill.</p>`,
+    );
     this.reportEl.innerHTML = parts.join("");
   }
 
