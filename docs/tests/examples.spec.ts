@@ -47,9 +47,15 @@ export function stripComments(html: string): string {
 }
 
 /** The text of the last <h2> or <h3> before `index`, so a check can see what the example claims. */
-/** The text of an HTML fragment: tags removed, then any stray angle brackets, then entities decoded. */
+/**
+ * The text of an HTML fragment. Entities are decoded first, so the result can't regain a `<` from
+ * `&lt;`, and the last step removes every angle bracket left after the tags.
+ */
 function textOf(html: string): string {
-  return decode(html.replace(/<[^>]*>/g, "").replace(/[<>]/g, "")).trim();
+  return decode(html)
+    .replace(/<[^>]*>/g, "")
+    .replace(/[<>]/g, "")
+    .trim();
 }
 
 function headingBefore(src: string, index: number): string {
