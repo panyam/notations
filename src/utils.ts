@@ -99,32 +99,24 @@ export function parseBar(barStr: string): Bar {
 }
 
 /**
- * Parses a string into a syllable atom structure.
+ * Parses a compact syllable string, such as "Sa,,ri,_,ga", into atoms.
+ *
+ * It follows the DSL's rules. A comma is one unit of a held (non-silent) space. An underscore
+ * standing alone between commas, or as the whole string, is one unit of silence. An underscore
+ * next to another underscore or to a letter is part of the syllable, so "S_N_D" and "___" are
+ * single syllables, as they are single literals in the DSL.
  *
  * @param value The string to parse
- * @returns An atom representing the syllable structure
+ * @returns The one atom for a single part, or a Group of the parts in order
  */
 export function parseSyllable(value: string): Atom {
   const notes = [] as Atom[];
-  // Only "_" make a difference here
-  for (let i = 0; i < value.length;) {
-    let ch = value[i];
-    if (ch == "_") {
-      notes.push(new Space(ONE, true));
-      i++;
-    } else if (ch == ",") {
-      notes.push(new Space(ONE, false));
-      i++;
-    } else {
-      let syll = "";
-      while (i < value.length && ch != "," && ch != "_") {
-        syll += ch;
-        i++;
-        ch = value[i];
-      }
-      notes.push(new Syllable(syll));
-    }
-  }
+  const parts = value.split(",");
+  parts.forEach((part, i) => {
+    if (part === "_") notes.push(new Space(ONE, true));
+    else if (part.length > 0) notes.push(new Syllable(part));
+    if (i < parts.length - 1) notes.push(new Space(ONE, false));
+  });
   if (notes.length == 1) return notes[0];
   return new Group(...notes);
 }
