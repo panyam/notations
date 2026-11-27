@@ -20,6 +20,13 @@ export interface NotationViewConfig {
    * Optional markdown parser for RawBlock content.
    */
   markdownParser?: (contents: string) => string;
+
+  /**
+   * How margin labels (`\line(marginText = ...)`) sit in their column. The column is only as wide
+   * as its longest label. Without this, the `--notation-margin-align` CSS variable decides, and it
+   * defaults to `"right"`, which keeps every label the same distance from the first bar line.
+   */
+  marginAlign?: "left" | "center" | "right";
 }
 
 export class NotationView {
@@ -60,6 +67,9 @@ export class NotationView {
         class: "notationsContentRootTable",
       },
     }) as HTMLTableElement;
+    if (this.config?.marginAlign) {
+      this.tableElement.style.setProperty("--notation-margin-align", this.config.marginAlign);
+    }
   }
 
   renderNotation(notation: Notation, beatLayout: GlobalBeatLayout): void {

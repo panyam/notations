@@ -16,6 +16,9 @@
   /* Spacing (can be overridden) */
   --notation-line-padding: 5px;
   --notation-annotation-padding: 10px;
+
+  /* Margin labels (\line(marginText = ...)): left, center or right */
+  --notation-margin-align: right;
 }
 
 /* Dark mode */
@@ -119,7 +122,12 @@
   border: none;
 }
 
+/* The margin column is only as wide as its longest label. The table is width: 100%, and without
+   width: 1% the browser gives this column a share of the spare width too (#97). */
 .lineAnnotationCell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: var(--notation-margin-align);
   padding: 0px;
   padding-left: 10px;
   padding-right: 10px;
