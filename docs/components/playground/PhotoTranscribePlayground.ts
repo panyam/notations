@@ -25,6 +25,7 @@ import {
   entryFacts,
   fromLegacyPhotos,
   moveEntry,
+  normalizeEntry,
   onlyPart,
   whyNotReady,
 } from "../photo/entries";
@@ -51,6 +52,22 @@ const PLACEHOLDER_SOURCE = `// Your transcription will appear here.
 // Add a page on the left, add a transcription, pick its region and press Transcribe.
 // You can edit the result; the preview updates as you type.
 `;
+
+/** Talams a transcription can pick, as cycles. "Other..." takes a typed cycle. */
+const TALAMS: Array<[string, string]> = [
+  ["|4|2|2|", "Adi (4+2+2)"],
+  ["|2|4|", "Rupakam (2+4)"],
+  ["|4|2|", "Rupakam (4+2)"],
+  ["|3|2|2|", "Misra Chapu (3+2+2)"],
+  ["|2|3|", "Khanda Chapu (2+3)"],
+  ["|4|2|4|4|", "Dhruva (4+2+4+4)"],
+  ["|4|2|4|", "Matya (4+2+4)"],
+  ["|7|1|2|", "Jhampa (7+1+2)"],
+  ["|5|5|2|2|", "Ata (5+5+2+2)"],
+  ["|4|", "Eka (4)"],
+];
+const KNOWN_CYCLES = new Set(TALAMS.map(([cycle]) => cycle));
+const SWARAS_PER_BEAT = [1, 2, 3, 4, 6, 8];
 
 /** One page on the page list: an image file, or one page of a PDF. */
 interface PageItem {
@@ -127,10 +144,8 @@ export class PhotoTranscribePlayground {
   private enhanceBox = $("pt-enhance") as HTMLInputElement;
   private carefulBox = $("pt-careful") as HTMLInputElement;
   private hintsInput = $("pt-hints") as HTMLTextAreaElement;
-  private ragamsInput = $("pt-ragams") as HTMLInputElement;
-  private talamSelect = $("pt-talam") as HTMLSelectElement;
-  private cycleInput = $("pt-cycle") as HTMLInputElement;
-  private npbSelect = $("pt-npb") as HTMLSelectElement;
+  /** Entries whose talam is set to "Other..." while the cycle is still being typed. Not saved. */
+  private customCycle = new Set<string>();
   private caseSelect = $("pt-case") as HTMLSelectElement;
   private cancelBtn = $("pt-cancel") as HTMLButtonElement;
   private statusEl = $("pt-status");
@@ -192,9 +207,6 @@ export class PhotoTranscribePlayground {
     });
     this.modelSelect.addEventListener("change", () => safeSet(MODEL_STORAGE, this.modelSelect.value));
     this.enhanceBox.addEventListener("change", () => this.rethumbAll());
-    this.talamSelect.addEventListener("change", () => {
-      $("pt-cycle-field").hidden = this.talamSelect.value !== "custom";
-    });
 
     const fileInputs = [$("pt-file") as HTMLInputElement, $("pt-camera") as HTMLInputElement];
     for (const input of fileInputs) {
@@ -232,6 +244,7 @@ export class PhotoTranscribePlayground {
     $("pt-add-entry").addEventListener("click", () => this.newEntry());
     this.entriesEl.addEventListener("click", (e) => this.onEntryClick(e));
     this.entriesEl.addEventListener("input", (e) => this.onEntryInput(e));
+    this.entriesEl.addEventListener("change", (e) => this.onEntryChange(e));
     this.setupCropDialog();
 
     this.cancelBtn.addEventListener("click", () => this.abort?.abort());
@@ -554,10 +567,59 @@ export class PhotoTranscribePlayground {
     const input = e.target as HTMLInputElement;
     const field = input.dataset.field;
     const id = input.closest("li")?.dataset.entry;
-    if (!id || (field !== "name" && field !== "ragams")) return;
+    if (!id || (field !== "name" && field !== "ragams" && field !== "cycle")) return;
     // Update in place without re-rendering, so the input keeps focus.
     this.entries = this.entries.map((x) => (x.id === id ? { ...x, [field]: input.value } : x));
     this.saveEntries();
+  }
+
+  /** The talam and swaras-per-beat selects. */
+  private onEntryChange(e: Event): void {
+    const select = e.target as HTMLSelectElement;
+    const id = select.closest("li")?.dataset.entry;
+    if (!id || select.tagName !== "SELECT") return;
+    if (select.dataset.field === "talam") {
+      if (select.value === "custom") this.customCycle.add(id);
+      else this.customCycle.delete(id);
+      const cycle = select.value === "custom" ? "" : select.value;
+      this.entries = this.entries.map((x) => (x.id === id ? { ...x, cycle } : x));
+    } else if (select.dataset.field === "npb") {
+      const npb = Number(select.value) || null;
+      this.entries = this.entries.map((x) => (x.id === id ? { ...x, notesPerBeat: npb } : x));
+    } else {
+      return;
+    }
+    this.saveEntries();
+    this.renderEntries();
+    if (select.value === "custom") {
+      (this.entriesEl.querySelector(`li[data-entry="${id}"] input[data-field="cycle"]`) as HTMLInputElement)?.focus();
+    }
+  }
+
+  /** The talam select, swaras-per-beat select and ragam field of one entry. */
+  private entryFactsHtml(e: Entry): string {
+    const custom = this.customCycle.has(e.id) || (e.cycle !== "" && !KNOWN_CYCLES.has(e.cycle));
+    const talamValue = custom ? "custom" : e.cycle;
+    const talamOptions = [["", "Talam: read from the page"], ...TALAMS, ["custom", "Other..."]]
+      .map(([v, label]) => `<option value="${v}" ${v === talamValue ? "selected" : ""}>${escapeHtml(label)}</option>`)
+      .join("");
+    const npbOptions = [`<option value="" ${e.notesPerBeat ? "" : "selected"}>Swaras per beat: read</option>`]
+      .concat(
+        SWARAS_PER_BEAT.map(
+          (n) => `<option value="${n}" ${n === e.notesPerBeat ? "selected" : ""}>${n} per beat</option>`,
+        ),
+      )
+      .join("");
+    return `<div class="pt-entry-facts">
+      <input class="pt-input pt-entry-ragam" data-field="ragams" value="${escapeHtml(e.ragams)}" aria-label="Ragam of this part" placeholder="Ragam, e.g. Kedaram">
+      <select class="pt-input" data-field="talam" aria-label="Talam of this part">${talamOptions}</select>
+      <select class="pt-input" data-field="npb" aria-label="Swaras per beat in this part">${npbOptions}</select>
+      ${
+        custom
+          ? `<input class="pt-input pt-entry-ragam" data-field="cycle" value="${escapeHtml(e.cycle)}" aria-label="Cycle" placeholder='Cycle, e.g. "|4|2|2|"'>`
+          : ""
+      }
+    </div>`;
   }
 
   private onEntryClick(e: Event): void {
@@ -635,9 +697,7 @@ export class PhotoTranscribePlayground {
             <button type="button" class="pt-icon-btn" data-action="down" title="Later" ${i === this.entries.length - 1 ? "disabled" : ""}>&darr;</button>
             <button type="button" class="pt-icon-btn" data-action="delete" title="Delete this transcription">&#128465;</button>
           </div>
-          <div class="pt-entry-row">
-            <input class="pt-input" data-field="ragams" value="${escapeHtml(e.ragams)}" aria-label="Ragam of this part" placeholder="Ragam, if not the song's">
-          </div>
+          ${this.entryFactsHtml(e)}
           <div class="pt-regions">${regions}
             <button type="button" class="btn btn-sm" data-action="add-region" ${this.pages.length ? "" : 'disabled title="Add a page first"'}>+ Region</button>
           </div>
@@ -694,8 +754,8 @@ export class PhotoTranscribePlayground {
     const entry = this.entries.find((e) => e.id === id);
     if (!apiKey || !entry || this.runningId) return;
     if (whyNotReady(entry, new Set(this.pages.map((p) => p.id)))) return;
-    if (this.talamSelect.value === "custom" && !parseCycle(this.cycleInput.value)) {
-      this.setStatus('Write the cycle as beats per anga, e.g. "|4|2|2|".', "error");
+    if (entry.cycle.trim() && !parseCycle(entry.cycle.trim())) {
+      this.setStatus(`"${entry.name}": write the cycle as beats per anga, e.g. "|4|2|2|".`, "error");
       return;
     }
 
@@ -733,7 +793,7 @@ export class PhotoTranscribePlayground {
         hints: this.hintsInput.value,
         model: this.modelSelect.value || DEFAULT_MODEL,
         effort: this.carefulBox.checked ? "xhigh" : "high",
-        known: entryFacts(this.knownFacts(), entry),
+        known: entryFacts(this.notebookFacts(), entry),
         snippet: { only: onlyPart(entry), context: append ? existing : undefined },
         signal: this.abort.signal,
         onStatus: (m) => {
@@ -827,15 +887,9 @@ export class PhotoTranscribePlayground {
     }
   }
 
-  private knownFacts(): KnownFacts {
-    const talam = this.talamSelect.value;
-    const cycle = talam === "custom" ? this.cycleInput.value.trim() : talam;
-    return {
-      ragams: this.ragamsInput.value.trim() || undefined,
-      cycle: cycle && parseCycle(cycle) ? cycle : undefined,
-      notesPerBeat: Number(this.npbSelect.value) || undefined,
-      letterCase: (this.caseSelect.value || undefined) as KnownFacts["letterCase"],
-    };
+  /** Facts that hold across the notebook. Each entry adds its own ragam, talam and speed. */
+  private notebookFacts(): KnownFacts {
+    return { letterCase: (this.caseSelect.value || undefined) as KnownFacts["letterCase"] };
   }
 
   /** Shows a failed run's reason in the status line and the console, and returns it. */
@@ -954,9 +1008,9 @@ export class PhotoTranscribePlayground {
         entries = legacy.entries;
       }
       // A run cannot survive a reload.
-      entries = entries.map((e) =>
-        e.status === "running" ? { ...e, status: e.result ? "done" : "draft", error: undefined } : e,
-      );
+      entries = entries
+        .map(normalizeEntry)
+        .map((e) => (e.status === "running" ? { ...e, status: e.result ? "done" : "draft", error: undefined } : e));
       if (saved.length > 0) this.setStatus(`Restoring ${saved.length} page(s) from your last visit...`);
       const files = new Map((await store.files()).map((f) => [f.id, f]));
       const rendered = new Map<string, File[]>();

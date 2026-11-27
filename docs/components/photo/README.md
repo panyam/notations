@@ -33,9 +33,10 @@ went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests
 1. Uploaded pages are sources. Each transcription entry names one part of the song, such as
    "Pallavi - Kedaram", and picks one or more regions from any pages ("Use whole photo" is an
    explicit choice). A part that runs onto the next page gets a region on each. Crops are cut
-   from the full-resolution page before downscaling, so they keep detail. An entry's own ragam
-   replaces the song's for that run, and a name other than "Section N" goes to the model as
-   "only this part".
+   from the full-resolution page before downscaling, so they keep detail. Each entry sets its own
+   ragam, talam and swaras per beat, since a ragamalika or a later section can change all three;
+   a new entry copies the talam and speed of the one above. Letter case and free-text hints are
+   notebook-wide. A name other than "Section N" goes to the model as "only this part".
 2. The model gets the image(s), known facts (ragam, talam, swaras per beat, letter case),
    free-text hints, optionally "only this part", and optionally the notation already in the
    editor as context.

@@ -3,8 +3,10 @@
  *
  * Uploaded pages are sources. A transcription entry names one part of the song, such as
  * "Pallavi - Kedaram", and picks the regions of those pages that hold it. A section can run
- * from the bottom of one page onto the next, so an entry can have several regions. Entries
- * run one at a time, and each result goes after what is in the editor.
+ * from the bottom of one page onto the next, so an entry can have several regions. Each entry
+ * also carries its own ragam, talam and swaras per beat, since a ragamalika or a later section
+ * can change all three. Entries run one at a time, and each result goes after what is in the
+ * editor.
  *
  * Everything here is plain data and pure functions, so the page and the store share it and
  * the tests need no DOM.
@@ -37,8 +39,12 @@ export interface EntryResult {
 export interface Entry {
   id: string;
   name: string;
-  /** This part's ragam. Empty means the song's ragam(s). */
+  /** This part's ragam. Empty leaves it to the model to read from the page. */
   ragams: string;
+  /** This part's talam as a cycle, e.g. "|4|2|2|". Empty leaves it to the page. Enforced when set. */
+  cycle: string;
+  /** Swaras per beat in this part. Null leaves it to the page. */
+  notesPerBeat: number | null;
   regions: Region[];
   status: EntryStatus;
   /** Why the last run failed, when status is "failed". */
@@ -51,12 +57,18 @@ export interface Entry {
 
 const DEFAULT_NAME = /^Section \d+$/;
 
-/** The list with a new, empty entry at the end, named "Section N". */
+/**
+ * The list with a new entry at the end, named "Section N". It copies the talam and swaras per
+ * beat from the entry above, since consecutive parts usually share them. The ragam starts empty.
+ */
 export function addEntry(entries: Entry[], newId: () => string): Entry[] {
+  const above = entries[entries.length - 1];
   const entry: Entry = {
     id: newId(),
     name: `Section ${entries.length + 1}`,
     ragams: "",
+    cycle: above?.cycle ?? "",
+    notesPerBeat: above?.notesPerBeat ?? null,
     regions: [],
     status: "draft",
     inserted: false,
@@ -78,10 +90,22 @@ export function dropPage(entries: Entry[], pageId: string): Entry[] {
   return entries.map((e) => ({ ...e, regions: e.regions.filter((r) => r.pageId !== pageId) }));
 }
 
-/** The facts to send for `entry`: the song's, with the entry's own ragam in place of the song's. */
-export function entryFacts(song: KnownFacts, entry: Entry): KnownFacts {
+/**
+ * The facts to send for `entry`: the notebook's (letter case), plus the entry's ragam, talam
+ * and swaras per beat where it sets them.
+ */
+export function entryFacts(notebook: KnownFacts, entry: Entry): KnownFacts {
+  const facts: KnownFacts = { ...notebook };
   const ragams = entry.ragams.trim();
-  return ragams ? { ...song, ragams } : song;
+  if (ragams) facts.ragams = ragams;
+  if (entry.cycle.trim()) facts.cycle = entry.cycle.trim();
+  if (entry.notesPerBeat) facts.notesPerBeat = entry.notesPerBeat;
+  return facts;
+}
+
+/** An entry saved before entries had their own talam and speed, with those fields filled in. */
+export function normalizeEntry(entry: Entry): Entry {
+  return { ...entry, cycle: entry.cycle ?? "", notesPerBeat: entry.notesPerBeat ?? null };
 }
 
 /** The part to ask the model for. A default "Section N" name says nothing, so it sends none. */

@@ -17,6 +17,8 @@ const ENTRY: Entry = {
   id: "e1",
   name: "Pallavi - Kedaram",
   ragams: "Kedaram",
+  cycle: "|4|2|2|",
+  notesPerBeat: 4,
   regions: [{ pageId: "p1", crop: { x: 0, y: 0.05, w: 1, h: 0.2 } }],
   status: "done",
   inserted: true,

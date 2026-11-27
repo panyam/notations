@@ -24,63 +24,49 @@ bodyClass: "playground-page"
                     </label>
                 </div>
                 <p class="pt-muted">Each PDF page becomes a page here. Add every page of the song. You pick the
-                    parts to read in step 4.</p>
+                    parts to read in step 2.</p>
             </div>
             <div id="pt-thumbs" class="pt-thumbs"></div>
             <label class="pt-check"><input id="pt-enhance" type="checkbox"> Enhance faded photo (grayscale, more contrast)</label>
         </section>
 
         <section class="pt-section">
-            <h3>2. About the song <span class="pt-muted">(optional, but it helps a lot)</span></h3>
-            <div class="pt-grid2">
-                <label class="pt-field">Ragam(s)
-                    <input id="pt-ragams" class="pt-input" type="text" placeholder="e.g. Mohanam, or a ragamalika list">
-                </label>
-                <label class="pt-field">Talam
-                    <select id="pt-talam" class="pt-input">
-                        <option value="">Read from the page</option>
-                        <option value="|4|2|2|">Adi (4+2+2)</option>
-                        <option value="|2|4|">Rupakam (2+4)</option>
-                        <option value="|4|2|">Rupakam (4+2)</option>
-                        <option value="|3|2|2|">Misra Chapu (3+2+2)</option>
-                        <option value="|2|3|">Khanda Chapu (2+3)</option>
-                        <option value="|3|2|2|">Tisra Triputa (3+2+2)</option>
-                        <option value="|4|2|4|4|">Dhruva (4+2+4+4)</option>
-                        <option value="|4|2|4|">Matya (4+2+4)</option>
-                        <option value="|7|1|2|">Jhampa (7+1+2)</option>
-                        <option value="|5|5|2|2|">Ata (5+5+2+2)</option>
-                        <option value="|4|">Eka (4)</option>
-                        <option value="custom">Other...</option>
-                    </select>
-                </label>
-                <label class="pt-field" id="pt-cycle-field" hidden>Cycle
-                    <input id="pt-cycle" class="pt-input" type="text" placeholder="|4|2|2|">
-                </label>
-                <label class="pt-field">Swaras per beat
-                    <select id="pt-npb" class="pt-input">
-                        <option value="">Read from the page</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="6">6</option>
-                        <option value="8">8</option>
-                    </select>
-                </label>
-                <label class="pt-field">Letter case means
-                    <select id="pt-case" class="pt-input">
-                        <option value="">Work it out</option>
-                        <option value="swarasthana">Swarasthana (m / M)</option>
-                        <option value="length">Long note (S = s ,)</option>
-                    </select>
-                </label>
+            <h3>2. Transcriptions</h3>
+            <p class="pt-muted">One per part of the song, in order. Name it, set its ragam, talam and swaras
+                per beat if you know them, pick its region(s), and press Transcribe. A part can take
+                regions from several pages, and a new one starts with the talam and speed of the one above. The first result goes after what
+                is in the editor, and the model sees the editor's notation so the parts match. A re-run
+                waits for you to press Insert.</p>
+            <ol id="pt-entries" class="pt-entries"></ol>
+            <div class="pt-actions">
+                <button id="pt-add-entry" class="btn" type="button">+ New transcription</button>
+                <button id="pt-cancel" class="btn" type="button" hidden>Cancel</button>
             </div>
+            <p id="pt-status" class="pt-status" role="status" aria-live="polite"></p>
+            <div id="pt-report" class="pt-report"></div>
+            <details id="pt-raw-details" class="pt-raw-details">
+                <summary>Model output</summary>
+                <pre id="pt-raw" class="pt-raw"></pre>
+            </details>
+        </section>
+
+        <section class="pt-section">
+            <h3>3. About the notebook <span class="pt-muted">(optional)</span></h3>
+            <p class="pt-muted">How this writer notates, across every transcription. Each transcription sets its
+                own ragam, talam and swaras per beat.</p>
+            <label class="pt-field">Letter case means
+                <select id="pt-case" class="pt-input">
+                    <option value="">Work it out</option>
+                    <option value="swarasthana">Swarasthana (m / M)</option>
+                    <option value="length">Long note (S = s ,)</option>
+                </select>
+            </label>
             <textarea id="pt-hints" class="pt-input" rows="3"
                 placeholder="Anything else: composer, how this writer marks things, e.g. &quot;underline means double speed, the ticks above are gamakas&quot;"></textarea>
         </section>
 
         <section class="pt-section">
-            <h3>3. Your Anthropic API key</h3>
+            <h3>4. Your Anthropic API key</h3>
             <div class="pt-key-row">
                 <input id="pt-api-key" class="pt-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
                 <button id="pt-key-toggle" class="btn btn-sm" type="button" aria-controls="pt-api-key" aria-pressed="false">Show</button>
@@ -98,25 +84,6 @@ bodyClass: "playground-page"
                 </select>
             </label>
             <label class="pt-check"><input id="pt-careful" type="checkbox"> Careful reading (slower; for messy or sparse notation)</label>
-        </section>
-
-        <section class="pt-section">
-            <h3>4. Transcriptions</h3>
-            <p class="pt-muted">One per part of the song, in order: name it, pick its region(s), and press
-                Transcribe. A part can take regions from several pages. The first result goes after what
-                is in the editor, and the model sees the editor's notation so the parts match. A re-run
-                waits for you to press Insert.</p>
-            <ol id="pt-entries" class="pt-entries"></ol>
-            <div class="pt-actions">
-                <button id="pt-add-entry" class="btn" type="button">+ New transcription</button>
-                <button id="pt-cancel" class="btn" type="button" hidden>Cancel</button>
-            </div>
-            <p id="pt-status" class="pt-status" role="status" aria-live="polite"></p>
-            <div id="pt-report" class="pt-report"></div>
-            <details id="pt-raw-details" class="pt-raw-details">
-                <summary>Model output</summary>
-                <pre id="pt-raw" class="pt-raw"></pre>
-            </details>
         </section>
     </aside>
 
@@ -320,6 +287,9 @@ textarea.pt-input { resize: vertical; }
 .pt-entry-head .pt-input { flex: 1; min-width: 0; font-weight: 600; }
 .pt-entry-row { display: flex; gap: 0.3rem; align-items: center; margin-top: 0.35rem; flex-wrap: wrap; }
 .pt-entry-row .pt-input { flex: 1; min-width: 8rem; }
+.pt-entry-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin-top: 0.35rem; }
+.pt-entry-facts .pt-input { width: 100%; min-width: 0; }
+.pt-entry-facts .pt-entry-ragam { grid-column: 1 / -1; }
 .pt-regions { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
 .pt-region { display: inline-flex; align-items: center; gap: 0.2rem; border: 1px solid var(--pt-border);
     border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.8rem; }

@@ -6,6 +6,7 @@ import {
   entryFacts,
   fromLegacyPhotos,
   moveEntry,
+  normalizeEntry,
   onlyPart,
   whyNotReady,
 } from "../../components/photo/entries";
@@ -16,7 +17,17 @@ const newId = () => `id${++ids}`;
 beforeEach(() => (ids = 0));
 
 function entry(extra: Partial<Entry> = {}): Entry {
-  return { id: newId(), name: "Section 1", ragams: "", regions: [], status: "draft", inserted: false, ...extra };
+  return {
+    id: newId(),
+    name: "Section 1",
+    ragams: "",
+    cycle: "",
+    notesPerBeat: null,
+    regions: [],
+    status: "draft",
+    inserted: false,
+    ...extra,
+  };
 }
 
 describe("addEntry", () => {
@@ -25,6 +36,15 @@ describe("addEntry", () => {
     const two = addEntry(one, newId);
     expect(two.map((e) => e.name)).toEqual(["Section 1", "Section 2"]);
     expect(two[1]).toMatchObject({ regions: [], status: "draft", inserted: false, ragams: "" });
+  });
+
+  test("starts with no talam or speed when it is the first", () => {
+    expect(addEntry([], newId)[0]).toMatchObject({ cycle: "", notesPerBeat: null });
+  });
+
+  test("copies talam and speed from the entry above, but not the ragam", () => {
+    const list = [entry({ cycle: "|3|2|2|", notesPerBeat: 3, ragams: "Kalyani" })];
+    expect(addEntry(list, newId)[1]).toMatchObject({ cycle: "|3|2|2|", notesPerBeat: 3, ragams: "" });
   });
 });
 
@@ -55,14 +75,35 @@ describe("dropPage", () => {
 });
 
 describe("entryFacts", () => {
-  const song = { ragams: "Kedaram, Shankarabharanam", cycle: "|4|2|2|", notesPerBeat: 4 };
+  const notebook = { letterCase: "swarasthana" as const };
 
-  test("an entry's ragam replaces the song's", () => {
-    expect(entryFacts(song, entry({ ragams: "Kedaram" }))).toEqual({ ...song, ragams: "Kedaram" });
+  test("adds the entry's ragam, talam and speed to the notebook's facts", () => {
+    const facts = entryFacts(notebook, entry({ ragams: " Kedaram ", cycle: "|4|2|2|", notesPerBeat: 4 }));
+    expect(facts).toEqual({ letterCase: "swarasthana", ragams: "Kedaram", cycle: "|4|2|2|", notesPerBeat: 4 });
   });
 
-  test("an entry without a ragam uses the song's facts", () => {
-    expect(entryFacts(song, entry({ ragams: "  " }))).toEqual(song);
+  test("two entries of one song can differ in talam and speed", () => {
+    const adi = entryFacts(notebook, entry({ cycle: "|4|2|2|", notesPerBeat: 2 }));
+    const chapu = entryFacts(notebook, entry({ cycle: "|3|2|2|", notesPerBeat: 3 }));
+    expect([adi.cycle, adi.notesPerBeat]).toEqual(["|4|2|2|", 2]);
+    expect([chapu.cycle, chapu.notesPerBeat]).toEqual(["|3|2|2|", 3]);
+  });
+
+  test("leaves out what the entry leaves to the page", () => {
+    expect(entryFacts(notebook, entry({ ragams: "  ", cycle: "", notesPerBeat: null }))).toEqual(notebook);
+  });
+});
+
+describe("normalizeEntry", () => {
+  test("fills in talam and speed on an entry saved without them", () => {
+    const old = entry();
+    delete (old as any).cycle;
+    delete (old as any).notesPerBeat;
+    expect(normalizeEntry(old)).toMatchObject({ cycle: "", notesPerBeat: null });
+  });
+
+  test("keeps what an entry already has", () => {
+    expect(normalizeEntry(entry({ cycle: "|4|", notesPerBeat: 2 }))).toMatchObject({ cycle: "|4|", notesPerBeat: 2 });
   });
 });
 
