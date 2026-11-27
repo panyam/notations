@@ -253,6 +253,7 @@ export class PhotoTranscribePlayground {
     $("pt-forget").addEventListener("click", () => this.forgetFiles());
     $("pt-download").addEventListener("click", () => this.downloadSource());
     $("pt-reset-layout").addEventListener("click", () => this.playground.resetLayout());
+    $("pt-print").addEventListener("click", () => this.playground.print());
   }
 
   // ---- Pages ----------------------------------------------------------------------------

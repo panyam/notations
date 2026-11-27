@@ -140,4 +140,38 @@ describe("DockViewPlayground", () => {
       expect(tab.querySelectorAll("[role], [tabindex], button, a, input").length).toBe(0);
     }
   });
+
+  describe("printing (#74)", () => {
+    const printRoot = () => document.querySelector(".notations-print-root");
+    afterEach(() => jest.restoreAllMocks());
+
+    test("print() opens the print dialog with only the notation, then cleans up", () => {
+      const p = make({ initialSource: "Sw: S R G M" });
+      let lines = 0;
+      jest.spyOn(window, "print").mockImplementation(() => {
+        lines = printRoot()!.querySelectorAll("svg.lineRootSVG").length;
+      });
+      p.print();
+      expect(window.print).toHaveBeenCalledTimes(1);
+      expect(lines).toBe(1);
+      window.dispatchEvent(new Event("afterprint"));
+      expect(printRoot()).toBeNull();
+    });
+
+    test("the browser's own Print prints the notation too", () => {
+      make({ initialSource: "Sw: S R G M" });
+      window.dispatchEvent(new Event("beforeprint"));
+      expect(printRoot()!.querySelectorAll("svg.lineRootSVG").length).toBe(1);
+      window.dispatchEvent(new Event("afterprint"));
+      expect(printRoot()).toBeNull();
+    });
+
+    test("stops listening for the browser's Print once destroyed", () => {
+      const p = make({ initialSource: "Sw: S R G M" });
+      p.destroy();
+      made.splice(made.indexOf(p), 1);
+      window.dispatchEvent(new Event("beforeprint"));
+      expect(printRoot()).toBeNull();
+    });
+  });
 });

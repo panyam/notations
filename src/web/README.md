@@ -196,6 +196,7 @@ playground.clearConsole();
 playground.source = "new source";
 playground.render();
 playground.resetLayout();
+playground.print(); // the notation alone, at page width (printNotation from notations/export)
 ```
 
 #### CSS Theming

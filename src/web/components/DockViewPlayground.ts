@@ -16,6 +16,7 @@
 import { createDock, type Dock, type PanelDef } from "@panyam/tsappkit-dock";
 import type { DockviewApi } from "dockview-core";
 import SideBySideEditor, { SideBySideEditorConfig } from "./SideBySideEditor";
+import { preparePrint, printNotation } from "../../export/print";
 import { Notation } from "../../notation";
 import { GlobalBeatLayout } from "../../beats";
 
@@ -167,6 +168,15 @@ export default class DockViewPlayground {
   private readonly hosts: Record<"editor" | "output" | "console", HTMLElement>;
   private readonly consoleOutput: HTMLElement;
   private consoleEntries: ConsoleEntry[] = [];
+  private printCleanup: (() => void) | null = null;
+  private readonly onBeforePrint = () => {
+    if (document.querySelector(".notations-print-root")) return; // print() already made the copy
+    this.printCleanup = preparePrint(this.source, { markdownParser: this.config.markdownParser });
+  };
+  private readonly onAfterPrint = () => {
+    this.printCleanup?.();
+    this.printCleanup = null;
+  };
 
   /**
    * Creates a new DockViewPlayground.
@@ -214,6 +224,8 @@ export default class DockViewPlayground {
     // The SideBySideEditor renders in its constructor, before its output element is in the
     // page, so render again once the dock has placed it.
     requestAnimationFrame(() => this.render());
+    window.addEventListener("beforeprint", this.onBeforePrint);
+    window.addEventListener("afterprint", this.onAfterPrint);
     this.log("Playground initialized", "info");
   }
 
@@ -263,9 +275,20 @@ export default class DockViewPlayground {
   }
 
   /**
+   * Opens the print dialog with the notation alone, rendered again at the page's width, without the
+   * editor, console or page chrome. "Save as PDF" in the dialog gives a PDF. The browser's own
+   * Print (Ctrl/Cmd+P) does the same while the playground is on the page.
+   */
+  print(): void {
+    printNotation(this.source, { markdownParser: this.config.markdownParser });
+  }
+
+  /**
    * Destroys the playground. The layout is saved first when `persistLayout` is on.
    */
   destroy(): void {
+    window.removeEventListener("beforeprint", this.onBeforePrint);
+    window.removeEventListener("afterprint", this.onAfterPrint);
     this.sideBySideEditor.destroy();
     this.dock.dispose();
     this.container.innerHTML = "";

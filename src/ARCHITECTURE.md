@@ -17,6 +17,9 @@ Each layer imports only the ones below it (#18):
 4. **Composition** (`loader.ts`): `load()` and `parse()` create a Parser with `carnaticGamakas`.
    `notations/parser` (`src/entry-parser.ts`) exports layers 2 to 4.
 5. **Renderer** (`shapes.ts`, `beatview.ts`, the rest of `carnatic/`): the SVG views.
+6. **Export** (`notations/export`, `src/entry-export.ts`, `export/`): printing, and later SVG and
+   PNG. It uses the renderer and the browser, but not `web/`, so a page that renders notation can
+   print it without the editor or the dock.
 
 `src/tests/layers.spec.ts` walks the imports and fails if a lower layer reaches a higher one.
 Modules inside `src/` import from the module that defines a name, never from the package index.

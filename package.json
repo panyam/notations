@@ -24,6 +24,11 @@
       "import": "./lib/esm/entry-parser.js",
       "require": "./lib/cjs/entry-parser.js"
     },
+    "./export": {
+      "types": "./lib/esm/entry-export.d.ts",
+      "import": "./lib/esm/entry-export.js",
+      "require": "./lib/cjs/entry-export.js"
+    },
     "./web": {
       "types": "./lib/esm/web/index.d.ts",
       "import": "./lib/esm/web/index.js",
