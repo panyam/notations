@@ -42,7 +42,6 @@ class DocsPage {
       container.setAttribute("id", id);
       const block = new NotationBlock(container as HTMLElement, config);
       this.notations.push(block);
-      console.log("Source: ", id, container.textContent);
     }
   }
 }

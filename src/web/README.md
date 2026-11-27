@@ -83,6 +83,18 @@ interface NotationBlockConfig {
 }
 ```
 
+#### Editing, errors and rendering
+
+- With `showSource="true"`, Edit opens the source in a textarea. Ctrl+Enter (Cmd+Enter on a
+  Mac) applies the edit, and Escape cancels it.
+- When the source does not parse, the output shows the errors in a `.notation-error` box with
+  `role="alert"`, and the console gets nothing.
+- `updatePreview()` and `applyEdit()` return a Promise. While a render is pending, the output
+  element has `aria-busy="true"`, so you can style a busy state. `block.rendering` is the latest
+  render; await it to know the output is current.
+- The source, the `id`, the `caption` and error messages all go into the page as text or as
+  attribute values, never as HTML. Notation typed by a user cannot inject markup.
+
 ## Examples
 
 ### With Tailwind CSS
