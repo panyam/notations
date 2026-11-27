@@ -23,13 +23,13 @@ jobs:
         # module syntax, so a regression in that marker fails differently either side of it.
         node: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12
+      # No version here: action-setup reads package.json's packageManager, which pins pnpm
+      # by sha512.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -37,6 +37,8 @@ jobs:
       # --ignore-scripts keeps the root `prepare` script from building during install, so a
       # broken build reports as a failed build step rather than a failed install.
       - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - run: pnpm audit --prod
 
       - run: pnpm run build
 

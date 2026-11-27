@@ -23,7 +23,7 @@ describe("Utils Tests", () => {
     expect(cp.beatLengths[1]).toEqual(TSU.Num.Frac(2));
     expect(cp.beatLengths[2]).toEqual(TSU.Num.Frac(3));
 
-    expect(() => parseBar(",, ,,, , _ __ ,,,,")).toThrowError();
+    expect(() => parseBar(",, ,,, , _ __ ,,,,")).toThrow();
 
     cp = parseBar(",, ,,, , ,,,,");
     expect(cp.beatLengths.length).toBe(4);
@@ -40,7 +40,7 @@ describe("Utils Tests", () => {
     cp = parseBar(",, ,,");
     expect(cp.beatLengths.length).toBe(2);
 
-    expect(() => parseBar(",, ,,, , _ __ ,,,,")).toThrowError();
+    expect(() => parseBar(",, ,,, , _ __ ,,,,")).toThrow();
 
     cp = parseBar(",, ,,, , ,,,,");
     expect(cp.beatLengths.length).toBe(4);

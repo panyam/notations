@@ -165,9 +165,10 @@ export class LayoutParams {
         let offset = ZERO;
         if (modIndex > total) {
           const cursor = new CycleCursor(this.cycle, beat.barIndex, beat.beatIndex, beat.instance);
-          let [, duration] = cursor.prev;
+          // Step back once before accumulating.  prev returns the beat it was on, then moves.
+          void cursor.prev;
           for (let i = total; i < modIndex; i++) {
-            [, duration] = cursor.prev;
+            const [, duration] = cursor.prev;
             offset = offset.plus(duration.timesNum(this.beatDuration));
           }
         }

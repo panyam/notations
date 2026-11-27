@@ -155,28 +155,28 @@ describe("Testing Applying Commands after Parsing", () => {
         \beatDuration("hello")
         `,
       ),
-    ).toThrowError("beatDuration command must contain one number");
+    ).toThrow("beatDuration command must contain one number");
     expect(() =>
       testV4(
         String.raw`
         \breaks(1, "b")
         `,
       ),
-    ).toThrowError("Breaks command must be a list of integers");
+    ).toThrow("Breaks command must be a list of integers");
     expect(() =>
       testV4(
         String.raw`
         \breaks(a = 1)
         `,
       ),
-    ).toThrowError("Breaks command cannot have keyword params");
+    ).toThrow("Breaks command cannot have keyword params");
     expect(() =>
       testV4(
         String.raw`
         \layout(3)
         `,
       ),
-    ).toThrowError("layout command must contain one string argument");
+    ).toThrow("layout command must contain one string argument");
   });
 
   test("Test default currRole", () => {
@@ -197,7 +197,7 @@ describe("Testing Applying Commands after Parsing", () => {
         \role("Sw");
         `,
       ),
-    ).toThrowError("Role already exists");
+    ).toThrow("Role already exists");
   });
 
   test("Test Missing role", () => {
@@ -253,7 +253,7 @@ describe("Testing Applying Commands after Parsing", () => {
   test("Test Missing role - autorole creation disabled", () => {
     const notation = new Notation();
     notation.onMissingRole = (name) => null;
-    expect(() => testV4(String.raw` Sw: a b c d `, false, notation)).toThrowError("Role not found: sw");
+    expect(() => testV4(String.raw` Sw: a b c d `, false, notation)).toThrow("Role not found: sw");
   });
 
   test("Test Missing role - with autorole creation on by default", () => {

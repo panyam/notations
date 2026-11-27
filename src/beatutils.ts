@@ -43,7 +43,7 @@ export function ensureUniformSpaces(currOffset: TSU.Num.Fraction, atoms: FlatAto
   // Total = 11 + 5 + 3 + 3 (for A + B + C) = 22 notes in the beat
 
   const baseDur = new TSU.Num.Fraction(1, lcm);
-  for (let i = 0; i < atoms.length; ) {
+  for (let i = 0; i < atoms.length;) {
     const fa = atoms[i];
     const numSpaces = lcm == 1 ? fa.duration.num - 1 : lcm / fa.duration.den - 1;
     // reset its duration to 1 / LCM so we can add numSpaces after it

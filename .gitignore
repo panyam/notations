@@ -40,3 +40,4 @@ samples/gen
 .env
 galorium/homepage/resources/_gen
 **/.claude/settings.local.json
+!docs/components/styles.d.ts

@@ -107,7 +107,7 @@ export function parseBar(barStr: string): Bar {
 export function parseSyllable(value: string): Atom {
   const notes = [] as Atom[];
   // Only "_" make a difference here
-  for (let i = 0; i < value.length; ) {
+  for (let i = 0; i < value.length;) {
     let ch = value[i];
     if (ch == "_") {
       notes.push(new Space(ONE, true));

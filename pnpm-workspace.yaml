@@ -1,0 +1,39 @@
+# Supply-chain settings. pnpm reads these on every install, locally and in CI.
+
+# Skip any version published less than 3 days ago (minutes). Most hijacked releases are
+# caught and unpublished within that window.
+minimumReleaseAge: 4320
+
+# Fail if a package's newer version drops the provenance or trusted-publisher evidence
+# an older version had.
+trustPolicy: no-downgrade
+# These old lines predate npm provenance, and their newer lines have it. Pinned to exact
+# versions so a future release of the same package still gets checked.
+trustPolicyExclude:
+  - 'chokidar@4.0.3'
+  - 'semver@5.7.2 || 6.3.1'
+  - 'undici-types@6.21.0'
+
+# Transitive deps may only come from the registry, never from git URLs or tarballs.
+blockExoticSubdeps: true
+
+# Fail the install when a dependency wants to run a build script that is not listed below.
+strictDepBuilds: true
+
+# Install scripts allowed to run. Everything else is skipped.
+allowBuilds:
+  # pre-commit installs the git hook that runs the "pre-commit" list in package.json.
+  pre-commit: true
+  # The rest need no script: sass ships watcher prebuilds, core-js only prints a banner,
+  # and spawn-sync only patches Node < 0.12.
+  '@parcel/watcher': false
+  core-js: false
+  spawn-sync: false
+
+# Dev-only advisories in glob (AbortSignal bypass) and minimatch (GHSA-g3hv-75wg-m249).
+# Jest and webpack work with the patched majors. Typedoc calls minimatch's matchOne, which
+# 11 removed, so it keeps 10. Typedoc only globs this repo's own sources.
+overrides:
+  'glob@>=9.0.0 <14.0.2': ^14.0.2
+  'minimatch@>=7.0.0 <11.0.1': ^11.0.1
+  'typedoc>minimatch': ^10.2.6

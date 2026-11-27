@@ -315,7 +315,7 @@ export class Jaaru extends LeafAtomViewEmbelishment {
 
   pathAttribute(x = 0): string {
     const avbbox = this.atomView.glyph.minSize;
-    let y2 = 0;
+    let y2: number;
     const h2 = avbbox.height / 2;
     const x2 = x + h2;
     let y = this.atomView.y;
