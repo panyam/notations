@@ -47,9 +47,14 @@ export function stripComments(html: string): string {
 }
 
 /** The text of the last <h2> or <h3> before `index`, so a check can see what the example claims. */
+/** The text of an HTML fragment: tags removed, then any stray angle brackets, then entities decoded. */
+function textOf(html: string): string {
+  return decode(html.replace(/<[^>]*>/g, "").replace(/[<>]/g, "")).trim();
+}
+
 function headingBefore(src: string, index: number): string {
   const headings = [...src.slice(0, index).matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/g)];
-  return headings.length ? decode(headings[headings.length - 1][1].replace(/<[^>]+>/g, "")).trim() : "";
+  return headings.length ? textOf(headings[headings.length - 1][1]) : "";
 }
 
 function collect(): Example[] {
@@ -162,7 +167,7 @@ describe("Docs site examples", () => {
 describe("Tala tables on the site", () => {
   const rows = ["reference/cycles/index.html", "examples/common-talas.html"].flatMap((page) =>
     [...fs.readFileSync(path.join(CONTENT_ROOT, page), "utf8").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
-      .map((m) => [...m[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map((c) => decode(c[1].replace(/<[^>]+>/g, "")).trim()))
+      .map((m) => [...m[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map((c) => textOf(c[1])))
       .filter((cells) => cells.length > 0)
       .map((cells) => ({ page, cells })),
   );
