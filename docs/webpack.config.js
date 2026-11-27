@@ -13,6 +13,7 @@ module.exports = (_env, options) => {
   return {
     devtool: "source-map",
     entry: {
+      SiteHeader: path.join(__dirname, "./components/SiteHeaderEntry.ts"),
       DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
       SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
       NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
@@ -79,6 +80,17 @@ module.exports = (_env, options) => {
     },
     plugins: [
       new CleanWebpackPlugin(),
+      new HtmlWebpackPlugin({
+        chunks: ["SiteHeader"],
+        filename: path.resolve(__dirname, "./templates/gen.SiteHeader.html"),
+        templateContent: ({ htmlWebpackPlugin }) =>
+          htmlWebpackPlugin.tags.headTags
+            .filter((tag) => tag.tagName === "script")
+            .map((tag) => `<script defer src="${tag.attributes.src}"></script>`)
+            .join("\n"),
+        inject: false,
+        minify: { collapseWhitespace: false },
+      }),
       new HtmlWebpackPlugin({
         chunks: ["DocsPage"],
         filename: path.resolve(__dirname, "./templates/gen.DocsPage.html"),

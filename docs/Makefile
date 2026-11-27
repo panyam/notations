@@ -26,11 +26,16 @@ resymlink:
 	cd locallinks && ln -s ../../../../golang/oneauth
 	cd locallinks && ln -s ../../../../golang/s3gen
 
-# Production site in dist/docs, without deploying. The Docs workflow runs the same steps.
-site: webpack
+# Production site in dist/docs, without deploying.
+site: webpack render
+
+# Renders the pages, copies static/ (s3gen doesn't in build mode), and builds the Pagefind search
+# index into dist/docs/pagefind. The Docs workflow runs this target after its own webpack build.
+render:
 	NOTATIONS_DOCS_ENV=production go run main.go -build
 	rm -Rf dist/docs/static
 	cp -r static dist/docs
+	pnpm exec pagefind --site dist/docs
 	touch dist/docs/.nojekyll
 
 # GitHub Pages deploys from the Docs workflow after CI passes on master.

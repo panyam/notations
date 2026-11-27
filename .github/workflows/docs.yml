@@ -84,15 +84,12 @@ jobs:
       - if: steps.fresh.outputs.deploy == 'true'
         run: pnpm run build:docs
 
-      # The same steps as `make site`.
+      # `make render` is the second half of `make site`, so the two can't drift apart. It builds the
+      # Pagefind search index too; without it the live search box would load a 404.
       - if: steps.fresh.outputs.deploy == 'true'
-        name: Render the site
+        name: Render the site and its search index
         working-directory: docs
-        run: |
-          NOTATIONS_DOCS_ENV=production go run main.go -build
-          rm -rf dist/docs/static
-          cp -r static dist/docs
-          touch dist/docs/.nojekyll
+        run: make render
 
       - if: steps.fresh.outputs.deploy == 'true'
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

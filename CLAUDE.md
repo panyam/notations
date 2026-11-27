@@ -13,7 +13,7 @@ pnpm run build               # typedoc, ESM + CJS, CSS, UMD
 pnpm run check:esm && pnpm run lint
 pnpm run build:docs          # docs JS into docs/static/js/gen/
 cd docs && make run          # docs site on http://localhost:8085/notations/
-cd docs && make site         # production site into docs/dist/docs, no deploy
+cd docs && make site         # production site and search index into docs/dist/docs, no deploy
 pnpm run transcribe:photos   # photo transcriber CLI; needs ANTHROPIC_API_KEY
 ```
 
@@ -57,6 +57,9 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - The docs server is s3gen (`docs/main.go`, Go 1.26). Change how it serves in s3gen
   (`~/newstack/s3gen/main`), then bump `docs/go.mod`. From v0.1.7, `Site.Serve` shuts down
   gracefully on SIGINT (#14).
+- Search is Pagefind over the built `dist/docs`, indexed by `make render` (CI runs it). `make run`
+  has no index, so the search box says so. Test search on `make site` output served under
+  `/notations/`.
 - The docs webpack config has no Node polyfills (`buffer: false`).
 - Run Prettier on files by path. Running it over all of `docs/components` reformats unrelated
   files.

@@ -56,6 +56,22 @@
     {{ template "Footer" . }}
     {{ end }}
 
+    <!-- Search overlay. The page loads Pagefind's UI from data-bundle on first open (siteHeader.ts).
+         data-pagefind-ignore keeps the overlay's own text out of the index, since Pagefind indexes
+         hidden elements too. -->
+    <div class="search-overlay" id="search-overlay" data-bundle="{{.Site.PathPrefix}}/pagefind/" data-pagefind-ignore hidden>
+        <div class="search-backdrop" data-search-close></div>
+        <div class="search-panel" role="dialog" aria-modal="true" aria-label="Search the docs">
+            <div id="pagefind-search"></div>
+            <p class="search-unavailable" id="search-unavailable" hidden>
+                The search index isn't built. Run <code>make site</code> in <code>docs/</code> and serve
+                <code>dist/docs</code>.
+            </p>
+        </div>
+    </div>
+
+    {{# include "gen.SiteHeader.html" #}}
+
     <!-- JavaScript will be injected here by webpack-generated template -->
     {{ if .FrontMatter.useSideBySidePlayground }}
     {{# include "gen.SideBySidePlayground.html" #}}
