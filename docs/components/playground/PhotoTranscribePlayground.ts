@@ -13,7 +13,7 @@
  */
 
 import { DockViewPlayground } from "../../../src/web/dockview";
-import "dockview-core/dist/styles/dockview.css";
+import "dockview/dist/styles/dockview.css";
 import "../../../styles/NotationView.scss";
 
 import { createMarkdownParser } from "../NotationViewer";

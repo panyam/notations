@@ -5,8 +5,8 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 ## At a glance
 
-- master — photo transcriber, #42 — next: fix the octave-dot and ragam findings from the first real run
-- This run: #53 merged (closes #30, #46, #49); the rest of #46 is #50, and the header drawer is #51
+- master — photo transcriber, #52 — next: run the Kedaram rows as a crop to see whether the faint octave dot gets read
+- This run: #56 merged (closes #14; docs server on s3gen v0.1.7, panyam/s3gen#4). #52 is running in another session.
 
 ## Across threads
 
@@ -14,9 +14,9 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 ## master
 
-- **Last touched**: 2026-11-26 21:05 (Srirams-MBP:~/projects/notations/master)
-- **Ticket**: #42, then #40 and #41. The photo transcriber shipped in #39.
+- **Last touched**: 2026-11-26 21:10 (Srirams-MBP:~/projects/notations/docs)
+- **Ticket**: #52 (in progress in another session), then #40. The photo transcriber shipped in #39. #54 fixed ragam precedence, and #55 keeps uploads and the editor in IndexedDB.
 - **Why**: get the Valachi Vachi Navaragamalika notebook (two pages, nine ragas) transcribed from photos with little hand fixing.
-- **Where it stopped**: two real runs on the Kedaram rows, crop in `docs/components/photo/README.md` → Next steps. Every swara went in the right beat. The model missed the dot below the N in row 1's `SNSR`, and the front matter took the page's "KEDHARM" over `--ragams Kedaram`. Runs now report an estimated cost: $0.10 with a warm prompt cache, $0.13 cold.
-- **Next action**: tune `docs/components/photo/prompt.ts` for octave dots, make a given ragam win in front matter, and drop the `console.log` at `src/parser.ts:506` (#42). Then run Shankarabharanam, the next raga down page 1.
-- **Open questions**: #40 asks how transcription entries reach the editor. Option A appends as you go, and each entry keeps its result. Option B assembles the editor from the entries. The leaning is A. The user is still thinking about the layout. Also untested: whether "Careful reading" (effort `xhigh`) catches the missed octave dot, and what it adds in tokens. Run the Kedaram crop both ways to find out.
+- **Where it stopped**: a whole-page run with the new octave-dot guidance still read row 1's `SNSR` without the dot under the N. At 500 dpi the dot is a few faint pixels, and the 2400 px downscale shrinks it to one or two. The front matter now takes `--ragams` over the page heading.
+- **Next action**: crop the two Kedaram rows from `~/projects/notations/NavaRagamalikaVarnam.pdf` and run them with `--talam "|4|2|2|" --npb 4 --case swarasthana --ragams Kedaram`, once at the default effort and once with `--careful` (effort xhigh) (#52). Then go on to Shankarabharanam.
+- **Open questions**: #40 asks how transcription entries reach the editor. Option A appends as you go, and each entry keeps its result. Option B assembles the editor from the entries. The leaning is A. Once #40 lands, its list goes in `docs/components/photo/photoStore.ts`, and the stored `photos` key needs a migration.
