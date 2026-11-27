@@ -16,6 +16,7 @@ module.exports = (_env, options) => {
       DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
       SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
       NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
+      PhotoTranscribePlayground: path.join(__dirname, "./components/playground/PhotoTranscribePlayground.ts"),
     },
     module: {
       rules: [
@@ -34,6 +35,11 @@ module.exports = (_env, options) => {
               options: { configFile: path.resolve(__dirname, "tsconfig.json") },
             },
           ],
+        },
+        {
+          // `import x from "file?url"` emits the file as-is and gives back its URL (the pdf.js worker).
+          resourceQuery: /url/,
+          type: "asset/resource",
         },
         {
           test: /\.s?css$/,
@@ -55,7 +61,7 @@ module.exports = (_env, options) => {
         path: false,
         querystring: false,
         stream: require.resolve("stream-browserify"),
-        buffer: require.resolve("buffer"),
+        buffer: false,
         tls: false,
         url: false,
         util: false,
@@ -72,9 +78,6 @@ module.exports = (_env, options) => {
       globalObject: "this",
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        Buffer: ["buffer", "Buffer"],
-      }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         chunks: ["DocsPage"],
@@ -96,6 +99,17 @@ module.exports = (_env, options) => {
       new HtmlWebpackPlugin({
         chunks: ["NotebookPlayground"],
         filename: path.resolve(__dirname, "./templates/gen.NotebookPlayground.html"),
+        templateContent: ({ htmlWebpackPlugin }) =>
+          htmlWebpackPlugin.tags.headTags
+            .filter((tag) => tag.tagName === "script")
+            .map((tag) => `<script defer src="${tag.attributes.src}"></script>`)
+            .join("\n"),
+        inject: false,
+        minify: { collapseWhitespace: false },
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ["PhotoTranscribePlayground"],
+        filename: path.resolve(__dirname, "./templates/gen.PhotoTranscribePlayground.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
             .filter((tag) => tag.tagName === "script")

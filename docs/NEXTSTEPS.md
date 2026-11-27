@@ -1,5 +1,11 @@
 # Next Steps - Notations Documentation
 
+## In progress: Photo Transcribe
+
+Photo-to-DSL transcription demo and CLI. Built and tested with a mocked API, not yet run
+against real pages. Design, decisions, how to run and next steps:
+[components/photo/README.md](components/photo/README.md).
+
 ## Completed
 
 ### Infrastructure (Phase 0-1) ✅

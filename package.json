@@ -60,6 +60,7 @@
     }
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "@babel/core": "^8.1.3",
     "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
@@ -80,6 +81,7 @@
     "jest-environment-jsdom": "^30.5.2",
     "jsdom": "^31.0.1",
     "markdown-it": "^15.0.3",
+    "pdfjs-dist": "^6.5.438",
     "pre-commit": "^2.0.0",
     "prettier": "^3.10.1",
     "sass": "^1.108.2",
@@ -88,6 +90,7 @@
     "style-loader": "^4.0.0",
     "ts-jest": "^29.4.15",
     "ts-loader": "^9.6.2",
+    "tsx": "^4.23.15",
     "typedoc": "^0.28.20",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.74.0",
@@ -123,7 +126,8 @@
     "prepublishOnly": "echo prepublishOnly...",
     "preversion": "npm run build && npm run lintfix",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "transcribe:photos": "tsx docs/scripts/transcribe-photos.ts"
   },
   "directories": {
     "lib": "lib"

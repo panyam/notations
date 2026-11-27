@@ -7,6 +7,33 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
+## [Unreleased]
+
+### Added
+
+- Photo Transcribe demo on the docs site (`demos/playgrounds/photo-transcribe/`):
+  take or upload photos of Carnatic notation and get editable Notations source
+  back. Claude reads the photos with the visitor's own Anthropic API key, sent
+  straight from the browser. Built for real, imperfect pages: the model fills a
+  beat grid (every beat exactly `beatDuration` slots) instead of writing DSL,
+  placing karvais the author left out from spacing and from how the sahitya
+  sits under the swaras, and marking each one it supplied. The grid is checked
+  beat by beat, located errors go back to the model for correction, and the DSL
+  is generated from the grid with bars drawn from the tala, so roles and
+  avartanams line up by construction. Filled-in beats and doubtful readings are
+  left as comments for the proofreader. An optional enhancement flattens
+  shadows and yellowed paper before upload. Optional fields for ragam(s),
+  talam (enforced), swaras per beat and what letter case means. The prompt
+  reads letter case as swarasthana (m / M) by default, reads two-column
+  notebook rows across, and treats letter clusters as phrasing rather than
+  beats. Long pages can be done a section at a time: crop a photo to one
+  section (cropping keeps full-resolution detail), name the part to
+  transcribe, and add each result after what is already in the editor, which
+  goes to the model as context so later parts match earlier ones.
+  `pnpm run transcribe:photos` runs the same pipeline on image or PDF files
+  from the command line, with `--only` and `--append`. Docs site only; the published package is
+  unchanged.
+
 ## [1.1.0] - 2026-09-21
 
 Full notes: [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md)
