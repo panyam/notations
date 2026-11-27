@@ -26,24 +26,15 @@ resymlink:
 	cd locallinks && ln -s ../../../../golang/oneauth
 	cd locallinks && ln -s ../../../../golang/s3gen
 
-# GitHub Pages deployment
-gh-pages: build
-	@echo "Building production site..."
-	@NOTATIONS_DOCS_ENV=production go run main.go -build
+# Production site in dist/docs, without deploying. The Docs workflow runs the same steps.
+site: webpack
+	NOTATIONS_DOCS_ENV=production go run main.go -build
 	rm -Rf dist/docs/static
 	cp -r static dist/docs
-	@echo "Deploying to gh-pages branch..."
-	@if [ -d dist/docs/.git ]; then \
-		echo "Error: dist/docs appears to be a git repo. Please remove it first."; \
-		exit 1; \
-	fi
-	@cd dist/docs && \
-		touch .nojekyll && \
-		git init && \
-		git add -A && \
-		git commit -m "Deploy to GitHub Pages" && \
-		git branch -M gh-pages && \
-		git remote add origin git@github.com:panyam/notations.git && \
-		git push -f origin gh-pages
-	@echo "Deployed! Enable GitHub Pages in repo settings to serve from gh-pages branch"
-	@rm -rf dist/docs/.git
+	touch dist/docs/.nojekyll
+
+# GitHub Pages deploys from the Docs workflow after CI passes on master.
+# This runs it now, on master as it is on GitHub.
+deploy:
+	gh workflow run docs.yml --ref master
+	@echo "Started. Follow it with: gh run watch"

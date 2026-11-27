@@ -104,7 +104,7 @@ added to it.
    highlighted (the grid already knows which slots were inferred).
 4. **Cost controls:** show cost per run on the page; try Sonnet 5.5 and lower effort on clean
    sections; Batch API (50% off) for CLI bulk runs.
-5. Deploy the docs site once a real run looks good (`cd docs && make gh-pages`).
+5. The docs site deploys from the Docs workflow after CI passes on master (`cd docs && make deploy` runs it by hand).
 
 ## Gotchas
 
