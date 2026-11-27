@@ -41,3 +41,6 @@ samples/gen
 galorium/homepage/resources/_gen
 **/.claude/settings.local.json
 !docs/components/styles.d.ts
+
+# go build ./... in docs/ writes the server binary here
+/docs/docs
