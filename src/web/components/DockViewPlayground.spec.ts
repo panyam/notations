@@ -130,4 +130,14 @@ describe("DockViewPlayground", () => {
     p.dock.panelsMenu(host);
     expect(host.querySelector("[class*=dock-panels]")).not.toBeNull();
   });
+
+  // axe flags a control nested in a role="tab" as nested-interactive (#89).
+  test("puts no interactive control inside a panel tab", () => {
+    make();
+    const tabs = container.querySelectorAll(".dv-tab");
+    expect(tabs.length).toBe(3);
+    for (const tab of tabs) {
+      expect(tab.querySelectorAll("[role], [tabindex], button, a, input").length).toBe(0);
+    }
+  });
 });
