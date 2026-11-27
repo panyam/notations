@@ -19,7 +19,13 @@ import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
 import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
 import { isPdf, PDF_PAGE_WARN, pdfToImages } from "../photo/pdfPages";
-import { DEFAULT_MODEL, TranscribeResult, transcribe, TranscriptionRefusedError } from "../photo/transcriber";
+import {
+  DEFAULT_MODEL,
+  StreamProgress,
+  TranscribeResult,
+  transcribe,
+  TranscriptionRefusedError,
+} from "../photo/transcriber";
 
 const KEY_STORAGE = "notations-photo-anthropic-key";
 const MODEL_STORAGE = "notations-photo-model";
@@ -133,6 +139,14 @@ export class PhotoTranscribePlayground {
     this.keyInput.addEventListener("input", () => {
       if (this.rememberBox.checked) safeSet(KEY_STORAGE, this.keyInput.value.trim() || null);
       this.updateButtons();
+    });
+    // The key stays masked unless asked, so screenshots and recordings do not show it.
+    const keyToggle = $("pt-key-toggle") as HTMLButtonElement;
+    keyToggle.addEventListener("click", () => {
+      const show = this.keyInput.type === "password";
+      this.keyInput.type = show ? "text" : "password";
+      keyToggle.textContent = show ? "Hide" : "Show";
+      keyToggle.setAttribute("aria-pressed", String(show));
     });
     this.rememberBox.addEventListener("change", () => {
       safeSet(KEY_STORAGE, this.rememberBox.checked ? this.keyInput.value.trim() || null : null);
@@ -487,6 +501,7 @@ export class PhotoTranscribePlayground {
     this.rawEl.textContent = "";
     this.rawDetails.open = true;
     this.playground.log(`Transcribing ${this.photos.length} photo(s) with ${this.modelSelect.value}`, "info");
+    const thinking = new ThinkingLog((line) => this.playground.log(`Thinking: ${line}`, "info"));
     const existing = this.playground.source;
     const append = !isBlankNotation(existing);
 
@@ -507,10 +522,14 @@ export class PhotoTranscribePlayground {
           if (attempt > 0) this.rawEl.textContent += `\n\n----- correction round ${attempt} -----\n\n`;
         },
         onText: (delta) => {
+          thinking.flush();
           this.rawEl.textContent += delta;
           this.rawEl.scrollTop = this.rawEl.scrollHeight;
         },
+        onThinking: (delta) => thinking.add(delta),
+        onProgress: (p) => this.showProgress(p, thinking),
       });
+      thinking.flush();
 
       this.playground.source = append ? mergeNotation(existing, result.transcription) : result.notation;
       this.playground.render();
@@ -538,6 +557,31 @@ export class PhotoTranscribePlayground {
     } finally {
       this.abort = null;
       this.updateButtons();
+    }
+  }
+
+  private lastProgressAt = 0;
+
+  /** Token counts in the console at the start and end of each request; a running estimate in the status line. */
+  private showProgress(p: StreamProgress, thinking: ThinkingLog): void {
+    const round = p.attempt === 0 ? "" : ` (correction round ${p.attempt})`;
+    if (p.kind === "started") {
+      this.playground.log(
+        `Request${round}: ${p.inputTokens.toLocaleString()} input tokens, ${p.cacheReadTokens.toLocaleString()} from cache.`,
+        "info",
+      );
+    } else if (p.kind === "finished") {
+      thinking.flush();
+      this.playground.log(
+        `Reply${round}: ${p.outputTokens.toLocaleString()} output tokens (thinking included), stop: ${p.stopReason}.`,
+        "info",
+      );
+    } else {
+      const now = Date.now();
+      if (now - this.lastProgressAt < 250) return;
+      this.lastProgressAt = now;
+      const what = p.phase === "thinking" ? "Thinking" : "Writing the grid";
+      this.setStatus(`${what}${round}... about ${p.estimatedOutputTokens.toLocaleString()} tokens so far`);
     }
   }
 
@@ -633,6 +677,33 @@ export class PhotoTranscribePlayground {
     a.download = fileName;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
+/**
+ * Collects streamed thinking and logs it a paragraph at a time, so the console gets
+ * readable lines instead of one entry per token.
+ */
+class ThinkingLog {
+  private buffer = "";
+
+  constructor(private readonly emit: (line: string) => void) {}
+
+  add(delta: string): void {
+    this.buffer += delta;
+    const parts = this.buffer.split(/\n\s*\n/);
+    this.buffer = parts.pop() || "";
+    parts.forEach((p) => this.emitParagraph(p));
+  }
+
+  flush(): void {
+    this.emitParagraph(this.buffer);
+    this.buffer = "";
+  }
+
+  private emitParagraph(text: string): void {
+    const line = text.replace(/\s+/g, " ").trim();
+    if (line) this.emit(line);
   }
 }
 

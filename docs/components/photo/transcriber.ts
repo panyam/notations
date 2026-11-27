@@ -52,7 +52,23 @@ export interface TranscribeOptions {
   onText?: (delta: string) => void;
   onAttemptStart?: (attempt: number) => void;
   onStatus?: (message: string) => void;
+  /** Summarized thinking, delta by delta. Arrives before the reply text. */
+  onThinking?: (delta: string) => void;
+  /** Live progress while a reply streams, and exact counts when the request starts and ends. */
+  onProgress?: (progress: StreamProgress) => void;
 }
+
+/**
+ * One progress report. The API gives exact output tokens only at the end of a reply, so
+ * mid-stream counts are estimates from streamed characters.
+ */
+export type StreamProgress =
+  | { kind: "started"; attempt: number; inputTokens: number; cacheReadTokens: number }
+  | { kind: "streaming"; attempt: number; phase: "thinking" | "writing"; estimatedOutputTokens: number }
+  | { kind: "finished"; attempt: number; outputTokens: number; stopReason: string | null };
+
+/** Rough characters per token, for the mid-stream estimate only. */
+const CHARS_PER_TOKEN = 4;
 
 export interface TranscribeAttempt {
   transcription: Transcription | null;
@@ -153,7 +169,8 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
       {
         model,
         max_tokens: 64000,
-        thinking: { type: "adaptive" },
+        // "summarized" so the thinking text streams; Opus 5.5 sends it empty by default.
+        thinking: { type: "adaptive", display: "summarized" },
         output_config: {
           effort: opts.effort || "high",
           format: { type: "json_schema", schema: TRANSCRIPTION_SCHEMA as unknown as Record<string, unknown> },
@@ -166,8 +183,42 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
       },
       { signal: opts.signal },
     );
-    if (opts.onText) stream.on("text", opts.onText);
+    let streamedChars = 0;
+    const progress = (phase: "thinking" | "writing", delta: string) => {
+      streamedChars += delta.length;
+      opts.onProgress?.({
+        kind: "streaming",
+        attempt,
+        phase,
+        estimatedOutputTokens: Math.round(streamedChars / CHARS_PER_TOKEN),
+      });
+    };
+    stream.on("thinking", (delta: string) => {
+      opts.onThinking?.(delta);
+      progress("thinking", delta);
+    });
+    stream.on("text", (delta: string) => {
+      opts.onText?.(delta);
+      progress("writing", delta);
+    });
+    stream.on("streamEvent", (event: any) => {
+      if (event.type === "message_start") {
+        const u = event.message.usage;
+        opts.onProgress?.({
+          kind: "started",
+          attempt,
+          inputTokens: (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0),
+          cacheReadTokens: u.cache_read_input_tokens || 0,
+        });
+      }
+    });
     const message = await stream.finalMessage();
+    opts.onProgress?.({
+      kind: "finished",
+      attempt,
+      outputTokens: message.usage.output_tokens,
+      stopReason: message.stop_reason,
+    });
 
     usage.inputTokens += message.usage.input_tokens;
     usage.outputTokens += message.usage.output_tokens;

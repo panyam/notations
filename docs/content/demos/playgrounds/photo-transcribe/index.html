@@ -82,7 +82,10 @@ bodyClass: "playground-page"
 
         <section class="pt-section">
             <h3>3. Your Anthropic API key</h3>
-            <input id="pt-api-key" class="pt-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
+            <div class="pt-key-row">
+                <input id="pt-api-key" class="pt-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
+                <button id="pt-key-toggle" class="btn btn-sm" type="button" aria-controls="pt-api-key" aria-pressed="false">Show</button>
+            </div>
             <label class="pt-check"><input id="pt-remember" type="checkbox"> Remember on this device</label>
             <p class="pt-muted">
                 The key is sent only to api.anthropic.com, straight from your browser; this site has no server.
@@ -234,6 +237,8 @@ bodyClass: "playground-page"
     background: var(--pt-bg); color: var(--pt-text); font: inherit; font-size: 0.875rem;
 }
 textarea.pt-input { resize: vertical; }
+.pt-key-row { display: flex; gap: 0.4rem; align-items: center; }
+.pt-key-row .pt-input { flex: 1; min-width: 0; }
 .pt-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; margin: 0.4rem 0; }
 .pt-field { display: block; font-size: 0.85rem; margin-top: 0.5rem; }
 .pt-field[hidden] { display: none; }

@@ -2,7 +2,7 @@ import { parseTranscription, transcribe, TranscriptionRefusedError } from "../..
 import type { Transcription } from "../../components/photo/grid";
 
 /** A stand-in for client.beta.messages.stream that replays canned replies and records requests. */
-function fakeClient(replies: Array<{ text: string; stop_reason?: string; explanation?: string }>) {
+function fakeClient(replies: Array<{ text: string; thinking?: string; stop_reason?: string; explanation?: string }>) {
   const requests: any[] = [];
   let i = 0;
   const client: any = {
@@ -12,14 +12,20 @@ function fakeClient(replies: Array<{ text: string; stop_reason?: string; explana
           // Copy the messages, since the transcriber keeps appending to the same array.
           requests.push({ ...params, messages: params.messages.slice() });
           const r = replies[Math.min(i++, replies.length - 1)];
-          const handlers: Array<(d: string) => void> = [];
+          const handlers: Record<string, Array<(d: any) => void>> = {};
+          const emit = (event: string, data: any) => (handlers[event] || []).forEach((h) => h(data));
           return {
-            on(event: string, fn: (d: string) => void) {
-              if (event === "text") handlers.push(fn);
+            on(event: string, fn: (d: any) => void) {
+              (handlers[event] = handlers[event] || []).push(fn);
               return this;
             },
             async finalMessage() {
-              handlers.forEach((h) => h(r.text));
+              emit("streamEvent", {
+                type: "message_start",
+                message: { usage: { input_tokens: 20, cache_read_input_tokens: 80 } },
+              });
+              if (r.thinking) emit("thinking", r.thinking);
+              emit("text", r.text);
               return {
                 model: params.model,
                 content: [
@@ -94,7 +100,7 @@ describe("transcribe", () => {
 
     const req = requests[0];
     expect(req.model).toBe("claude-opus-5-5");
-    expect(req.thinking).toEqual({ type: "adaptive" });
+    expect(req.thinking).toEqual({ type: "adaptive", display: "summarized" });
     expect(req.output_config.effort).toBe("high");
     expect(req.output_config.format.type).toBe("json_schema");
     expect(req.fallbacks).toBe("default");
@@ -184,5 +190,26 @@ describe("snippets", () => {
     const text = requests[0].messages[0].content.at(-1).text;
     expect(text).toContain("Transcribe only this part of the photo above: Pallavi.");
     expect(text).toContain("Sw: s r g m");
+  });
+});
+
+describe("transcribe progress", () => {
+  test("asks for summarized thinking and reports thinking, estimates and exact counts", async () => {
+    const { client, requests } = fakeClient([{ text: GOOD, thinking: "Counting beats in row one." }]);
+    const thinking: string[] = [];
+    const progress: any[] = [];
+    await transcribe(client, {
+      images: IMG,
+      onThinking: (d) => thinking.push(d),
+      onProgress: (p) => progress.push(p),
+    });
+
+    expect(requests[0].thinking).toEqual({ type: "adaptive", display: "summarized" });
+    expect(thinking).toEqual(["Counting beats in row one."]);
+    expect(progress[0]).toEqual({ kind: "started", attempt: 0, inputTokens: 100, cacheReadTokens: 80 });
+    const phases = progress.filter((p) => p.kind === "streaming").map((p) => p.phase);
+    expect(phases).toEqual(["thinking", "writing"]);
+    const last = progress[progress.length - 1];
+    expect(last).toEqual({ kind: "finished", attempt: 0, outputTokens: 50, stopReason: "end_turn" });
   });
 });

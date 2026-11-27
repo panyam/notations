@@ -130,6 +130,15 @@ async function main(): Promise<number> {
     effort: opts.careful ? "xhigh" : "high",
     maxRepairs: opts.repairs != null ? Number(opts.repairs) : 2,
     onStatus: (m) => process.stderr.write(`  ${m}\n`),
+    // Thinking streams to stderr as it arrives, dimmed, so a long run is not silent.
+    onThinking: (delta) => process.stderr.write(`\x1b[2m${delta}\x1b[0m`),
+    onProgress: (p) => {
+      if (p.kind === "started") {
+        process.stderr.write(`  request: ${p.inputTokens} input tokens (${p.cacheReadTokens} from cache)\n`);
+      } else if (p.kind === "finished") {
+        process.stderr.write(`\n  reply: ${p.outputTokens} output tokens, stop: ${p.stopReason}\n`);
+      }
+    },
   });
 
   const outDir = String(opts.out || ".");
