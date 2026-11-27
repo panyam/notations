@@ -98,7 +98,7 @@ body {
 /* Navigation */
 .main-nav {
     display: flex;
-    gap: 2rem;
+    gap: 0.25rem;
 }
 
 .nav-item {
@@ -108,10 +108,14 @@ body {
 .nav-link {
     color: white;
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 4px;
     transition: background-color 0.2s;
     display: block;
+}
+
+.nav-link {
+    white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -926,6 +930,108 @@ pre code {
     display: none;
 }
 
+/* Menu button: shown only on narrow screens, where the nav is a drawer */
+.nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+.nav-toggle svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Search button and overlay (Pagefind, see docs/components/siteHeader.ts) */
+.search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 40px;
+    padding: 0 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.search-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.search-trigger svg {
+    width: 18px;
+    height: 18px;
+}
+
+.search-trigger kbd {
+    font-family: inherit;
+    font-size: 0.75rem;
+    padding: 0 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+}
+
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+}
+
+.search-overlay[hidden] {
+    display: none;
+}
+
+.search-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.search-panel {
+    position: relative;
+    max-width: 640px;
+    max-height: 75vh;
+    margin: 10vh auto 0;
+    padding: 1rem;
+    overflow-y: auto;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --pagefind-ui-primary: var(--link-color);
+    --pagefind-ui-text: var(--text-color);
+    --pagefind-ui-background: var(--bg-color);
+    --pagefind-ui-border: var(--border-color);
+    --pagefind-ui-tag: var(--bg-light);
+    --pagefind-ui-font: inherit;
+}
+
+/* Pagefind's CSS loads after this file and resets mark, so this needs the extra class. */
+.search-panel .pagefind-ui mark {
+    background-color: var(--accent-color);
+    color: #1a202c;
+}
+
+.search-unavailable {
+    color: var(--text-light);
+}
+
+body.search-open {
+    overflow: hidden;
+}
+
 /* Header actions layout */
 .header-actions {
     display: flex;
@@ -1159,6 +1265,84 @@ pre code {
     color: #ff8a80;
 }
 
+/* The full nav needs about 1,090px; below that it moves into a drawer. */
+@media (max-width: 1100px) {
+    /* Logo on the left; search, theme, GitHub and the menu button on the right. */
+    .header-container {
+        padding: 0 1rem;
+        gap: 0.5rem;
+    }
+
+    .header-actions {
+        margin-left: auto;
+        gap: 0.5rem;
+    }
+
+    .nav-toggle {
+        display: inline-flex;
+        order: 3;
+    }
+
+    .search-trigger-label,
+    .search-trigger kbd {
+        display: none;
+    }
+
+    .search-trigger {
+        width: 40px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    /* The nav becomes a drawer from the right, opened by .nav-toggle (siteHeader.ts). */
+    .main-nav {
+        display: none;
+    }
+
+    .site-header.nav-open .main-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(80vw, 300px);
+        padding: 1rem 0;
+        overflow-y: auto;
+        background-color: var(--bg-color);
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+        z-index: 2000;
+    }
+
+    .site-header.nav-open .nav-link {
+        color: var(--text-color);
+        font-weight: 600;
+        border-radius: 0;
+        padding: 0.6rem 1.25rem;
+    }
+
+    /* Dropdown groups are listed open in the drawer: hover menus don't work on touch. */
+    .site-header.nav-open .nav-dropdown {
+        display: block;
+        position: static;
+        margin: 0 0 0.5rem;
+        min-width: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .site-header.nav-open .nav-dropdown::before {
+        display: none;
+    }
+
+    .site-header.nav-open .nav-dropdown a {
+        padding: 0.45rem 1.25rem 0.45rem 2.25rem;
+        color: var(--text-light);
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .page-container {
@@ -1169,20 +1353,13 @@ pre code {
         position: static;
     }
 
-    .header-container {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 0 1rem;
-    }
-
-    .main-nav {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.25rem;
-    }
-
-    .nav-link {
-        padding: 0.35rem 0.6rem;
+    /* Search fills the screen on a phone. */
+    .search-panel {
+        margin: 0;
+        max-width: none;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
     }
 
     .notation-btn-text {
