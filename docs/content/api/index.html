@@ -115,9 +115,9 @@ if (errors.length === 0) {
 <p>The library includes full TypeScript type definitions:</p>
 
 <pre><code>import * as N from "notations";
-import { Notation, BeatLayout, ParseError } from "notations";
+import { Notation, GlobalBeatLayout, ParseError } from "notations";
 
-function loadNotation(source: string): [Notation, BeatLayout, ParseError[]] {
+function loadNotation(source: string): [Notation, GlobalBeatLayout, ParseError[]] {
   return N.load(source);
 }
 </code></pre>
@@ -154,7 +154,7 @@ const block = new NotationBlock(container, config);
   <li><strong>Line</strong> - A horizontal line of notation containing multiple roles</li>
   <li><strong>Role</strong> - A type of content (Sw for swaras, Sh for sahitya)</li>
   <li><strong>Atom</strong> - Basic unit (Note, Space, Rest, Group)</li>
-  <li><strong>BeatLayout</strong> - Layout information for rendering</li>
+  <li><strong>GlobalBeatLayout</strong> - Layout information for rendering</li>
 </ul>
 
 <h2>See Also</h2>

@@ -19,11 +19,11 @@ description: "Complete API reference for the Notations library"
 
 <h4>Returns</h4>
 
-<p>Tuple of <code>[Notation, BeatLayout, ParseError[]]</code></p>
+<p>Tuple of <code>[Notation, GlobalBeatLayout, ParseError[]]</code></p>
 
 <ul>
   <li><strong>Notation</strong> - Parsed notation object</li>
-  <li><strong>BeatLayout</strong> - Layout information for rendering</li>
+  <li><strong>GlobalBeatLayout</strong> - Layout information for rendering</li>
   <li><strong>ParseError[]</strong> - Array of parsing errors (empty if successful)</li>
 </ul>
 
@@ -162,15 +162,15 @@ console.log("Errors:", parser.errors);
   <li><strong>duration</strong> - Duration in units (Fraction)</li>
 </ul>
 
-<h2>BeatLayout Class</h2>
+<h2>GlobalBeatLayout Class</h2>
 
-<p>Contains layout information for rendering.</p>
+<p>Contains layout information for rendering. <code>load()</code> returns one for the whole notation.</p>
 
-<h3>Properties</h3>
+<h3>Members</h3>
 
 <ul>
-  <li><strong>beats</strong> - Array of Beat objects</li>
-  <li><strong>totalDuration</strong> - Total duration of the layout</li>
+  <li><strong>roleBeatsForLine</strong> - Map from a line's id to its beats, one array per role</li>
+  <li><strong>getGridModelForLine(lineId)</strong> - The grid that lines up the line's beats in columns</li>
 </ul>
 
 <h2>Carnatic Module</h2>
@@ -227,7 +227,7 @@ view.renderNotation(notation, beatLayout);
 
 <pre><code>import {
   Notation,
-  BeatLayout,
+  GlobalBeatLayout,
   ParseError,
   Parser,
   Note,

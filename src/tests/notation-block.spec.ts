@@ -153,3 +153,22 @@ describe("NotationBlock keyboard shortcuts", () => {
     expect(block.isEditing).toBe(true);
   });
 });
+
+describe("NotationBlock keyboard access", () => {
+  test("the source and the output can take focus, so a keyboard can scroll them", async () => {
+    const { root } = await mount("S R G M", { caption: "Basic Swaras" });
+    const pre = root.querySelector("pre.notation-source-pre")!;
+    const view = root.querySelector(".notation-view")!;
+    expect(pre.getAttribute("tabindex")).toBe("0");
+    expect(view.getAttribute("tabindex")).toBe("0");
+    expect(view.getAttribute("role")).toBe("group");
+    expect(pre.getAttribute("aria-label")).toBe("Notation source: Basic Swaras");
+    expect(view.getAttribute("aria-label")).toBe("Rendered notation: Basic Swaras");
+  });
+
+  test("without a caption the labels still say what each box is", async () => {
+    const { root } = await mount("S R G M");
+    expect(root.querySelector("pre.notation-source-pre")!.getAttribute("aria-label")).toBe("Notation source");
+    expect(root.querySelector(".notation-view")!.getAttribute("aria-label")).toBe("Rendered notation");
+  });
+});
