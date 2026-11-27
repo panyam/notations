@@ -5,8 +5,8 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 ## At a glance
 
-- master — photo transcriber, #52 — next: run the Kedaram rows as a crop to see whether the faint octave dot gets read
-- This run: #56 merged (closes #14; docs server on s3gen v0.1.7, panyam/s3gen#4). #52 is running in another session.
+- master — photo transcriber, #59 — next: one real transcription from the page, then go on down the notebook (Shankarabharanam)
+- This run: #60 merged (closes #52, #40); panyam/notation_demos#2 merged; the v3 demo review is panyam/notation_demos#3
 
 ## Across threads
 
@@ -14,9 +14,9 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 ## master
 
-- **Last touched**: 2026-11-26 21:10 (Srirams-MBP:~/projects/notations/docs)
-- **Ticket**: #52 (in progress in another session), then #40. The photo transcriber shipped in #39. #54 fixed ragam precedence, and #55 keeps uploads and the editor in IndexedDB.
+- **Last touched**: 2026-11-26 22:00 (Srirams-MBP:~/projects/notations/master)
+- **Ticket**: #59, the follow-ups from #60. The page now has pages as sources and an ordered list of transcriptions, each with its own ragam, talam and swaras per beat (#40). The CLI has `--page` and `--crop` (#52).
 - **Why**: get the Valachi Vachi Navaragamalika notebook (two pages, nine ragas) transcribed from photos with little hand fixing.
-- **Where it stopped**: a whole-page run with the new octave-dot guidance still read row 1's `SNSR` without the dot under the N. At 500 dpi the dot is a few faint pixels, and the 2400 px downscale shrinks it to one or two. The front matter now takes `--ragams` over the page heading.
-- **Next action**: crop the two Kedaram rows from `~/projects/notations/NavaRagamalikaVarnam.pdf` and run them with `--talam "|4|2|2|" --npb 4 --case swarasthana --ragams Kedaram`, once at the default effort and once with `--careful` (effort xhigh) (#52). Then go on to Shankarabharanam.
-- **Open questions**: #40 asks how transcription entries reach the editor. Option A appends as you go, and each entry keeps its result. Option B assembles the editor from the entries. The leaning is A. Once #40 lands, its list goes in `docs/components/photo/photoStore.ts`, and the stored `photos` key needs a migration.
+- **Where it stopped**: the Kedaram rows read correctly from a crop, octave dot included. That cost $0.19 at normal effort; careful cost $0.46 and gained nothing. Nobody has run a real transcription from the new page yet; the browser checks used injected results.
+- **Next action**: on the live page, add `~/projects/notations/NavaRagamalikaVarnam.pdf`, make a "Pallavi - Kedaram" entry (Adi, 4 per beat, both Kedaram rows), and transcribe. Then add entries down page 1: Shankarabharanam, Kalyani, Begada.
+- **Open questions**: #59 asks whether `\cycle("6 4 4")` should parse or error, and what `<<"..."` means in three Thyagaraja demo files. The `\meta` conversions in `~/projects/notation_demos/master` (90 files) are still uncommitted.
