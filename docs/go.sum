@@ -22,8 +22,8 @@ github.com/panyam/gocurrent v0.1.1 h1:UFFCkAxYNdGL4RuUCYBneWCS0jIlquIpvgvDcezega
 github.com/panyam/gocurrent v0.1.1/go.mod h1:jIIhcNfNnnIe2JXH8aY2+ba+/5G1fzwCWoZXdcMNw6o=
 github.com/panyam/goutils v0.1.13 h1:V819IdZTEJ3rpu33ZqohC6O9ou7KOu6cxfigoYT12OQ=
 github.com/panyam/goutils v0.1.13/go.mod h1:vd3iFcv1DjaeV6h8tslIJh9d09RLndg8UYNSGROBrM4=
-github.com/panyam/s3gen v0.1.7 h1:pozhbFx0mAPgaujB5bs6RgoVLPlb12u+Tv636s/2oMY=
-github.com/panyam/s3gen v0.1.7/go.mod h1:w2ESnmcixDNKiZ7rX84oE+tQCpfYMrB4HEuUYDK/v8M=
+github.com/panyam/s3gen v0.1.8 h1:jUuyyML36S1YSU0gk2k8K/Hsw+I+bBPbDu4arT4cziw=
+github.com/panyam/s3gen v0.1.8/go.mod h1:w2ESnmcixDNKiZ7rX84oE+tQCpfYMrB4HEuUYDK/v8M=
 github.com/panyam/servicekit v0.2.6 h1:FUQoObJI3zf6XKPbTGPsVw+SZv5cfcmd4SYPLnrZUig=
 github.com/panyam/servicekit v0.2.6/go.mod h1:lHa4y2Q0vVdgVQnnRXsTsp6fxXGVNpD8bl0gxEHoRGs=
 github.com/panyam/templar v0.1.0 h1:yy4sqois9gvNhIy2xsNyRoI5r/qvz1tVY+YuxnmzbWY=
