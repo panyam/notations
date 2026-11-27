@@ -1057,8 +1057,26 @@ body.search-open {
     overflow: hidden;
 }
 
+/* GitHub link: an icon button matching the theme toggle. */
 .btn-github {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     color: white;
+}
+
+.btn-github:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-github svg {
+    width: 20px;
+    height: 20px;
 }
 
 .home-hero a.btn-outline {
