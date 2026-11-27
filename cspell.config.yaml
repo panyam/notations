@@ -7,9 +7,11 @@ files:
   - "docs/content/**/*.html"
 words:
   - aahaatam
+  - alankaram
   - alapana
   - anga
   - anudhrutam
+  - anudrutam
   - anupallavi
   - arohanam
   - avarohanam
@@ -21,11 +23,14 @@ words:
   - charanam
   - chatusra
   - chatusram
+  - chitta
   - dhaivata
   - dhin
   - dhrutam
   - dhruva
   - dimi
+  - drutam
+  - eduppu
   - eetra
   - gamaka
   - gamakas
@@ -37,6 +42,7 @@ words:
   - jaaru
   - jantai
   - jaru
+  - jati
   - jhampa
   - jhanu
   - jhompa
@@ -52,6 +58,7 @@ words:
   - karvai
   - karvais
   - khanda
+  - khandam
   - kita
   - kori
   - korvai
@@ -62,10 +69,14 @@ words:
   - kunda
   - laghu
   - lintfix
+  - madhya
   - madhyama
+  - madhyamam
   - malahari
+  - mandra
   - matya
   - misra
+  - misram
   - mita
   - mohana
   - mohanam
@@ -73,6 +84,7 @@ words:
   - mridangam
   - muktayi
   - mukthayi
+  - nadai
   - ninnu
   - nishada
   - nokku
@@ -84,19 +96,26 @@ words:
   - pdns
   - perc
   - prathyagatam
+  - prati
+  - purvangam
   - ragam
   - rishabha
   - rupaka
   - sahithya
   - sahityam
+  - samam
   - sankeerna
+  - sankeernam
   - sapta
   - sarali
   - shadja
   - shankarabharanam
   - solkattu
+  - sphuritam
   - spuritam
   - srgm
+  - sthayi
+  - suddha
   - swara
   - swaram
   - swarams
@@ -117,6 +136,7 @@ words:
   - tisram
   - todi
   - triputa
+  - uttarangam
   - vaali
   - varisai
   - varnam

@@ -16,17 +16,19 @@ description: "Structuring RTP (Ragam, Tanam, Pallavi) with different sections"
 
 <h2>Ragam Section</h2>
 
+<p>The examples on this page are in Kalyani, so <code>M</code> stands for its prati madhyamam.</p>
+
 <p>The ragam is a free exploration with no fixed rhythm. There is no command for that yet, so the example below leaves out <code>\cycle</code> and lets the default apply:</p>
 
 <notation id="ragam" showSource="true" caption="Ragam - Raga Kalyani Opening">
 \line("Alapana - Lower Octave")
-S , , R , G , "M#" , , P , , ,
+S , , R , G , M , , P , , ,
 
 \line("Alapana - Middle Octave")
-"M#" P D N , S. , , R. , G. "M#." P. D.
+M P D N , S. , , R. , G. M. P. D.
 
 \line("Alapana - Descent")
-S. , D N , P "M#" G R , S , , ,
+S. , D N , P M G R , S , , ,
 </notation>
 
 <h2>Tanam Section</h2>
@@ -35,73 +37,76 @@ S. , D N , P "M#" G R , S , , ,
 
 <notation id="tanam" showSource="true" caption="Tanam - Raga Kalyani">
 \line("Tanam")
-S R G "M#" , P D N S. , ta na na tom , ta na na tom
+S R G M , P D N S. , ta na na tom , ta na na tom
 
-S. R. G. "M#." , P. D. N. S.. , ta na na tom , ta na na tom
+S. R. G. M. , P. D. N. S.. , ta na na tom , ta na na tom
 
-S.. D. N. S. , P "M#" G R , S , , , , ta nom , ,
+S.. D. N. S. , P M G R , S , , , , ta nom , ,
 </notation>
 
 <h2>Pallavi - Setting the Tala</h2>
 
-<p>The pallavi introduces the composed line with tala. Here's an example in Misra Chapu (7 beats):</p>
+<p>The pallavi brings in the tala. This one is in Misra Chapu (7 beats). At 2 notes per beat, the pallavi line fills one avartanam:</p>
 
-<notation id="pallavi-setup" showSource="true" caption="Pallavi - Tala Introduction">
+<notation id="pallavi-setup" showSource="true" caption="Pallavi in Misra Chapu">
 \cycle("|3|2|2|")
-\beatDuration(4)
+\beatDuration(2)
 \line("Pallavi - Misra Chapu")
-Sw: S R G "M#" , P D N , S. R. G.
-Sh: ga na na tha , bho vi , ka ra na
+Sw: S , R G M , P , D N S. , R. G.
 </notation>
 
-<h2>Pallavi - First Speed</h2>
+<h2>Pallavi - Three Speeds</h2>
 
-<p>Elaborate the pallavi at different speeds:</p>
+<p>The pallavi is then sung at each speed. Each speed doubles the notes per beat: 2, 4, then 8.</p>
 
-<notation id="pallavi-first" showSource="true" caption="Pallavi Elaboration - First Speed">
+<notation id="pallavi-first" showSource="true" caption="Pallavi - First Speed">
 \cycle("|3|2|2|")
-\beatDuration(4)
-\line("1st Speed Variation")
-S R G "M#" , P "M#" G R , S R G "M#"
-P D N S. , R. S. N D , P "M#" G R
+\beatDuration(2)
+\line("1st Speed")
+S , R G M , P , D N S. , R. G.
 </notation>
 
-<h2>Pallavi - Second Speed</h2>
-
-<notation id="pallavi-second" showSource="true" caption="Pallavi Elaboration - Second Speed">
+<notation id="pallavi-second" showSource="true" caption="Pallavi - Second Speed">
 \cycle("|3|2|2|")
 \beatDuration(4)
-\line("2nd Speed Variation")
-SR "GM#" PD , NS. R.S. ND , "PM#" GR SR
-"GM#" PD NS. , R.G. "M#.P." D.N. , S.R. "G.M#." P.D.
+\line("2nd Speed")
+S , R G M , P , D N S. , R. G.  S. , N D P , M , G R S , , ,
 </notation>
 
-<h2>Pallavi - Third Speed (Tisram)</h2>
-
-<notation id="pallavi-third" showSource="true" caption="Pallavi Elaboration - Third Speed">
+<notation id="pallavi-third" showSource="true" caption="Pallavi - Third Speed">
 \cycle("|3|2|2|")
-\beatDuration(4)
-\line("3rd Speed Variation (Tisram)")
-SRG "GM#P" PDN , NS.R. R.S.N NDP , "PM#G" GRS SRG
-"GM#P" PDN NS.R. , "R.G.M#." "M#.P.D." D.N.S.. , S..D.N. N.S.P "PM#G"
+\beatDuration(8)
+\line("3rd Speed")
+S R G M P D N S. N D P M G R  S R G M P D N S. N D P M G R  S R G M P D N S. N D P M G R  S R G M P D N S. N D P M G R
+</notation>
+
+<h2>Pallavi - Tisra Gati</h2>
+
+<p>RTPs often take the pallavi into tisram too. That changes the gati, 3 notes per beat, rather than the speed:</p>
+
+<notation id="pallavi-tisram" showSource="true" caption="Pallavi - Tisra Gati">
+\cycle("|3|2|2|")
+\beatDuration(3)
+\line("Tisra Gati")
+S R G  R G M  G M P  M P D  P D N  D N S.  S. , ,
 </notation>
 
 <h2>Kalpana Swarams</h2>
 
-<p>Improvisational swarams that return to the pallavi line:</p>
+<p>Improvised swara passages, each returning to the pallavi line:</p>
 
 <notation id="kalpana" showSource="true" caption="Kalpana Swarams">
 \cycle("|3|2|2|")
-\beatDuration(4)
+\beatDuration(2)
 \line("Kalpana Swaram 1")
-SR "GM#" PD , NS. R.S. ND , "PM#" GR SR
+P M G R S , R G M P D , N ,
 \line("Return to Pallavi")
-S R G "M#" , P D N , S. R. G.
+S , R G M , P , D N S. , R. G.
 
 \line("Kalpana Swaram 2")
-S.D. N.S. S.P , "PM#" "M#G" GR , RS SR RG
+S. N D P M G R S , , R G M ,
 \line("Return to Pallavi")
-S R G "M#" , P D N , S. R. G.
+S , R G M , P , D N S. , R. G.
 </notation>
 
 <h2>Complete RTP Structure</h2>

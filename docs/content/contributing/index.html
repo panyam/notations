@@ -15,7 +15,7 @@ description: "How to contribute to the Notations project"
   <li><strong>docs</strong> - Documentation site (this site)</li>
 </ul>
 
-<h2>Development Setup</h2>
+<h2 id="development-setup">Development Setup</h2>
 
 <p>Clone the repository and install dependencies:</p>
 
@@ -63,11 +63,38 @@ pnpm lintfix
 
 <p>Documentation improvements are always welcome. The docs site is built with s3gen:</p>
 
-<pre><code>cd docs
-go run . serve
+<pre><code>pnpm run build:docs
+cd docs
+make run      # dev server on http://localhost:8085/notations/
+make site     # the built site, with its search index, in docs/dist/docs
 </code></pre>
 
 <p>Documentation files are in <code>docs/content/</code> and use HTML with frontmatter.</p>
+
+<h2 id="submitting-an-example">Submitting an Example</h2>
+
+<p>Examples on this site should be real notation, checked by someone who knows the music. Parsing isn't enough: an example can parse and still teach the wrong tala or the wrong gati. When you add one, give:</p>
+
+<ul>
+  <li><strong>Source</strong> - where the notation comes from: a book, a teacher, or a recording. For a composition, the composer, raga and tala.</li>
+  <li><strong>What it shows</strong> - one sentence on what the example teaches, which becomes its heading or caption.</li>
+  <li><strong>The notation</strong> - in a <code>&lt;notation&gt;</code> block, with one avartanam per line where you can.</li>
+</ul>
+
+<p>A template to copy:</p>
+
+<pre><code>&lt;h2&gt;Adi Tala in Tisra Gati&lt;/h2&gt;
+
+&lt;p&gt;Source: ... What it shows: ...&lt;/p&gt;
+
+&lt;notation id="a-unique-id" showSource="true" caption="Adi tala in tisra gati"&gt;
+\cycle("|4|2|2|")
+\beatDuration(3)
+Sw: S R G  R G M  G M P  M P D  P D N  D N S.  S. N D  N D P
+&lt;/notation&gt;
+</code></pre>
+
+<p><code>pnpm test</code> runs every example on the site through the parser. It fails if an example doesn't parse, writes swaras run together (<code>SRG</code> is one note, not three), or names a tala whose <code>\cycle</code> doesn't match it.</p>
 
 <h2>Areas for Contribution</h2>
 

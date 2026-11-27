@@ -25,14 +25,6 @@
 
     <!-- Page Footer -->
     <footer class="content-footer">
-        {{ if .FrontMatter.tags }}
-        <div class="tags">
-            {{ range .FrontMatter.tags }}
-            <a href="{{.Site.PathPrefix}}/tags/{{ . }}/" class="tag">{{ . }}</a>
-            {{ end }}
-        </div>
-        {{ end }}
-
         <!-- Previous/Next Navigation -->
         {{ if or .FrontMatter.prev .FrontMatter.next }}
         <nav class="page-nav">

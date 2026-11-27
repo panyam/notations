@@ -16,19 +16,19 @@ S ~ R ~/ G ~\ M
 We have the following embellishments 
 <p>The embellishment text (like <code>~</code> or Jaaru (<code>~/</code> or <code>~\</code>) provides information about the ornament to apply.</p>
 
-<h2 id="pre-and-post-embellishments">Pre and Post Embellishments</h2>
+<h2 id="embellishment-position">Where Embellishments Go</h2>
 
-<p>Embellishments can appear before or after a note depending on the ornament type:</p>
+<p>Every embellishment is a prefix: write it directly before the note it belongs to.</p>
 
-<notation id="embel-position" showSource="true" caption="Pre and Post Embellishments">
+<notation id="embel-position" showSource="true" caption="Embellishments before their notes">
 ~/ S R ~ G M
 </notation>
 
-<p>The notation system and the Carnatic plugin determine whether an embellishment is valid before or after a note.</p>
+<p>Here <code>~/</code> belongs to S and <code>~</code> to G.</p>
 
 <h2 id="embellishments-with-groups">Embellishments with Groups</h2>
 
-<p>Embellishments work with grouped notes:</p>
+<p>Notes inside a group take embellishments the same way. An embellishment can't apply to a whole group.</p>
 
 <notation id="group-embel" showSource="true" caption="Embellishments in Groups">
 S [R ~/ G] [M ~\ P] D N S.

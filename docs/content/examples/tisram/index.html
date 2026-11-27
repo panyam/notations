@@ -1,139 +1,96 @@
 ---
 title: "Tisram Notation"
-description: "Working with 3 notes per beat patterns (tisram gati)"
+description: "Working with 3 notes per beat (tisra gati)"
 ---
 
-<p>Tisram (3 notes per beat) is one of the five gatis (rhythmic patterns) in Carnatic music. This guide shows how to notate tisram patterns effectively.</p>
+<p>Tisram, or tisra gati, puts 3 notes in each beat. It is one of the five gatis, along with chatusram (4), khandam (5), misram (7) and sankeernam (9). The tala doesn't change: Adi still has 8 beats, and each beat is counted <em>ta ki ta</em> instead of <em>ta ka di mi</em>.</p>
 
-<h2>Understanding Tisram</h2>
+<p>In the DSL, <code>\beatDuration(3)</code> sets 3 notes to a beat. Write each swara as its own note, separated by spaces. <code>S R G</code> is three notes, and <code>SRG</code> would be a single note named "SRG".</p>
 
-<p>In Adi Tala (8 beats), tisram means fitting 3 notes into each beat, creating a triplet feel:</p>
+<h2>Tisram in Adi Tala</h2>
 
-<notation id="tisram-basic" showSource="true" caption="Basic Tisram Pattern">
+<p>Eight beats of three notes each make 24 notes per avartanam:</p>
+
+<notation id="tisram-basic" showSource="true" caption="Tisram in Adi Tala">
 \cycle("|4|2|2|")
-\beatDuration(4)
-\line("Tisram - 3 notes per beat")
-SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... , , , , , , , , , , , , , , , , , , ,
+\beatDuration(3)
+S R G  R G M  G M P  M P D  P D N  D N S.  S. N D  N D P
 </notation>
 
-<h2>Tisram vs Chatusram (4 notes per beat)</h2>
+<h2>Tisram vs Chatusram</h2>
 
-<p>Comparison of the same phrase in different gatis:</p>
+<p>The same tala at 4 notes per beat and then at 3. Only <code>\beatDuration</code> changes:</p>
 
-<notation id="tisram-comparison" showSource="true" caption="Gati Comparison">
+<notation id="tisram-comparison" showSource="true" caption="Chatusram, then tisram">
 \cycle("|4|2|2|")
 \beatDuration(4)
 \line("Chatusram (4 per beat)")
-SRGM PDNS. R.G.M. P.D.N. , S..R..G..M.. P..D..N..S... , , , , , , , , , , , , , ,
+S R G M  R G M P  G M P D  M P D N  P D N S.  S. N D P  N D P M  D P M G
 
+\beatDuration(3)
 \line("Tisram (3 per beat)")
-SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... , , , , , , , , , , , , ,
+S R G  R G M  G M P  M P D  P D N  D N S.  S. N D  N D P
 </notation>
 
-<h2>Tisram in Different Talas</h2>
-
-<h3>Adi Tala (8 beats)</h3>
-
-<notation id="tisram-adi" showSource="true" caption="Tisram in Adi Tala">
-\cycle("|4|2|2|")
-\beatDuration(4)
-SRG MPD NS. R.S. , NPD MGR SRG , MPD NS. R.G. , M.P. D.N. S..
-</notation>
+<h2>Tisram in Other Talas</h2>
 
 <h3>Rupaka Tala (6 beats)</h3>
 
 <notation id="tisram-rupaka" showSource="true" caption="Tisram in Rupaka Tala">
 \cycle("|2|4|")
-\beatDuration(4)
-SRG MPD , NS. R.G. M.P. D.N.
-S..R.. G..M.. , P..D.. N..S... , , ,
+\beatDuration(3)
+S R G  R G M  G M P  M P D  P D N  D N S.
 </notation>
 
 <h3>Misra Chapu (7 beats)</h3>
 
 <notation id="tisram-chapu" showSource="true" caption="Tisram in Misra Chapu">
 \cycle("|3|2|2|")
-\beatDuration(4)
-SRG MPD NS. , R.G. M.P. , D.N. S..R..
-G..M.. P..D.. N..S... , , , , , , , , , , , , , ,
+\beatDuration(3)
+S R G  R G M  G M P  M P D  P D N  D N S.  S. , ,
 </notation>
 
-<h2>Kanda Chapu (5 beats) - Natural Tisram Feel</h2>
+<h2>Tisram Phrases</h2>
 
-<p>Kanda Chapu naturally accommodates tisram patterns:</p>
+<h3>Descending</h3>
 
-<notation id="kanda-chapu" showSource="true" caption="Tisram in Kanda Chapu">
-\cycle("|2|3|")
-\beatDuration(4)
-SRG MPD , NS. R.G. M.P.
-D.N. S..R.. , G..M.. P..D.. N..S...
-</notation>
-
-<h2>Creating Tisram Phrases</h2>
-
-<h3>Ascending Patterns</h3>
-
-<notation id="tisram-ascending" showSource="true" caption="Tisram Ascending Patterns">
+<notation id="tisram-descending" showSource="true" caption="Tisram, descending">
 \cycle("|4|2|2|")
-\beatDuration(4)
-SRG RGM GMP MPD , PDN DNS. NS.R. S.R.G. , R.G.M. G.M.P. M.P.D. P.D.N. , D.N.S.. , , ,  , , , , , ,
+\beatDuration(3)
+S. N D  N D P  D P M  P M G  M G R  G R S  S , ,  , , ,
 </notation>
 
-<h3>Descending Patterns</h3>
+<h3>Repeated groups</h3>
 
-<notation id="tisram-descending" showSource="true" caption="Tisram Descending Patterns">
+<notation id="tisram-mixed" showSource="true" caption="Tisram, each group twice">
 \cycle("|4|2|2|")
-\beatDuration(4)
-S..N..D.. N..D..P.. D..P..M.. P..M..G.. , M..G..R.. G..R..S.. R..S..N. S..N.D , ND.P. D.PM PM.G , MGR. RS.N NPD.
-</notation>
-
-<h3>Mixed Patterns</h3>
-
-<notation id="tisram-mixed" showSource="true" caption="Tisram Mixed Patterns">
-\cycle("|4|2|2|")
-\beatDuration(4)
-SRG SRG MGP MGP , PDN PDN S.R.G. S.R.G. , M.P.D. M.P.D. N.S..R.. N.S..R.. , G..M..P.. , , , , , , , , ,
+\beatDuration(3)
+S R G  S R G  R G M  R G M  G M P  G M P  M P D  M P D
 </notation>
 
 <h2>Tisram with Gamakas</h2>
 
-<p>Adding embellishments to tisram patterns:</p>
+<p>Gamakas go in front of the note they belong to, as anywhere else:</p>
 
 <notation id="tisram-gamakas" showSource="true" caption="Tisram with Gamakas">
 \cycle("|4|2|2|")
-\beatDuration(4)
-~ SRG MPD NS.R.G. M.P.D. ~/ N.S.. , ~ S..D..N.. N..S..P.. P..M..G.. MGR ~/ S , , , , , , , , , , , , , , , , , , , , , , , , , ,
-</notation>
-
-<h2>Converting from Chatusram to Tisram</h2>
-
-<p>Take a phrase in chatusram and convert it to tisram:</p>
-
-<notation id="conversion" showSource="true" caption="Chatusram to Tisram Conversion">
-\cycle("|4|2|2|")
-\beatDuration(4)
-\line("Original (Chatusram - 4 per beat)")
-SRGM PDNS. R.G.M.P. D.N.S..R.. , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
-
-\line("Converted (Tisram - 3 per beat)")
-SRG MPD NS. R.G. , M.P. D.N. S..R.. G..M.. , P..D.. N..S... , , , , , , , , , , , , , , , , , , ,
+\beatDuration(3)
+S R ~/ G  R G ~ M  G M P  M P D  P D N  D N S.  S. N D  N D P
 </notation>
 
 <h2>Practical Tips</h2>
 
 <ul>
-  <li>Tisram creates a triplet feel - think "1-and-a, 2-and-a, 3-and-a"</li>
-  <li>Practice with a metronome to internalize the 3-against-4 feel</li>
-  <li>Kanda Chapu (5 beats) is especially suited for tisram</li>
-  <li>Use tisram strategically to create rhythmic interest</li>
-  <li>Combine with other gatis (chatusram, khanda) for variety</li>
-  <li>Mark tisram sections clearly when notating</li>
+  <li>Count each beat as <em>ta ki ta</em> while keeping the tala's claps and waves as usual</li>
+  <li>Practice with a metronome to feel 3 against the 4 of chatusram</li>
+  <li>Change <code>\beatDuration</code> between lines to move between gatis</li>
+  <li>Mark tisram sections with <code>\line</code> so readers see the change of gati</li>
 </ul>
 
 <h2>See Also</h2>
 
 <ul>
-  <li><a href="{{.Site.PathPrefix}}/examples/different-speeds/">Different Speeds</a> - Combine tisram with speed variations</li>
-  <li><a href="{{.Site.PathPrefix}}/examples/common-talas/">Common Talas</a> - Tisram in different tala contexts</li>
-  <li><a href="{{.Site.PathPrefix}}/reference/cycles/">Cycles Reference</a> - Understanding tala cycles</li>
+  <li><a href="{{.Site.PathPrefix}}/examples/different-speeds/">Different Speeds</a> - Speeds double the notes per beat, which is a different thing from gati</li>
+  <li><a href="{{.Site.PathPrefix}}/examples/common-talas/">Common Talas</a> - The talas these examples use</li>
+  <li><a href="{{.Site.PathPrefix}}/reference/cycles/">Cycles Reference</a> - Gati, kalai and tala cycles</li>
 </ul>
