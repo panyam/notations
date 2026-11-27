@@ -7,6 +7,7 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 
 - master — photo transcriber, #59 — next: one real transcription from the page, then go on down the notebook (Shankarabharanam)
 - This run: #60 merged (closes #52, #40); panyam/notation_demos#2 merged; the v3 demo review is panyam/notation_demos#3
+- Docs site (other session): #61, #62, #65 merged (close #51, #50): drawer, Pagefind search, lazy notation code, WCAG AA colours, cspell in CI. s3gen v0.1.8 copies `static/`. Leftovers are in #64.
 
 ## Across threads
 

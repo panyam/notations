@@ -62,6 +62,8 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - Search is Pagefind over the built `dist/docs`, indexed by `make render` (CI runs it). `make run`
   has no index, so the search box says so. Test search on `make site` output served under
   `/notations/`.
+- White header, footer and hero text sits on `--header-bg` and `--footer-bg`. Don't put it on
+  `--primary-color`, which is light blue in dark mode (#65).
 - The docs webpack config has no Node polyfills (`buffer: false`).
 - Run Prettier on files by path. Running it over all of `docs/components` reformats unrelated
   files.
