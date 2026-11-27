@@ -181,6 +181,19 @@ describe("known facts", () => {
     // The second answer uses Adi, but its 4-beat line is now half an avartanam: still reported.
     expect(r.report.errors.join("\n")).toContain("not a multiple of the 8-beat avartanam");
   });
+  test("a ragam the user gave wins over the one read from the page", async () => {
+    const { client } = fakeClient([{ text: GOOD.replace('"value":"Mohanam"', '"value":"KEDHARM"') }]);
+    const r = await transcribe(client, { images: IMG, known: { ragams: "Kedaram" } });
+    expect(r.notation).toContain('ragam: "Kedaram"');
+    expect(r.notation).not.toContain("KEDHARM");
+    expect(r.transcription.metadata).toEqual([{ key: "ragam", value: "Kedaram" }]);
+  });
+
+  test("a ragam the user gave is added when the page names none", async () => {
+    const { client } = fakeClient([{ text: GOOD.replace('{"key":"ragam","value":"Mohanam"}', "") }]);
+    const r = await transcribe(client, { images: IMG, known: { ragams: "Kedaram" } });
+    expect(r.transcription.metadata).toEqual([{ key: "ragam", value: "Kedaram" }]);
+  });
 });
 
 describe("snippets", () => {

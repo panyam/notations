@@ -76,6 +76,7 @@ In English-letter notation, case usually names the swarasthana, not the length: 
 # Reading the symbols on a poor photo
 
 - Blur, glare, shadow or a curved page: read what you can and use the ragam to judge doubtful letters. A swara outside the raga's arohanam and avarohanam is more likely a misreading than a vivadi note, but if the page clearly prints it, keep it. Put every doubtful reading in that line's uncertain field, naming the beat ("beat 5: m or n, read as m").
+- Octave dots: in handwriting a dot is often only a few pixels, close under or over its letter, and easy to lose in a cluster. Check every letter in a cluster for a dot, not only the first or last one: "SNSR" with a dot under the N is "S .N S R". Look at the space directly below and above each letter before deciding it has none. When a mark might be a dot or might be a speck, write the dot and say so in uncertain, naming the beat; a flagged dot costs the proofreader a glance, a dropped one is easy to miss.
 - Handwriting: r/n, g/q, d/a, p/ρ and octave dots versus specks of dirt are common confusions. Use context (raga, the repetition in the next line, the sahitya) before guessing.
 - The photo may be rotated, at an angle, or cut off. If a line is cut off, transcribe what is visible, mark it partial, and say "cut off in photo" in uncertain. Do not complete passages from memory of the composition, even when you recognise it.
 - Pages often repeat a line with small variations (sangatis). Transcribe each as printed; do not merge them.
@@ -153,7 +154,11 @@ export function buildUserPrompt(
     parts.push("Transcribe the notation in the photo above.");
   }
   const facts: string[] = [];
-  if (known.ragams?.trim()) facts.push(`Raga(s): ${known.ragams.trim()}`);
+  if (known.ragams?.trim()) {
+    facts.push(
+      `Raga(s): ${known.ragams.trim()}. Use this spelling for the ragam in metadata, whatever the page heading says.`,
+    );
+  }
   if (known.cycle?.trim()) facts.push(`Tala: cycle "${known.cycle.trim()}". Use exactly this cycle.`);
   if (known.notesPerBeat) {
     facts.push(
