@@ -59,6 +59,9 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - The docs server is s3gen (`docs/main.go`, Go 1.26). Change how it serves in s3gen
   (`~/newstack/s3gen/main`), then bump `docs/go.mod`. `Site.Serve` shuts down gracefully on
   SIGINT (v0.1.7), and a build copies `static/` into `dist/docs` (v0.1.8).
+- `pnpm test` checks every docs example: it parses, no swaras run together (`SRG` is one note),
+  and a named tala uses its standard cycle (`docs/tests/examples.spec.ts`). `links.spec.ts`
+  checks internal links. Musical claims still need a musician (#72).
 - Search is Pagefind over the built `dist/docs`, indexed by `make render` (CI runs it). `make run`
   has no index, so the search box says so. Test search on `make site` output served under
   `/notations/`.
