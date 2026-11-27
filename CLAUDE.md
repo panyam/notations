@@ -43,6 +43,8 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - TS 6 loads no `@types` packages by default. `tsconfig.test.json` (jest) and
   `docs/tsconfig.json` list theirs. `docs/components/styles.d.ts` declares `.css`, `.scss`
   and `?url` imports.
+- Parser errors contract, galore tokenizer priorities and command validation:
+  `src/ARCHITECTURE.md`. `load()` never throws; a new command reports bad params as errors.
 - ts-jest compiles to CommonJS, so code that jest loads cannot use `import.meta`. For an
   asset URL in docs code, import `"file?url"`; webpack emits the file.
 - `DockViewPlayground` is a `createDock` from `@panyam/tsappkit-dock`, which supports dockview-core

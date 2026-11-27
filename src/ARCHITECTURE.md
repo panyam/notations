@@ -81,6 +81,16 @@ Key classes:
 - Semantic actions use `blockStartStack` to track nested block boundaries
 - Commands inside blocks are collected and associated with the wrapping command
 
+Errors: `parse()` and `load()` report every failure in the errors array and never throw (#69).
+A rule handler must not throw, since anything but a `G.ParseError` escapes galore's loop.
+`createCommand` returns null and records an error for an unknown command or rejected params.
+Token handlers push a `TokenizerError` and return null to drop a token. They can also move
+`tape.index`, as the `>` embed handler does to resume after a stray `>`.
+
+Tokenizer gotcha: galore gives `%skip` rules priority 40 and `%token` rules 10, and priority
+wins before match length. A token can't claim leading whitespace, so a `^`-anchored token never
+matches an indented line. The `>` embed token checks its line start in its handler instead (#59).
+
 ### Commands (`commands.ts`)
 Commands that modify the notation:
 - `SetCycle`, `SetBeatDuration`, `SetBreaks` - Layout commands
@@ -89,6 +99,9 @@ Commands that modify the notation:
 - `Section`, `Repeat`, `ScopedGroup` - Block-only commands (configuration)
 - All commands implement `applyToBlock(container: Block)` as the primary method
 - `applyToNotation()` is deprecated and delegates to `applyToBlock()`
+- Commands check their params in `validateParams()`, which the base `Command` constructor calls,
+  and throw on bad ones. It runs before subclass field initializers, so it can't store results
+  in fields. `SetCycle.cycle` parses the string again on each call for this reason.
 
 ### Layout Engine
 - `beats.ts` - Beat, BeatColumn, BeatColDAG, GlobalBeatLayout

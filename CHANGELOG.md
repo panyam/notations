@@ -52,12 +52,23 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 - `NotationBlock.updatePreview()` and `applyEdit()` return a Promise. The output carries
   `aria-busy="true"` while a render is pending, and `block.rendering` is the latest render.
 - `NotationBlock` no longer logs to the console on every render.
+- A bar written without spaces reads whole numbers: `\cycle("10|4")` is bars of 10 and 4
+  beats, not 1 and 4. A lone `"4:2"` or `"3/2"` in a bar is a beat spec, as in a spaced bar.
+  Anything else in a bar, such as `"4x"`, is an error (#59).
+- The old `"x">>` and `<<"x"` markers, and a `>` after other text on its line, are parse
+  errors. The marker error names the `\@label(...)` replacement (#59).
 
 ### Fixed
 
 - `NotationBlock` built its markup from strings, so a notation source, `id` or `caption`
   containing HTML was parsed as HTML. It now builds the DOM directly and inserts those values
   as text (#30).
+- `"1.">> s r g m` lost its notes without an error, because the `>` embed token matched
+  mid-line (#59).
+- A bad command param, such as `\cycle("|4x|")`, `\cycle()`, `\role()` or a bad front matter
+  cycle, made `load()` throw. It is a ParseError naming the command, and `load()` no longer
+  throws (#69).
+- `Cycle` had no `toString`, so the source serializer wrote `\cycle("Entity(id = 19)")` (#59).
 
 ## [1.1.0] - 2026-09-21
 
