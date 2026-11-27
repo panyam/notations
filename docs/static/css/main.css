@@ -1172,6 +1172,17 @@ pre code {
     .header-container {
         flex-direction: column;
         gap: 1rem;
+        padding: 0 1rem;
+    }
+
+    .main-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .nav-link {
+        padding: 0.35rem 0.6rem;
     }
 
     .notation-btn-text {

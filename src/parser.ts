@@ -503,7 +503,6 @@ export class Parser {
       // console.log("Child 0: ", fm);
       // console.log("Child 1: ", children[1].value);
       const data = YAML.parse(fm);
-      console.log("Parsed FM: ", data);
       this.metadata = data;
       return children[1].value;
     },

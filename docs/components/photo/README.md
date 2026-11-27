@@ -9,8 +9,7 @@ A docs-site demo (`/demos/playgrounds/photo-transcribe/`) and a CLI that turn ph
 Carnatic notation (printed books, handwritten notebooks) into Notations DSL using Claude.
 
 It has run against the real API on the Kedaram rows of the Valachi Vachi notebook. Every swara
-went in the right beat, in about 50 s and $0.10 to $0.13 per run. Fixes from those runs are in #42. The
-unit tests use a mocked API.
+went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests use a mocked API.
 
 ## Files
 
@@ -92,8 +91,7 @@ added to it.
 ## Next steps
 
 1. **Finish the Valachi Vachi notebook.** Navaragamalika varnam by Patnam Subramanya Iyer, Adi.
-   It is the user's two-page handwritten PDF, not in the repo; ask for it. Fix #42 first (octave
-   dots, ragam precedence). Then go section by section with
+   It is the user's two-page handwritten PDF, not in the repo; ask for it. Go section by section with
    `--talam "|4|2|2|" --npb 4 --case swarasthana`, cropping both columns of a raga's rows.
    Add each failure as a test where a grid rule can express it. Ragas in order: Kedaram (done),
    Shankarabharanam, Kalyani, Begada, Kambhoji, Yadukula Kambhoji, Bilahari, Mohanam, Shri.
@@ -120,7 +118,9 @@ added to it.
   `CLAUDE.md` says how to handle a failure.
 - A `-` in the DSL takes no time (phrase separator); `_` is one unit of silence.
 
-## Found along the way (not fixed)
+## Known misses
 
-Tracked in #42: `\meta` in the demo files, the `/api/playgrounds` links, and header overflow
-on phones.
+- **Faint octave dots on a whole page.** Row 1 of the Kedaram pallavi has a dot a few pixels wide
+  under the N of `SNSR`. A whole-page run downscales it to one or two pixels, and the model reads
+  a plain `N` even with the octave-dot guidance in `prompt.ts`. Crop the rows instead of sending
+  the page. #52 tracks it.

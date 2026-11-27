@@ -3,6 +3,11 @@ import { parseBeat, TRANSCRIPTION_SCHEMA } from "../../components/photo/grid";
 import { checkNotation } from "../../components/photo/notationChecks";
 
 describe("SYSTEM_PROMPT", () => {
+  test("tells the model to check every letter for an octave dot, not only the last in a cluster", () => {
+    expect(SYSTEM_PROMPT).toMatch(/Octave dots/);
+    expect(SYSTEM_PROMPT).toMatch(/every letter in a cluster/);
+  });
+
   test("its worked example obeys the grid rules it teaches", () => {
     // The example is Adi tala at 2 slots per beat; every beat shown must hold exactly 2 slots.
     const rows = Array.from(SYSTEM_PROMPT.matchAll(/"(Sw|Sh)": \[(.*)\]/g)).map((m) =>

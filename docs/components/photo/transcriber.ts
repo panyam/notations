@@ -141,6 +141,18 @@ export function withKnownFacts(report: GridReport, t: Transcription, known?: Kno
   return { ...report, errors };
 }
 
+/**
+ * Puts the ragam the user gave into the grid's metadata, replacing whatever the model read off the
+ * page. A page heading is often a misspelling ("KEDHARM") or names only one raga of a ragamalika,
+ * and the front matter should carry what the user typed.
+ */
+export function applyKnownRagam(t: Transcription, known?: KnownFacts): void {
+  const ragam = known?.ragams?.trim();
+  if (!ragam) return;
+  const rest = (t.metadata || []).filter((m) => m.key.trim().toLowerCase() !== "ragam");
+  t.metadata = [{ key: "ragam", value: ragam }, ...rest];
+}
+
 /** Parses the model's JSON; structured outputs make failure rare, but a cut-off reply can still fail. */
 export function parseTranscription(text: string): Transcription | null {
   try {
@@ -291,6 +303,7 @@ export async function transcribe(client: Anthropic, opts: TranscribeOptions): Pr
     throw new Error(attempts[attempts.length - 1]?.report.errors[0] || "No transcription was produced.");
   }
 
+  applyKnownRagam(best.transcription, opts.known);
   const notation = toNotation(best.transcription);
   return {
     notation,
