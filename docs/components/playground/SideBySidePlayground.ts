@@ -109,17 +109,6 @@ export class SideBySidePlayground {
       editorConfig: {
         debounceDelay: 0, // Manual render via button
       },
-      onSourceChange: (source) => {
-        this.playground?.log(`Source changed (${source.length} chars)`, "info");
-      },
-      onNotationParsed: (notation, beatLayout) => {
-        this.playground?.log(`Parsed: ${beatLayout.gridModelsForLine.size} lines`, "info");
-      },
-      onParseError: (errors) => {
-        errors.forEach((e) => {
-          this.playground?.log(`Parse error: ${e.message || e}`, "error");
-        });
-      },
       editorClass: "playground-editor",
     };
 

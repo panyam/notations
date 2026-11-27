@@ -184,14 +184,14 @@ export default class SideBySideEditor {
   }
 
   /**
-   * Gets the current notation (null if parse failed).
+   * Gets the last rendered notation, null before the first render. With parse errors it holds what parsed.
    */
   getNotation(): Notation | null {
     return this.notation;
   }
 
   /**
-   * Gets the current beat layout (null if parse failed).
+   * Gets the last rendered beat layout, null before the first render.
    */
   getBeatLayout(): GlobalBeatLayout | null {
     return this.beatLayout;
@@ -199,35 +199,26 @@ export default class SideBySideEditor {
 
   /**
    * Parses and renders the current source.
-   * Returns true if successful, false if there were errors.
+   *
+   * Errors go to `onParseError` first. Whatever `load()` could parse still renders and goes to
+   * `onNotationParsed`, so one bad command leaves the rest of the song on screen (#94).
+   * Returns true if the source parsed with no errors, false otherwise.
    */
   render(): boolean {
     const source = this.editorElement.value;
 
-    // Clear previous render
     this.notationView.clear();
-
-    // Parse
     const [notation, beatLayout, errors] = load(source, { log: false });
-
     if (errors.length > 0) {
-      this.notation = null;
-      this.beatLayout = null;
       this.config.onParseError?.(errors);
-      return false;
     }
 
-    // Store results
     this.notation = notation;
     this.beatLayout = beatLayout;
-
-    // Render
     this.notationView.renderNotation(notation, beatLayout);
-
-    // Notify callback
     this.config.onNotationParsed?.(notation, beatLayout);
 
-    return true;
+    return errors.length === 0;
   }
 
   /**
