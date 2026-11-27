@@ -22,5 +22,8 @@ jobs:
     uses: panyam/ci-actions/.github/workflows/npm-publish.yml@73f816432c03fc3680877114f22ebe54659eb175 # v0.1.4
     with:
       package-manager: pnpm
+      # Empty, so pnpm/action-setup takes the version from package.json's packageManager. The
+      # shared workflow defaults this to '12', and action-setup refuses two versions.
+      pnpm-version: ''
       node-version: '22'
       test-command: pnpm run check:esm && pnpm run lint && pnpm test
