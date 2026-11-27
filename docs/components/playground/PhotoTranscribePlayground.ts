@@ -1,9 +1,11 @@
 /**
  * PhotoTranscribePlayground.ts - Photo to Notations DSL, in the browser.
  *
- * The left panel collects photos, optional hints and the visitor's own Anthropic API key; the
- * right side is the usual DockViewPlayground (editor, preview, console), so the transcription
- * can be proofread and fixed in place.
+ * The left panel collects pages (photos, or PDF pages), facts about the song, the visitor's own
+ * Anthropic API key, and an ordered list of transcriptions. Each transcription names one part
+ * of the song and picks the regions of the pages that hold it (entries.ts). The right side is
+ * the usual DockViewPlayground (editor, preview, console), so results can be proofread and
+ * fixed in place.
  *
  * The API key goes from the browser straight to api.anthropic.com. It is kept in localStorage
  * only when the visitor ticks "Remember", and never sent anywhere else. The docs site is static,
@@ -15,11 +17,23 @@ import "dockview/dist/styles/dockview.css";
 import "../../../styles/NotationView.scss";
 
 import { createMarkdownParser } from "../NotationViewer";
+import {
+  addEntry,
+  autoInserts,
+  dropPage,
+  Entry,
+  entryFacts,
+  fromLegacyPhotos,
+  moveEntry,
+  normalizeEntry,
+  onlyPart,
+  whyNotReady,
+} from "../photo/entries";
 import { isBlankNotation, mergeNotation, parseCycle } from "../photo/grid";
 import type { KnownFacts } from "../photo/prompt";
 import { CropRect, normalizeCrop, prepareImage, PreparedImage } from "../photo/imageUtils";
 import { isPdf, PDF_PAGE_WARN, pdfToImages } from "../photo/pdfPages";
-import { PhotoStore, StoredPhoto } from "../photo/photoStore";
+import { PhotoStore, StoredPage } from "../photo/photoStore";
 import { formatCost } from "../photo/pricing";
 import {
   DEFAULT_MODEL,
@@ -35,27 +49,47 @@ const LAYOUT_STORAGE_KEY = "notations-photo-layout";
 const LAYOUT_VERSION = 1;
 
 const PLACEHOLDER_SOURCE = `// Your transcription will appear here.
-// Add a photo on the left and press Transcribe.
+// Add a page on the left, add a transcription, pick its region and press Transcribe.
 // You can edit the result; the preview updates as you type.
 `;
 
-interface PhotoItem {
+/** Talams a transcription can pick, as cycles. "Other..." takes a typed cycle. */
+const TALAMS: Array<[string, string]> = [
+  ["|4|2|2|", "Adi (4+2+2)"],
+  ["|2|4|", "Rupakam (2+4)"],
+  ["|4|2|", "Rupakam (4+2)"],
+  ["|3|2|2|", "Misra Chapu (3+2+2)"],
+  ["|2|3|", "Khanda Chapu (2+3)"],
+  ["|4|2|4|4|", "Dhruva (4+2+4+4)"],
+  ["|4|2|4|", "Matya (4+2+4)"],
+  ["|7|1|2|", "Jhampa (7+1+2)"],
+  ["|5|5|2|2|", "Ata (5+5+2+2)"],
+  ["|4|", "Eka (4)"],
+];
+const KNOWN_CYCLES = new Set(TALAMS.map(([cycle]) => cycle));
+const SWARAS_PER_BEAT = [1, 2, 3, 4, 6, 8];
+
+/** One page on the page list: an image file, or one page of a PDF. */
+interface PageItem {
+  id: string;
+  /** The page's image: the uploaded image, or a PDF page rendered to PNG. */
   file: Blob;
-  /** The uploaded file this photo came from, as kept in PhotoStore. */
+  /** The uploaded file this page came from, as kept in PhotoStore. */
   fileId: string;
   /** 1-based page when the upload was a PDF; null for an image. */
   page: number | null;
   name: string;
+  /** Quarter turns clockwise. Regions are measured on the rotated page. */
   rotation: number;
-  /** Region to keep, on the rotated photo; null for the whole photo. */
-  crop: CropRect | null;
-  /**
-   * Whether the user has chosen what to send from this photo: a region, or the whole photo on
-   * purpose. Transcription waits until every photo has one. A whole page is a lot of counting
-   * in one go and gives each swara few pixels; a section at a time reads better and costs less.
-   */
-  regionSet: boolean;
-  prepared: PreparedImage;
+  thumb: PreparedImage;
+}
+
+/** What the region dialog is editing: an existing region of an entry, or a new one. */
+interface RegionTarget {
+  entryId: string;
+  /** Index into the entry's regions, or null to add a region. */
+  regionIndex: number | null;
+  pageId: string;
 }
 
 function safeGet(key: string): string | null {
@@ -75,8 +109,8 @@ function safeSet(key: string, value: string | null): void {
   }
 }
 
-/** An id for an uploaded file. randomUUID needs a secure context, which localhost and Pages are. */
-function newFileId(): string {
+/** An id for a file, page or entry. randomUUID needs a secure context, which localhost and Pages are. */
+function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
@@ -92,13 +126,16 @@ function escapeHtml(s: string): string {
 
 export class PhotoTranscribePlayground {
   private playground: DockViewPlayground;
-  private photos: PhotoItem[] = [];
+  private pages: PageItem[] = [];
+  private entries: Entry[] = [];
+  /** The entry being transcribed. One runs at a time. */
+  private runningId: string | null = null;
   private abort: AbortController | null = null;
   /** Null when this browser has no usable IndexedDB; the page then forgets on reload. */
   private storeReady: Promise<PhotoStore | null> = PhotoStore.open();
-  /** Writes run one after another, so a file is stored before the photo list that names it. */
+  /** Writes run one after another, so a file is stored before the page list that names it. */
   private saving: Promise<void> = Promise.resolve();
-  /** True until the last visit's photos and notation are back, so nothing overwrites them first. */
+  /** True until the last visit's work is back, so nothing overwrites it first. */
   private restoring = true;
 
   private keyInput = $("pt-api-key") as HTMLInputElement;
@@ -107,23 +144,21 @@ export class PhotoTranscribePlayground {
   private enhanceBox = $("pt-enhance") as HTMLInputElement;
   private carefulBox = $("pt-careful") as HTMLInputElement;
   private hintsInput = $("pt-hints") as HTMLTextAreaElement;
-  private ragamsInput = $("pt-ragams") as HTMLInputElement;
-  private talamSelect = $("pt-talam") as HTMLSelectElement;
-  private cycleInput = $("pt-cycle") as HTMLInputElement;
-  private npbSelect = $("pt-npb") as HTMLSelectElement;
+  /** Entries whose talam is set to "Other..." while the cycle is still being typed. Not saved. */
+  private customCycle = new Set<string>();
   private caseSelect = $("pt-case") as HTMLSelectElement;
-  private transcribeBtn = $("pt-transcribe") as HTMLButtonElement;
   private cancelBtn = $("pt-cancel") as HTMLButtonElement;
   private statusEl = $("pt-status");
   private rawEl = $("pt-raw");
   private rawDetails = $("pt-raw-details") as HTMLDetailsElement;
   private reportEl = $("pt-report");
   private thumbsEl = $("pt-thumbs");
-  private onlyInput = $("pt-only") as HTMLInputElement;
+  private entriesEl = $("pt-entries");
   private cropDialog = $("pt-crop-dialog") as HTMLDialogElement;
   private cropImg = $("pt-crop-img") as HTMLImageElement;
   private cropBox = $("pt-crop-box");
-  private cropIndex = -1;
+  private cropPage = $("pt-crop-page") as HTMLSelectElement;
+  private cropTarget: RegionTarget | null = null;
   private cropRect: CropRect | null = null;
 
   constructor() {
@@ -140,7 +175,7 @@ export class PhotoTranscribePlayground {
     });
     this.playground.source = PLACEHOLDER_SOURCE;
     this.setupControls();
-    this.updateButtons();
+    this.renderEntries();
     this.restore();
   }
 
@@ -157,7 +192,7 @@ export class PhotoTranscribePlayground {
 
     this.keyInput.addEventListener("input", () => {
       if (this.rememberBox.checked) safeSet(KEY_STORAGE, this.keyInput.value.trim() || null);
-      this.updateButtons();
+      this.renderEntries();
     });
     // The key stays masked unless asked, so screenshots and recordings do not show it.
     const keyToggle = $("pt-key-toggle") as HTMLButtonElement;
@@ -171,10 +206,7 @@ export class PhotoTranscribePlayground {
       safeSet(KEY_STORAGE, this.rememberBox.checked ? this.keyInput.value.trim() || null : null);
     });
     this.modelSelect.addEventListener("change", () => safeSet(MODEL_STORAGE, this.modelSelect.value));
-    this.enhanceBox.addEventListener("change", () => this.reprepareAll());
-    this.talamSelect.addEventListener("change", () => {
-      $("pt-cycle-field").hidden = this.talamSelect.value !== "custom";
-    });
+    this.enhanceBox.addEventListener("change", () => this.rethumbAll());
 
     const fileInputs = [$("pt-file") as HTMLInputElement, $("pt-camera") as HTMLInputElement];
     for (const input of fileInputs) {
@@ -205,17 +237,16 @@ export class PhotoTranscribePlayground {
       const btn = (e.target as HTMLElement).closest("button[data-action]") as HTMLButtonElement | null;
       if (!btn) return;
       const index = Number(btn.dataset.index);
-      const action = btn.dataset.action;
-      if (action === "remove") this.removePhoto(index);
-      else if (action === "rotate") this.rotatePhoto(index);
-      else if (action === "left") this.movePhoto(index, -1);
-      else if (action === "right") this.movePhoto(index, 1);
-      else if (action === "crop") this.openCrop(index);
-      else if (action === "duplicate") this.duplicatePhoto(index);
+      if (btn.dataset.action === "remove") this.removePage(index);
+      else if (btn.dataset.action === "rotate") this.rotatePage(index);
     });
+
+    $("pt-add-entry").addEventListener("click", () => this.newEntry());
+    this.entriesEl.addEventListener("click", (e) => this.onEntryClick(e));
+    this.entriesEl.addEventListener("input", (e) => this.onEntryInput(e));
+    this.entriesEl.addEventListener("change", (e) => this.onEntryChange(e));
     this.setupCropDialog();
 
-    this.transcribeBtn.addEventListener("click", () => this.run());
     this.cancelBtn.addEventListener("click", () => this.abort?.abort());
     $("pt-copy").addEventListener("click", () => this.copySource());
     $("pt-clear").addEventListener("click", () => this.clearEditor());
@@ -224,13 +255,13 @@ export class PhotoTranscribePlayground {
     $("pt-reset-layout").addEventListener("click", () => this.playground.resetLayout());
   }
 
-  // ---- Photos ---------------------------------------------------------------------------
+  // ---- Pages ----------------------------------------------------------------------------
 
   private async addFiles(files: File[]): Promise<void> {
     const images: Array<{ image: File; fileId: string; page: number | null }> = [];
     const sources = new Map<string, File>();
     for (const file of files) {
-      const fileId = newFileId();
+      const fileId = newId();
       if (isPdf(file)) {
         try {
           const pages = await this.expandPdf(file);
@@ -249,119 +280,145 @@ export class PhotoTranscribePlayground {
       this.setStatus("Those files are not images or PDFs.", "error");
       return;
     }
-    this.setStatus(`Preparing ${images.length} photo(s)...`);
-    let failed = false;
+    this.setStatus(`Preparing ${images.length} page(s)...`);
     for (const { image, fileId, page } of images) {
       try {
-        const item: PhotoItem = {
+        const item: PageItem = {
+          id: newId(),
           file: image,
           fileId,
           page,
           name: image.name,
           rotation: 0,
-          crop: null,
-          regionSet: false,
-          prepared: null as any,
+          thumb: null as any,
         };
-        item.prepared = await this.prep(item);
-        this.photos.push(item);
+        item.thumb = await this.thumbFor(item);
+        this.pages.push(item);
       } catch (e: any) {
         const hint = /\.(heic|heif)$/i.test(image.name)
           ? " This browser cannot open HEIC photos; export the photo as JPEG, or take it from this page's camera button."
           : "";
         this.setStatus(`${image.name}: ${e.message || e}${hint}`, "error");
-        failed = true;
         break;
       }
     }
     for (const [id, file] of sources) {
-      if (!this.photos.some((p) => p.fileId === id)) continue;
+      if (!this.pages.some((p) => p.fileId === id)) continue;
       this.queueSave(async (store) =>
         store.putFile({ id, name: file.name, type: file.type, bytes: await file.arrayBuffer() }),
       );
     }
-    this.savePhotos();
+    this.savePages();
     this.renderThumbs();
-    this.updateButtons();
-    if (!failed) this.pickNextRegion();
+    if (this.entries.length === 0) this.newEntry();
+    else this.renderEntries();
+    this.setStatus(`${this.pages.length} page(s). Pick a region for each transcription in step 4.`, "ok");
   }
 
   /** One PNG per PDF page, in order. Each page then behaves like a photo. */
   private expandPdf(file: File): Promise<File[]> {
     this.setStatus(`Opening ${file.name}...`);
     return pdfToImages(file, {
-      confirmPages: (count) =>
-        count <= PDF_PAGE_WARN || confirm(`${file.name} has ${count} pages. Add all of them as photos?`),
+      confirmPages: (count) => count <= PDF_PAGE_WARN || confirm(`${file.name} has ${count} pages. Add all of them?`),
       onPage: (n, count) => this.setStatus(`Rendering ${file.name}: page ${n} of ${count}...`),
     });
   }
 
-  /** Opens the region picker on the first photo still without a region, if any. */
-  private pickNextRegion(): void {
-    const next = this.photos.findIndex((p) => !p.regionSet);
-    if (next >= 0) {
-      this.openCrop(next);
-    } else if (this.photos.length > 0) {
-      this.setStatus("Ready. Transcribe, or crop (\u2702) to change a region.");
-    }
-  }
-
-  private removePhoto(index: number): void {
-    const [gone] = this.photos.splice(index, 1);
-    if (gone) URL.revokeObjectURL(gone.prepared.previewUrl);
-    this.savePhotos();
-    this.renderThumbs();
-    this.updateButtons();
-  }
-
-  private async rotatePhoto(index: number): Promise<void> {
-    const item = this.photos[index];
-    if (!item) return;
-    item.rotation = (item.rotation + 1) % 4;
-    item.crop = null; // a crop measured on the old orientation no longer means anything
-    item.regionSet = false;
-    const old = item.prepared.previewUrl;
-    item.prepared = await this.prep(item);
-    URL.revokeObjectURL(old);
-    this.savePhotos();
-    this.renderThumbs();
-  }
-
-  /** Re-encodes every photo after the enhance setting changes, so the thumbnails show what is sent. */
-  private async reprepareAll(): Promise<void> {
-    this.setStatus(this.enhanceBox.checked ? "Enhancing photos..." : "Restoring original photos...");
-    for (const item of this.photos) {
-      const old = item.prepared.previewUrl;
-      item.prepared = await this.prep(item);
-      URL.revokeObjectURL(old);
-    }
-    this.renderThumbs();
-    this.setStatus(this.photos.length ? `${this.photos.length} photo(s) ready.` : "");
-  }
-
-  private prep(item: PhotoItem): Promise<PreparedImage> {
-    return prepareImage(item.file, {
-      name: item.name,
-      rotation: item.rotation,
+  private thumbFor(page: PageItem): Promise<PreparedImage> {
+    return prepareImage(page.file, {
+      name: page.name,
+      rotation: page.rotation,
       enhance: this.enhanceBox.checked,
-      crop: item.crop,
+      maxEdge: 600,
     });
   }
 
-  /** A second copy of a photo, so two regions of one page can be cropped and sent in order. */
-  private async duplicatePhoto(index: number): Promise<void> {
-    const src = this.photos[index];
-    if (!src) return;
-    const copy: PhotoItem = { ...src, crop: null, regionSet: false, prepared: null as any };
-    copy.prepared = await this.prep(copy);
-    this.photos.splice(index + 1, 0, copy);
-    this.savePhotos();
-    this.renderThumbs();
-    this.updateButtons();
-    this.openCrop(index + 1);
+  /** The image a region sends: cut from the full-resolution page, then prepared for the API. */
+  private regionImage(page: PageItem, crop: CropRect | null): Promise<PreparedImage> {
+    return prepareImage(page.file, {
+      name: page.name,
+      rotation: page.rotation,
+      enhance: this.enhanceBox.checked,
+      crop,
+    });
   }
 
-  // ---- Cropping -------------------------------------------------------------------------
+  private pageLabel(pageId: string): string {
+    const index = this.pages.findIndex((p) => p.id === pageId);
+    return index < 0 ? "Missing page" : `Page ${index + 1}`;
+  }
+
+  private removePage(index: number): void {
+    const [gone] = this.pages.splice(index, 1);
+    if (!gone) return;
+    URL.revokeObjectURL(gone.thumb.previewUrl);
+    const before = this.entries.reduce((n, e) => n + e.regions.length, 0);
+    this.entries = dropPage(this.entries, gone.id);
+    const dropped = before - this.entries.reduce((n, e) => n + e.regions.length, 0);
+    this.savePages();
+    this.saveEntries();
+    this.renderThumbs();
+    this.renderEntries();
+    if (dropped > 0) this.setStatus(`Removed the page and ${dropped} region(s) on it.`);
+  }
+
+  /** Rotates a page. Regions on it were measured on the old orientation, so they reset to the whole page. */
+  private async rotatePage(index: number): Promise<void> {
+    const page = this.pages[index];
+    if (!page) return;
+    page.rotation = (page.rotation + 1) % 4;
+    const old = page.thumb.previewUrl;
+    page.thumb = await this.thumbFor(page);
+    URL.revokeObjectURL(old);
+    let reset = 0;
+    this.entries = this.entries.map((e) => ({
+      ...e,
+      regions: e.regions.map((r) => {
+        if (r.pageId !== page.id || !r.crop) return r;
+        reset++;
+        return { ...r, crop: null };
+      }),
+    }));
+    this.savePages();
+    this.saveEntries();
+    this.renderThumbs();
+    this.renderEntries();
+    if (reset > 0) this.setStatus(`${reset} region(s) on this page now use the whole page. Crop them again (✂).`);
+  }
+
+  /** Re-renders the thumbnails after the enhance setting changes, so they show what is sent. */
+  private async rethumbAll(): Promise<void> {
+    this.setStatus(this.enhanceBox.checked ? "Enhancing pages..." : "Restoring original pages...");
+    for (const page of this.pages) {
+      const old = page.thumb.previewUrl;
+      page.thumb = await this.thumbFor(page);
+      URL.revokeObjectURL(old);
+    }
+    this.renderThumbs();
+    this.setStatus(this.pages.length ? `${this.pages.length} page(s) ready.` : "");
+  }
+
+  private renderThumbs(): void {
+    this.thumbsEl.innerHTML = this.pages
+      .map(
+        (p, i) => `
+      <figure class="pt-thumb">
+        <a href="${p.thumb.previewUrl}" target="_blank" rel="noopener" title="Open to proofread">
+          <img src="${p.thumb.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
+        </a>
+        <figcaption>
+          <span title="${escapeHtml(p.name)}">Page ${i + 1}</span>
+          <span class="pt-thumb-actions">
+            <button type="button" data-action="rotate" data-index="${i}" title="Rotate 90&deg; clockwise">&#8635;</button>
+            <button type="button" data-action="remove" data-index="${i}" title="Remove this page">&times;</button>
+          </span>
+        </figcaption>
+      </figure>`,
+      )
+      .join("");
+  }
+
+  // ---- Regions --------------------------------------------------------------------------
 
   private setupCropDialog(): void {
     const stage = $("pt-crop-stage");
@@ -393,19 +450,25 @@ export class PhotoTranscribePlayground {
     stage.addEventListener("pointerup", end);
     stage.addEventListener("pointercancel", end);
 
+    this.cropPage.addEventListener("change", () => {
+      if (!this.cropTarget) return;
+      this.cropTarget.pageId = this.cropPage.value;
+      this.showCropPage(null);
+    });
     $("pt-crop-apply").addEventListener("click", () => {
       const crop = normalizeCrop(this.cropRect);
       if (!crop) {
         $("pt-crop-help").textContent = "Drag a box around a section first, or choose Use whole photo.";
         return;
       }
-      this.applyCrop(crop);
+      this.applyRegion(crop);
     });
-    $("pt-crop-clear").addEventListener("click", () => this.applyCrop(null));
+    $("pt-crop-clear").addEventListener("click", () => this.applyRegion(null));
     $("pt-crop-cancel").addEventListener("click", () => this.closeCrop());
     this.cropDialog.addEventListener("close", () => {
       if (this.cropImg.src) URL.revokeObjectURL(this.cropImg.src);
       this.cropImg.removeAttribute("src");
+      this.cropTarget = null;
     });
   }
 
@@ -423,112 +486,276 @@ export class PhotoTranscribePlayground {
     box.height = `${rect.h * 100}%`;
   }
 
-  private async openCrop(index: number): Promise<void> {
-    const item = this.photos[index];
-    if (!item) return;
-    this.cropIndex = index;
-    // Show the whole photo, rotated and enhanced as it will be sent, so the box lands where meant.
-    const whole = await prepareImage(item.file, {
-      name: item.name,
-      rotation: item.rotation,
-      enhance: this.enhanceBox.checked,
-      maxEdge: 1600,
-    });
-    this.cropImg.src = whole.previewUrl;
-    this.setCropRect(item.crop);
-    const which = this.photos.length > 1 ? ` (photo ${index + 1} of ${this.photos.length})` : "";
-    $("pt-crop-help").textContent =
-      `Drag a box around the part to transcribe${which}: one section, or a few rows. ` +
-      "Include its heading if it has one.";
+  /**
+   * Opens the region dialog for an entry. A new region starts on the page the entry's last
+   * region used, or the first page, and the dialog offers every page to choose from.
+   */
+  private openRegion(entryId: string, regionIndex: number | null): void {
+    const entry = this.entries.find((e) => e.id === entryId);
+    if (!entry) return;
+    if (this.pages.length === 0) {
+      this.setStatus("Add a page in step 1 first.", "error");
+      return;
+    }
+    const existing = regionIndex == null ? null : entry.regions[regionIndex];
+    const lastPage = entry.regions[entry.regions.length - 1]?.pageId;
+    const pageId = existing?.pageId ?? (this.pages.some((p) => p.id === lastPage) ? lastPage! : this.pages[0].id);
+    this.cropTarget = { entryId, regionIndex, pageId };
+
+    const field = $("pt-crop-page-field");
+    field.hidden = regionIndex != null || this.pages.length < 2;
+    this.cropPage.innerHTML = this.pages
+      .map((p, i) => `<option value="${p.id}">Page ${i + 1}: ${escapeHtml(p.name)}</option>`)
+      .join("");
+    this.cropPage.value = pageId;
+    this.showCropPage(existing?.crop ?? null);
     if (!this.cropDialog.open) this.cropDialog.showModal();
   }
 
+  /** Shows the target page, rotated and enhanced as it will be sent, so the box lands where meant. */
+  private async showCropPage(crop: CropRect | null): Promise<void> {
+    const target = this.cropTarget;
+    const page = this.pages.find((p) => p.id === target?.pageId);
+    if (!target || !page) return;
+    const entry = this.entries.find((e) => e.id === target.entryId);
+    $("pt-crop-help").textContent =
+      `Drag a box around the part of ${this.pageLabel(page.id).toLowerCase()} that holds ` +
+      `"${entry?.name ?? "this part"}": one section, or a few rows. Include its heading if it has one.`;
+    const whole = await prepareImage(page.file, {
+      name: page.name,
+      rotation: page.rotation,
+      enhance: this.enhanceBox.checked,
+      maxEdge: 1600,
+    });
+    if (this.cropImg.src) URL.revokeObjectURL(this.cropImg.src);
+    this.cropImg.src = whole.previewUrl;
+    this.setCropRect(crop);
+  }
+
   private closeCrop(): void {
-    this.cropIndex = -1;
     if (this.cropDialog.open) this.cropDialog.close();
   }
 
-  private async applyCrop(crop: CropRect | null): Promise<void> {
-    const item = this.photos[this.cropIndex];
+  private applyRegion(crop: CropRect | null): void {
+    const target = this.cropTarget;
     this.closeCrop();
-    if (!item) return;
-    item.crop = crop;
-    item.regionSet = true;
-    this.savePhotos();
-    const old = item.prepared.previewUrl;
-    item.prepared = await this.prep(item);
-    URL.revokeObjectURL(old);
-    this.renderThumbs();
-    this.updateButtons();
-    this.pickNextRegion();
+    if (!target) return;
+    this.entries = this.entries.map((e) => {
+      if (e.id !== target.entryId) return e;
+      const region = { pageId: target.pageId, crop };
+      const regions = e.regions.slice();
+      if (target.regionIndex == null) regions.push(region);
+      else regions[target.regionIndex] = region;
+      return { ...e, regions };
+    });
+    this.saveEntries();
+    this.renderEntries();
   }
 
-  private movePhoto(index: number, delta: number): void {
-    const to = index + delta;
-    if (to < 0 || to >= this.photos.length) return;
-    [this.photos[index], this.photos[to]] = [this.photos[to], this.photos[index]];
-    this.savePhotos();
-    this.renderThumbs();
+  // ---- Transcription entries -------------------------------------------------------------
+
+  private newEntry(): void {
+    this.entries = addEntry(this.entries, newId);
+    this.saveEntries();
+    this.renderEntries();
+    const input = this.entriesEl.querySelector(`li:last-child input[data-field="name"]`) as HTMLInputElement | null;
+    input?.focus();
+    input?.select();
   }
 
-  private renderThumbs(): void {
-    const many = this.photos.length > 1;
-    this.thumbsEl.innerHTML = this.photos
-      .map(
-        (p, i) => `
-      <figure class="pt-thumb">
-        <a href="${p.prepared.previewUrl}" target="_blank" rel="noopener" title="Open full size to proofread">
-          <img src="${p.prepared.previewUrl}" alt="Page ${i + 1}: ${escapeHtml(p.name)}">
-        </a>
-        <figcaption>
-          <span>${many ? `Page ${i + 1}` : escapeHtml(p.name)}${
-            !p.regionSet
-              ? ' <em class="pt-badge pt-badge-todo">pick a region</em>'
-              : p.crop
-                ? ' <em class="pt-badge">cropped</em>'
-                : ' <em class="pt-badge">whole photo</em>'
-          }</span>
-          <span class="pt-thumb-actions">
-            ${many ? `<button type="button" data-action="left" data-index="${i}" title="Earlier page" ${i === 0 ? "disabled" : ""}>&larr;</button>` : ""}
-            ${many ? `<button type="button" data-action="right" data-index="${i}" title="Later page" ${i === this.photos.length - 1 ? "disabled" : ""}>&rarr;</button>` : ""}
-            <button type="button" data-action="crop" data-index="${i}" title="Crop to one section">&#9986;</button>
-            <button type="button" data-action="duplicate" data-index="${i}" title="Duplicate, to crop another region">&#10697;</button>
-            <button type="button" data-action="rotate" data-index="${i}" title="Rotate 90&deg; clockwise">&#8635;</button>
-            <button type="button" data-action="remove" data-index="${i}" title="Remove">&times;</button>
-          </span>
-        </figcaption>
-      </figure>`,
+  private onEntryInput(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    const field = input.dataset.field;
+    const id = input.closest("li")?.dataset.entry;
+    if (!id || (field !== "name" && field !== "ragams" && field !== "cycle")) return;
+    // Update in place without re-rendering, so the input keeps focus.
+    this.entries = this.entries.map((x) => (x.id === id ? { ...x, [field]: input.value } : x));
+    this.saveEntries();
+  }
+
+  /** The talam and swaras-per-beat selects. */
+  private onEntryChange(e: Event): void {
+    const select = e.target as HTMLSelectElement;
+    const id = select.closest("li")?.dataset.entry;
+    if (!id || select.tagName !== "SELECT") return;
+    if (select.dataset.field === "talam") {
+      if (select.value === "custom") this.customCycle.add(id);
+      else this.customCycle.delete(id);
+      const cycle = select.value === "custom" ? "" : select.value;
+      this.entries = this.entries.map((x) => (x.id === id ? { ...x, cycle } : x));
+    } else if (select.dataset.field === "npb") {
+      const npb = Number(select.value) || null;
+      this.entries = this.entries.map((x) => (x.id === id ? { ...x, notesPerBeat: npb } : x));
+    } else {
+      return;
+    }
+    this.saveEntries();
+    this.renderEntries();
+    if (select.value === "custom") {
+      (this.entriesEl.querySelector(`li[data-entry="${id}"] input[data-field="cycle"]`) as HTMLInputElement)?.focus();
+    }
+  }
+
+  /** The talam select, swaras-per-beat select and ragam field of one entry. */
+  private entryFactsHtml(e: Entry): string {
+    const custom = this.customCycle.has(e.id) || (e.cycle !== "" && !KNOWN_CYCLES.has(e.cycle));
+    const talamValue = custom ? "custom" : e.cycle;
+    const talamOptions = [["", "Talam: read from the page"], ...TALAMS, ["custom", "Other..."]]
+      .map(([v, label]) => `<option value="${v}" ${v === talamValue ? "selected" : ""}>${escapeHtml(label)}</option>`)
+      .join("");
+    const npbOptions = [`<option value="" ${e.notesPerBeat ? "" : "selected"}>Swaras per beat: read</option>`]
+      .concat(
+        SWARAS_PER_BEAT.map(
+          (n) => `<option value="${n}" ${n === e.notesPerBeat ? "selected" : ""}>${n} per beat</option>`,
+        ),
       )
+      .join("");
+    return `<div class="pt-entry-facts">
+      <input class="pt-input pt-entry-ragam" data-field="ragams" value="${escapeHtml(e.ragams)}" aria-label="Ragam of this part" placeholder="Ragam, e.g. Kedaram">
+      <select class="pt-input" data-field="talam" aria-label="Talam of this part">${talamOptions}</select>
+      <select class="pt-input" data-field="npb" aria-label="Swaras per beat in this part">${npbOptions}</select>
+      ${
+        custom
+          ? `<input class="pt-input pt-entry-ragam" data-field="cycle" value="${escapeHtml(e.cycle)}" aria-label="Cycle" placeholder='Cycle, e.g. "|4|2|2|"'>`
+          : ""
+      }
+    </div>`;
+  }
+
+  private onEntryClick(e: Event): void {
+    const btn = (e.target as HTMLElement).closest("button[data-action]") as HTMLButtonElement | null;
+    const id = btn?.closest("li")?.dataset.entry;
+    if (!btn || !id) return;
+    const index = this.entries.findIndex((x) => x.id === id);
+    const region = btn.dataset.region == null ? null : Number(btn.dataset.region);
+    switch (btn.dataset.action) {
+      case "run":
+        this.run(id);
+        break;
+      case "insert":
+        this.insertResult(id);
+        break;
+      case "add-region":
+        this.openRegion(id, null);
+        break;
+      case "edit-region":
+        this.openRegion(id, region);
+        break;
+      case "remove-region":
+        this.entries = this.entries.map((x) =>
+          x.id === id ? { ...x, regions: x.regions.filter((_, i) => i !== region) } : x,
+        );
+        break;
+      case "up":
+        this.entries = moveEntry(this.entries, index, -1);
+        break;
+      case "down":
+        this.entries = moveEntry(this.entries, index, 1);
+        break;
+      case "delete":
+        if (this.entries[index]?.result && !confirm(`Delete "${this.entries[index].name}" and its result?`)) return;
+        this.entries = this.entries.filter((x) => x.id !== id);
+        break;
+      default:
+        return;
+    }
+    this.saveEntries();
+    this.renderEntries();
+  }
+
+  private renderEntries(): void {
+    const pageIds = new Set(this.pages.map((p) => p.id));
+    const noKey = this.keyInput.value.trim() === "";
+    const busy = this.runningId != null;
+    this.cancelBtn.hidden = !busy;
+    if (this.entries.length === 0) {
+      this.entriesEl.innerHTML = `<li class="pt-muted">No transcriptions yet. Add a page, then press + New transcription.</li>`;
+      return;
+    }
+    this.entriesEl.innerHTML = this.entries
+      .map((e, i) => {
+        const notReady = whyNotReady(e, pageIds);
+        const runBlock = busy
+          ? "Another transcription is running"
+          : notReady || (noKey ? "Enter your API key in step 3" : "");
+        const regions = e.regions
+          .map((r, ri) => {
+            const page = this.pages.find((p) => p.id === r.pageId);
+            return `<span class="pt-region">
+              ${page ? `<img src="${page.thumb.previewUrl}" alt="">` : ""}
+              ${escapeHtml(this.pageLabel(r.pageId))}${r.crop ? ", cropped" : ", whole"}
+              <button type="button" class="pt-icon-btn" data-action="edit-region" data-region="${ri}" title="Change this region" ${page ? "" : "disabled"}>&#9986;</button>
+              <button type="button" class="pt-icon-btn" data-action="remove-region" data-region="${ri}" title="Remove this region">&times;</button>
+            </span>`;
+          })
+          .join("");
+        const status = this.entryStatus(e);
+        return `<li class="pt-entry pt-entry-${e.status}" data-entry="${e.id}">
+          <div class="pt-entry-head">
+            <input class="pt-input" data-field="name" value="${escapeHtml(e.name)}" aria-label="Name of this part" placeholder="e.g. Pallavi - Kedaram">
+            <button type="button" class="pt-icon-btn" data-action="up" title="Earlier" ${i === 0 ? "disabled" : ""}>&uarr;</button>
+            <button type="button" class="pt-icon-btn" data-action="down" title="Later" ${i === this.entries.length - 1 ? "disabled" : ""}>&darr;</button>
+            <button type="button" class="pt-icon-btn" data-action="delete" title="Delete this transcription">&#128465;</button>
+          </div>
+          ${this.entryFactsHtml(e)}
+          <div class="pt-regions">${regions}
+            <button type="button" class="btn btn-sm" data-action="add-region" ${this.pages.length ? "" : 'disabled title="Add a page first"'}>+ Region</button>
+          </div>
+          <div class="pt-entry-row">
+            <button type="button" class="btn btn-sm btn-primary" data-action="run" ${runBlock ? `disabled title="${escapeHtml(runBlock)}"` : ""}>${e.result ? "Re-run" : "Transcribe"}</button>
+            ${e.result && !e.inserted ? `<button type="button" class="btn btn-sm" data-action="insert" title="Add this result after the editor's notation">Insert</button>` : ""}
+          </div>
+          ${status ? `<div class="pt-entry-status ${e.status === "failed" ? "pt-entry-status-failed" : ""}">${escapeHtml(status)}</div>` : ""}
+        </li>`;
+      })
       .join("");
   }
 
-  // ---- Transcription --------------------------------------------------------------------
-
-  private updateButtons(): void {
-    const busy = this.abort != null;
-    const unpicked = this.photos.filter((p) => !p.regionSet).length;
-    this.transcribeBtn.disabled = busy || this.photos.length === 0 || unpicked > 0 || this.keyInput.value.trim() === "";
-    this.transcribeBtn.title =
-      this.photos.length === 0
-        ? "Add a photo first"
-        : unpicked > 0
-          ? "Pick the region to transcribe on each photo (\u2702)"
-          : this.keyInput.value.trim() === ""
-            ? "Enter your API key"
-            : "";
-    this.cancelBtn.hidden = !busy;
+  private entryStatus(e: Entry): string {
+    if (e.status === "running") return "Transcribing...";
+    if (e.status === "failed") return e.error || "Failed.";
+    if (!e.result) return "";
+    const cost = `estimated ${formatCost(e.result.costUsd)}`;
+    const problems = e.result.problems > 0 ? `${e.result.problems} problem(s) left; ` : "";
+    if (!e.inserted)
+      return `New result ready (${problems}${cost}). Press Insert to add it after the editor's notation.`;
+    return `Done (${problems}${cost}).`;
   }
+
+  /** Appends an entry's last result after the editor's notation. */
+  private insertResult(id: string): void {
+    const entry = this.entries.find((e) => e.id === id);
+    if (!entry?.result) return;
+    const existing = this.playground.source;
+    this.playground.source = isBlankNotation(existing)
+      ? entry.result.notation
+      : mergeNotation(existing, entry.result.transcription);
+    this.saveNotation(this.playground.source);
+    this.playground.render();
+    this.entries = this.entries.map((e) => (e.id === id ? { ...e, inserted: true } : e));
+    this.setStatus(`Added "${entry.name}" to the editor.`, "ok");
+  }
+
+  // ---- Transcription --------------------------------------------------------------------
 
   private setStatus(message: string, level: "info" | "error" | "ok" = "info"): void {
     this.statusEl.textContent = message;
     this.statusEl.className = `pt-status pt-status-${level}`;
   }
 
-  private async run(): Promise<void> {
+  private setEntry(id: string, change: Partial<Entry>): void {
+    this.entries = this.entries.map((e) => (e.id === id ? { ...e, ...change } : e));
+    this.saveEntries();
+    this.renderEntries();
+  }
+
+  private async run(id: string): Promise<void> {
     const apiKey = this.keyInput.value.trim();
-    if (!apiKey || this.photos.length === 0) return;
-    if (this.talamSelect.value === "custom" && !parseCycle(this.cycleInput.value)) {
-      this.setStatus('Write the cycle as beats per anga, e.g. "|4|2|2|".', "error");
+    const entry = this.entries.find((e) => e.id === id);
+    if (!apiKey || !entry || this.runningId) return;
+    if (whyNotReady(entry, new Set(this.pages.map((p) => p.id)))) return;
+    if (entry.cycle.trim() && !parseCycle(entry.cycle.trim())) {
+      this.setStatus(`"${entry.name}": write the cycle as beats per anga, e.g. "|4|2|2|".`, "error");
       return;
     }
 
@@ -536,24 +763,38 @@ export class PhotoTranscribePlayground {
     const { default: Anthropic } = await import(/* webpackChunkName: "anthropic-sdk" */ "@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 
+    this.runningId = id;
     this.abort = new AbortController();
-    this.updateButtons();
+    this.setEntry(id, { status: "running", error: undefined });
     this.reportEl.innerHTML = "";
     this.rawEl.textContent = "";
     this.rawDetails.open = true;
-    this.playground.log(`Transcribing ${this.photos.length} photo(s) with ${this.modelSelect.value}`, "info");
+    this.playground.log(
+      `Transcribing "${entry.name}" (${entry.regions.length} region(s)) with ${this.modelSelect.value}`,
+      "info",
+    );
     const thinking = new ThinkingLog((line) => this.playground.log(`Thinking: ${line}`, "info"));
     const existing = this.playground.source;
     const append = !isBlankNotation(existing);
+    const prepared: PreparedImage[] = [];
 
     try {
+      this.setStatus(`Preparing ${entry.regions.length} region(s)...`);
+      for (const r of entry.regions) {
+        prepared.push(
+          await this.regionImage(
+            this.pages.find((p) => p.id === r.pageId)!,
+            r.crop,
+          ),
+        );
+      }
       const result = await transcribe(client, {
-        images: this.photos.map((p) => ({ data: p.prepared.data, mediaType: p.prepared.mediaType })),
+        images: prepared.map((p) => ({ data: p.data, mediaType: p.mediaType })),
         hints: this.hintsInput.value,
         model: this.modelSelect.value || DEFAULT_MODEL,
         effort: this.carefulBox.checked ? "xhigh" : "high",
-        known: this.knownFacts(),
-        snippet: { only: this.onlyInput.value.trim() || undefined, context: append ? existing : undefined },
+        known: entryFacts(this.notebookFacts(), entry),
+        snippet: { only: onlyPart(entry), context: append ? existing : undefined },
         signal: this.abort.signal,
         onStatus: (m) => {
           this.setStatus(m);
@@ -572,9 +813,19 @@ export class PhotoTranscribePlayground {
       });
       thinking.flush();
 
-      this.playground.source = append ? mergeNotation(existing, result.transcription) : result.notation;
-      this.saveNotation(this.playground.source);
-      this.playground.render();
+      const current = this.entries.find((e) => e.id === id) ?? entry;
+      const insertNow = autoInserts(current);
+      this.setEntry(id, {
+        status: "done",
+        inserted: false,
+        result: {
+          transcription: result.transcription,
+          notation: result.notation,
+          costUsd: result.costUsd,
+          problems: result.report.errors.length + result.check.errors.length,
+        },
+      });
+      if (insertNow) this.insertResult(id);
       this.rawDetails.open = false;
       this.showReport(result);
       const u = result.usage;
@@ -586,7 +837,9 @@ export class PhotoTranscribePlayground {
         "info",
       );
       const gridErrors = result.report.errors.length;
-      if (result.check.errors.length > 0 || gridErrors > 0) {
+      if (!insertNow) {
+        this.setStatus(`New result for "${entry.name}". Press Insert on it to add it to the editor.`, "ok");
+      } else if (result.check.errors.length > 0 || gridErrors > 0) {
         this.setStatus(
           "Transcribed, but some lines still do not add up. See below and fix them in the editor.",
           "error",
@@ -597,10 +850,14 @@ export class PhotoTranscribePlayground {
         this.setStatus(`Transcribed ${result.check.lineCount} line(s). Proofread it against the photo.`, "ok");
       }
     } catch (e: any) {
-      this.handleError(e, Anthropic);
+      const msg = this.handleError(e, Anthropic);
+      this.setEntry(id, { status: "failed", error: msg });
     } finally {
+      for (const p of prepared) URL.revokeObjectURL(p.previewUrl);
+      this.runningId = null;
       this.abort = null;
-      this.updateButtons();
+      this.saveEntries();
+      this.renderEntries();
     }
   }
 
@@ -630,18 +887,13 @@ export class PhotoTranscribePlayground {
     }
   }
 
-  private knownFacts(): KnownFacts {
-    const talam = this.talamSelect.value;
-    const cycle = talam === "custom" ? this.cycleInput.value.trim() : talam;
-    return {
-      ragams: this.ragamsInput.value.trim() || undefined,
-      cycle: cycle && parseCycle(cycle) ? cycle : undefined,
-      notesPerBeat: Number(this.npbSelect.value) || undefined,
-      letterCase: (this.caseSelect.value || undefined) as KnownFacts["letterCase"],
-    };
+  /** Facts that hold across the notebook. Each entry adds its own ragam, talam and speed. */
+  private notebookFacts(): KnownFacts {
+    return { letterCase: (this.caseSelect.value || undefined) as KnownFacts["letterCase"] };
   }
 
-  private handleError(e: any, Anthropic: any): void {
+  /** Shows a failed run's reason in the status line and the console, and returns it. */
+  private handleError(e: any, Anthropic: any): string {
     let msg: string;
     if (e instanceof Anthropic.APIUserAbortError) msg = "Cancelled.";
     else if (e instanceof Anthropic.AuthenticationError) msg = "The API key was rejected. Check it and try again.";
@@ -656,6 +908,7 @@ export class PhotoTranscribePlayground {
     else msg = e?.message || String(e);
     this.setStatus(msg, "error");
     this.playground.log(msg, "error");
+    return msg;
   }
 
   private showReport(result: TranscribeResult): void {
@@ -705,18 +958,23 @@ export class PhotoTranscribePlayground {
       .catch((e: any) => this.playground.log(`Could not save to this browser: ${e?.message || e}`, "warning"));
   }
 
-  /** Saves the photo list. The store then drops any uploaded file no photo uses. */
-  private savePhotos(): void {
+  /** Saves the page list. The store then drops any uploaded file no page uses. */
+  private savePages(): void {
     if (this.restoring) return;
-    const photos: StoredPhoto[] = this.photos.map((p) => ({
+    const pages: StoredPage[] = this.pages.map((p) => ({
+      id: p.id,
       fileId: p.fileId,
       page: p.page,
       name: p.name,
       rotation: p.rotation,
-      crop: p.crop,
-      regionSet: p.regionSet,
     }));
-    this.queueSave((store) => store.savePhotos(photos));
+    this.queueSave((store) => store.savePages(pages));
+  }
+
+  private saveEntries(): void {
+    if (this.restoring) return;
+    const entries = this.entries;
+    this.queueSave((store) => store.saveEntries(entries));
   }
 
   private saveNotation(source: string): void {
@@ -726,8 +984,11 @@ export class PhotoTranscribePlayground {
   }
 
   /**
-   * Brings back the last visit's notation and photos. A PDF comes back as its stored bytes and is
-   * rendered again, once, however many of its pages are in the list.
+   * Brings back the last visit's notation, pages and transcriptions. A PDF comes back as its
+   * stored bytes and is rendered again, once, however many of its pages are in the list.
+   *
+   * A store from before transcription entries holds a photo list instead. That list becomes
+   * pages and one entry here, and the next save replaces it.
    */
   private async restore(): Promise<void> {
     let failed = false;
@@ -739,12 +1000,21 @@ export class PhotoTranscribePlayground {
         this.playground.source = notation;
         this.playground.render();
       }
-      const saved = await store.photos();
-      if (saved.length === 0) return;
-      this.setStatus(`Restoring ${saved.length} photo(s) from your last visit...`);
+      let saved = await store.pages();
+      let entries = await store.entries();
+      if (saved === null) {
+        const legacy = fromLegacyPhotos(await store.photos(), newId);
+        saved = legacy.pages;
+        entries = legacy.entries;
+      }
+      // A run cannot survive a reload.
+      entries = entries
+        .map(normalizeEntry)
+        .map((e) => (e.status === "running" ? { ...e, status: e.result ? "done" : "draft", error: undefined } : e));
+      if (saved.length > 0) this.setStatus(`Restoring ${saved.length} page(s) from your last visit...`);
       const files = new Map((await store.files()).map((f) => [f.id, f]));
       const rendered = new Map<string, File[]>();
-      const restored: PhotoItem[] = [];
+      const restored: PageItem[] = [];
       for (const s of saved) {
         const stored = files.get(s.fileId);
         if (!stored) continue;
@@ -762,18 +1032,23 @@ export class PhotoTranscribePlayground {
           image = rendered.get(stored.id)![s.page - 1];
         }
         if (!image) continue;
-        const item: PhotoItem = { ...s, file: image, prepared: null as any };
-        item.prepared = await this.prep(item);
+        const item: PageItem = { ...s, file: image, thumb: null as any };
+        item.thumb = await this.thumbFor(item);
         restored.push(item);
       }
-      // Photos added while this ran go after the restored ones.
-      this.photos = [...restored, ...this.photos];
+      // Pages and entries added while this ran go after the restored ones.
+      this.pages = [...restored, ...this.pages];
+      this.entries = [...entries, ...this.entries];
       this.renderThumbs();
-      this.updateButtons();
-      this.setStatus(`Restored ${restored.length} photo(s) from your last visit.`);
+      this.renderEntries();
+      if (restored.length > 0 || entries.length > 0) {
+        this.setStatus(
+          `Restored ${restored.length} page(s) and ${entries.length} transcription(s) from your last visit.`,
+        );
+      }
     } catch (e: any) {
-      // Saving now would replace the stored list with a partial one and delete its files. Leave
-      // the store alone for this visit, so a reload can try again.
+      // Saving now would replace the stored lists with partial ones and delete their files.
+      // Leave the store alone for this visit, so a reload can try again.
       this.storeReady = Promise.resolve(null);
       this.setStatus(
         `Could not restore your last visit (${e?.message || e}). Reload to try again; changes here won't be saved.`,
@@ -782,19 +1057,24 @@ export class PhotoTranscribePlayground {
       failed = true;
     } finally {
       this.restoring = false;
-      if (!failed) this.savePhotos();
+      if (!failed) {
+        this.savePages();
+        this.saveEntries();
+      }
     }
   }
 
-  /** Removes every photo from the page and from this browser. The editor keeps its notation. */
+  /** Removes every page and transcription from the page and from this browser. The editor keeps its notation. */
   private forgetFiles(): void {
-    if (this.photos.length > 0 && !confirm("Remove all photos from this page and from this browser?")) return;
-    for (const p of this.photos) URL.revokeObjectURL(p.prepared.previewUrl);
-    this.photos = [];
+    const any = this.pages.length > 0 || this.entries.length > 0;
+    if (any && !confirm("Remove all pages and transcriptions from this page and from this browser?")) return;
+    for (const p of this.pages) URL.revokeObjectURL(p.thumb.previewUrl);
+    this.pages = [];
+    this.entries = [];
     this.renderThumbs();
-    this.updateButtons();
+    this.renderEntries();
     this.queueSave((store) => store.forgetFiles());
-    this.setStatus("Photos removed from this browser. The editor keeps its notation.");
+    this.setStatus("Pages and transcriptions removed from this browser. The editor keeps its notation.");
   }
 
   // ---- Output ---------------------------------------------------------------------------

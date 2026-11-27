@@ -22,10 +22,16 @@ import { mergeNotation, parseCycle } from "../components/photo/grid";
 import type { KnownFacts } from "../components/photo/prompt";
 import { formatCost } from "../components/photo/pricing";
 import { transcribe, TranscribeImage } from "../components/photo/transcriber";
+import { parseCrop, pdfPageSize, pdftoppmArgs, PageSelection } from "./pdfRegion";
 
 const USAGE = `usage: transcribe-photos.ts FILE... [options]
 
   FILE                 images (jpg, png, webp) in reading order, or a PDF
+  --page N             PDF only: use just this page
+  --crop x,y,w,h       PDF only, with --page: use this region of the page, as
+                       fractions from the top left (0,0.05,1,0.2 = the top fifth).
+                       It is cut at 300 dpi, so small marks like octave dots
+                       survive. Crop images before passing them in.
   --ragams TEXT        raga, or ragamalika ragas in order
   --talam CYCLE        e.g. "|4|2|2|" (Adi); enforced
   --npb N              swaras per beat in the normally written sections
@@ -66,24 +72,36 @@ function parseArgs(argv: string[]) {
   return { files, opts };
 }
 
-/** Expands PDFs into page images and loads everything as base64. */
-function loadImages(files: string[]): TranscribeImage[] {
+/** Expands PDFs into page images (or one page, or one region) and loads everything as base64. */
+function loadImages(files: string[], selection: PageSelection = {}): TranscribeImage[] {
   const images: TranscribeImage[] = [];
   for (const file of files) {
     const ext = path.extname(file).toLowerCase();
     if (ext === ".pdf") {
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), "transcribe-"));
+      const sel = { ...selection };
       try {
-        execFileSync("pdftoppm", ["-r", "200", "-jpeg", file, path.join(dir, "page")]);
-      } catch {
-        throw new Error(`Could not convert ${file}: install poppler (pdftoppm), or export the pages as images.`);
+        if (sel.crop) {
+          const info = execFileSync("pdfinfo", ["-f", String(sel.page), "-l", String(sel.page), file]).toString();
+          sel.pageSize = pdfPageSize(info, sel.page!);
+        }
+        execFileSync("pdftoppm", pdftoppmArgs(file, path.join(dir, "page"), sel));
+      } catch (e: any) {
+        if (e?.code === "ENOENT") {
+          throw new Error(`Could not convert ${file}: install poppler (pdftoppm), or export the pages as images.`);
+        }
+        throw new Error(`Could not convert ${file}: ${e?.message ?? e}`);
       }
       const pages = fs
         .readdirSync(dir)
         .filter((f) => f.endsWith(".jpg"))
         .sort();
+      if (pages.length === 0) throw new Error(`${file} has no page ${sel.page}`);
       images.push(...loadImages(pages.map((p) => path.join(dir, p))));
       continue;
+    }
+    if (selection.page || selection.crop) {
+      throw new Error(`${file}: --page and --crop work on PDFs. Crop the image before passing it in.`);
     }
     const mediaType = MEDIA[ext];
     if (!mediaType) throw new Error(`${file}: use a JPEG, PNG, WebP or PDF file.`);
@@ -116,7 +134,16 @@ async function main(): Promise<number> {
     known.letterCase = opts.case;
   }
 
-  const images = loadImages(files);
+  const selection: PageSelection = {};
+  if (opts.page) {
+    selection.page = Number(opts.page);
+    if (!Number.isInteger(selection.page) || selection.page < 1) throw new Error("--page is a page number from 1");
+  }
+  if (opts.crop) {
+    if (!selection.page) throw new Error("--crop needs --page, so it knows which page to cut");
+    selection.crop = parseCrop(String(opts.crop));
+  }
+  const images = loadImages(files, selection);
   const appendTo = opts.append ? String(opts.append) : null;
   const existing = appendTo && fs.existsSync(appendTo) ? fs.readFileSync(appendTo, "utf8") : "";
   const client = new Anthropic(); // reads ANTHROPIC_API_KEY (or an `ant auth login` profile)

@@ -38,6 +38,14 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 - `NotationBlock`: parse errors show in the output, in a `.notation-error` box with
   `role="alert"`, instead of only in the console. In edit mode, Ctrl+Enter (Cmd+Enter on a
   Mac) applies and Escape cancels.
+- Front matter can declare a document's defaults: `cycle`, `beatDuration` and `breaks` mean
+  what the matching commands mean at the top of the body. A command in the body still
+  overrides them, and a bad value is a parse error naming the key.
+- Photo Transcribe CLI: `--page N` and `--crop x,y,w,h` cut one region of a PDF page at 300 dpi.
+- Photo Transcribe page: uploaded pages are sources, and an ordered list of transcriptions
+  picks regions from them. Each entry has its own name, ragam, talam, swaras per beat and
+  Transcribe button, so one part can be Adi at 2 per beat and the next Misra Chapu at 3. A
+  re-run waits for Insert instead of adding to the editor again.
 
 ### Changed
 

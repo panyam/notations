@@ -14,6 +14,32 @@ description: "Complete reference for all notation commands"
 \command(param1, param2)
 \command(param1, key=value)</code></pre>
 
+<h2>Declaring Defaults in Front Matter</h2>
+
+<p>A song's tala, speed and line breaks usually hold for the whole song. Front matter can
+declare them once, as data, instead of as commands at the top of the body:</p>
+
+<pre><code>---
+title: "Kunda Gowra"
+ragam: "Malahari"
+cycle: "|3|"
+beatDuration: 2
+breaks: 6
+---
+
+Sw: s , r m p , d p m p d p</code></pre>
+
+<ul>
+  <li><strong>cycle</strong>, <strong>beatDuration</strong> and <strong>breaks</strong> take the
+    same values as <code>\cycle(...)</code>, <code>\beatDuration(...)</code> and
+    <code>\breaks(...)</code>. <code>breaks</code> takes one number or a list, such as
+    <code>[8, 8]</code>. The keys match in any case.</li>
+  <li>They apply before the body, so a command in the body still overrides them.</li>
+  <li>For a part of the song with a different tala or speed, wrap it in a block:
+    <code>\section("Charanam") { \beatDuration(4) ... }</code>. The change ends with the block.</li>
+  <li>A value the command would reject shows as a parse error naming the key.</li>
+</ul>
+
 <h2>\beatDuration Command</h2>
 
 <p>Sets how many notes fit in one beat. This is the primary way to control the "speed" of notation.</p>

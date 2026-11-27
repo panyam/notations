@@ -23,6 +23,13 @@ import {
 import * as carnatic from "./carnatic";
 
 const ONE = TSU.Num.Fraction.ONE;
+
+/** Front matter keys that set document defaults, lowercased, mapped to the command for each. */
+const FRONT_MATTER_COMMANDS: Record<string, string> = {
+  cycle: "cycle",
+  beatduration: "beatduration",
+  breaks: "breaks",
+};
 const TWO = ONE.timesNum(2);
 
 /**
@@ -621,8 +628,37 @@ export class Parser {
 
     // First add the metadata then we can set it
     for (const key in this.metadata) notation.addMetaData(new Meta(key, this.metadata[key]));
+    for (const cmd of this.frontMatterCommands(errors)) cmd.applyToNotation(notation);
     for (const cmd of this.commands) cmd.applyToNotation(notation);
     return [notation, errors];
+  }
+
+  /**
+   * The document defaults front matter declares, as the commands that set them.
+   *
+   * `cycle`, `beatDuration` and `breaks` (any case) mean what `\cycle(...)`, `\beatDuration(...)`
+   * and `\breaks(...)` mean at the top of the body. They apply first, so a command in the body
+   * still overrides them. A value the command rejects becomes a ParseError in `errors`, with
+   * the key named, rather than an exception.
+   */
+  private frontMatterCommands(errors: G.ParseError[]): Command[] {
+    const commands: Command[] = [];
+    const data = this.metadata;
+    if (!data || typeof data !== "object") return commands;
+    for (const key of Object.keys(data)) {
+      const name = FRONT_MATTER_COMMANDS[key.toLowerCase()];
+      if (!name) continue;
+      const values = name === "breaks" && Array.isArray(data[key]) ? data[key] : [data[key]];
+      const params: CmdParam[] = values.map((value: any) => ({ key: null, value }));
+      try {
+        // The command's constructor validates the params and throws on a bad value.
+        const cmd = this.createCommand(name, params);
+        if (cmd) commands.push(cmd);
+      } catch (e: any) {
+        errors.push(new Error(`front matter ${key}: ${e?.message ?? e}`) as unknown as G.ParseError);
+      }
+    }
+    return commands;
   }
 
   parseEmbelishment(value: string): [any, boolean] {

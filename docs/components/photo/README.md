@@ -20,17 +20,23 @@ went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests
 | `transcriber.ts` | Claude call (streaming, structured output, adaptive thinking, server-side fallback) and the repair loop |
 | `notationChecks.ts` | Runs the real parser on generated DSL; alignment warnings |
 | `pdfPages.ts` | Renders each page of an uploaded PDF to a PNG with pdf.js, loaded on demand. Each page then works like a photo |
-| `photoStore.ts` | IndexedDB store for the page: uploaded files (a PDF as the PDF), the photo list with rotation and region, and the editor text |
+| `entries.ts` | The transcription list: each entry's name, ragam, regions and last result, and the rules for when a result goes into the editor |
+| `photoStore.ts` | IndexedDB store for the page: uploaded files (a PDF as the PDF), pages with rotation, transcription entries, and the editor text |
 | `imageUtils.ts` | Browser image prep: rotate, crop (from full resolution), downscale to 2400 px, optional enhancement (flat-field + contrast) |
-| `../playground/PhotoTranscribePlayground.ts` | The page: photos, region picker, known-facts fields, API key, editor/preview |
+| `../playground/PhotoTranscribePlayground.ts` | The page: pages, song facts, API key, transcription entries with their region picker, editor/preview |
 | `../../content/demos/playgrounds/photo-transcribe/index.html` | Page markup and styles |
 | `../../scripts/transcribe-photos.ts` | CLI (`pnpm run transcribe:photos`) |
 | `../../tests/photo/*.spec.ts` | Tests (run under the normal `pnpm test`) |
 
 ## Pipeline
 
-1. The user picks a region on every photo (required; "Use whole photo" is an explicit choice).
-   Crops are cut from the full-resolution photo before downscaling, so they keep detail.
+1. Uploaded pages are sources. Each transcription entry names one part of the song, such as
+   "Pallavi - Kedaram", and picks one or more regions from any pages ("Use whole photo" is an
+   explicit choice). A part that runs onto the next page gets a region on each. Crops are cut
+   from the full-resolution page before downscaling, so they keep detail. Each entry sets its own
+   ragam, talam and swaras per beat, since a ragamalika or a later section can change all three;
+   a new entry copies the talam and speed of the one above. Letter case and free-text hints are
+   notebook-wide. A name other than "Section N" goes to the model as "only this part".
 2. The model gets the image(s), known facts (ragam, talam, swaras per beat, letter case),
    free-text hints, optionally "only this part", and optionally the notation already in the
    editor as context.
@@ -41,9 +47,11 @@ went in the right beat, in about 50 s and $0.10 to $0.13 per run. The unit tests
    slots, needs 4"); a user-given talam is enforced. Errors go back to the model, up to 2 rounds.
 5. `toNotation` writes the DSL, drawing `|`/`||` from the tala, so roles and avartanams line up
    by construction. Filled-in beats and doubtful readings become `//` comments.
-6. On the page, every result goes after the editor's content. `mergeNotation` adds the snippet and
-   merges its metadata into the single front-matter block, because front matter may only open a
-   document. An empty editor just takes the notation. Clear empties the editor for a new song.
+6. On the page, an entry's first result goes after the editor's content. `mergeNotation` adds the
+   snippet and merges its metadata into the single front-matter block, because front matter may
+   only open a document. An empty editor just takes the notation. A re-run keeps its result in
+   the entry until you press Insert, since the editor may already hold the first result with
+   hand fixes. Clear empties the editor for a new song.
 
 ## Decisions and why
 
@@ -85,10 +93,15 @@ pnpm run build:docs
 cd docs && NOTATIONS_DOCS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
 # open http://localhost:8085/notations/demos/playgrounds/photo-transcribe/
 
-# CLI (needs ANTHROPIC_API_KEY; PDFs need pdftoppm from poppler)
-pnpm run transcribe:photos page-1.jpg --only "Pallavi - Kedaram" \
-  --talam "|4|2|2|" --npb 4 --case swarasthana --append song.sng --out out/
+# CLI (needs ANTHROPIC_API_KEY; PDFs need pdftoppm and pdfinfo from poppler)
+pnpm run transcribe:photos notebook.pdf --page 1 --crop 0,0.048,0.96,0.183 \
+  --only "Pallavi - Kedaram" --talam "|4|2|2|" --npb 4 --case swarasthana \
+  --append song.sng --out out/
 ```
+
+`--crop x,y,w,h` takes fractions of the page from the top left and cuts the region at 300 dpi,
+the way the page's region picker does. Crop to a section rather than sending a whole page. A
+whole page gets downscaled, and marks a few pixels wide, like octave dots, disappear.
 
 The CLI writes `<name>.sng`, `<name>.grid.json` and `<name>.report.txt` (rounds, tokens,
 filled-in units, lines to check). With `--append`, the file is sent as context and the new part is
@@ -105,11 +118,8 @@ added to it.
    density, the column divider, and Sw/Sh row pairs; offer boxes to accept with one click.
 3. **Side-by-side proofreading:** the crop next to the rendered beats, with filled-in slots
    highlighted (the grid already knows which slots were inferred).
-4. **Cost controls:** show cost per run on the page; try Sonnet 5.5 and lower effort on clean
-   sections; Batch API (50% off) for CLI bulk runs.
-5. **Page layout:** separate uploaded files from an ordered list of transcriptions (#40). Uploads
-   and the editor already survive a reload; the transcriptions list should go in `photoStore.ts`
-   too.
+4. **Cost controls:** the page and CLI show the estimated cost per run. Next, try Sonnet 5.5 and
+   lower effort on clean sections, and the Batch API (50% off) for CLI bulk runs.
 
 ## Gotchas
 
@@ -127,7 +137,18 @@ added to it.
 
 ## Known misses
 
-- **Faint octave dots on a whole page.** Row 1 of the Kedaram pallavi has a dot a few pixels wide
-  under the N of `SNSR`. A whole-page run downscales it to one or two pixels, and the model reads
-  a plain `N` even with the octave-dot guidance in `prompt.ts`. Crop the rows instead of sending
-  the page. #52 tracks it.
+- **Octave dots the page doesn't show.** The notebook dots only some lower-octave notes. The
+  model writes a dot it can see, and flags the doubtful ones in the report. At normal effort it
+  sometimes adds a dot from the phrase shape and says so. Check the flagged beats.
+
+## Effort: normal against careful
+
+Two runs on the same Kedaram crop, after #52:
+
+| Effort | Read the dot under `SNSR` | Time | Output tokens | Cost |
+|---|---|---|---|---|
+| high (normal) | yes | 79 s | 7,798 | $0.19 |
+| xhigh (Careful reading) | yes | 212 s | 21,143 | $0.46 |
+
+Careful reading cost 2.4 times as much and found nothing the normal run missed. Keep it for
+pages where normal effort leaves grid errors after its repair rounds.
