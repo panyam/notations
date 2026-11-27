@@ -63,7 +63,7 @@ group.enableEvents();
 
 // Parse notation input into atoms
 function parseNotation(input: string): Atom[] {
-  const parser = new Parser();
+  const parser = new Parser({ embellishments: carnaticGamakas });
   parser.parse(input);
   // Extract atoms from AddAtoms commands
   const atoms: Atom[] = [];
@@ -255,7 +255,7 @@ group.insertAtomsAt(atomAtCaret, false, ...parsedAtoms);
       if (!input.trim()) return [];
 
       try {
-        const parser = new N.Parser();
+        const parser = new N.Parser({ embellishments: N.carnaticGamakas });
         parser.parse(input);
 
         // Extract atoms from AddAtoms commands in parser.commands

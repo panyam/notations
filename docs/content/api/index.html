@@ -83,16 +83,31 @@ processNotation(notation, beatLayout);
 
 <h2>Using the Parser Directly</h2>
 
-<p>For more control, use the Parser class:</p>
+<p>For more control, use the Parser class. Give it the gamakas to read: the parser knows the <code>~</code> syntax but not what any gamaka means. <code>load()</code> and <code>parse()</code> pass the Carnatic ones for you.</p>
 
-<pre><code>import { Parser } from "notations";
+<pre><code>import { Parser, carnaticGamakas } from "notations";
 
-const parser = new Parser();
+const parser = new Parser({ embellishments: carnaticGamakas });
 const result = parser.parse(source);
 
 console.log("Commands:", parser.commands);
 console.log("Metadata:", parser.metadata);
 console.log("Errors:", parser.errors);
+</code></pre>
+
+<h2>Parsing Without the Renderer</h2>
+
+<p>The <code>notations</code> entry includes the SVG renderer. Two smaller entries leave it out:</p>
+
+<ul>
+  <li><strong><code>notations/core</code></strong> - The runtime model: atoms, groups, cycles, notations, <code>AtomIterator</code> and the beat layout. No parser, no renderer, no DOM. About 8 KB gzipped.</li>
+  <li><strong><code>notations/parser</code></strong> - The DSL parser, <code>load()</code> and <code>parse()</code> with the Carnatic gamakas wired in, and <code>carnaticGamakas</code> itself. It builds the model from <code>notations/core</code>.</li>
+</ul>
+
+<pre><code>import { load } from "notations/parser";
+import { AtomIterator } from "notations/core";
+
+const [notation, , errors] = load(source);
 </code></pre>
 
 <h2>Rendering</h2>

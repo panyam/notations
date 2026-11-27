@@ -10,6 +10,8 @@ export * from "./notation";
 export * from "./parser";
 export * from "./shapes";
 export * from "./loader";
+/** The Carnatic gamakas as an EmbellishmentParser: `new Parser({ embellishments: carnaticGamakas })`. */
+export { carnaticGamakas } from "./carnatic/gamakas";
 /** The error type in the list that parse() and load() return, from the galore parser. */
 export type { ParseError } from "galore";
 export * as Utils from "./utils";

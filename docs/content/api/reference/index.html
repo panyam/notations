@@ -37,9 +37,9 @@ if (errors.length === 0) {
 
 <h2>Parser Class</h2>
 
-<h3>new Parser()</h3>
+<h3>new Parser(options?)</h3>
 
-<p>Creates a new parser instance for more control over parsing.</p>
+<p>Creates a new parser instance for more control over parsing. <code>options.embellishments</code> is the function that reads <code>~</code> tokens into gamakas; pass <code>carnaticGamakas</code> for the Carnatic ones. Without it, each <code>~</code> in the source is reported as an error. <code>load()</code> and <code>parse()</code> pass <code>carnaticGamakas</code> for you.</p>
 
 <h4>Methods</h4>
 
@@ -57,7 +57,7 @@ if (errors.length === 0) {
 
 <h4>Example</h4>
 
-<pre><code>const parser = new Parser();
+<pre><code>const parser = new Parser({ embellishments: carnaticGamakas });
 const result = parser.parse(source);
 console.log("Commands:", parser.commands);
 console.log("Errors:", parser.errors);

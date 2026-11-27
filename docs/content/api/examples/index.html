@@ -232,7 +232,7 @@ try {
 const source = `
 ---
 title: "Mohana Varnam"
-raga: "Bhairavi"
+raga: "Mohanam"
 composer: "Papanasam Sivan"
 ---
 
@@ -241,11 +241,10 @@ composer: "Papanasam Sivan"
 Sw: S R G M P D N S.
 `;
 
-const parser = new N.Parser();
+const parser = new N.Parser({ embellishments: N.carnaticGamakas });
 parser.parse(source);
 
 console.log('Metadata:', parser.metadata);
-// Output: { title: "Mohana Varnam", raga: "Bhairavi", ... }
 
 const [notation, beatLayout, errors] = N.load(source);
 console.log('Title:', notation.metadata.title);

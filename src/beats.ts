@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { AtomType, Marker, Group, Line, Atom, Space, Role } from "./";
+import { AtomType, Marker, Group, Line, Atom, Space, Role } from "./core";
 import { CycleIterator, CyclePosition } from "./cycle";
 import { WindowIterator } from "./iterators";
 import { LayoutParams } from "./layouts";

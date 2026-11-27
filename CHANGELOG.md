@@ -9,7 +9,19 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+### Breaking
+
+- `new Parser()` no longer knows any gamakas. The parser now depends on the runtime model only, and
+  gamakas come in through `new Parser({ embellishments: carnaticGamakas })`. Without one, each `~`
+  in the source is reported as a parse error that says to pass `embellishments` or use `load()`.
+  `load()` and `parse()` pass `carnaticGamakas` and behave as before (#18).
+
 ### Added
+
+- `notations/core` and `notations/parser` subpath exports (#18). `notations/core` is the runtime
+  model with no parser and no renderer, about 8 KB gzipped. `notations/parser` is the DSL parser,
+  `load()`, `parse()` and `carnaticGamakas`, without the renderer. `EmbellishmentParser` and
+  `ParserOptions` describe how a Parser reads gamakas.
 
 - Photo Transcribe demo on the docs site (`demos/playgrounds/photo-transcribe/`):
   take or upload photos of Carnatic notation and get editable Notations source
