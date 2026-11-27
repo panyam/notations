@@ -165,6 +165,8 @@ export class SideBySidePlayground {
     const renderBtn = document.getElementById("render-btn");
     renderBtn?.addEventListener("click", () => this.render());
 
+    document.getElementById("print-btn")?.addEventListener("click", () => this.playground.print());
+
     // Setup reset layout button
     const resetLayoutBtn = document.getElementById("reset-layout-btn");
     resetLayoutBtn?.addEventListener("click", () => this.resetLayout());

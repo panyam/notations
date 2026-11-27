@@ -196,6 +196,7 @@ playground.clearConsole();
 playground.source = "new source";
 playground.render();
 playground.resetLayout();
+playground.print(); // the notation alone, at page width; Save as PDF from the dialog
 ```
 
 #### CSS Theming

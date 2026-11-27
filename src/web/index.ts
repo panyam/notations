@@ -4,6 +4,7 @@ export { default as NotebookView } from "./components/NotebookView";
 export { default as NotebookCell, NotebookCellConfig } from "./components/NotebookCell";
 export { default as SideBySideEditor, SideBySideEditorConfig } from "./components/SideBySideEditor";
 export { default as DockViewPlayground, DockViewPlaygroundConfig } from "./components/DockViewPlayground";
+export { preparePrint, printNotation, PrintOptions } from "./components/printNotation";
 
 // Export notebook types and utilities
 export * from "./types/notebook";
