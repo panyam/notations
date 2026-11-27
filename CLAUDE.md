@@ -20,6 +20,10 @@ pnpm run transcribe:photos   # photo transcriber CLI; needs ANTHROPIC_API_KEY
 The pre-commit hook runs clean, build, check:esm, lintfix and test. PRs merge with merge
 commits, not squash.
 
+PR screenshots go on the orphan `pr-assets` branch, one folder per PR (`pr54/`). Link them by
+raw.githubusercontent URL pinned to the commit, since `gh` cannot upload images. Commit there
+with `--no-verify`, because the hook builds code that branch does not have.
+
 ## Dependencies and supply chain
 
 - `pnpm-workspace.yaml` turns on minimumReleaseAge (3 days), trustPolicy no-downgrade,
