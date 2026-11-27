@@ -1,16 +1,16 @@
 # Photo Transcribe: handoff notes
 
-Status as of the `ccr-ac4b95f8-gu595q` branch. Read this before working on the photo
-transcriber; it records what was built, why, and what is next.
+Shipped in #39 and live on the docs site. Read this before working on the photo transcriber;
+it records what was built, why, and what is next.
 
 ## What it is
 
 A docs-site demo (`/demos/playgrounds/photo-transcribe/`) and a CLI that turn photos of
 Carnatic notation (printed books, handwritten notebooks) into Notations DSL using Claude.
 
-**It has never been run against the real API.** Everything below is tested with a mocked
-API (unit tests plus Playwright runs against the docs server). The first job is a real run;
-see "Next steps".
+It has run against the real API on the Kedaram rows of the Valachi Vachi notebook. Every swara
+went in the right beat, in about 50 s and $0.12 per run. Fixes from those runs are in #42. The
+unit tests use a mocked API.
 
 ## Files
 
@@ -91,20 +91,20 @@ added to it.
 
 ## Next steps
 
-1. **First real run.** Navaragamalika varnam "Valachi Vachi" (Patnam Subramanya Iyer, Adi), the
-   user's two-page handwritten notebook PDF (not in the repo; ask for it). Start with just the
-   Kedaram rows (top of page 1, both columns): `--talam "|4|2|2|" --npb 4 --case swarasthana`.
-   Compare the `.sng` with the page; check the report's token counts. Tune `prompt.ts` from
-   what goes wrong, and add each failure as a test where it can be expressed as a grid rule.
-   Ragas in order: Kedaram, Shankarabharanam, Kalyani, Begada, Kambhoji, Yadukula Kambhoji,
-   Bilahari, Mohanam, Shri.
+1. **Finish the Valachi Vachi notebook.** Navaragamalika varnam by Patnam Subramanya Iyer, Adi.
+   It is the user's two-page handwritten PDF, not in the repo; ask for it. Fix #42 first (octave
+   dots, ragam precedence). Then go section by section with
+   `--talam "|4|2|2|" --npb 4 --case swarasthana`, cropping both columns of a raga's rows.
+   Add each failure as a test where a grid rule can express it. Ragas in order: Kedaram (done),
+   Shankarabharanam, Kalyani, Begada, Kambhoji, Yadukula Kambhoji, Bilahari, Mohanam, Shri.
 2. **Row and section suggestions in the region picker:** detect text rows by horizontal ink
    density, the column divider, and Sw/Sh row pairs; offer boxes to accept with one click.
 3. **Side-by-side proofreading:** the crop next to the rendered beats, with filled-in slots
    highlighted (the grid already knows which slots were inferred).
 4. **Cost controls:** show cost per run on the page; try Sonnet 5.5 and lower effort on clean
    sections; Batch API (50% off) for CLI bulk runs.
-5. The docs site deploys from the Docs workflow after CI passes on master (`cd docs && make deploy` runs it by hand).
+5. **Page layout:** separate uploaded files from an ordered list of transcriptions (#40), and
+   keep them across reloads in IndexedDB (#41).
 
 ## Gotchas
 
@@ -116,15 +116,11 @@ added to it.
   change on every build.
 - `docs/tsconfig.json` uses `"module": "es2020"` so the on-demand `import("@anthropic-ai/sdk")`
   compiles.
-- CI installs with pnpm 12 (`--frozen-lockfile`, minimum release age); check new dependencies
-  with `npx pnpm@12 install --frozen-lockfile`.
+- New dependencies go through the supply-chain checks in `pnpm-workspace.yaml`. The root
+  `CLAUDE.md` says how to handle a failure.
 - A `-` in the DSL takes no time (phrase separator); `_` is one unit of silence.
 
 ## Found along the way (not fixed)
 
-- `\meta(...)` is not a parser command (it is commented out in `src/parser.ts`), yet 90 of the
-  122 `.sng` files in `notation_demos` use it, so most of those files do not load as they are.
-  Front matter is the supported way.
-- The Playgrounds index and some API pages link to `/api/playgrounds/...` instead of
-  `/demos/playgrounds/...`.
-- The site header overflows horizontally at phone width on every page.
+Tracked in #42: `\meta` in the demo files, the `/api/playgrounds` links, and header overflow
+on phones.
