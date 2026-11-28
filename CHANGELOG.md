@@ -19,6 +19,11 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   `mark(atom, name)` / `unmark(name, atom?)` add a `mark-<name>` class for a host to show the note
   playing or under a caret. `mark-playing` and `mark-cursor` are styled, through
   `--notation-mark-playing-color` and `--notation-mark-cursor-color` (#102).
+- `buildTimeline(notation)` in `notations/core` gives each note, syllable and rest its offset and
+  duration in beats as exact fractions, with its role, line, tala position (cycle, bar, beat),
+  octave and gamakas. Commas fold into the note they hold. Each line starts on a samam and takes
+  whole cycles, as on the rendered page, and a pickup that overlaps sounding notes adds a warning.
+  It runs no clock; a player such as thambura turns beats into seconds (#101).
 
 ### Changed
 

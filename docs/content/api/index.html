@@ -123,6 +123,22 @@ view.unmark("cursor");
 if (atom) view.mark(atom, "cursor");
 </code></pre>
 
+<h2>A timeline in beats</h2>
+
+<p><code>buildTimeline(notation)</code> lists every note, syllable and rest in time order. Each event has an <code>offset</code> and a <code>duration</code> in beats, as exact fractions. It also has its <code>role</code> and <code>line</code>, its <code>tala</code> position (cycle, bar, beat, and how far into the beat), the swara or syllable as written, its octave and its gamakas. A player reads it instead of walking atoms and groups itself.</p>
+
+<p>Commas hold the note before them, so <code>S , , R</code> gives an S of three beats. Silent spaces (<code>_</code>) become rests. Each line starts on a samam, shifted by its own <code>\line(offset=...)</code>, and takes a whole number of cycles. A line that ends at beat 6 of Adi leaves 2 silent beats, because the page starts the next line on a fresh row. A pickup before samam reaches back into the line before it. If notes are still sounding there, the timeline keeps both and adds an entry to <code>warnings</code>.</p>
+
+<p>Times stay in beats. Tempo, seconds and pitch belong to the player.</p>
+
+<pre><code>import { buildTimeline } from "notations/core";
+
+const { events } = buildTimeline(notation);
+for (const e of events) {
+  console.log(e.kind, e.value, e.offset.toString(), e.duration.toString(), e.tala.beatInCycle);
+}
+</code></pre>
+
 <h2>Printing</h2>
 
 <p><code>notations/export</code> prints a notation on its own, sized to the page. <code>printNotation(source)</code> renders the source again into a print-only copy and opens the print dialog, where "Save as PDF" gives a PDF. Every line scales by the same factor, so the widest line fills the page. It needs a browser, and it doesn't pull in the editor or the playgrounds from <code>notations/web</code>.</p>
