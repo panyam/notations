@@ -6,8 +6,8 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 ## At a glance
 
 - master — #86 photo transcriber — next: run #86's exercise (never logged), starting with the Kedaram entry on the live page
-- #48 is at 9/18. `pnpm run exercise:48` @ 65e8a92 passes steps 1 and 2 and breaks at step 3, playback. #101's timeline is in `notations/core`; step 3 now waits on panyam/thambura#214 playing it. Next ready here: #77 (P3, save and share, step 4).
-- This run: #105 (#101 timeline) and #107 (#71 song library) merged. #71's notation_demos half moved to panyam/notation_demos#6; bump `docs/library.json` with `pnpm run library --bump` after it merges.
+- #48 is at 10/19. `pnpm run exercise:48` @ e46a093 passes every step except 3, playback. Step 3 waits on panyam/thambura#214 (play #101's timeline), then panyam/thambura#53 (package the engine for the playground).
+- This run: #110 merged (library pinned to notation_demos 9d61fc6, with link lines and one spelling per name; panyam/notation_demos#6 closed). Dropped the note about bumping the pin.
 
 ## Across threads
 
