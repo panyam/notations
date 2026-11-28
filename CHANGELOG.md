@@ -24,6 +24,10 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   octave and gamakas. Commas fold into the note they hold. Each line starts on a samam and takes
   whole cycles, as on the rendered page, and a pickup that overlaps sounding notes adds a warning.
   It runs no clock; a player such as thambura turns beats into seconds (#101).
+- The playgrounds keep the editor's caret and the rendered notation in step. A caret on a note
+  marks it in the output, and a click on a rendered note selects its text in the editor. It waits
+  while the editor holds unrendered edits. `SideBySideEditor` and `DockViewPlayground` take
+  `cursorSync: false` to turn it off (panyam/notation#294).
 
 ### Changed
 
@@ -31,6 +35,8 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ### Fixed
 
+- SVG export carried the renderer's new `sourceatomid` attribute on every atom, which made a song's
+  SVG about 17% bigger. Export drops it with the other renderer attributes.
 - A tokenizer error for an invalid gamaka or an old marker covered one character too many.
   tlex's `Token.end` is exclusive, and the length was computed as if it weren't (#102).
 

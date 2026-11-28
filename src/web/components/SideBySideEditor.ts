@@ -12,6 +12,7 @@
  */
 
 import { load } from "../../loader";
+import { atomAt } from "../../positions";
 import { NotationView } from "../../carnatic";
 import { GridLayoutGroup } from "../../grids";
 import { Notation } from "../../notation";
@@ -73,11 +74,20 @@ export interface SideBySideEditorConfig {
    * CSS class for the output container.
    */
   outputClass?: string;
+
+  /**
+   * Keeps the editor's caret and the rendered notation in step. A caret on a note marks that note
+   * in the output with `mark-cursor`, and a click on a rendered note selects its text in the
+   * editor. Both wait while the editor holds text that hasn't been rendered yet, since the output
+   * no longer matches it. On by default.
+   */
+  cursorSync?: boolean;
 }
 
 const DEFAULT_CONFIG: SideBySideEditorConfig = {
   debounceDelay: 300,
   syncScroll: true,
+  cursorSync: true,
 };
 
 /**
@@ -215,7 +225,9 @@ export default class SideBySideEditor {
 
     this.notation = notation;
     this.beatLayout = beatLayout;
+    this.renderedSource = source;
     this.notationView.renderNotation(notation, beatLayout);
+    this.syncCursorToOutput();
     this.config.onNotationParsed?.(notation, beatLayout);
 
     return errors.length === 0;
@@ -239,6 +251,13 @@ export default class SideBySideEditor {
       }
     });
 
+    if (this.config.cursorSync) {
+      for (const type of ["keyup", "click", "select", "focus", "input"]) {
+        this.editorElement.addEventListener(type, () => this.syncCursorToOutput());
+      }
+      this.outputElement.addEventListener("click", (e) => this.syncCursorToEditor(e.target as Element));
+    }
+
     // Scroll synchronization
     if (this.config.syncScroll) {
       this.editorElement.addEventListener("scroll", () => {
@@ -249,6 +268,33 @@ export default class SideBySideEditor {
         this.syncScrollToEditor();
       });
     }
+  }
+
+  /** The source the output was last rendered from, so cursor sync can tell when it's stale. */
+  private renderedSource: string | null = null;
+
+  private get outputIsCurrent(): boolean {
+    return this.notation != null && this.editorElement.value === this.renderedSource;
+  }
+
+  /** Marks the note under the editor's caret, or clears the mark when there is none. */
+  private syncCursorToOutput(): void {
+    if (!this.config.cursorSync) return;
+    this.notationView.unmark("cursor");
+    if (!this.outputIsCurrent) return;
+    const atom = atomAt(this.notation!, this.editorElement.selectionStart);
+    if (atom) this.notationView.mark(atom, "cursor");
+  }
+
+  /** Selects the source of the note drawn at `target`, if it is one. */
+  private syncCursorToEditor(target: Element): void {
+    if (!this.outputIsCurrent) return;
+    const atom = this.notationView.atomFor(target);
+    if (!atom?.sourceRange) return;
+    this.editorElement.focus();
+    this.editorElement.setSelectionRange(atom.sourceRange[0], atom.sourceRange[1]);
+    this.notationView.unmark("cursor");
+    this.notationView.mark(atom, "cursor");
   }
 
   /**

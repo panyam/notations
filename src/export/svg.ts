@@ -60,7 +60,7 @@ const SVG_STYLE_PROPS = [
   "visibility",
 ];
 
-const RENDERER_ATTRS = /^(id|atomid|beatid|beatindex|rolename|gridrow|gridcol)$/i;
+const RENDERER_ATTRS = /^(id|atomid|sourceatomid|beatid|beatindex|rolename|gridrow|gridcol)$/i;
 
 const HEADING_SIZES: Record<string, number> = { H1: 28, H2: 24, H3: 20, H4: 17, H5: 15, H6: 14 };
 const BODY_SIZE = 14;

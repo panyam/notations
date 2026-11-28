@@ -69,6 +69,13 @@ export interface DockViewPlaygroundConfig {
   syncScroll?: boolean;
 
   /**
+   * Whether the editor's caret and the rendered notation follow each other: a caret on a note
+   * marks it in the output, and a click on a rendered note selects its text in the editor.
+   * @default true
+   */
+  cursorSync?: boolean;
+
+  /**
    * Optional markdown parser for RawBlock content.
    */
   markdownParser?: (content: string) => string;
@@ -393,6 +400,7 @@ export default class DockViewPlayground {
       initialSource: c.initialSource,
       debounceDelay: 300,
       syncScroll: c.syncScroll,
+      cursorSync: c.cursorSync ?? true,
       markdownParser: c.markdownParser,
       ...c.editorConfig,
       onSourceChange: (source) => {
