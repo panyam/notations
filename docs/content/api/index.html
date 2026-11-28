@@ -123,6 +123,8 @@ view.unmark("cursor");
 if (atom) view.mark(atom, "cursor");
 </code></pre>
 
+<p>The playgrounds do this already. <code>SideBySideEditor</code> and <code>DockViewPlayground</code> mark the note under the editor's caret, and a click on a rendered note selects its text. Pass <code>cursorSync: false</code> to turn that off.</p>
+
 <h2>A timeline in beats</h2>
 
 <p><code>buildTimeline(notation)</code> lists every note, syllable and rest in time order. Each event has an <code>offset</code> and a <code>duration</code> in beats, as exact fractions. It also has its <code>role</code> and <code>line</code>, its <code>tala</code> position (cycle, bar, beat, and how far into the beat), the swara or syllable as written, its octave and its gamakas. A player reads it instead of walking atoms and groups itself.</p>
