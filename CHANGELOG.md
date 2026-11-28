@@ -9,6 +9,10 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-27
+
+Details and migration: [docs/releases/v2.1.0.md](docs/releases/v2.1.0.md).
+
 ### Added
 
 - `notations/export`, a new entry point for getting rendered notation out of the page. It needs a
@@ -30,7 +34,6 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 - The margin column is only as wide as its longest label, and labels are right-aligned by
   default. It used to take a share of the table's spare width, so printed labels sat far from
   their notation (#97).
-
 - Front matter is read by a small parser for flat `key: value` lines instead of the `yaml`
   package. Values can be quoted or plain strings, numbers, booleans, null, or a one-line list such
   as `[8, 8]`, and they read as YAML reads them. Nested values, `- item` lists and multi-line
@@ -176,5 +179,6 @@ Full notes: [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md)
 
 - Dependency updates from dependabot (PR 15, PR 16).
 
+[2.1.0]: https://github.com/panyam/notations/releases/tag/v2.1.0
 [2.0.0]: https://github.com/panyam/notations/releases/tag/v2.0.0
 [1.1.0]: https://github.com/panyam/notations/releases/tag/v1.1.0
