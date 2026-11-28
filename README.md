@@ -73,7 +73,7 @@ import { AtomIterator } from 'notations/core';
 To use `Parser` directly, give it the gamakas to read: `new Parser({ embellishments: carnaticGamakas })`.
 `load()` and `parse()` do that for you.
 
-### Printing
+### Printing and export
 
 `notations/export` prints a notation on its own, sized to the page. It renders the source again
 into a print-only copy, so the rest of the page stays out of the printout. "Save as PDF" in the
@@ -83,6 +83,17 @@ print dialog gives a PDF. It needs a browser, and it doesn't pull in the editor 
 import { printNotation } from 'notations/export';
 
 printNotation(source, { markdownParser: (md) => marked.parse(md) });
+```
+
+`exportSVG(source)` returns the notation as one standalone SVG, in the light theme on white.
+Headings and front matter become SVG text, keeping bold and italic. `exportPNG(source)` draws
+that SVG at twice its size. `downloadSVG` and `downloadPNG` save either as a file.
+
+```typescript
+import { downloadPNG, exportSVG } from 'notations/export';
+
+const svg = exportSVG(source);              // a string, ready to save or embed
+await downloadPNG(source, 'kriti.png');
 ```
 
 ## Documentation

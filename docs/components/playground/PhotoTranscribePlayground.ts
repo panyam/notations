@@ -254,6 +254,8 @@ export class PhotoTranscribePlayground {
     $("pt-download").addEventListener("click", () => this.downloadSource());
     $("pt-reset-layout").addEventListener("click", () => this.playground.resetLayout());
     $("pt-print").addEventListener("click", () => this.playground.print());
+    $("pt-export-svg").addEventListener("click", () => this.playground.downloadSVG());
+    $("pt-export-png").addEventListener("click", () => this.playground.downloadPNG());
   }
 
   // ---- Pages ----------------------------------------------------------------------------
