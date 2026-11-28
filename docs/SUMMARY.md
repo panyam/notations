@@ -16,7 +16,7 @@ This folder contains the complete documentation site for the Notations library, 
   - Tisram notation (3 notes per beat)
   - Organizing long compositions
   - Percussion notation (mridangam/tabla)
-- **Library**: every song in panyam/notation_demos on its own page, with indexes by composer and by ragam. `pnpm run library` generates `content/library/` (gitignored) from the commit `library.json` pins, and fails if a song doesn't parse (#71). `--bump` pins notation_demos master's latest commit. `make run` and `make render` run it first.
+- **Library**: every song in panyam/notation_demos on its own page, with indexes by composer and by ragam. `pnpm run library` generates `content/library/` (gitignored) from the commit `library.json` pins, and fails if a song doesn't parse, or if its first-line link doesn't match its URL (#71, panyam/notation_demos#6). `--bump` pins notation_demos master's latest commit. `make run` and `make render` run it first.
 - **Sharing**: the side-by-side playground's Share gives a library song's page while it's unchanged, and otherwise a `/view/#s=<link>` URL that carries the source (`components/share.ts`, #77). The link is a format byte and the deflated source, as base64url, in the style of thambura's share links. `/view/` renders it on its own, readable on a phone, with Print / PDF, SVG, PNG and "Open in playground". The playground also keeps a draft in localStorage. A library page's "Open in playground" passes `?song=<path>`, and the playground reads the song from that page.
 - **API Documentation**: Integration guides and API reference
 - **Contributing**: Guidelines for contributors
