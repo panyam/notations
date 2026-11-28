@@ -6,6 +6,9 @@ minimumReleaseAge: 4320
 # The photo transcriber needs SDK 1.14.0 before it is 3 days old. This names the exact
 # version, so later SDK releases still wait.
 minimumReleaseAgeExclude:
+  # Atom source positions (#102) need galore 1.1.0's node spans, published the day this moved
+  # onto it. Exact version, so later ones wait.
+  - 'galore@1.1.0'
   - '@anthropic-ai/sdk@1.14.0'
   # DockViewPlayground needs the dock whose tab close icon is not a control nested in the tab
   # (axe nested-interactive, #89). goapplib published it as 0.7.44 the day this moved onto it.

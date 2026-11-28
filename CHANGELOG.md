@@ -9,6 +9,26 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+### Added
+
+- Every parsed atom knows where it came from: `atom.sourceRange` is `[start, end)` in the whole
+  source, front matter included. A converted literal, a clone or the rest of a note split across a
+  beat points back to the parsed atom through `atom.origin`, and keeps its range. `atomAt(notation,
+  offset)` finds the atom under a caret, and `walkAtoms` and `sourceAtom` go with it (#102).
+- `NotationView.elementsFor(atom)` and `atomFor(element)` map between atoms and what's drawn, and
+  `mark(atom, name)` / `unmark(name, atom?)` add a `mark-<name>` class for a host to show the note
+  playing or under a caret. `mark-playing` and `mark-cursor` are styled, through
+  `--notation-mark-playing-color` and `--notation-mark-cursor-color` (#102).
+
+### Changed
+
+- Requires galore `^1.1.0`, for the source spans on parse tree nodes.
+
+### Fixed
+
+- A tokenizer error for an invalid gamaka or an old marker covered one character too many.
+  tlex's `Token.end` is exclusive, and the length was computed as if it weren't (#102).
+
 ## [2.1.0] - 2026-11-27
 
 Details and migration: [docs/releases/v2.1.0.md](docs/releases/v2.1.0.md).

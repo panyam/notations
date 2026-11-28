@@ -3,7 +3,8 @@ import { LineView } from "./LineView";
 import { Notation, RawBlock, Block, BlockItem, isLine, isBlock, isRawBlock } from "../notation";
 import { Beat, GlobalBeatLayout } from "../beats";
 import { GridCell, GridCellView, GridLayoutGroup, LayoutChangeEvent } from "../grids";
-import { Line } from "../core";
+import { Atom, Line } from "../core";
+import { walkAtoms } from "../positions";
 import { BeatView, MarkerView } from "./beatviews";
 
 /**
@@ -151,7 +152,49 @@ export class NotationView {
     return this.lineViews[this.lineViews.length - 1];
   }
 
+  private atomsByUuid: Map<number, Atom> | null = null;
+
+  /**
+   * The rendered elements of `atom`: its root group, plus the root of any continuation drawn where
+   * a note runs over a beat. `atom` can be the parsed atom or one derived from it. Empty when the
+   * atom isn't on this view.
+   */
+  elementsFor(atom: Atom): Element[] {
+    const uuid = (atom.origin ?? atom).uuid;
+    return [...this.tableElement.querySelectorAll(`[sourceatomid="${uuid}"]`)];
+  }
+
+  /**
+   * The parsed atom drawn at `element` or at its nearest ancestor that belongs to an atom, such as
+   * the atom under a click. Null outside any atom, as on a bar line or a heading.
+   */
+  atomFor(element: Element): Atom | null {
+    const el = element.closest("[sourceatomid]");
+    if (!el || !this.tableElement.contains(el)) return null;
+    if (!this.atomsByUuid) {
+      this.atomsByUuid = new Map();
+      for (const atom of walkAtoms(this.notation)) this.atomsByUuid.set(atom.uuid, atom);
+    }
+    return this.atomsByUuid.get(Number(el.getAttribute("sourceatomid"))) ?? null;
+  }
+
+  /**
+   * Adds the class `mark-<name>` to `atom`'s elements, for a host to show "playing", "cursor" or
+   * "selected". It is static: a player or an editor calls it from its own events, and this view
+   * runs no clock (src/ARCHITECTURE.md). The stylesheet styles `mark-playing` and `mark-cursor`.
+   */
+  mark(atom: Atom, name: string): void {
+    for (const el of this.elementsFor(atom)) el.classList.add(`mark-${name}`);
+  }
+
+  /** Takes `mark-<name>` off `atom`'s elements, or off every element on this view without an atom. */
+  unmark(name: string, atom?: Atom): void {
+    const els = atom ? this.elementsFor(atom) : [...this.tableElement.querySelectorAll(`.mark-${name}`)];
+    for (const el of els) el.classList.remove(`mark-${name}`);
+  }
+
   clear(): void {
+    this.atomsByUuid = null;
     this.lineViews = [];
     // Mapping from line id -> list of beats in each of its roles
     this.currentSVGElement = null;

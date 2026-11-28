@@ -45,6 +45,21 @@ export abstract class Atom extends TimedEntity {
   isContinuation = false;
 
   /**
+   * Where this atom came from in the source, as `[start, end)` character offsets into the whole
+   * source, front matter included. Null for an atom made in code rather than parsed. An atom
+   * derived from a parsed one (a converted literal, a clone, the rest of a split note) keeps the
+   * parsed atom's range.
+   */
+  sourceRange: [number, number] | null = null;
+
+  /**
+   * The parsed atom this one was derived from, or null if this is the parsed atom. The renderer
+   * draws derived copies (a literal becomes a Note or Syllable, a note split across a beat gets a
+   * continuation), so lookups go through the origin to reach the atom the model holds.
+   */
+  origin: Atom | null = null;
+
+  /**
    * Creates a new Atom with the specified duration.
    * @param duration The duration of the atom, defaults to ONE (1/1)
    */
@@ -91,6 +106,14 @@ export abstract class Atom extends TimedEntity {
   copyTo(another: this): void {
     super.copyTo(another);
     another._duration = new TSU.Num.Fraction(this.duration.num, this.duration.den);
+    another.deriveFrom(this);
+  }
+
+  /** Marks this atom as derived from `parsed`, keeping the parsed atom's source range. */
+  deriveFrom(parsed: Atom): this {
+    this.origin = parsed.origin ?? parsed;
+    this.sourceRange = parsed.sourceRange;
+    return this;
   }
 
   /**
@@ -130,6 +153,7 @@ export abstract class LeafAtom extends Atom {
     if (this.duration.cmp(duration) > 0) {
       const spillOver = this.createSpilloverSpace(this.duration.minus(duration));
       spillOver.isContinuation = true;
+      spillOver.deriveFrom(this);
       this.duration = duration;
       // TODO - Here we need to move the markersAfter to the spill-over as it doesnt belong to this any more
       return spillOver;
@@ -398,6 +422,7 @@ export class Syllable extends Literal {
     const out = new Syllable(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
     out.beforeRest = lit.beforeRest;
+    out.deriveFrom(lit);
     return out;
   }
 
@@ -450,6 +475,7 @@ export class Note extends Literal {
     const out = new Note(lit.value, lit.duration);
     out.embelishments = lit.embelishments;
     out.beforeRest = lit.beforeRest;
+    out.deriveFrom(lit);
     return out;
   }
 

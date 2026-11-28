@@ -17,6 +17,10 @@
   --notation-line-padding: 5px;
   --notation-annotation-padding: 10px;
 
+  /* Notes a host marks with NotationView.mark(): the one playing, the one under a caret */
+  --notation-mark-playing-color: #f59e0b;
+  --notation-mark-cursor-color: #db2777;
+
   /* Margin labels (\line(marginText = ...)): left, center or right */
   --notation-margin-align: right;
 }
@@ -112,6 +116,17 @@
   :root:not(.light):not([data-theme="light"]) .role_sw text {
     fill: #ef4444; /* Red-500 */
   }
+}
+
+/* Marks a host sets with NotationView.mark() (#102). They come after the role colours so they
+   win over them. */
+.notationsContentRootTable .mark-playing text {
+  fill: var(--notation-mark-playing-color);
+}
+
+.notationsContentRootTable .mark-cursor text {
+  fill: var(--notation-mark-cursor-color);
+  text-decoration: underline;
 }
 
 /* ========================================

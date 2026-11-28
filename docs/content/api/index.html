@@ -110,6 +110,19 @@ import { AtomIterator } from "notations/core";
 const [notation, , errors] = load(source);
 </code></pre>
 
+<h2>From the notation back to the source</h2>
+
+<p>Every parsed atom knows its place in the source: <code>atom.sourceRange</code> is <code>[start, end)</code>, counted from the start of the whole source, front matter included. <code>atomAt(notation, offset)</code> finds the atom under a caret, so an editor can show which note the caret is on.</p>
+
+<p>On a rendered view, <code>view.elementsFor(atom)</code> gives what is drawn for an atom, and <code>view.atomFor(element)</code> gives the atom under a click. <code>view.mark(atom, "playing")</code> adds the class <code>mark-playing</code>, and <code>view.unmark("playing")</code> clears it. A player or an editor calls these from its own events. notations runs no clock.</p>
+
+<pre><code>import { atomAt } from "notations";
+
+const atom = atomAt(notation, editor.selectionStart);
+view.unmark("cursor");
+if (atom) view.mark(atom, "cursor");
+</code></pre>
+
 <h2>Printing</h2>
 
 <p><code>notations/export</code> prints a notation on its own, sized to the page. <code>printNotation(source)</code> renders the source again into a print-only copy and opens the print dialog, where "Save as PDF" gives a PDF. Every line scales by the same factor, so the widest line fills the page. It needs a browser, and it doesn't pull in the editor or the playgrounds from <code>notations/web</code>.</p>
