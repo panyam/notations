@@ -8,6 +8,7 @@ export * from "./grids";
 export * from "./beats";
 export * from "./notation";
 export * from "./positions";
+export * from "./timeline";
 export * from "./parser";
 export * from "./shapes";
 export * from "./loader";

@@ -16,4 +16,5 @@ export * from "./grids";
 export * from "./beats";
 export * from "./notation";
 export * from "./positions";
+export * from "./timeline";
 export * as Utils from "./utils";
