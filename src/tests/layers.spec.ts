@@ -64,7 +64,10 @@ describe("layers", () => {
   test("the runtime and the parser schedule nothing and play no audio", () => {
     const realtime = /\b(AudioContext|OfflineAudioContext|setTimeout|setInterval|requestAnimationFrame)\b/;
     const code = (f: string) =>
-      fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+      fs
+        .readFileSync(f, "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*$/gm, "");
     const local = new Set([...reachable("entry-core.ts"), ...reachable("entry-parser.ts")]);
     const hits = [...local].filter((f) => f.endsWith(".ts") && realtime.test(code(f))).map(rel);
     expect(hits).toEqual([]);
