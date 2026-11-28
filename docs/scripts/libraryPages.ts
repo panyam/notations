@@ -144,7 +144,7 @@ function pageFrontMatter(title: string, description: string): string {
 const link = (url: string, text: string) => `<a href="{{.Site.PathPrefix}}/${url}">${escapeHtml(text)}</a>`;
 
 /**
- * The page for one song: a link to its file, then the notation. The notation draws its own front
+ * The page for one song: a link to its file and one to open it in the playground, then the notation. The notation draws its own front
  * matter and headings, so the page doesn't repeat them.
  */
 export function songPage(song: Song, pin: LibraryPin): Page {
@@ -153,7 +153,8 @@ export function songPage(song: Song, pin: LibraryPin): Page {
   const html =
     pageFrontMatter(song.title, summary || "A song from the notation library") +
     `\n<p>From <a href="${escapeHtml(fileUrl)}">${escapeHtml(song.path)}</a> in ${escapeHtml(pin.repo)}. ` +
-    `${link("library/", "All songs")} · ${link("library/ragams/", "By ragam")}</p>\n\n` +
+    `${link("library/", "All songs")} · ${link("library/ragams/", "By ragam")} · ` +
+    `${link(`demos/playgrounds/side-by-side/?song=${song.url.replace(/^library\//, "").replace(/\/$/, "")}`, "Open in playground")}</p>\n\n` +
     `<notation id="song">\n${escapeText(song.source)}\n</notation>\n`;
   return { file: song.url + "index.html", html };
 }

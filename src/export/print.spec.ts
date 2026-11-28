@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { preparePrint, printNotation } from "./print";
+import { fitLinesToWidth, preparePrint, printNotation } from "./print";
 
 // The notation renderer measures SVG text, and jsdom has no layout. Ten pixels per text element
 // gives a line with more notes a wider box.
@@ -53,6 +53,15 @@ describe("preparePrint", () => {
     expect(long.style.width).toBe(`min(${widthOf(long)}px, 100%)`);
     expect(short.style.width).toBe(`min(${widthOf(short)}px, ${pct(widthOf(short))}%)`);
     cleanup();
+  });
+
+  test("minScale keeps a line from shrinking below that share of its own width", () => {
+    const root = document.createElement("div");
+    root.innerHTML = '<svg class="lineRootSVG" width="1000" height="50"></svg>';
+    fitLinesToWidth(root, { minScale: 0.6 });
+    const svg = root.querySelector("svg") as SVGSVGElement;
+    expect(svg.style.width).toBe("max(600px, min(1000px, 100%))");
+    expect(svg.style.maxWidth).toBe("");
   });
 
   test("cleanup removes the copy and the body class", () => {
