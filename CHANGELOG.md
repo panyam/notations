@@ -19,6 +19,10 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   `mark(atom, name)` / `unmark(name, atom?)` add a `mark-<name>` class for a host to show the note
   playing or under a caret. `mark-playing` and `mark-cursor` are styled, through
   `--notation-mark-playing-color` and `--notation-mark-cursor-color` (#102).
+- The playgrounds keep the editor's caret and the rendered notation in step. A caret on a note
+  marks it in the output, and a click on a rendered note selects its text in the editor. It waits
+  while the editor holds unrendered edits. `SideBySideEditor` and `DockViewPlayground` take
+  `cursorSync: false` to turn it off (panyam/notation#294).
 
 ### Changed
 
@@ -26,6 +30,8 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ### Fixed
 
+- SVG export carried the renderer's new `sourceatomid` attribute on every atom, which made a song's
+  SVG about 17% bigger. Export drops it with the other renderer attributes.
 - A tokenizer error for an invalid gamaka or an old marker covered one character too many.
   tlex's `Token.end` is exclusive, and the length was computed as if it weren't (#102).
 

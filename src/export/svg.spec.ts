@@ -113,6 +113,10 @@ describe("exportSVG", () => {
     document.documentElement.removeAttribute("data-theme");
   });
 
+  test("leaves out the renderer's bookkeeping attributes", () => {
+    expect(svgOf()).not.toMatch(/\b(sourceatomid|atomid|beatid|gridrow)=/i);
+  });
+
   test("leaves nothing behind in the page", () => {
     svgOf();
     expect(document.body.children.length).toBe(0);

@@ -123,6 +123,8 @@ view.unmark("cursor");
 if (atom) view.mark(atom, "cursor");
 </code></pre>
 
+<p>The playgrounds do this already. <code>SideBySideEditor</code> and <code>DockViewPlayground</code> mark the note under the editor's caret, and a click on a rendered note selects its text. Pass <code>cursorSync: false</code> to turn that off.</p>
+
 <h2>Printing</h2>
 
 <p><code>notations/export</code> prints a notation on its own, sized to the page. <code>printNotation(source)</code> renders the source again into a print-only copy and opens the print dialog, where "Save as PDF" gives a PDF. Every line scales by the same factor, so the widest line fills the page. It needs a browser, and it doesn't pull in the editor or the playgrounds from <code>notations/web</code>.</p>

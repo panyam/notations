@@ -74,6 +74,26 @@ async function control(page, pattern) {
   );
 }
 
+/**
+ * Renders the song again and clicks a rendered note. With cursor sync (panyam/notation#294), the
+ * editor selects that note's text. This adds a note to step 1 rather than failing it, since the
+ * step only asks for the song to render.
+ */
+async function checkCursor(page, song) {
+  await render(page, song);
+  const note = page.locator("g.atomViewRootGroup text").nth(5);
+  if (!(await note.count())) return "no note to click";
+  const shown = (await note.textContent()).trim();
+  await note.click();
+  const selected = await page
+    .locator("textarea")
+    .first()
+    .evaluate((t) => t.value.substring(t.selectionStart, t.selectionEnd));
+  return selected === shown
+    ? `clicking "${shown}" selects its source`
+    : `clicking "${shown}" selects ${JSON.stringify(selected)} in the editor (#294)`;
+}
+
 /** Clicks SVG and PNG, and checks that each downloaded file holds the notation. */
 async function checkExports(page) {
   const problems = [];
@@ -128,6 +148,7 @@ async function main() {
   const clean = await render(page, song);
   const withBad = await render(page, song + "\n\\noTala\nSw: S , , , R , , ,\n");
   await page.screenshot({ path: join(OUT, "step-1.png") });
+  const cursor = await checkCursor(page, song);
   if (clean.svgs === 0) report(1, "FAIL", "the song renders nothing");
   else if (withBad.svgs === 0) report(1, "FAIL", "one unknown command blanks the render");
   else
@@ -136,7 +157,7 @@ async function main() {
       clean.errors.length ? "CHECK" : "PASS",
       `${clean.svgs} lines render` +
         (clean.errors.length ? `, with ${clean.errors.length} parse errors: ${clean.errors[0]}` : "") +
-        `; with \\noTala added, ${withBad.svgs} lines still render`,
+        `; with \\noTala added, ${withBad.svgs} lines still render; ${cursor}`,
     );
 
   // 2. Export to PDF and PNG, or print.

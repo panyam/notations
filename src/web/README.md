@@ -138,7 +138,8 @@ npm run watch
 
 ### SideBySideEditor
 
-Editor and output components with synchronized scrolling.
+Editor and output components with synchronized scrolling. With `cursorSync` (on by default), a
+caret on a note marks it in the output, and a click on a rendered note selects its text.
 
 ```typescript
 import { SideBySideEditor, SideBySideEditorConfig } from "notations-web";
@@ -146,6 +147,7 @@ import { SideBySideEditor, SideBySideEditorConfig } from "notations-web";
 const config: SideBySideEditorConfig = {
   initialSource: "S R G M P",
   syncScroll: true,
+  cursorSync: true,  // caret and output follow each other
   debounceDelay: 300,
   onSourceChange: (source) => console.log("Changed:", source),
   onNotationParsed: (notation, beatLayout) => console.log("Parsed"),

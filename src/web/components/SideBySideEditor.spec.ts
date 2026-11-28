@@ -30,3 +30,72 @@ describe("SideBySideEditor", () => {
     expect(editor.outputElement.querySelector("svg")).not.toBeNull();
   });
 });
+
+describe("cursor sync (panyam/notation#294)", () => {
+  const SRC = "Sw: S R G M";
+  const R = SRC.indexOf("R");
+  const marked = (editor: SideBySideEditor) =>
+    [...editor.outputElement.querySelectorAll(".mark-cursor")].map((el) => el.getAttribute("sourceatomid"));
+  const atomOf = (editor: SideBySideEditor, value: string) =>
+    [...editor.outputElement.querySelectorAll("g.atomViewRootGroup")].find((g) => g.textContent?.trim() == value)!;
+  const caretAt = (editor: SideBySideEditor, offset: number) => {
+    editor.editorElement.setSelectionRange(offset, offset);
+    editor.editorElement.dispatchEvent(new Event("keyup"));
+  };
+
+  test("a caret on a note marks that note in the output", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC });
+    caretAt(editor, R);
+    expect(marked(editor)).toEqual([atomOf(editor, "R").getAttribute("sourceatomid")]);
+  });
+
+  test("a caret off any note clears the mark", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC });
+    caretAt(editor, R);
+    caretAt(editor, 1);
+    expect(marked(editor)).toEqual([]);
+  });
+
+  test("clicking a rendered note selects its source text", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC });
+    const g = atomOf(editor, "G");
+    (g.querySelector("text") ?? g).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const { selectionStart, selectionEnd, value } = editor.editorElement;
+    expect(value.substring(selectionStart, selectionEnd)).toBe("G");
+    expect(marked(editor)).toEqual([g.getAttribute("sourceatomid")]);
+  });
+
+  test("clicking outside any note leaves the selection alone", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC });
+    editor.editorElement.setSelectionRange(2, 2);
+    editor.outputElement.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(editor.editorElement.selectionStart).toBe(2);
+  });
+
+  test("after an edit, nothing syncs until the source renders again", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC, debounceDelay: 0 });
+    caretAt(editor, R);
+    editor.editorElement.value = "Sw: P " + SRC.substring(4);
+    caretAt(editor, R);
+    expect(marked(editor)).toEqual([]);
+    const g = atomOf(editor, "G");
+    (g.querySelector("text") ?? g).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(editor.editorElement.selectionStart).toBe(R);
+  });
+
+  test("the cursor mark survives a render", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC });
+    caretAt(editor, R);
+    editor.render();
+    expect(marked(editor)).toEqual([atomOf(editor, "R").getAttribute("sourceatomid")]);
+  });
+
+  test("cursorSync: false turns both directions off", () => {
+    const editor = new SideBySideEditor({ initialSource: SRC, cursorSync: false });
+    caretAt(editor, R);
+    expect(marked(editor)).toEqual([]);
+    const g = atomOf(editor, "G");
+    (g.querySelector("text") ?? g).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(editor.editorElement.selectionStart).toBe(R);
+  });
+});
