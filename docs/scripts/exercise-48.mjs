@@ -74,6 +74,41 @@ async function control(page, pattern) {
   );
 }
 
+/** Clicks SVG and PNG, and checks that each downloaded file holds the notation. */
+async function checkExports(page) {
+  const problems = [];
+  const sizes = {};
+  for (const kind of ["SVG", "PNG"]) {
+    if (!(await page.getByRole("button", { name: kind, exact: true }).count())) {
+      problems.push(`no ${kind} export`);
+      continue;
+    }
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 20000 }),
+      page.getByRole("button", { name: kind, exact: true }).click(),
+    ]).catch(() => [null]);
+    const file = download && (await download.path());
+    if (!file) {
+      problems.push(`${kind} saved no file`);
+      continue;
+    }
+    const bytes = readFileSync(file);
+    if (kind === "SVG") {
+      const svg = bytes.toString("utf8");
+      const lines = (svg.match(/class="lineRootSVG"/g) || []).length;
+      if (!svg.trimStart().startsWith("<svg") || !lines) problems.push("the SVG holds no notation lines");
+      if (svg.includes("foreignObject")) problems.push("the SVG uses foreignObject");
+      sizes.SVG = `${lines} lines, ${Math.round(bytes.length / 1024)} KB`;
+    } else {
+      const isPNG = bytes.subarray(1, 4).toString() === "PNG";
+      const [w, h] = isPNG ? [bytes.readUInt32BE(16), bytes.readUInt32BE(20)] : [0, 0];
+      if (!(w > 0 && h > 0)) problems.push("the PNG is empty or not a PNG");
+      sizes.PNG = `${w}x${h}`;
+    }
+  }
+  return { problems, summary: `SVG (${sizes.SVG}) and PNG (${sizes.PNG}) download` };
+}
+
 async function main() {
   const song = await loadSong();
   mkdirSync(OUT, { recursive: true });
@@ -105,7 +140,6 @@ async function main() {
     );
 
   // 2. Export to PDF and PNG, or print.
-  const exportCount = await control(page, /png|svg|export|download/i);
   const printCount = await control(page, /print/i);
   let printed = false;
   if (printCount) {
@@ -114,11 +148,13 @@ async function main() {
     printed = (await page.evaluate(() => window.__printCalls)) > 0;
     printed &&= (await page.locator(".notations-print-root svg").count()) > 0;
     await page.screenshot({ path: join(OUT, "step-2.png") });
+    await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   }
-  const exportNote = exportCount ? "an export control exists" : "no PNG or SVG export (#74)";
-  if (printed) report(2, "PASS", `Print / PDF prints the notation alone; ${exportNote}`);
-  else if (exportCount) report(2, "CHECK", `${exportNote}; check its file by hand`);
-  else report(2, "FAIL", printCount ? "Print did not print the notation" : "no print or export control (#74)");
+  const exported = await checkExports(page);
+  const problems = [!printCount ? "no print control" : !printed ? "Print did not print the notation" : "", ...exported.problems]
+    .filter(Boolean);
+  if (problems.length) report(2, "FAIL", `${problems.join("; ")} (#74)`);
+  else report(2, "PASS", `Print / PDF prints the notation alone; ${exported.summary}`);
 
   // 3. Play it back.
   if (await control(page, /play|midi|audio|listen/i)) report(3, "CHECK", "a playback control exists; listen by hand");

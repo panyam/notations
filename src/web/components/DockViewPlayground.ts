@@ -17,6 +17,7 @@ import { createDock, type Dock, type PanelDef } from "@panyam/tsappkit-dock";
 import type { DockviewApi } from "dockview-core";
 import SideBySideEditor, { SideBySideEditorConfig } from "./SideBySideEditor";
 import { preparePrint, printNotation } from "../../export/print";
+import { downloadPNG, downloadSVG } from "../../export/svg";
 import { Notation } from "../../notation";
 import { GlobalBeatLayout } from "../../beats";
 
@@ -281,6 +282,26 @@ export default class DockViewPlayground {
    */
   print(): void {
     printNotation(this.source, { markdownParser: this.config.markdownParser });
+  }
+
+  /**
+   * Saves the notation as a standalone SVG file, in the light theme on white. Headings and front
+   * matter keep bold and italic; other markdown formatting comes out as plain text.
+   */
+  downloadSVG(filename = "notation.svg"): void {
+    downloadSVG(this.source, filename, { markdownParser: this.config.markdownParser });
+  }
+
+  /**
+   * Saves the notation as a PNG at twice its SVG size. It resolves once the download starts, and
+   * logs to the console panel instead of rejecting when the browser can't draw the image.
+   */
+  async downloadPNG(filename = "notation.png"): Promise<void> {
+    try {
+      await downloadPNG(this.source, filename, { markdownParser: this.config.markdownParser });
+    } catch (e) {
+      this.log(`PNG export failed: ${(e as Error).message ?? e}`, "error");
+    }
   }
 
   /**

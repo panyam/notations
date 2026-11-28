@@ -155,6 +155,8 @@ export class SideBySidePlayground {
     renderBtn?.addEventListener("click", () => this.render());
 
     document.getElementById("print-btn")?.addEventListener("click", () => this.playground.print());
+    document.getElementById("export-svg")?.addEventListener("click", () => this.playground.downloadSVG());
+    document.getElementById("export-png")?.addEventListener("click", () => this.playground.downloadPNG());
 
     // Setup reset layout button
     const resetLayoutBtn = document.getElementById("reset-layout-btn");

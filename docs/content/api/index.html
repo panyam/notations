@@ -119,6 +119,16 @@ const [notation, , errors] = load(source);
 printNotation(source);
 </code></pre>
 
+<h2>Exporting SVG and PNG</h2>
+
+<p><code>exportSVG(source)</code> returns the notation as one standalone SVG string. It is always in the light theme, on white unless you pass <code>background: null</code>, and it needs none of the page's CSS. Margin labels, headings and front matter become SVG text, keeping bold and italic. Other markdown formatting, such as links and tables, comes out as plain text. <code>exportPNG(source)</code> draws that SVG onto a canvas at twice its size and returns a PNG <code>Blob</code>. <code>downloadSVG</code> and <code>downloadPNG</code> save either as a file.</p>
+
+<pre><code>import { downloadSVG, exportPNG } from "notations/export";
+
+downloadSVG(source, "kriti.svg");
+const png = await exportPNG(source, { scale: 3 });
+</code></pre>
+
 <h2>Rendering</h2>
 
 <p>The library provides rendering capabilities through the NotationView:</p>
