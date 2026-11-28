@@ -42,6 +42,33 @@ function ensureStylesheet(doc: Document): void {
 }
 
 /**
+ * Scales every notation line under `root` by one factor, so the widest line fills the width it is
+ * given and the rest keep their proportion. A short closing line then prints, or shows on a phone,
+ * with notes the same size as a full cycle. No line grows past its own width, so a narrow piece on
+ * a wide page keeps its size. Each line's SVG gets a viewBox in place of its pixel size.
+ *
+ * `minScale` sets a floor, so notes stay readable on a narrow screen: a line never shrinks below
+ * that share of its own width, and one still wider than its box overflows it. The caller then
+ * lets the box scroll sideways. Print leaves it at 0, so every line fits the paper.
+ */
+export function fitLinesToWidth(root: Element, options: { minScale?: number } = {}): void {
+  const minScale = options.minScale ?? 0;
+  const lines = [...root.querySelectorAll<SVGSVGElement>("svg.lineRootSVG")]
+    .map((svg) => ({ svg, w: Number(svg.getAttribute("width")), h: Number(svg.getAttribute("height")) }))
+    .filter((l) => l.w > 0 && l.h > 0);
+  const widest = Math.max(0, ...lines.map((l) => l.w));
+  for (const { svg, w, h } of lines) {
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    const fit = `min(${w}px, ${+((w / widest) * 100).toFixed(3)}%)`;
+    svg.style.width = minScale > 0 ? `max(${+(w * minScale).toFixed(1)}px, ${fit})` : fit;
+    if (minScale <= 0) svg.style.maxWidth = "100%";
+    svg.style.height = "auto";
+  }
+}
+
+/**
  * Renders `source` into a print-only copy at the end of `doc.body`, so that the page prints the
  * notation and nothing else. Lines the source fails to parse are left out; the rest still print.
  *
@@ -64,19 +91,7 @@ export function preparePrint(source: string, options: PrintOptions = {}, doc: Do
   view.renderNotation(notation, beatLayout);
   root.style.display = "";
 
-  // One scale for the whole piece. The widest line fills the page and the rest keep their
-  // proportion, so a short closing line prints with notes the same size as a full cycle.
-  // min() keeps a line from growing past its own width when the page is wider than the piece.
-  const lines = [...root.querySelectorAll<SVGSVGElement>("svg.lineRootSVG")]
-    .map((svg) => ({ svg, w: Number(svg.getAttribute("width")), h: Number(svg.getAttribute("height")) }))
-    .filter((l) => l.w > 0 && l.h > 0);
-  const widest = Math.max(0, ...lines.map((l) => l.w));
-  for (const { svg, w, h } of lines) {
-    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    svg.removeAttribute("width");
-    svg.removeAttribute("height");
-    svg.style.width = `min(${w}px, ${+((w / widest) * 100).toFixed(3)}%)`;
-  }
+  fitLinesToWidth(root);
 
   return () => {
     root.remove();

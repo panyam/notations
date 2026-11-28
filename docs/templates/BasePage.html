@@ -79,6 +79,8 @@
     {{# include "gen.NotebookPlayground.html" #}}
     {{ else if .FrontMatter.usePhotoTranscribePlayground }}
     {{# include "gen.PhotoTranscribePlayground.html" #}}
+    {{ else if .FrontMatter.useNotationView }}
+    {{# include "gen.NotationViewPage.html" #}}
     {{ else }}
     {{# include "gen.DocsPage.html" #}}
     {{ end }}

@@ -18,6 +18,7 @@ module.exports = (_env, options) => {
       SideBySidePlayground: path.join(__dirname, "./components/playground/SideBySidePlayground.ts"),
       NotebookPlayground: path.join(__dirname, "./components/playground/NotebookPlayground.ts"),
       PhotoTranscribePlayground: path.join(__dirname, "./components/playground/PhotoTranscribePlayground.ts"),
+      NotationViewPage: path.join(__dirname, "./components/NotationViewPage.ts"),
     },
     module: {
       rules: [
@@ -122,6 +123,17 @@ module.exports = (_env, options) => {
       new HtmlWebpackPlugin({
         chunks: ["PhotoTranscribePlayground"],
         filename: path.resolve(__dirname, "./templates/gen.PhotoTranscribePlayground.html"),
+        templateContent: ({ htmlWebpackPlugin }) =>
+          htmlWebpackPlugin.tags.headTags
+            .filter((tag) => tag.tagName === "script")
+            .map((tag) => `<script defer src="${tag.attributes.src}"></script>`)
+            .join("\n"),
+        inject: false,
+        minify: { collapseWhitespace: false },
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ["NotationViewPage"],
+        filename: path.resolve(__dirname, "./templates/gen.NotationViewPage.html"),
         templateContent: ({ htmlWebpackPlugin }) =>
           htmlWebpackPlugin.tags.headTags
             .filter((tag) => tag.tagName === "script")

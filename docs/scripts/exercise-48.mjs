@@ -94,6 +94,62 @@ async function checkCursor(page, song) {
     : `clicking "${shown}" selects ${JSON.stringify(selected)} in the editor (#294)`;
 }
 
+/**
+ * Presses Share and opens the link it gives in a fresh browser context, which shares no storage
+ * with the playground, as a private window wouldn't. The link has to render the same lines.
+ */
+async function shareAndOpen(page, browser, song) {
+  if (!(await page.getByRole("button", { name: "Share", exact: true }).count()))
+    return { status: "FAIL", what: "no share control (#77)" };
+  const playgroundLines = (await render(page, song)).svgs;
+  await page.getByRole("button", { name: "Share", exact: true }).click();
+  await page.waitForTimeout(1000);
+  const url = await page.locator("#share-link").inputValue().catch(() => "");
+  if (!url) return { status: "FAIL", what: "Share gave no link (#77)" };
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const fresh = await ctx.newPage();
+  await fresh.goto(url);
+  await fresh.waitForTimeout(2000);
+  const lines = await fresh.locator("#view-root svg.lineRootSVG").count();
+  await fresh.screenshot({ path: join(OUT, "step-4.png") });
+  await ctx.close();
+  const kb = (url.length / 1024).toFixed(1);
+  return lines === playgroundLines
+    ? { status: "PASS", what: `Share gives a ${kb} KB link, and a fresh browser renders all ${lines} lines`, url }
+    : { status: "FAIL", what: `the shared link renders ${lines} of ${playgroundLines} lines (#77)`, url };
+}
+
+/** Opens the shared link at a phone's width, and checks the lines fit without sideways scrolling. */
+async function openOnPhone(browser, url) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const phone = await ctx.newPage();
+  await phone.goto(url);
+  await phone.waitForTimeout(2000);
+  const fit = await phone.evaluate(() => {
+    const lines = [...document.querySelectorAll("#view-root svg.lineRootSVG")];
+    const width = document.documentElement.clientWidth;
+    // A swara's glyph, as tall as it shows on screen. Below about 9 px nobody reads it.
+    const heights = [...document.querySelectorAll("#view-root .role_sw text")]
+      .map((t) => t.getBoundingClientRect().height)
+      .filter((h) => h > 0)
+      .sort((a, b) => a - b);
+    return {
+      lines: lines.length,
+      wider: lines.filter((s) => s.getBoundingClientRect().width > width).length,
+      sideways: document.documentElement.scrollWidth > width + 1,
+      noteHeight: heights.length ? heights[Math.floor(heights.length / 2)] : 0,
+    };
+  });
+  await phone.screenshot({ path: join(OUT, "step-5.png"), fullPage: true });
+  await ctx.close();
+  const px = fit.noteHeight.toFixed(0);
+  if (!fit.lines) return { status: "FAIL", what: "the link renders nothing on a phone (#80)" };
+  if (fit.sideways) return { status: "FAIL", what: "the page scrolls sideways on a 390 px phone (#80)" };
+  if (fit.noteHeight < 9) return { status: "FAIL", what: `notes are ${px} px tall on a 390 px phone, too small to read (#80)` };
+  const scroll = fit.wider ? `; ${fit.wider} of ${fit.lines} lines scroll sideways inside the notation (#80)` : "";
+  return { status: "PASS", what: `all ${fit.lines} lines render on a 390 px phone, notes about ${px} px tall${scroll}` };
+}
+
 /** Clicks SVG and PNG, and checks that each downloaded file holds the notation. */
 async function checkExports(page) {
   const problems = [];
@@ -182,12 +238,15 @@ async function main() {
   else report(3, "FAIL", "no playback control (#75)");
 
   // 4. Save it and open the share link in a private window.
-  const share = await control(page, /share|save|link/i);
-  if (share) report(4, "CHECK", "a share control exists; open its link in a private window by hand");
-  else report(4, "FAIL", "no save or share control (#77)");
+  const shared = await shareAndOpen(page, browser, song);
+  report(4, shared.status, shared.what);
 
   // 5. Open that link on a phone.
-  report(5, "SKIP", "needs a share link from step 4 (#80)");
+  if (!shared.url) report(5, "SKIP", "needs a share link from step 4 (#80)");
+  else {
+    const phone = await openOnPhone(browser, shared.url);
+    report(5, phone.status, phone.what);
+  }
 
   // 6. An example close to the song, an FAQ, and a place to ask a question.
   const status = async (p) => (await page.goto(base + p, { waitUntil: "domcontentloaded" }))?.status() ?? 0;

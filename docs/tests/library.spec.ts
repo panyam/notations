@@ -73,6 +73,13 @@ describe("song library (#71)", () => {
     expect(page.html.replace(/\{\{\.Site\.PathPrefix\}\}/g, "")).not.toMatch(/[{}]/);
   });
 
+  // The playground loads the song by this path, and Share gives the library page back while the
+  // song is unchanged (#77).
+  test("a song page links to the playground with the song's own path", () => {
+    const page = songPage(readSong("Thyagaraja/EvvaruRa.sng", MOHANAM), PIN);
+    expect(page.html).toContain('href="{{.Site.PathPrefix}}/demos/playgrounds/side-by-side/?song=thyagaraja/evvaru-ra"');
+  });
+
   test("escaping round-trips through the entities a browser decodes", () => {
     const text = 'a < b && "c" {x} > d';
     expect(escapeText(text)).toContain('"c"');

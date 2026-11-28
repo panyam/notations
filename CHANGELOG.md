@@ -28,6 +28,13 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
   marks it in the output, and a click on a rendered note selects its text in the editor. It waits
   while the editor holds unrendered edits. `SideBySideEditor` and `DockViewPlayground` take
   `cursorSync: false` to turn it off (panyam/notation#294).
+- The docs site's side-by-side playground can share what's in it. Share gives a library song's
+  page while it's unchanged, and otherwise a `/view/#s=` link that carries the source, which
+  opens on its own page with Print / PDF, SVG and PNG. The playground keeps a draft between
+  visits, and each library page can open its song in the playground (#77).
+- `fitLinesToWidth(root, { minScale })` in `notations/export` scales every notation line by one
+  factor to fit its box, as print does. `minScale` keeps notes readable on a narrow screen, and a
+  line still wider than the box overflows it (#77).
 
 ### Changed
 

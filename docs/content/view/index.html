@@ -1,0 +1,41 @@
+---
+title: "Shared notation"
+description: "A notation shared from the playground"
+useNotationView: true
+fullWidth: true
+---
+
+<div class="notation-view-page" data-pagefind-ignore>
+    <div id="view-actions" class="view-actions" hidden>
+        <a id="view-edit" class="btn btn-sm btn-primary" href="../demos/playgrounds/side-by-side/">Open in playground</a>
+        <button id="view-print" class="btn btn-sm" type="button">Print / PDF</button>
+        <button id="view-svg" class="btn btn-sm" type="button">SVG</button>
+        <button id="view-png" class="btn btn-sm" type="button">PNG</button>
+    </div>
+    <p id="view-empty" hidden>
+        This page shows a notation shared from the <a href="../demos/playgrounds/side-by-side/">playground</a>.
+        Write one there and press Share to get a link.
+    </p>
+    <p id="view-damaged" hidden>
+        This link is damaged, or it comes from a newer version of the site.
+        Ask whoever sent it for the link again.
+    </p>
+    <div id="view-root"></div>
+</div>
+
+<style>
+.notation-view-page {
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.view-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+#view-root {
+    overflow-x: auto;
+}
+</style>

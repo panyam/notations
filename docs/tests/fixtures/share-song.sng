@@ -1,0 +1,160 @@
+---
+Composer: "Thyagaraja"
+Ragam: "Goulai"
+Thalam: "Adi"
+---
+
+>---
+
+\beatDuration(4)
+
+> #### Pallavi
+
+
+\line
+
+Sw: 
+s , r ,     p m p ,     , , - m ,   g m m s   r s r ,     p m g m     m s r ,   r s s ,
+s , r ,     p m n p     , , - m n   p m g m   r s r ,    p m g m      r s r ,   r s s ,
+s , r ,     p m n p     S. n - p n   p m g m   r s r ,    p m 2 [ r , p m ]      m - r s r   r s s ,
+
+Sh: 
+Du , du ,   Ku , , ,    , , ga ,    la , , ,    nan , , ,     nē , , ,    do , , ,    ra , , , 
+Du , du ,   Ku , , ,    , , ga ,    la , , ,    nan , , ,     nē , , ,    , do , ,    ra , , , 
+Du , du ,   Ku , , ,    , , ga ,    la , , ,    nan , , ,     nē , , ,    , do , ,    ra , , , 
+
+Sw: 
+r , m ,     r m p ,     m p s. n    p m r m     m , , ,     , , , ,   , , - g m       , r s .n
+r , m ,     r m p ,     m p s. n    p m r m     p , , ,     , , , ,   , , - 2 [ r , p m ]       m r s .n
+r , m ,     r m p ,     m p s. n    p m p n     s. , , ,    , , S. n   p m  - 2 [ r , p m ]       m r s .n
+r , m ,     r m p ,     m p s. n    p m p n     s. , r. s.  r. , - S. n   p m  - 2 [ r , p m ]       m r s .n
+
+Sh:
+Ko , du ,   ku , , ,    brō , , ,   , , chu ,   rā , , ,    , , , ,     , , - en ,      , thō , , 
+Ko , du ,   ku , , ,    brō , , ,   , , chu ,   rā , , ,    , , , ,     , , - en ,      , thō , , 
+Ko , du ,   ku , , ,    brō , , ,   , , chu ,   rā , , ,    , , , ,     , , - en ,      , thō , , 
+Ko , du ,   ku , , ,    brō , , ,   , , chu ,   rā , , ,    , , , ,     , , - en ,      , thō , , 
+
+Sw:
+s , r ,     p m s. ,     , n - p n   p m g m   r s r ,    p m g m    r s r ,   r s s ,
+
+Sh:
+Du , du ,   Ku , , ,    , , ga ,    la , , ,    nan , ,     nē , , ,    do , , ,    ra , , , 
+
+
+> #### Anupallavi
+
+Sw: 
+, , r. s.   r. s. r. ,  r. s. r. ,      s. r. m. ,      ; s. r.     m. , r. ,   s. n p ,    n , s. , 
+, , r. s.   r. s. r. ,  r. s. r. ,      s. r. m. r.     m. , - s. r.     2 [ p.m.m.,]  r. ,   s. n p ,    n , s. , 
+m.m.r.s.    r.r.s.n     s.s.n p         n n p m         s r m p n s. , n p m 2 [ r , p m] m r s .n
+
+Sh:
+, , Ka du   dur , , ,   vi , sha ,      yā , , ,        , , kru ,   ; shtu ,    dai , , ,   ;   ;
+, , Ka du   dur , , ,   vi , sha ,      yā , , ,        , , kru ,   ; shtu ,    dai , , ,   ;   ;
+Ga , di , ya , , , g , di , ya , , , ku , , , ni , , , , , ndā , , ru , , 
+
+> #### Charanams
+
+\line(marginText = "1")
+Sw: 
+r , , , , , , , r , s , .n s r ,  s , , ,  , , - s , , , s .n .p , , , 
+.m , , , , , , , .m , , , .r .m .p .n .p , , , , , , , , , - .m .p , .n s , 
+
+Sh:
+
+Sree , , , , , , , , , , , va , ni , thā , , , , , hruth,  , , ku mu dā , , , 
+bja , , , , , , , vāng , , , mā , na , sa , , , , , , , , , gõ , , cha ra , 
+
+\line(marginText = "2")
+
+Sw: 
+r r s s , s - r s r m , m s r m , .n s r g m , - s r g , , m r r s s
+
+Sh:
+Sa ka la bhū , tha mu , la yan , du nee , vai , yun , da , ga , ma thi lē , , ka pō , yi na
+
+\line(marginText = "3")
+
+Sw: 
+r r p p m- r r s s , s , r p m , r s - .n s r s , s p m , m r r s s
+
+Sh:
+Chi ru tha prā , ya mu la nā , dē , bha ja nā , mru tha ra sa vi hee , na ku da , rku dai , , na
+
+\line(marginText = "4")
+
+Sw: 
+p p m m r s - r s r - p m m r s r m p - r p m r s r m , m - r r s s , s
+
+Sh:
+Pa ra dha na mu la ko ra ku no ru la ma di ka ra ka ba li ki ka du pu nim , pa thi ri gi na , tti
+
+\line(marginText = "5")
+
+Sw: 
+n p m p n - r m p n , - m p n , p n s. , - r m p n s. , n p p m r r s s
+
+Sh:
+Tha na ma di ni bhu vi ni sow , - kya pu jee , va na mē , ya nu chu sa dā , di na mu lu ka di pē ,
+
+\line(marginText = "6")
+
+Sw: 
+r r p p r r m m s s r r .p .n s r p m m - r s s - n p m p , n p n s. r. 
+, - m. r.s. n s.,r. m.r.,-r. s.n - r.s. , -s.n p s.n,p m r - n p , m r s
+Sh:
+The li ya ni na ta vi ta kshu , dru lu va ni tha lu Swa va sa mou , da ku ba de si , mchi san , tha sil
+
+, - li swa ra la ya , mbu le ru , nga ka nu silā th , mu lai , su bha , kthu la ku sa mā , na ma nu
+
+\line(marginText = "7")
+
+Sw:
+s , r s s , s , r s r g m , - r p m , - r n p , m , s. n p m , - r.r.s. 
+s.,-p s. n p , - r s. n p , s. n p m , - n p m r , s - p s. s. , n  p m r s
+
+Sh:
+Drush , ti ki sā , ram , bha gu la la nā , sa da nār , bha ka sē , nā , mi tha dha nā , du la nu
+Dē vā , di dē , , va ne ra nam , mi thi ni gā , ka nu pa dāb , ja bha ja na , mbu ma ra chi na
+
+\line(marginText = "8")
+
+Sw: 
+p , p m r s - r m p , m r s - r r , m , - s r m , - .n s r g , m r , , , 
+.n s r s , s - p m r s , s n p p , p s. n p , p m r m p n p , s. n p 
+r.-r.,m r.m.-s.r.m. r. , s. n p n s. r. s. , n p m - r m p n , p m , r s
+
+Sh:
+
+Cha , kka ni mu kha ka ma lam , bu nu , sa dā , nā , ma di lõ , sma ra na lē , ka nē , , , 
+dur , ma da , ntha ja nu la kō , ri Pa ri thā , pa mu la chē , tha gi li no gi li dur , vi sa ya
+Du rā , sa la nu rō ,ya lē , ka sa tha tha ma pa rā , dhi nai , - cha pa la chi , tthu dai , na ,
+
+\line(marginText = "9")
+
+Sw: 
+s , r s .n s - r , r s - r s r m , m s r m , r r s- r r s - s , s , , , 
+p p m , r s - r m r - r , m r ,- p m r - p , m r m - s r m r , s s , s , 
+p n p - p n p m p p r p m r m p n p n s. r. , - m p n p m r s s , s , 
+s. s. , s. r. r. m. - r. , m. - s. r. m. r. , s. n p n s. r. - s. , s. n p- p , m r , s
+
+Sh:
+Mā , na va tha nu dur , la bha ma nu chu nem , chi Pa ra mā , nan , da mon , da lē , ka , , ,
+Ma da math, Sa ra kā , ma lō , bha mō , hu la ku dā , su dai , mō , sa bō , thi gā , ka , 
+Mo tha ti ku la ju da ku chu bhu vi ni sū , dru la Pa nu lu sal , pu chu nu , , ndi ni gā , ka , 
+Na rā , da mu la nu kō , ri sā , re hee , na ma da mu la nu sā , dim , Pa thā , ru mā , ru
+
+\line(marginText = "10")
+
+Sw: 
+p , p , p m g m r s s , r m p m p , - r m p m g m m s r , r s s , 
+p m p m r m r s s .n .p , .n s r m  p n p , , , p , p m m , m , , , 
+r. s. r. , r.s.r., r.s.r., s.r.m., s.r.m., r.s.s., s.n p , n , s. , 
+m.m.r.s. r.r.s.n s.s.n p n n p m s r m p n s.s.n  p m - 2[r,p m] m r s .n
+
+Sh:
+Sa , thu , la , , , kai , , , kon , , , , , nā ,  , , lla , , , sthi , kai , , , 
+Su , thu ,  la , , ,    kai , , ,   kon , , ,   , , nā ,    , , llu ,   dha , , , ra , , , 
+Tha , du , la , , , kai , , , thi , ri , gi , , ,  thi , , ,    nai , , ,   , , ya ,
+Thiā , , , ga , , , rā , , , jā , , , ptha , , , , i tu , van , , , , ti , , 

@@ -5,5 +5,5 @@
  * the notebook or the dock playground from `notations/web`. Everything here needs a browser,
  * since the renderer measures text in the DOM.
  */
-export { preparePrint, printNotation, PrintOptions } from "./export/print";
+export { fitLinesToWidth, preparePrint, printNotation, PrintOptions } from "./export/print";
 export { exportSVG, exportPNG, downloadSVG, downloadPNG, ExportOptions, PNGOptions } from "./export/svg";

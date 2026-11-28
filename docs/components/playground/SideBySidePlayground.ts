@@ -12,6 +12,7 @@ import "dockview/dist/styles/dockview.css";
 
 import * as N from "../../../src";
 import { createMarkdownParser } from "../NotationViewer";
+import { decodeSource, initialSource, shareUrl } from "../share";
 
 // Import core notation styles
 import "../../../styles/NotationView.scss";
@@ -81,9 +82,19 @@ Sw: S. \\N/ D ~P , M /G\\ R S `,
   },
 ];
 
+const DRAFT_KEY = "notations-side-by-side-draft";
+
+/** The site's root URL, such as https://panyam.github.io/notations, with no trailing slash. */
+function siteBase(): string {
+  return location.origin + (/^.*?\/notations(?=\/)/.exec(location.pathname)?.[0] ?? "");
+}
+
 export class SideBySidePlayground {
   private playground: DockViewPlayground;
   private sampleSelect: HTMLSelectElement | null = null;
+  /** The library song the editor was opened with, so Share can give its page while it's unchanged. */
+  private song: { path: string; source: string } | null = null;
+  private draftTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.playground = this.init();
@@ -109,6 +120,7 @@ export class SideBySidePlayground {
       editorConfig: {
         debounceDelay: 0, // Manual render via button
       },
+      onSourceChange: (source) => this.saveDraft(source),
       editorClass: "playground-editor",
     };
 
@@ -130,11 +142,83 @@ export class SideBySidePlayground {
       editorEl.style.fontSize = "14px";
     }
 
-    // Load initial sample
+    this.start(playground);
+    return playground;
+  }
+
+  /** Opens a #s= link, a ?song= library song, the last draft, or a sample, in that order (#77). */
+  private async start(playground: DockViewPlayground): Promise<void> {
+    let draft: string | null = null;
+    try {
+      draft = localStorage.getItem(DRAFT_KEY);
+    } catch {
+      // Storage can be off, as in some private windows. Start without a draft.
+    }
+    const first = initialSource({ hash: location.hash, search: location.search, draft });
+    if (first.kind == "link") {
+      const source = await decodeSource(first.link);
+      if (source != null) return this.open(playground, source, "Opened a shared link");
+      playground.log("This share link is damaged or from a newer version, so a sample opened instead.", "error");
+    } else if (first.kind == "song") {
+      const source = await this.fetchSong(first.song);
+      if (source != null) {
+        this.song = { path: first.song, source };
+        return this.open(playground, source, `Opened library/${first.song}`);
+      }
+      playground.log(`Couldn't load library/${first.song}, so a sample opened instead.`, "error");
+    } else if (first.kind == "draft") {
+      return this.open(playground, first.source, "Opened your draft from last time");
+    }
     const selected = sampleNotations.find((s) => s.selected) || sampleNotations[0];
     this.loadSample(playground, selected);
+  }
 
-    return playground;
+  private open(playground: DockViewPlayground, source: string, message: string): void {
+    playground.source = source;
+    playground.log(message, "info");
+  }
+
+  /** A library song's source, read from its page's <notation id="song">. */
+  private async fetchSong(path: string): Promise<string | null> {
+    try {
+      const res = await fetch(`${siteBase()}/library/${path}/`);
+      if (!res.ok) return null;
+      const page = new DOMParser().parseFromString(await res.text(), "text/html");
+      return page.querySelector("notation#song")?.textContent?.trim() ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveDraft(source: string): void {
+    if (this.draftTimer) clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, source);
+      } catch {
+        // Storage full or off. The draft is a convenience, so carry on without it.
+      }
+    }, 500);
+  }
+
+  /** Copies a link to what's in the editor, and shows it beside the button (#77). */
+  async share(): Promise<string> {
+    const url = await shareUrl({ source: this.playground.source, song: this.song, base: siteBase() });
+    const field = document.getElementById("share-link") as HTMLInputElement | null;
+    if (field) {
+      field.value = url;
+      field.hidden = false;
+      field.select();
+    }
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } catch {
+      // The browser can refuse the clipboard. The link is still in the field to copy by hand.
+    }
+    this.playground.log(copied ? "Share link copied" : "Share link ready: copy it from the toolbar", "info");
+    return url;
   }
 
   private setupToolbar(): void {
@@ -151,6 +235,8 @@ export class SideBySidePlayground {
     }
 
     // Setup render button
+    document.getElementById("share-btn")?.addEventListener("click", () => this.share());
+
     const renderBtn = document.getElementById("render-btn");
     renderBtn?.addEventListener("click", () => this.render());
 
@@ -164,6 +250,7 @@ export class SideBySidePlayground {
   }
 
   private loadSample(playground: DockViewPlayground, sample: SampleNotation): void {
+    this.song = null;
     playground.source = sample.source;
     playground.log(`Loaded sample: ${sample.label}`, "info");
   }

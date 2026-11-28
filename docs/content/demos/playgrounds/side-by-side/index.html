@@ -14,6 +14,8 @@ bodyClass: "playground-page"
             <option value="basic-scale">Basic Scale</option>
         </select>
         <button id="render-btn" class="btn btn-primary btn-sm">Render</button>
+        <button id="share-btn" class="btn btn-sm" type="button" title="Copy a link to this notation">Share</button>
+        <input id="share-link" class="share-link" type="text" readonly hidden aria-label="Share link">
         <button id="export-svg" class="btn btn-sm" type="button" title="Save the notation as an SVG image">SVG</button>
         <button id="export-png" class="btn btn-sm" type="button" title="Save the notation as a PNG image">PNG</button>
         <button id="print-btn" class="btn btn-sm" type="button" title="Print the notation, or save it as a PDF from the print dialog">Print / PDF</button>
@@ -36,6 +38,12 @@ bodyClass: "playground-page"
     width: 100%;
     height: calc(100vh - 60px);
     overflow: hidden;
+}
+
+.share-link {
+    width: 16rem;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
 }
 
 .playground-toolbar {
