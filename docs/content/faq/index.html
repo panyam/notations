@@ -1,0 +1,55 @@
+---
+title: "FAQ"
+description: "Common questions about writing, sharing and printing notation on this site"
+---
+
+<p>Questions about using the site and the library. For anything this page doesn't answer, ask on <a href="https://github.com/panyam/notations/discussions">GitHub Discussions</a>.</p>
+
+<h2>Writing notation</h2>
+
+<h3>Where do I start?</h3>
+<p>The <a href="{{.Site.PathPrefix}}/getting-started/">Quick Start</a> walks through a first piece, and the <a href="{{.Site.PathPrefix}}/tutorials/">tutorials</a> go from there. To try things as you read, use the <a href="{{.Site.PathPrefix}}/demos/playgrounds/side-by-side/">side-by-side playground</a>: type on the left and press Render.</p>
+
+<h3>Is there a song close to mine I can start from?</h3>
+<p>The <a href="{{.Site.PathPrefix}}/library/">library</a> has every song in notation_demos, by composer and by ragam. Each song page has "Open in playground", which opens it in the editor to change.</p>
+
+<h3>Does the playground keep my work?</h3>
+<p>It keeps a draft in this browser and opens it on your next visit. Nothing is stored on a server. Another browser or device won't see the draft, so share a link to move a piece between them.</p>
+
+<h3>Can I write an alapana or tanam with no tala?</h3>
+<p>Not yet. A <code>\noTala</code> command is planned, but every line still takes a cycle today.</p>
+
+<h3>Can I transcribe from a photo of a notebook?</h3>
+<p>The <a href="{{.Site.PathPrefix}}/demos/playgrounds/photo-transcribe/">photo transcriber</a> reads swaras from photos and PDFs. It calls Claude, so it needs your own Anthropic API key, and you check its result against the page.</p>
+
+<h2>Sharing, printing and saving</h2>
+
+<h3>How do I share a piece with a student?</h3>
+<p>Press Share in the playground. For a library song you haven't changed, it gives that song's library page. Otherwise it gives a link that carries the notation itself, which opens on its own page with Print, SVG and PNG. The link is copied for you, and it also shows in the toolbar.</p>
+
+<h3>Who can read a link I share?</h3>
+<p>Anyone who has the link. The notation travels inside the link itself, after the <code>#</code>, and the site never receives or stores it. Share it as you would share the notation.</p>
+
+<h3>Can I print it, or save it as a PDF or an image?</h3>
+<p>Yes. Print / PDF prints the notation alone, scaled to the page, and "Save as PDF" in the print dialog gives a PDF. SVG and PNG save it as an image. All three are on the playgrounds and on a shared link's page.</p>
+
+<h3>Does it work on a phone?</h3>
+<p>A shared link's page is readable on a phone. A full cycle is wider than a phone screen, so each line scrolls sideways inside the notation. The playground's editor is easier to use on a larger screen.</p>
+
+<h2>Hearing it</h2>
+
+<h3>Can I hear the notation played?</h3>
+<p>Not yet. The library already works out when each note sounds, in beats. Playing it, with the tala and a drone, is being built with <a href="https://github.com/panyam/thambura">thambura</a>.</p>
+
+<h2>Using the library in your own site</h2>
+
+<h3>Can I render notation in my own page or app?</h3>
+<p>Yes. <a href="{{.Site.PathPrefix}}/getting-started/installation/">Install</a> the <code>notations</code> package from npm, then see the <a href="{{.Site.PathPrefix}}/api/">API documentation</a> for parsing, rendering, printing and export.</p>
+
+<h2>Getting help</h2>
+
+<h3>Where do I report a bug or ask for a feature?</h3>
+<p>Open an issue on <a href="https://github.com/panyam/notations/issues">GitHub Issues</a>, with the notation source that shows the problem if you can.</p>
+
+<h3>Where do I ask a question?</h3>
+<p>On <a href="https://github.com/panyam/notations/discussions">GitHub Discussions</a>.</p>

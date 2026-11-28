@@ -7,28 +7,32 @@ description: "How to contribute to the Notations project"
 
 <h2>Getting Started</h2>
 
-<p>The Notations project is open source and welcomes contributions. The codebase is organized into several packages:</p>
+<p>The Notations project is open source and welcomes contributions. One repository, <a href="https://github.com/panyam/notations">panyam/notations</a>, holds it all:</p>
 
 <ul>
-  <li><strong>notations</strong> - Core library (parser, models, layout)</li>
-  <li><strong>notations-web</strong> - Browser components for rendering</li>
-  <li><strong>docs</strong> - Documentation site (this site)</li>
+  <li><strong><code>src/</code></strong> - The <code>notations</code> package: the parser, the model, the layout and the renderer. It has entry points for parts of it: <code>notations/core</code>, <code>notations/parser</code>, <code>notations/web</code> and <code>notations/export</code>.</li>
+  <li><strong><code>docs/</code></strong> - This documentation site, with its playgrounds and the song library</li>
 </ul>
 
 <h2 id="development-setup">Development Setup</h2>
 
 <p>Clone the repository and install dependencies:</p>
 
-<pre><code>git clone https://github.com/panyam/notation.git
-cd notation
+<pre><code>git clone https://github.com/panyam/notations.git
+cd notations
 pnpm install
 </code></pre>
 
-<p>Build the core library:</p>
+<p>Build the library and run the tests:</p>
 
-<pre><code>cd notations
-pnpm build
+<pre><code>pnpm run build
 pnpm test
+</code></pre>
+
+<p>Run this site locally, on <code>http://localhost:8085/notations/</code>:</p>
+
+<pre><code>cd docs
+make run
 </code></pre>
 
 <h2>Making Changes</h2>
@@ -123,9 +127,11 @@ Sw: S R G  R G M  G M P  M P D  P D N  D N S.  S. N D  N D P
 <p>Join the discussion and get help:</p>
 
 <ul>
-  <li>GitHub Issues - Bug reports and feature requests</li>
-  <li>GitHub Discussions - Questions and general discussion</li>
+  <li><a href="https://github.com/panyam/notations/issues">GitHub Issues</a> - Bug reports and feature requests</li>
+  <li><a href="https://github.com/panyam/notations/discussions">GitHub Discussions</a> - Questions and general discussion</li>
 </ul>
+
+<p>The <a href="{{.Site.PathPrefix}}/faq/">FAQ</a> answers the common questions about writing, sharing and printing.</p>
 
 <h2>License</h2>
 
