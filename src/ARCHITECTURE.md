@@ -21,6 +21,22 @@ Each layer imports only the ones below it (#18):
    print it without the editor or the dock.
 
 `src/tests/layers.spec.ts` walks the imports and fails if a lower layer reaches a higher one.
+
+### Musical time, not clock time
+
+notations is the compiler. It turns source into artifacts that hold still while a piece plays:
+the model and its errors, the layout and its SVG, print and export. Planned are a timeline (each
+note's offset and duration in beats, as exact fractions) and each atom's place in the source.
+Times are in beats. Tempo in front matter is passed through as data and never used.
+
+Anything on a clock lives in the apps that use notations. Thambura turns beats into seconds,
+schedules the audio and plays the voices. The notation app drives a cursor that follows playback,
+by calling the renderer's static mark API on each transport event. notations never imports them.
+Thambura already imports notations to compile its patterns.
+
+`layers.spec.ts` keeps `AudioContext`, `setTimeout`, `setInterval` and `requestAnimationFrame`
+out of every module the runtime and the parser reach. The renderer and `web/` keep their UI timing
+(the editor's debounce, the dock's first frame). Playback is tracked in #75.
 Modules inside `src/` import from the module that defines a name, never from the package index.
 
 ## Core Modules

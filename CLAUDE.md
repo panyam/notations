@@ -48,6 +48,7 @@ with `--no-verify`, because the hook builds code that branch does not have.
   and `?url` imports.
 - Layers: runtime (`notations/core`) < parser (takes an `EmbellishmentParser`) < Carnatic gamakas
   < `load()` < renderer < export (`notations/export`: print, SVG, PNG; never reaches `web/`).
+  notations works in beats, never on a clock; playback belongs to thambura and the apps (#75).
   `src/tests/layers.spec.ts` enforces it; inside `src/`, never import from the package index
   (`"./"`). Details: `src/ARCHITECTURE.md` (#18, #74).
 - Parser errors contract, galore tokenizer priorities and command validation:

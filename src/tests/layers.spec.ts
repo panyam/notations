@@ -57,6 +57,22 @@ describe("layers", () => {
     expect(mods.filter((m) => m.startsWith("web/") || /dockview|tsappkit-dock/.test(m))).toEqual([]);
   });
 
+  // notations compiles source into artifacts that hold still: the model, the timeline in beats,
+  // the layout. Anything on a clock (scheduling, audio, a cursor that follows playback) belongs to
+  // the apps that use it, such as thambura and the notation app (#75). Reading the clock to time a
+  // log line is fine; scheduling against it is not.
+  test("the runtime and the parser schedule nothing and play no audio", () => {
+    const realtime = /\b(AudioContext|OfflineAudioContext|setTimeout|setInterval|requestAnimationFrame)\b/;
+    const code = (f: string) =>
+      fs
+        .readFileSync(f, "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*$/gm, "");
+    const local = new Set([...reachable("entry-core.ts"), ...reachable("entry-parser.ts")]);
+    const hits = [...local].filter((f) => f.endsWith(".ts") && realtime.test(code(f))).map(rel);
+    expect(hits).toEqual([]);
+  });
+
   test("parser.ts doesn't import Carnatic code; load() wires the gamakas in", () => {
     const direct = importsOf(path.join(SRC, "parser.ts")).map(rel);
     expect(direct.filter((m) => m.startsWith("carnatic/"))).toEqual([]);
