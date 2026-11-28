@@ -119,6 +119,7 @@ export class SideBySidePlayground {
       markdownParser: createMarkdownParser(),
       editorConfig: {
         debounceDelay: 0, // Manual render via button
+        reflow: true,
       },
       onSourceChange: (source) => this.saveDraft(source),
       editorClass: "playground-editor",

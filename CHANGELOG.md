@@ -35,6 +35,13 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 - `fitLinesToWidth(root, { minScale })` in `notations/export` scales every notation line by one
   factor to fit its box, as print does. `minScale` keeps notes readable on a narrow screen, and a
   line still wider than the box overflows it (#77).
+- Rows break again to fit a narrow screen. `NotationView.reflow(width, source, { minScale })`
+  measures the drawn beats and lays the song out again when a row is wider than `width`. The
+  author's `\breaks` hold while every row fits. Otherwise each cycle breaks at bar lines into the
+  fewest rows that fit, and a bar too wide for a row of its own splits into even pieces.
+  `breaksToFit` in `notations/core` picks the breaks, and `load(source, { breaks })` applies them.
+  The `/view/` page reflows on load and when the window resizes, and `SideBySideEditor` takes
+  `reflow: true`, which the docs playground turns on (#80).
 
 ### Changed
 
