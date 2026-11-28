@@ -549,6 +549,7 @@ export abstract class GroupView extends AtomView {
       attrs: {
         class: "groupViewRoot",
         id: "groupViewRoot" + this.group.uuid,
+        sourceatomid: (this.group.origin ?? this.group).uuid,
       },
     });
 

@@ -252,6 +252,8 @@ export abstract class LeafAtomView extends LeafAtomViewBase {
         parent: parent,
         attrs: {
           atomid: this.leafAtom.uuid,
+          // The parsed atom this one came from; NotationView's lookups key on it (#102).
+          sourceatomid: (this.leafAtom.origin ?? this.leafAtom).uuid,
           class: "atomViewRootGroup",
           id: "atomViewRootGroup" + this.leafAtom.uuid,
         },

@@ -15,4 +15,5 @@ export * from "./layouts";
 export * from "./grids";
 export * from "./beats";
 export * from "./notation";
+export * from "./positions";
 export * as Utils from "./utils";

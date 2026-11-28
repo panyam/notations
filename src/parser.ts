@@ -164,13 +164,7 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
               ? `No embellishment parser for ${token.value}: pass embellishments to Parser, or use load() or parse()`
               : `Invalid embelishment: ${token.value}`;
           owner.errors.push(
-            new TLEX.TokenizerError(
-              message,
-              token.start,
-              1 + token.end - token.start,
-              "InvalidEmbelishment",
-              token.value,
-            ),
+            new TLEX.TokenizerError(message, token.start, token.end - token.start, "InvalidEmbelishment", token.value),
           );
           return null;
         }
@@ -252,7 +246,7 @@ const [parser, tokenFunc /*itemGraph*/] = G.newParser(
           new TLEX.TokenizerError(
             `Old marker syntax ${token.value}: write ${replacement}`,
             token.start,
-            1 + token.end - token.start,
+            token.end - token.start,
             "OldMarkerSyntax",
             token.value,
           ),
@@ -660,6 +654,30 @@ export class Parser {
     }
   }
 
+  private _spannedRuleHandlers: any = null;
+
+  /**
+   * The rule handlers, each wrapped to record where an atom it returns came from in the source.
+   * galore gives each parse tree node its span (galore 1.1.0), so the wrapper reads the span of
+   * the children a rule reduced. It widens an atom's range rather than replacing it, so a rule
+   * that hands back an inner atom (a note with a gamaka in front) grows the note's range to cover
+   * the whole thing (#102).
+   */
+  private get spannedRuleHandlers(): any {
+    if (this._spannedRuleHandlers) return this._spannedRuleHandlers;
+    const out: any = {};
+    const handlers = this.ruleHandlers as Record<string, (...args: any[]) => any>;
+    for (const name of Object.keys(handlers)) {
+      const handler = handlers[name];
+      out[name] = (rule: G.Rule, parent: G.PTNode, ...children: G.PTNode[]) => {
+        const value = handler(rule, parent, ...children);
+        if (value instanceof Atom) widenRange(value, children);
+        return value;
+      };
+    }
+    return (this._spannedRuleHandlers = out);
+  }
+
   addCommand(cmd: Command): void {
     cmd.index = this.commands.length;
     this.commands.push(cmd);
@@ -674,7 +692,7 @@ export class Parser {
     try {
       const ptree = parser.parse(input, {
         tokenizerContext: this,
-        ruleHandlers: this.ruleHandlers,
+        ruleHandlers: this.spannedRuleHandlers,
         onTokenError: (err: TLEX.TokenizerError) => {
           this.errors.push(err);
           return true;
@@ -743,4 +761,17 @@ export class Parser {
   parseEmbelishment(value: string): [any, boolean] {
     return this.embellishments ? this.embellishments(value) : [null, false];
   }
+}
+
+/** Grows `atom.sourceRange` to cover the input that `children` came from. */
+function widenRange(atom: Atom, children: G.PTNode[]): void {
+  let start: number | null = null;
+  let end: number | null = null;
+  for (const c of children) {
+    if (c.start != null && (start == null || c.start < start)) start = c.start;
+    if (c.end != null && (end == null || c.end > end)) end = c.end;
+  }
+  if (start == null || end == null) return;
+  const r = atom.sourceRange;
+  atom.sourceRange = r ? [Math.min(r[0], start), Math.max(r[1], end)] : [start, end];
 }

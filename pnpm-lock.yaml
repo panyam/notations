@@ -197,8 +197,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       galore:
-        specifier: ^1.0.7
-        version: 1.0.7
+        specifier: ^1.1.0
+        version: 1.1.0
       tlex:
         specifier: ^1.2.0
         version: 1.2.0
@@ -2423,8 +2423,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  galore@1.0.7:
-    resolution: {integrity: sha512-QHMJBC6wNwODG7Ysr/RktvNB+9SI5qcFXyma2zQyrCyy+hwFy11nVwFYDtlCfHjzRvqRJbup7Zy1R7RI27+BzA==}
+  galore@1.1.0:
+    resolution: {integrity: sha512-p8XRVGDS0FRK5509rtsZ0iLAcahDSaK2rbRZLkMEdqcuJiv4tmEkBvKBiLeluAxNrDuW+EFxFCJ4zhWsVNCe3A==}
 
   gensequence@8.0.8:
     resolution: {integrity: sha512-omMVniXEXpdx/vKxGnPRoO2394Otlze28TyxECbFVyoSpZ9H3EO7lemjcB12OpQJzRW4e5tt/dL1rOxry6aMHg==}
@@ -6099,7 +6099,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  galore@1.0.7:
+  galore@1.1.0:
     dependencies:
       '@panyam/tsutils': 1.0.0
       tlex: 1.2.0

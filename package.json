@@ -62,7 +62,7 @@
   "dependencies": {
     "@lume/kiwi": "^0.4.4",
     "@panyam/tsutils": "^1.0.0",
-    "galore": "^1.0.7",
+    "galore": "^1.1.0",
     "tlex": "^1.2.0"
   },
   "peerDependencies": {
