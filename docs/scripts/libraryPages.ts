@@ -25,6 +25,8 @@ export interface Song {
   talam: string;
   composer: string;
   source: string;
+  /** The URL on the song's `// https://...` first line, or null when it has none. */
+  link: string | null;
   /** Parse error messages. Empty when the song loads cleanly. */
   errors: string[];
 }
@@ -34,6 +36,9 @@ export interface Page {
   file: string;
   html: string;
 }
+
+/** Where the docs site lives. Each song's first line links to its page under it. */
+export const SITE = "https://panyam.github.io/notations/";
 
 /** Top-level folders that aren't songs. */
 const SKIPPED_DIRS = new Set(["v3", "tests"]);
@@ -96,6 +101,7 @@ export function readSong(path: string, source: string): Song {
     talam: fields.talam ?? "",
     composer: fields.composer ?? "",
     source,
+    link: /^\/\/ (https:\/\/\S+)\s*$/m.exec(source.split("\n", 1)[0])?.[1] ?? null,
     errors: errors.map((e) => e.message),
   };
 }
@@ -224,12 +230,20 @@ export function indexPages(songs: Song[], pin: LibraryPin): Page[] {
 }
 
 /**
- * Every page for a set of songs. Throws when songs fail to parse or two songs map to one URL,
- * listing each, so the build stops instead of publishing a blank page.
+ * Every page for a set of songs. Throws when songs fail to parse, a song's link line doesn't match
+ * its URL, or two songs map to one URL, listing each, so the build stops instead of publishing a
+ * blank page or a dead link.
  */
 export function libraryPages(songs: Song[], pin: LibraryPin): Page[] {
   const problems: string[] = [];
   for (const s of songs) for (const e of s.errors) problems.push(`${s.path}: ${e}`);
+  // notation_demos writes these links with scripts/links.mjs, from its own copy of songUrl's rule.
+  // Checking them here catches the two rules drifting apart (panyam/notation_demos#6).
+  for (const s of songs) {
+    const want = SITE + s.url;
+    if (s.link == null) problems.push(`${s.path}: first line should link to ${want}`);
+    else if (s.link != want) problems.push(`${s.path}: first line links to ${s.link}, not ${want}`);
+  }
   const byUrl = new Map<string, string>();
   for (const s of songs) {
     const other = byUrl.get(s.url);

@@ -77,7 +77,9 @@ describe("song library (#71)", () => {
   // song is unchanged (#77).
   test("a song page links to the playground with the song's own path", () => {
     const page = songPage(readSong("Thyagaraja/EvvaruRa.sng", MOHANAM), PIN);
-    expect(page.html).toContain('href="{{.Site.PathPrefix}}/demos/playgrounds/side-by-side/?song=thyagaraja/evvaru-ra"');
+    expect(page.html).toContain(
+      'href="{{.Site.PathPrefix}}/demos/playgrounds/side-by-side/?song=thyagaraja/evvaru-ra"',
+    );
   });
 
   test("escaping round-trips through the entities a browser decodes", () => {
@@ -120,6 +122,24 @@ describe("song library (#71)", () => {
     const bad = readSong("Varnams/Broken.sng", '\\cycle("|4x|")\nS R');
     expect(bad.errors.length).toBeGreaterThan(0);
     expect(() => libraryPages([bad], PIN)).toThrow(/Varnams\/Broken\.sng: /);
+  });
+
+  test("a song's first line links to its page, and a link that doesn't match stops the build", () => {
+    const url = "https://panyam.github.io/notations/library/thyagaraja/evvaru-ra/";
+    const good = readSong("Thyagaraja/EvvaruRa.sng", `// ${url}\n` + MOHANAM);
+    expect(good.link).toBe(url);
+    expect(() => libraryPages([good], PIN)).not.toThrow();
+
+    const renamed = readSong("Thyagaraja/EvvaruRaa.sng", `// ${url}\n` + MOHANAM);
+    expect(() => libraryPages([renamed], PIN)).toThrow(
+      `Thyagaraja/EvvaruRaa.sng: first line links to ${url}, not https://panyam.github.io/notations/library/thyagaraja/evvaru-raa/`,
+    );
+  });
+
+  test("a song with no link line stops the build", () => {
+    const s = readSong("Thyagaraja/EvvaruRa.sng", MOHANAM);
+    expect(s.link).toBeNull();
+    expect(() => libraryPages([s], PIN)).toThrow("Thyagaraja/EvvaruRa.sng: first line should link to");
   });
 
   test("two songs with the same URL stop the build", () => {
