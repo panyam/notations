@@ -50,4 +50,19 @@ jobs:
       - if: matrix.node == 22
         run: pnpm run spell
 
+      - id: demos
+        name: Read the notation_demos commit the library pins
+        run: echo "commit=$(node -p "require('./docs/library.json').commit")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: panyam/notation_demos
+          ref: ${{ steps.demos.outputs.commit }}
+          path: .cache/notation_demos
+          persist-credentials: false
+
+      # Writes docs/content/library/ and fails if any song doesn't parse, so every parser change
+      # is checked against the whole library (#71). links.spec then checks the pages' links.
+      - run: pnpm run library
+
       - run: pnpm test

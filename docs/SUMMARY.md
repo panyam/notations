@@ -16,6 +16,7 @@ This folder contains the complete documentation site for the Notations library, 
   - Tisram notation (3 notes per beat)
   - Organizing long compositions
   - Percussion notation (mridangam/tabla)
+- **Library**: every song in panyam/notation_demos on its own page, with indexes by composer and by ragam. `pnpm run library` generates `content/library/` (gitignored) from the commit `library.json` pins, and fails if a song doesn't parse (#71). `--bump` pins notation_demos master's latest commit. `make run` and `make render` run it first.
 - **API Documentation**: Integration guides and API reference
 - **Contributing**: Guidelines for contributors
 
@@ -69,6 +70,7 @@ The documentation includes a visual regression testing page:
 
 ### Build Pipeline
 1. Webpack builds TypeScript components → static/js/gen/
+1. `pnpm run library` writes the song pages into content/library/
 2. s3gen generates static HTML from content/ + templates/
 3. Static folder manually copied to dist/docs/
 4. The Docs workflow publishes dist/docs to GitHub Pages after CI passes on master

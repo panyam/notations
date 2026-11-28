@@ -84,6 +84,21 @@ jobs:
       - if: steps.fresh.outputs.deploy == 'true'
         run: pnpm run build:docs
 
+      # `make render` builds the song library from this checkout, at the commit docs/library.json
+      # pins (#71).
+      - if: steps.fresh.outputs.deploy == 'true'
+        id: demos
+        name: Read the notation_demos commit the library pins
+        run: echo "commit=$(node -p "require('./docs/library.json').commit")" >> "$GITHUB_OUTPUT"
+
+      - if: steps.fresh.outputs.deploy == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: panyam/notation_demos
+          ref: ${{ steps.demos.outputs.commit }}
+          path: .cache/notation_demos
+          persist-credentials: false
+
       # `make render` is the second half of `make site`, so the two can't drift apart. It builds the
       # Pagefind search index too; without it the live search box would load a 404.
       - if: steps.fresh.outputs.deploy == 'true'

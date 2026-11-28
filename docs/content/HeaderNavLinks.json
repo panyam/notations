@@ -65,6 +65,11 @@
     "icon": "music"
   },
   {
+    "name": "Library",
+    "url": "library/",
+    "icon": "library"
+  },
+  {
     "name": "API",
     "url": "api/",
     "icon": "code",
