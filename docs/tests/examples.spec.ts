@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { load } from "../../src/loader";
+import { buildTimeline } from "../../src/timeline";
 
 const CONTENT_ROOT = path.resolve(__dirname, "..", "content");
 
@@ -163,6 +164,28 @@ describe("Docs site examples", () => {
       const named = talaNamed(`${example.caption} ${example.heading}`);
       const cycle = /\\cycle\("([^"]*)"\)/.exec(example.body);
       if (named && cycle) expect(cycleBars(cycle[1])).toEqual(named);
+    });
+
+    // A player reads the timeline (#101), so every example must lay out on one: lines back to
+    // back in whole cycles, and each event starting inside its line, or in the cycle before it
+    // for a pickup.
+    test("lays out on a timeline, each event inside its line", () => {
+      const [notation] = load(example.body + "\n");
+      const t = buildTimeline(notation);
+      let end = t.lines.length ? t.lines[0].offset : t.duration;
+      for (const l of t.lines) {
+        expect(l.offset.toString()).toBe(end.toString());
+        end = l.offset.plus(l.cycleDuration.timesNum(l.cycles));
+      }
+      expect(t.duration.toString()).toBe(end.toString());
+      const stray: string[] = [];
+      for (const e of t.events) {
+        const l = t.lines.find((l) => l.line === e.line && l.offset.equals(e.offset.minus(e.lineOffset)))!;
+        const span = l.cycleDuration.timesNum(l.cycles);
+        const inside = e.lineOffset.isGTE(l.cycleDuration.timesNum(-1)) && e.lineOffset.isLT(span);
+        if (!inside || !e.duration.isGTNum(0)) stray.push(`${e.value}@${e.offset}`);
+      }
+      expect(stray).toEqual([]);
     });
 
     // Underscores lex as ordinary identifier characters, so a silent space renders as visible
