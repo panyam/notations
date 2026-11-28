@@ -72,6 +72,8 @@ function headingBefore(src: string, index: number): string {
 function collect(): Example[] {
   const out: Example[] = [];
   for (const file of htmlFiles(CONTENT_ROOT)) {
+    // The song library is generated from notation_demos, and library.spec checks it (#71).
+    if (path.relative(CONTENT_ROOT, file).startsWith("library" + path.sep)) continue;
     const src = stripComments(fs.readFileSync(file, "utf8"));
     for (const m of src.matchAll(/<notation\s([^>]*)>([\s\S]*?)<\/notation>/g)) {
       const body = decode(m[2]).trim();

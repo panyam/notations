@@ -3,7 +3,7 @@ NUM_LINKED_GOMODS=`cat go.mod | grep -v "^\/\/" | grep replace | wc -l | sed -e 
 
 all: build run
 
-run:
+run: library
 	# cp ../secrets/notations/.env /tmp
 	# cp ../secrets/notations/.env.dev /tmp
 	NOTATIONS_DOCS_ENV=dev NOTATIONS_DOCS_PORT=:8085 go run .
@@ -26,12 +26,16 @@ resymlink:
 	cd locallinks && ln -s ../../../../golang/oneauth
 	cd locallinks && ln -s ../../../../golang/s3gen
 
+# The song library in content/library/, from the notation_demos commit in library.json (#71).
+library:
+	cd .. && pnpm run library
+
 # Production site in dist/docs, without deploying.
 site: webpack render
 
 # Renders the pages and copies static/ (s3gen does both), then builds the Pagefind search index
 # into dist/docs/pagefind. The Docs workflow runs this target after its own webpack build.
-render:
+render: library
 	NOTATIONS_DOCS_ENV=production go run main.go -build
 	pnpm exec pagefind --site dist/docs
 	touch dist/docs/.nojekyll

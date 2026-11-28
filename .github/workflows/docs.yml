@@ -86,6 +86,9 @@ jobs:
 
       # `make render` is the second half of `make site`, so the two can't drift apart. It builds the
       # Pagefind search index too; without it the live search box would load a 404.
+      # It also builds the song library, cloning notation_demos at the commit docs/library.json
+      # pins (#71). The generator reads the songs as data. An actions/checkout of that repo here
+      # would fail CodeQL (actions/cache-poisoning), as this job deploys.
       - if: steps.fresh.outputs.deploy == 'true'
         name: Render the site and its search index
         working-directory: docs

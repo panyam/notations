@@ -5,6 +5,9 @@ version: "0.2"
 language: en
 files:
   - "docs/content/**/*.html"
+# Generated from notation_demos (#71). Song and raga names there are spelled as each file has them.
+ignorePaths:
+  - "docs/content/library/**"
 words:
   - aahaatam
   - alankaram

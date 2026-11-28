@@ -40,7 +40,15 @@ function links(): Array<{ from: string; target: string }> {
   return out;
 }
 
+// `pnpm run library` generates the song pages (#71). CI always builds them first, so there a
+// missing library is a failure. Locally the library links are skipped until it has been built.
+const LIBRARY_BUILT = fs.existsSync(path.join(CONTENT, "library", "index.html"));
+
 describe("internal links on the docs site", () => {
+  test("the song library is built, in CI", () => {
+    if (process.env.CI) expect(LIBRARY_BUILT).toBe(true);
+  });
+
   const all = links();
 
   test("there are links to check", () => {
@@ -51,6 +59,7 @@ describe("internal links on the docs site", () => {
     const broken: string[] = [];
     for (const { from, target } of all) {
       if (target.startsWith("/pagefind/")) continue; // written by `make render`, not a source page
+      if (target.startsWith("/library/") && !LIBRARY_BUILT) continue;
       const [p, anchor] = target.split("#");
       const src = sourceFor(p.split("?")[0]);
       if (!src) broken.push(`${from}: ${target} (no such page)`);

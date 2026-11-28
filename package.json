@@ -154,6 +154,7 @@
     "version": "git add -A src",
     "postversion": "git push && git push --tags",
     "transcribe:photos": "tsx docs/scripts/transcribe-photos.ts",
+    "library": "tsx docs/scripts/library.ts",
     "exercise:48": "node docs/scripts/exercise-48.mjs"
   },
   "directories": {
