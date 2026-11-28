@@ -47,8 +47,9 @@ with `--no-verify`, because the hook builds code that branch does not have.
   `docs/tsconfig.json` list theirs. `docs/components/styles.d.ts` declares `.css`, `.scss`
   and `?url` imports.
 - Layers: runtime (`notations/core`) < parser (takes an `EmbellishmentParser`) < Carnatic gamakas
-  < `load()` < renderer. `src/tests/layers.spec.ts` enforces it; inside `src/`, never import from
-  the package index (`"./"`). Details: `src/ARCHITECTURE.md` (#18).
+  < `load()` < renderer < export (`notations/export`: print, SVG, PNG; never reaches `web/`).
+  `src/tests/layers.spec.ts` enforces it; inside `src/`, never import from the package index
+  (`"./"`). Details: `src/ARCHITECTURE.md` (#18, #74).
 - Parser errors contract, galore tokenizer priorities and command validation:
   `src/ARCHITECTURE.md`. `load()` never throws; a new command reports bad params as errors.
 - ts-jest compiles to CommonJS, so code that jest loads cannot use `import.meta`. For an
@@ -76,6 +77,9 @@ with `--no-verify`, because the hook builds code that branch does not have.
 - White header, footer and hero text sits on `--header-bg` and `--footer-bg`. Don't put it on
   `--primary-color`, which is light blue in dark mode (#65).
 - The docs webpack config has no Node polyfills (`buffer: false`).
+- Playwright's Firefox won't start on macOS 27 ("Could not find profile folder"). Run Firefox
+  checks in the `mcr.microsoft.com/playwright:<version>-noble` image. Playwright's macOS WebKit
+  doesn't scroll a focused box on arrow keys; real Safari does, so don't file that (#66).
 - Restart `make run` after `pnpm run build:docs`. The running server keeps the old
   `gen.*.html` templates, and the page then 404s on the old bundle.
 - Run Prettier on files by path. Running it over all of `docs/components` reformats unrelated

@@ -9,7 +9,27 @@ Releases before 1.1.0 were tagged without notes and are not back-filled here.
 
 ## [Unreleased]
 
+### Added
+
+- `notations/export`, a new entry point for getting rendered notation out of the page. It needs a
+  browser and doesn't pull in `notations/web` (#74).
+  - `printNotation(source)` opens the print dialog with the notation alone, and `preparePrint`
+    sets up that print-only copy. Every line scales by one factor, so the widest line fills the
+    page. "Save as PDF" in the dialog gives a PDF.
+  - `exportSVG(source)` returns one standalone SVG in the light theme, with no `foreignObject`.
+    Headings and front matter become SVG text, keeping bold and italic. `exportPNG` draws it at
+    twice its size, and `downloadSVG` and `downloadPNG` save either as a file.
+- `DockViewPlayground.print()`, `downloadSVG()` and `downloadPNG()`. A playground also prints the
+  notation alone on Ctrl/Cmd+P. The side-by-side and photo playgrounds have Print / PDF, SVG and
+  PNG buttons (#74).
+- `NotationViewConfig.marginAlign`, and the `--notation-margin-align` CSS variable it sets, for
+  margin labels: `left`, `center` or `right` (#97).
+
 ### Changed
+
+- The margin column is only as wide as its longest label, and labels are right-aligned by
+  default. It used to take a share of the table's spare width, so printed labels sat far from
+  their notation (#97).
 
 - Front matter is read by a small parser for flat `key: value` lines instead of the `yaml`
   package. Values can be quoted or plain strings, numbers, booleans, null, or a one-line list such
