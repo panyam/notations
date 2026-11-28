@@ -12,7 +12,6 @@ Maintained by /checkpoint: one thread per branch, pruned when the branch merges.
 ## Across threads
 
 - The docs site deploys from `.github/workflows/docs.yml` after CI passes on master. Nobody pushes `gh-pages` any more.
-- Next release is 2.1.0, a minor bump (user's call). `[Unreleased]` holds #87, #90, #94, #74 and #97. The release notes must say that since #87, nested YAML, block lists and multi-line strings in front matter are a parse error. The user is adding more features before cutting it.
 - panyam/notation links notations master, not npm, so it picks up a merge when `web/node_modules/notations` is rebuilt (its CLAUDE.md says how).
 
 ## master
