@@ -104,7 +104,10 @@ async function shareAndOpen(page, browser, song) {
   const playgroundLines = (await render(page, song)).svgs;
   await page.getByRole("button", { name: "Share", exact: true }).click();
   await page.waitForTimeout(1000);
-  const url = await page.locator("#share-link").inputValue().catch(() => "");
+  const url = await page
+    .locator("#share-link")
+    .inputValue()
+    .catch(() => "");
   if (!url) return { status: "FAIL", what: "Share gave no link (#77)" };
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const fresh = await ctx.newPage();
@@ -125,29 +128,47 @@ async function openOnPhone(browser, url) {
   const phone = await ctx.newPage();
   await phone.goto(url);
   await phone.waitForTimeout(2000);
-  const fit = await phone.evaluate(() => {
-    const lines = [...document.querySelectorAll("#view-root svg.lineRootSVG")];
-    const width = document.documentElement.clientWidth;
-    // A swara's glyph, as tall as it shows on screen. Below about 9 px nobody reads it.
-    const heights = [...document.querySelectorAll("#view-root .role_sw text")]
-      .map((t) => t.getBoundingClientRect().height)
-      .filter((h) => h > 0)
-      .sort((a, b) => a - b);
-    return {
-      lines: lines.length,
-      wider: lines.filter((s) => s.getBoundingClientRect().width > width).length,
-      sideways: document.documentElement.scrollWidth > width + 1,
-      noteHeight: heights.length ? heights[Math.floor(heights.length / 2)] : 0,
-    };
-  });
+  const measure = () =>
+    phone.evaluate(() => {
+      const lines = [...document.querySelectorAll("#view-root svg.lineRootSVG")];
+      const width = document.documentElement.clientWidth;
+      // A swara's glyph, as tall as it shows on screen.
+      const heights = [...document.querySelectorAll("#view-root .role_sw text")]
+        .map((t) => t.getBoundingClientRect().height)
+        .filter((h) => h > 0)
+        .sort((a, b) => a - b);
+      return {
+        lines: lines.length,
+        wider: lines.filter((s) => s.getBoundingClientRect().right > width + 1).length,
+        sideways: document.documentElement.scrollWidth > width + 1,
+        noteHeight: heights.length ? heights[Math.floor(heights.length / 2)] : 0,
+      };
+    });
+  const fit = await measure();
   await phone.screenshot({ path: join(OUT, "step-5.png"), fullPage: true });
+  // Turned sideways, the rows break again for the wider screen.
+  await phone.setViewportSize({ width: 844, height: 390 });
+  await phone.waitForTimeout(1000);
+  const turned = await measure();
   await ctx.close();
   const px = fit.noteHeight.toFixed(0);
   if (!fit.lines) return { status: "FAIL", what: "the link renders nothing on a phone (#80)" };
   if (fit.sideways) return { status: "FAIL", what: "the page scrolls sideways on a 390 px phone (#80)" };
-  if (fit.noteHeight < 9) return { status: "FAIL", what: `notes are ${px} px tall on a 390 px phone, too small to read (#80)` };
-  const scroll = fit.wider ? `; ${fit.wider} of ${fit.lines} lines scroll sideways inside the notation (#80)` : "";
-  return { status: "PASS", what: `all ${fit.lines} lines render on a 390 px phone, notes about ${px} px tall${scroll}` };
+  if (fit.wider)
+    return { status: "FAIL", what: `${fit.wider} of ${fit.lines} lines run past a 390 px phone's edge (#80)` };
+  // Reflow keeps notes at 0.72 of their size or more, about 13 px. Smaller is hard to read in class.
+  if (fit.noteHeight < 12.5)
+    return { status: "FAIL", what: `notes are ${px} px tall on a 390 px phone, too small to read (#80)` };
+  if (turned.wider || turned.sideways) {
+    return {
+      status: "FAIL",
+      what: `turned sideways, ${turned.wider} of ${turned.lines} lines run past the screen (#80)`,
+    };
+  }
+  return {
+    status: "PASS",
+    what: `all ${fit.lines} lines fit a 390 px phone, notes about ${px} px tall; turned sideways, ${turned.lines} lines fit`,
+  };
 }
 
 /** Clicks SVG and PNG, and checks that each downloaded file holds the notation. */
@@ -228,8 +249,10 @@ async function main() {
     await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
   }
   const exported = await checkExports(page);
-  const problems = [!printCount ? "no print control" : !printed ? "Print did not print the notation" : "", ...exported.problems]
-    .filter(Boolean);
+  const problems = [
+    !printCount ? "no print control" : !printed ? "Print did not print the notation" : "",
+    ...exported.problems,
+  ].filter(Boolean);
   if (problems.length) report(2, "FAIL", `${problems.join("; ")} (#74)`);
   else report(2, "PASS", `Print / PDF prints the notation alone; ${exported.summary}`);
 

@@ -260,3 +260,106 @@ export class LayoutParams {
     this._totalLayoutDuration = this._rowDurations.reduce((x, y) => x.plus(y), ZERO);
   }
 }
+
+/**
+ * Picks `\breaks` for one cycle so that no row is wider than `maxWidth`, for a screen narrower
+ * than the song's rows.
+ *
+ * `beatWidths` holds the drawn width of each beat of the cycle, in cycle order. `current` holds
+ * the breaks the author wrote. They come back unchanged while every row they make fits, even when
+ * a row holds more than one cycle. Otherwise the result covers one cycle, in the fewest rows that
+ * fit, and among those the one whose widest row is narrowest. Rows break at bar lines. A bar too
+ * wide for a row of its own splits into the fewest even pieces that fit, and those pieces never
+ * share a row with another bar. A single beat wider than `maxWidth` gets a row of its own and
+ * overflows it.
+ */
+export function breaksToFit(cycle: Cycle, beatWidths: number[], maxWidth: number, current?: number[]): number[] {
+  const n = cycle.beatCount;
+  const beatWidth = (i: number) => beatWidths[i % n] ?? 0;
+  const span = (start: number, count: number) => {
+    let total = 0;
+    for (let i = 0; i < count; i++) total += beatWidth(start + i);
+    return total;
+  };
+  if (current && current.length > 0) {
+    let start = 0;
+    const fits = current.every((count) => {
+      const ok = span(start, count) <= maxWidth;
+      start += count;
+      return ok;
+    });
+    if (fits) return current;
+  }
+  if (span(0, n) <= maxWidth) return [n];
+
+  const out: number[] = [];
+  let run: Piece[] = [];
+  let start = 0;
+  for (const bar of cycle.bars) {
+    const count = bar.beatCount;
+    const width = span(start, count);
+    if (width <= maxWidth) {
+      run.push({ count, width });
+    } else {
+      out.push(...fewestRows(run, maxWidth));
+      run = [];
+      const beats = Array.from({ length: count }, (_, i) => ({ count: 1, width: beatWidth(start + i) }));
+      out.push(...fewestRows(beats, maxWidth));
+    }
+    start += count;
+  }
+  out.push(...fewestRows(run, maxWidth));
+  return out;
+}
+
+/** A run of beats that a row break may not split: a whole bar, or one beat of a split bar. */
+interface Piece {
+  count: number;
+  width: number;
+}
+
+/**
+ * Groups `pieces` in order into the fewest rows no wider than `maxWidth`, and among those picks
+ * the grouping whose widest row is narrowest. Returns the beat count of each row. With a piece
+ * wider than `maxWidth`, every piece gets its own row.
+ */
+function fewestRows(pieces: Piece[], maxWidth: number): number[] {
+  const m = pieces.length;
+  if (m == 0) return [];
+  // best[k][j]: the narrowest widest row over groupings of the first j pieces into k rows.
+  const prefix = [0];
+  for (const p of pieces) prefix.push(prefix[prefix.length - 1] + p.width);
+  let prev: number[] = prefix.map((w) => w);
+  const choices: number[][] = [prefix.map(() => 0)];
+  for (let k = 1; k <= m; k++) {
+    if (prev[m] <= maxWidth) return rowCounts(pieces, choices, k, m);
+    const next = prefix.map(() => Infinity);
+    const choice = prefix.map(() => 0);
+    for (let j = k + 1; j <= m; j++) {
+      for (let i = k; i < j; i++) {
+        const widest = Math.max(prev[i], prefix[j] - prefix[i]);
+        if (widest < next[j]) {
+          next[j] = widest;
+          choice[j] = i;
+        }
+      }
+    }
+    choices.push(choice);
+    prev = next;
+  }
+  return pieces.map((p) => p.count);
+}
+
+/** Walks the choices fewestRows recorded back from the last piece and returns each row's beat count. */
+function rowCounts(pieces: Piece[], choices: number[][], rows: number, m: number): number[] {
+  const out: number[] = [];
+  let j = m;
+  for (let k = rows - 1; k >= 0; k--) {
+    const i = k == 0 ? 0 : choices[k][j];
+    let count = 0;
+    for (let p = i; p < j; p++) count += pieces[p].count;
+    out.unshift(count);
+    j = i;
+  }
+  return out;
+}

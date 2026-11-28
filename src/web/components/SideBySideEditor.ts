@@ -82,6 +82,13 @@ export interface SideBySideEditorConfig {
    * no longer matches it. On by default.
    */
   cursorSync?: boolean;
+
+  /**
+   * Breaks rows wider than the output again to fit it, and again whenever the output's width
+   * changes, as when a dock panel is dragged (`NotationView.reflow`, #80). The author's `\breaks`
+   * come back once the output is wide enough. Off by default.
+   */
+  reflow?: boolean;
 }
 
 const DEFAULT_CONFIG: SideBySideEditorConfig = {
@@ -131,6 +138,9 @@ export default class SideBySideEditor {
   /** Debounce timer */
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Watches the output's width while `reflow` is on. */
+  private resizeObserver: ResizeObserver | null = null;
+
   /** Whether scroll sync is active */
   private isScrollSyncing = false;
 
@@ -171,6 +181,7 @@ export default class SideBySideEditor {
 
     // Set up event listeners
     this.setupEventListeners();
+    if (this.config.reflow) this.watchWidth();
 
     // Initial render
     if (this.config.initialSource) {
@@ -227,6 +238,7 @@ export default class SideBySideEditor {
     this.beatLayout = beatLayout;
     this.renderedSource = source;
     this.notationView.renderNotation(notation, beatLayout);
+    this.reflowToWidth();
     this.syncCursorToOutput();
     this.config.onNotationParsed?.(notation, beatLayout);
 
@@ -419,6 +431,42 @@ export default class SideBySideEditor {
     this.editorElement.selectionEnd = end;
   }
 
+  /** The output's width inside its padding, which rows have to fit. */
+  private outputWidth(): number {
+    const style = getComputedStyle(this.outputElement);
+    const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+    return this.outputElement.clientWidth - padding;
+  }
+
+  /** Re-breaks the rendered rows to the output's width when `reflow` is on. */
+  private reflowToWidth(): void {
+    if (!this.config.reflow || this.renderedSource == null) return;
+    if (this.notationView.reflow(this.outputWidth(), this.renderedSource)) {
+      this.notation = this.notationView.notation;
+      this.beatLayout = this.notationView.beatLayout;
+    }
+  }
+
+  /** Reflows when the output's width changes, at most once a frame. */
+  private watchWidth(): void {
+    if (typeof ResizeObserver == "undefined") return;
+    let lastWidth = -1;
+    let pending = 0;
+    this.resizeObserver = new ResizeObserver(() => {
+      const width = this.outputElement.clientWidth;
+      if (width == lastWidth || pending) return;
+      lastWidth = width;
+      pending = requestAnimationFrame(() => {
+        pending = 0;
+        // Text typed since the last render renders soon anyway, and reflows then.
+        if (this.editorElement.value !== this.renderedSource) return;
+        this.reflowToWidth();
+        this.syncCursorToOutput();
+      });
+    });
+    this.resizeObserver.observe(this.outputElement);
+  }
+
   /**
    * Cleans up resources.
    */
@@ -426,6 +474,7 @@ export default class SideBySideEditor {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
+    this.resizeObserver?.disconnect();
     this.editorElement.remove();
     this.outputElement.remove();
   }

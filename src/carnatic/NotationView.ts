@@ -2,6 +2,8 @@ import * as TSU from "@panyam/tsutils";
 import { LineView } from "./LineView";
 import { Notation, RawBlock, Block, BlockItem, isLine, isBlock, isRawBlock } from "../notation";
 import { Beat, GlobalBeatLayout } from "../beats";
+import { LayoutParams, breaksToFit } from "../layouts";
+import { load, layoutParamsIn } from "../loader";
 import { GridCell, GridCellView, GridLayoutGroup, LayoutChangeEvent } from "../grids";
 import { Atom, Line } from "../core";
 import { walkAtoms } from "../positions";
@@ -200,6 +202,106 @@ export class NotationView {
     this.currentSVGElement = null;
     this.tableElement.innerHTML = "";
     this.beatViews = new Map<number, BeatView>();
+    this.markerViews = new Map<string, MarkerView>();
+  }
+
+  /** The source reflow last laid out, and the breaks its author wrote, one per layout. */
+  private reflowed: { source: string; authorBreaks: number[][] } | null = null;
+
+  /**
+   * Breaks rows wider than `width` pixels again and renders again, for a screen narrower than the
+   * song (#80). A wider screen restores the author's `\breaks`. Call it after renderNotation with
+   * the source that rendered, while the view is in the page, since it measures the drawn beats.
+   *
+   * `minScale` says how far the caller will shrink a row to fit, as `fitLinesToWidth` does, so a
+   * row may be `width / minScale` wide. `breaksToFit` picks the breaks. Laying out shortens the
+   * notation's atoms in place, so a new layout needs a fresh parse: reflow loads `source` again
+   * with the new breaks, and `notation` and `beatLayout` then hold the result. Returns true when it
+   * rendered again.
+   */
+  reflow(width: number, source: string, options: { minScale?: number } = {}): boolean {
+    const minScale = options.minScale ?? 1;
+    if (width <= 0 || !this.notation) return false;
+    const layouts = layoutParamsIn(this.notation);
+    if (this.reflowed?.source !== source) {
+      this.reflowed = { source, authorBreaks: layouts.map((lp) => [...lp.lineBreaks]) };
+    }
+    const authorBreaks = this.reflowed.authorBreaks;
+    const room = width - this.lineChrome();
+    const measured = this.measureBeats();
+    let changed = false;
+    const breaks = layouts.map((lp, i) => {
+      const m = measured.get(lp);
+      if (!m) return lp.lineBreaks;
+      const fit = breaksToFit(lp.cycle, m.widths, room / minScale - m.overhead, authorBreaks[i]);
+      if (!lp.lineBreaksEqual(fit)) changed = true;
+      return fit;
+    });
+    if (!changed) return false;
+    const [notation, beatLayout] = load(source, { breaks });
+    this.clear();
+    this.renderNotation(notation, beatLayout);
+    return true;
+  }
+
+  /**
+   * The width a line's row takes beside its SVG, which doesn't scale with it: the margin label
+   * column, and the gaps and padding around the cells.
+   */
+  private lineChrome(): number {
+    const svg = this.tableElement.querySelector<SVGSVGElement>("svg.lineRootSVG");
+    const cell = svg?.parentElement;
+    if (!svg || !cell) return 0;
+    const style = getComputedStyle(cell);
+    const left = cell.getBoundingClientRect().left - this.tableElement.getBoundingClientRect().left;
+    const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+    // The table's border-spacing sits to the right of the last cell as well as between cells.
+    const spacing = parseFloat(getComputedStyle(this.tableElement).borderSpacing) || 0;
+    return left + padding + spacing;
+  }
+
+  /**
+   * The drawn width of each beat of every layout's cycle, the widest wherever that beat shows,
+   * together with the width a row takes beyond its beats.
+   */
+  private measureBeats(): Map<LayoutParams, { widths: number[]; overhead: number }> {
+    const out = new Map<LayoutParams, { widths: number[]; overhead: number }>();
+    for (const lineView of this.lineViews) {
+      const lp = lineView.line.layoutParams;
+      if (!lp || !lineView.gridModel) continue;
+      const n = lp.cycle.beatCount;
+      let entry = out.get(lp);
+      if (!entry) {
+        entry = { widths: new Array(n).fill(0), overhead: 0 };
+        out.set(lp, entry);
+      }
+      let left = Infinity;
+      let right = 0;
+      for (const row of lineView.gridModel.rows) {
+        // A beat runs from its first column to where the next beat starts, so gaps count.
+        const starts = new Map<number, number>();
+        let rowRight = 0;
+        for (const cell of row.cells) {
+          if (!cell?.value || !cell.colAlign) continue;
+          const beat: Beat = cell.colIndex % 3 == 1 ? cell.value : cell.value.beat;
+          const x = cell.colAlign.coordOffset;
+          starts.set(beat.index, Math.min(starts.get(beat.index) ?? Infinity, x));
+          left = Math.min(left, x);
+          rowRight = Math.max(rowRight, x + cell.colAlign.maxLength);
+        }
+        right = Math.max(right, rowRight);
+        const ordered = [...starts].sort((a, b) => a[1] - b[1]);
+        ordered.forEach(([index, x], i) => {
+          const end = i + 1 < ordered.length ? ordered[i + 1][1] : rowRight;
+          const p = ((index % n) + n) % n;
+          entry.widths[p] = Math.max(entry.widths[p], end - x);
+        });
+      }
+      const svg = lineView.rootElement;
+      const drawn = Number(svg.getAttribute("width")) || svg.viewBox?.baseVal?.width || 0;
+      if (right > left) entry.overhead = Math.max(entry.overhead, drawn - (right - left));
+    }
+    return out;
   }
 
   /**
